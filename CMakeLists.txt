@@ -35,12 +35,12 @@ endif()
 # )
 
 # locate packages
-# find_package(OpenMP REQUIRED)
-# if(OpenMP_CXX_FOUND)
-# 	set_target_properties(OpenMP::OpenMP_CXX
-# 		PROPERTIES IMPORTED_GLOBAL TRUE
-# 	)
-# endif()
+find_package(OpenMP REQUIRED)
+if(OpenMP_CXX_FOUND)
+	set_target_properties(OpenMP::OpenMP_CXX
+		PROPERTIES IMPORTED_GLOBAL TRUE
+	)
+endif()
 
 find_package(MPI REQUIRED)
 if(MPI_CXX_FOUND)
@@ -79,7 +79,7 @@ target_include_directories(dare PUBLIC
 
 # link libraries
 target_link_libraries(dare
-	# PUBLIC OpenMP::OpenMP_CXX
+	PUBLIC OpenMP::OpenMP_CXX
 	PUBLIC MPI::MPI_CXX
 	# PUBLIC trilinos
 )

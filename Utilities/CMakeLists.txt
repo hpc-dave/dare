@@ -5,5 +5,5 @@ set(DaRe_HEADER_FILES
 )
 
 target_sources(dare
-    PRIVATE ${YAPoNeMo_HEADER_FILES}
+    PRIVATE ${DaRe_HEADER_FILES}
 )
