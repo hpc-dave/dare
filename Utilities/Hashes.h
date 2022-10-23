@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef UTILITIES_UTILS_HASHES_H_
-#define UTILITIES_UTILS_HASHES_H_
+#ifndef UTILITIES_HASHES_H_
+#define UTILITIES_HASHES_H_
 #include <cstddef>
 namespace dare::utils {
 
@@ -61,4 +61,4 @@ struct _FNVparam<8> {
 };
 }  // namespace dare::utils
 
-#endif  // UTILITIES_UTILS_HASHES_H_
+#endif  // UTILITIES_HASHES_H_

@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-#ifndef UTILITIES_UTILS_VECTOR_H_
-#define UTILITIES_UTILS_VECTOR_H_
+#ifndef UTILITIES_VECTOR_H_
+#define UTILITIES_VECTOR_H_
 
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
 
-#include "Utils_Hashes.h"
+#include "Hashes.h"
 
 namespace dare::utils {
 
@@ -834,5 +834,5 @@ public:
 
 }  // namespace std
 
-#include "Utils_Vector.inl"
-#endif  // UTILITIES_UTILS_VECTOR_H_
+#include "Vector.inl"
+#endif  // UTILITIES_VECTOR_H_
