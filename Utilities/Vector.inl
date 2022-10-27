@@ -28,12 +28,12 @@ template <std::size_t N, typename T>
 template <typename... Ts,
           typename A,
           typename B>
-Vector<N, T>::Vector(const Ts&... args) {
+Vector<N, T>::Vector(const Ts&... args) : _vector_functor<N, T>(this->_data) {
     SetValues<0>(args...);
 }
 
 template <std::size_t N, typename T>
-Vector<N, T>::Vector(const Vector<N, T>& other) {
+Vector<N, T>::Vector(const Vector<N, T>& other) : _vector_functor<N, T>(this->_data) {
     std::copy(other._data, other._data + N, _data);
 }
 
@@ -332,41 +332,41 @@ typename std::enable_if<std::is_floating_point<U>::value && (N > 2), const U&>::
     return _data[2];
 }
 
-template <std::size_t N, typename T>
-template <typename U>
-typename std::enable_if<std::is_integral<U>::value, U&>::type Vector<N, T>::i() {
-    return _data[0];
-}
+// template <std::size_t N, typename T>
+// template <typename U>
+// typename std::enable_if<std::is_integral<U>::value, U&>::type Vector<N, T>::i() {
+//     return _data[0];
+// }
 
-template <std::size_t N, typename T>
-template <typename U>
-typename std::enable_if<std::is_integral<U>::value, const U&>::type Vector<N, T>::i() const {
-    return _data[0];
-}
+// template <std::size_t N, typename T>
+// template <typename U>
+// typename std::enable_if<std::is_integral<U>::value, const U&>::type Vector<N, T>::i() const {
+//     return _data[0];
+// }
 
-template <std::size_t N, typename T>
-template <typename U>
-typename std::enable_if<std::is_integral<U>::value && (N > 1), U&>::type Vector<N, T>::j() {
-    return _data[1];
-}
+// template <std::size_t N, typename T>
+// template <typename U>
+// typename std::enable_if<std::is_integral<U>::value && (N > 1), U&>::type Vector<N, T>::j() {
+//     return _data[1];
+// }
 
-template <std::size_t N, typename T>
-template <typename U>
-typename std::enable_if<std::is_integral<U>::value && (N > 1), const U&>::type Vector<N, T>::j() const {
-    return _data[1];
-}
+// template <std::size_t N, typename T>
+// template <typename U>
+// typename std::enable_if<std::is_integral<U>::value && (N > 1), const U&>::type Vector<N, T>::j() const {
+//     return _data[1];
+// }
 
-template <std::size_t N, typename T>
-template <typename U>
-typename std::enable_if<std::is_integral<U>::value && (N > 2), U&>::type Vector<N, T>::k() {
-    return _data[2];
-}
+// template <std::size_t N, typename T>
+// template <typename U>
+// typename std::enable_if<std::is_integral<U>::value && (N > 2), U&>::type Vector<N, T>::k() {
+//     return _data[2];
+// }
 
-template <std::size_t N, typename T>
-template <typename U>
-typename std::enable_if<std::is_integral<U>::value && (N > 2), const U&>::type Vector<N, T>::k() const {
-    return _data[2];
-}
+// template <std::size_t N, typename T>
+// template <typename U>
+// typename std::enable_if<std::is_integral<U>::value && (N > 2), const U&>::type Vector<N, T>::k() const {
+//     return _data[2];
+// }
 
 template <std::size_t N, typename T>
 T Vector<N, T>::dot(const Vector<N, T>& other) const {

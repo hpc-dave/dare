@@ -23,8 +23,25 @@
  */
 
 #include <iostream>
+#include "Utilities/Vector.h"
+
 
 int main(int argc, char* argv[]){
+    dare::utils::Vector<3, int> vec;
+    dare::utils::Vector<3, double> vec_d;
+
+    vec.i() = 1;
+    vec.j() = 2;
+    vec.k() = 3;
+    for(auto v : vec){
+        std::cout << v << std::endl;
+    }
+    vec_d.x() = 4;
+    vec_d.y() = 2;
+    vec_d.z() = 3;
+    for(auto v : vec_d){
+        std::cout << v << std::endl;
+    }
     std::cout << "Hello world\n";
     return 0;
 }

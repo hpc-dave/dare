@@ -31,6 +31,7 @@
 #include <type_traits>
 
 #include "Hashes.h"
+#include "Vector_traits.h"
 
 namespace dare::utils {
 
@@ -48,7 +49,7 @@ using AllSame = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>;
  * ==, !=, +, -, *, /, +=, -=, *=, /=-operators, as well as being copyable
  */
 template <std::size_t N, typename T = double>
-class Vector {
+class Vector : public _vector_functor<N, T>{
 public:
     typedef T InternalType;
     typedef std::random_access_iterator_tag iterator_tag;
@@ -720,47 +721,47 @@ public:
     template <typename U = T>
     typename std::enable_if<std::is_floating_point<U>::value && (N > 2), const U&>::type z() const;
 
-    /*!
-     * \brief access first element
-     * \note only enabled for integer values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_integral<U>::value, U&>::type i();
+    // /*!
+    //  * \brief access first element
+    //  * \note only enabled for integer values
+    //  */
+    // template <typename U = T>
+    // typename std::enable_if<std::is_integral<U>::value, U&>::type i();
 
-    /*!
-     * \brief access first element
-     * \note only enabled for integer values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_integral<U>::value, const U&>::type i() const;
+    // /*!
+    //  * \brief access first element
+    //  * \note only enabled for integer values
+    //  */
+    // template <typename U = T>
+    // typename std::enable_if<std::is_integral<U>::value, const U&>::type i() const;
 
-    /*!
-     * \brief access second element
-     * \note only enabled for integer values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_integral<U>::value && (N > 1), U&>::type j();
+    // /*!
+    //  * \brief access second element
+    //  * \note only enabled for integer values
+    //  */
+    // template <typename U = T>
+    // typename std::enable_if<std::is_integral<U>::value && (N > 1), U&>::type j();
 
-    /*!
-     * \brief access second element
-     * \note only enabled for integer values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_integral<U>::value && (N > 1), const U&>::type j() const;
+    // /*!
+    //  * \brief access second element
+    //  * \note only enabled for integer values
+    //  */
+    // template <typename U = T>
+    // typename std::enable_if<std::is_integral<U>::value && (N > 1), const U&>::type j() const;
 
-    /*!
-     * \brief access third element
-     * \note only enabled for integer values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_integral<U>::value && (N > 2), U&>::type k();
+    // /*!
+    //  * \brief access third element
+    //  * \note only enabled for integer values
+    //  */
+    // template <typename U = T>
+    // typename std::enable_if<std::is_integral<U>::value && (N > 2), U&>::type k();
 
-    /*!
-     * \brief access third element
-     * \note only enabled for integer values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_integral<U>::value && (N > 2), const U&>::type k() const;
+    // /*!
+    //  * \brief access third element
+    //  * \note only enabled for integer values
+    //  */
+    // template <typename U = T>
+    // typename std::enable_if<std::is_integral<U>::value && (N > 2), const U&>::type k() const;
 
     /*!
      * \brief computes dot product with another vector
@@ -827,7 +828,7 @@ public:
     /*
      * \brief returns the hash for a Vector
      */
-    std::size_t operator()(const Belar::Vector<N, T>& v) const {
+    std::size_t operator()(const dare::utils::Vector<N, T>& v) const {
         return v.GetHash();
     }
 };
