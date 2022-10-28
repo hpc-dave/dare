@@ -12,6 +12,9 @@ project(DaRe
 # define main target
 add_executable(dare)
 
+# exports compile_command.json with relevant parths
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # set the properties of the target (might be moved to another file)
 set_target_properties(dare
 	PROPERTIES CXX_STANDARD 17

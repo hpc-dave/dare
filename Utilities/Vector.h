@@ -680,90 +680,6 @@ public:
     void SetValues();
 
     /*!
-     * \brief access first element
-     * \note only enabled for floating point values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_floating_point<U>::value, U&>::type x();
-
-    /*!
-     * \brief access first element
-     * \note only enabled for floating point values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_floating_point<U>::value, const U&>::type x() const;
-
-    /*!
-     * \brief access second element
-     * \note only enabled for floating point values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_floating_point<U>::value && (N > 1), U&>::type y();
-
-    /*!
-     * \brief access second element
-     * \note only enabled for floating point values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_floating_point<U>::value && (N > 1), const U&>::type y() const;
-
-    /*!
-     * \brief access third element
-     * \note only enabled for floating point values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_floating_point<U>::value && (N > 2), U&>::type z();
-
-    /*!
-     * \brief acess third element
-     * \note only enabled for floating point values
-     */
-    template <typename U = T>
-    typename std::enable_if<std::is_floating_point<U>::value && (N > 2), const U&>::type z() const;
-
-    // /*!
-    //  * \brief access first element
-    //  * \note only enabled for integer values
-    //  */
-    // template <typename U = T>
-    // typename std::enable_if<std::is_integral<U>::value, U&>::type i();
-
-    // /*!
-    //  * \brief access first element
-    //  * \note only enabled for integer values
-    //  */
-    // template <typename U = T>
-    // typename std::enable_if<std::is_integral<U>::value, const U&>::type i() const;
-
-    // /*!
-    //  * \brief access second element
-    //  * \note only enabled for integer values
-    //  */
-    // template <typename U = T>
-    // typename std::enable_if<std::is_integral<U>::value && (N > 1), U&>::type j();
-
-    // /*!
-    //  * \brief access second element
-    //  * \note only enabled for integer values
-    //  */
-    // template <typename U = T>
-    // typename std::enable_if<std::is_integral<U>::value && (N > 1), const U&>::type j() const;
-
-    // /*!
-    //  * \brief access third element
-    //  * \note only enabled for integer values
-    //  */
-    // template <typename U = T>
-    // typename std::enable_if<std::is_integral<U>::value && (N > 2), U&>::type k();
-
-    // /*!
-    //  * \brief access third element
-    //  * \note only enabled for integer values
-    //  */
-    // template <typename U = T>
-    // typename std::enable_if<std::is_integral<U>::value && (N > 2), const U&>::type k() const;
-
-    /*!
      * \brief computes dot product with another vector
      * @param other vector to compute the dot product with
      */
@@ -814,7 +730,7 @@ private:
     T _data[N];  //!< internal data set
 };
 
-typedef Vector<3> Vector3;  //!< convenient typedef
+typedef Vector<3, double> Vector3;  //!< convenient typedef
 
 }  // namespace dare::utils
 
