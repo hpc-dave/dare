@@ -71,6 +71,7 @@ target_sources(dare
 	PUBLIC main.cpp
 )
 
+add_subdirectory(FileFormats  )
 add_subdirectory(Utilities    )
 add_subdirectory(MPI          )
 

@@ -698,7 +698,7 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, const Vector<N, T>& v) {
         os << '[' << v[0];
-        for (int i{1}; i < N; ++i)
+        for (std::size_t i{1}; i < N; ++i)
             os << ' ' << v[i];
 
         os << ']';

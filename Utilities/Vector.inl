@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <cmath>
 namespace dare::utils {
 
 template <std::size_t N, typename T>
