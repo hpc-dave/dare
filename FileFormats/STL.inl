@@ -216,16 +216,58 @@ bool STL<VT>::ReadASCII(std::ifstream& in){
         return false;
     }
 
-    /* Close file */
-    in.close();
-
     return true;
 }
 
 template <typename VT>
 bool STL<VT>::ReadBinary(std::ifstream& in){
-    std::cerr << "Not implemented" << std::endl;
-    return false;
+    using INT32 = int32_t;
+    using REAL32 = float;
+
+    auto ReadReal = [](std::ifstream& in) {
+        REAL32 buf;
+        in.read(reinterpret_cast<char*>(&buf), sizeof(REAL32));
+        return buf;
+    };
+    /* Read header information (80 bytes) */
+    char header_info[80];
+    in.read(header_info, 80);
+
+    /* Read total number of facets */
+    char num_facets[sizeof(INT32)];
+    in.read(num_facets, sizeof(INT32));
+    REAL32* num_facets_real = reinterpret_cast<INT32*>(num_facets);
+    facets.resize(*num_facets_real);
+
+    /* Process and store all facets in the file */
+    for (std::size_t i = 0; i < facets.size(); ++i) {
+        /* Create vector instance to temporarily store data */
+        try {
+            typename Facet::PointType temp[3];
+
+            /* Read normal vector components and discard*/
+            for (int8_t j = 0; j < 3; ++j)
+                temp[0].data()[j] = ReadReal(in);
+
+            /* Read vertex points */
+            for (int8_t j = 0; j < 3; ++j) {
+                for (int8_t k = 0; k < 3; ++k)
+                    temp[j].data()[k] = ReadReal(in);
+
+                facets[i] = Facet(temp[0], temp[1], temp[2]);
+            }
+
+            /* Read facet attribute (16 bits or 2 bytes) */
+            char attribute[2];
+            in.read(attribute, 2);
+        } catch (std::exception& ex) {
+            std::cerr << "An error occured while reading facet " << i
+                      << ": " << ex.what() << std::endl;
+            break;
+        }
+    }
+
+    return true;
 }
 
 template <typename VT>
