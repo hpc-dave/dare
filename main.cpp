@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include "Utilities/Vector.h"
+#include "FileFormats/STL.h"
 
 
 int main(int argc, char* argv[]){
@@ -42,6 +43,13 @@ int main(int argc, char* argv[]){
     for(auto v : vec_d){
         std::cout << v << std::endl;
     }
+
+    using P = dare::ff::STLfacet<double>::PointType;
+    P v1(0., 0., 0.);
+    P v2(1., 0., 0.);
+    P v3(0., 1., 0.);
+    dare::ff::STLfacet<double> facet(v1, v2, v3);
+    std::cout << facet << std::endl;
     std::cout << "Hello world\n";
     return 0;
 }
