@@ -6,24 +6,43 @@ project(DaRe
 	LANGUAGES CXX
 )
 
+include(GNUInstallDirs)
 # a few settings
 # set(Trilinos_MINIMUM_VERSION 13.0)
 
 # define main target
-add_executable(dare)
+add_executable(exec)
+add_library(dare SHARED)
 
 # exports compile_command.json with relevant parths
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # set the properties of the target (might be moved to another file)
-set_target_properties(dare
-	PROPERTIES CXX_STANDARD 17
+set_target_properties(exec
+	       PROPERTIES CXX_STANDARD 17
 		   CXX_STANDARD_REQUIRED TRUE
 )
+
+set_target_properties(dare
+           PROPERTIES CXX_STANDARD 17
+           VERSION 0.1
+)
+
+target_include_directories(dare PRIVATE .)
+set(PACKAGE_NAME_EXPORT     "${CMAKE_PROJECT_NAME}Targets"                  )
+set(PACKAGE_CMAKEDIR_NAME   "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
+set(PACKAGE_BUILD_TREE_NAME "${CMAKE_PROJECT_NAME}-Exports"                 )
+set(PACKAGE_VERSION_DIR     "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
 
 # set compilation flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 	target_compile_options(dare
+		PRIVATE -march=native
+		PRIVATE -Wall
+		PRIVATE -faligned-new
+		PRIVATE -fmessage-length=0
+	)
+    target_compile_options(exec
 		PRIVATE -march=native
 		PRIVATE -Wall
 		PRIVATE -faligned-new
@@ -67,16 +86,20 @@ endif()
 # endif()
 
 # add target sources
-target_sources(dare
+target_sources(exec
 	PUBLIC main.cpp
 )
 
-add_subdirectory(FileFormats  )
-add_subdirectory(Utilities    )
-add_subdirectory(MPI          )
+add_subdirectory(FileFormats                                          )
+add_subdirectory(Utilities                                            )
+add_subdirectory(MPI                                                  )
 
 # Specify the include directories
 target_include_directories(dare PUBLIC 
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+)
+target_include_directories(exec PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
@@ -86,4 +109,52 @@ target_link_libraries(dare
 	PUBLIC OpenMP::OpenMP_CXX
 	PUBLIC MPI::MPI_CXX
 	# PUBLIC trilinos
+)
+target_link_libraries(exec
+	PUBLIC OpenMP::OpenMP_CXX
+	PUBLIC MPI::MPI_CXX
+	# PUBLIC trilinos
+)
+
+# Create installation rules and configuration scripts
+install(
+    TARGETS dare
+    EXPORT "${PACKAGE_NAME_EXPORT}"
+    RUNTIME DESTINATION  "${CMAKE_INSTALL_BINDIR}"
+    LIBRARY DESTINATION  "${CMAKE_INSTALL_LIBDIR}/${PACKAGE_VERSION_DIR}"
+    ARCHIVE DESTINATION  "${CMAKE_INSTALL_LIBDIR}/${PACKAGE_VERSION_DIR}"
+    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PACKAGE_VERSION_DIR}"
+)
+
+
+install(EXPORT "${PACKAGE_NAME_EXPORT}"
+    NAMESPACE ${CMAKE_PROJECT_NAME}::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_CMAKEDIR_NAME}"
+)
+
+export(EXPORT "${PACKAGE_NAME_EXPORT}"
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_BUILD_TREE_NAME}/${PACKAGE_NAME_EXPORT}.cmake"
+    NAMESPACE ${CMAKE_PROJECT_NAME}::
+)
+
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_BUILD_TREE_NAME}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake"
+    VERSION ${${CMAKE_PROJECT_NAME}_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/DaReConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_BUILD_TREE_NAME}/${CMAKE_PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION
+        "${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_CMAKEDIR_NAME}"
+    NO_SET_AND_CHECK_MACRO
+)
+
+install(
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_BUILD_TREE_NAME}/${CMAKE_PROJECT_NAME}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_BUILD_TREE_NAME}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake"
+    DESTINATION 
+        "${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_CMAKEDIR_NAME}"
 )
