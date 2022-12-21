@@ -12,7 +12,7 @@ include(GNUInstallDirs)
 
 # define main target
 add_executable(exec)
-add_library(dare SHARED)
+add_library(dare STATIC)
 
 # exports compile_command.json with relevant parths
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -30,9 +30,11 @@ set_target_properties(dare
 
 target_include_directories(dare PRIVATE .)
 set(PACKAGE_NAME_EXPORT     "${CMAKE_PROJECT_NAME}Targets"                  )
-set(PACKAGE_CMAKEDIR_NAME   "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
+# set(PACKAGE_CMAKEDIR_NAME   "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
+set(PACKAGE_CMAKEDIR_NAME   "${CMAKE_PROJECT_NAME}")
 set(PACKAGE_BUILD_TREE_NAME "${CMAKE_PROJECT_NAME}-Exports"                 )
-set(PACKAGE_VERSION_DIR     "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
+# set(PACKAGE_VERSION_DIR     "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
+set(PACKAGE_VERSION_DIR     "${CMAKE_PROJECT_NAME}")
 
 # set compilation flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
