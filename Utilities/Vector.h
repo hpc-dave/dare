@@ -25,6 +25,7 @@
 #ifndef UTILITIES_VECTOR_H_
 #define UTILITIES_VECTOR_H_
 
+#include <iostream>
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
