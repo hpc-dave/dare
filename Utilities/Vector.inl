@@ -309,7 +309,7 @@ template <std::size_t N, typename T>
 template <std::size_t Ns>
 typename std::enable_if<(Ns == 3), Vector<N, T>>::type Vector<N, T>::cross(const Vector<N, T>& other) const {
     Vector<N, T> vec(_data[1] * other[2] - _data[2] * other[1],
-                     _data[0] * other[2] - _data[2] * other[0],
+                     _data[2] * other[0] - _data[0] * other[2],
                      _data[0] * other[1] - _data[1] * other[0]);
     return vec;
 }

@@ -25,31 +25,44 @@
 #include <iostream>
 #include "Utilities/Vector.h"
 #include "FileFormats/STL.h"
+#include "FileFormats/XML.h"
+#include "FileFormats/STL.h"
 
 
 int main(int argc, char* argv[]){
-    dare::utils::Vector<3, int> vec;
-    dare::utils::Vector<3, double> vec_d;
+    // dare::utils::Vector<3, int> vec;
+    // dare::utils::Vector<3, double> vec_d;
 
-    vec.i() = 1;
-    vec.j() = 2;
-    vec.k() = 3;
-    for(auto v : vec){
-        std::cout << v << std::endl;
-    }
-    vec_d.x() = 4;
-    vec_d.y() = 2;
-    vec_d.z() = 3;
-    for(auto v : vec_d){
-        std::cout << v << std::endl;
-    }
+    // vec.i() = 1;
+    // vec.j() = 2;
+    // vec.k() = 3;
+    // for(auto v : vec){
+    //     std::cout << v << std::endl;
+    // }
+    // vec_d.x() = 4;
+    // vec_d.y() = 2;
+    // vec_d.z() = 3;
+    // for(auto v : vec_d){
+    //     std::cout << v << std::endl;
+    // }
 
-    using P = dare::ff::STLfacet<double>::PointType;
-    P v1(0., 0., 0.);
-    P v2(1., 0., 0.);
-    P v3(0., 1., 0.);
-    dare::ff::STLfacet<double> facet(v1, v2, v3);
-    std::cout << facet << std::endl;
+    // using P = dare::ff::STLfacet<double>::PointType;
+    // P v1(0., 0., 0.);
+    // P v2(1., 0., 0.);
+    // P v3(0., 1., 0.);
+    // dare::ff::STLfacet<double> facet(v1, v2, v3);
+    // std::cout << facet << std::endl;
+
+    dare::ff::XMLNode node("test", { dare::ff::_XMLAttribute("attrib", "one")} , "mydata");
+    // std::ostream os;
+    dare::ff::XMLNode parent("parent", dare::ff::_XMLAttribute("att", "two"));
+    parent << node;
+    // std::ofstream ofs("test.xml", std::ios::out);
+    // parent.AppendToOutput(0, ofs);
+    // ofs << os;
+    // ofs.close();
+    dare::ff::XML xml(parent);
+    xml.WriteToFile("output.xml");
     std::cout << "Hello world\n";
     return 0;
 }

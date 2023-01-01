@@ -87,14 +87,14 @@ endif()
 # 	)
 # endif()
 
+add_subdirectory(FileFormats                                          )
+add_subdirectory(Utilities                                            )
+add_subdirectory(MPI                                                  )
+
 # add target sources
 target_sources(exec
 	PUBLIC main.cpp
 )
-
-add_subdirectory(FileFormats                                          )
-add_subdirectory(Utilities                                            )
-add_subdirectory(MPI                                                  )
 
 # Specify the include directories
 target_include_directories(dare PUBLIC 

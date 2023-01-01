@@ -23,12 +23,13 @@
  */
 
 #ifndef FILEFORMATS_STL_H_
-#define FILEFORMATS_STL_H
+#define FILEFORMATS_STL_H_
 
 #include <vector>
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <cstring>
 #include "../Utilities/Vector.h"
 
 namespace dare::ff{

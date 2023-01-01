@@ -87,7 +87,7 @@ template <typename VT>
 void STLfacet<VT>::ComputeNormal(){
     const VectorType v1(points[1] - points[0]);
     const VectorType v2(points[2] - points[0]);
-    normal = v2.cross(v1);
+    normal = v1.cross(v2);
 #ifndef NDEBUG
     if(normal.length() == static_cast<VT>(0))
         std::cerr << "determined facet with normal length of 0, expect division by 0\n";
@@ -152,10 +152,9 @@ bool STL<VT>::WriteToFile(const std::string& file, bool write_ASCII){
 
 template <typename VT>
 bool STL<VT>::IsASCII(std::ifstream& in){
-    std::cerr << "Not implemented" << std::endl;
-    char check[5];
+    char check_line[5];
     try{
-        in.read(check, 5);
+        in.read(check_line, 5);
     }
     catch (const std::exception& ex){
         std::cerr << "Follwing error occured during reading: " << ex.what() << ". Aborting!" << std::endl;
@@ -163,7 +162,7 @@ bool STL<VT>::IsASCII(std::ifstream& in){
     }
     in.clear();
     in.seekg(0, std::ios::beg);
-    return strcmp(this->check, "solid");
+    return strcmp(check_line, "solid");
 }
 
 template <typename VT>
@@ -236,7 +235,7 @@ bool STL<VT>::ReadBinary(std::ifstream& in){
     /* Read total number of facets */
     char num_facets[sizeof(INT32)];
     in.read(num_facets, sizeof(INT32));
-    REAL32* num_facets_real = reinterpret_cast<INT32*>(num_facets);
+    INT32* num_facets_real = reinterpret_cast<INT32*>(num_facets);
     facets.resize(*num_facets_real);
 
     /* Process and store all facets in the file */
