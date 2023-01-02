@@ -697,12 +697,12 @@ public:
     /*!
      * \brief outputs the vector
      */
-    friend std::ostream& operator<<(std::ostream& os, const Vector<N, T>& v) {
-        os << '[' << v[0];
+    template <typename OS>
+    friend OS& operator<<(OS& os, const Vector<N, T>& v) {
+        os  << v[0];
         for (std::size_t i{1}; i < N; ++i)
             os << ' ' << v[i];
 
-        os << ']';
         return os;
     }
 

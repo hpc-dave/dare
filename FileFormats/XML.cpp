@@ -104,6 +104,7 @@ void XMLNode::AppendToOutput(const std::size_t indent_level, std::ostream& os){
         for (auto& child : children) {
             child.AppendToOutput(indent_level + indent_length, os);
         }
+        os << indent;
     }
 
     os << "</" << tag << '>' << newl;
