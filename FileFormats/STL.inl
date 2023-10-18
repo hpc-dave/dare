@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-namespace dare::ff{
+namespace dare::ff {
 
 template <typename VT>
 STLfacet<VT>::STLfacet(const STLfacet<VT>::PointType& v1,
                        const STLfacet<VT>::PointType& v2,
                        const STLfacet<VT>::PointType& v3)
-                       : points{v1, v2, v3}{
+    : points{v1, v2, v3} {
     ComputeNormal();
 }
 
@@ -38,11 +38,11 @@ STLfacet<VT>::STLfacet() {
 
 template <typename VT>
 STLfacet<VT>::STLfacet(const STLfacet<VT>& f)
-        : points{f.points[0], f.points[1], f.points[2]}, normal(f.normal) {
+    : points{f.points[0], f.points[1], f.points[2]}, normal(f.normal) {
 }
 
 template <typename VT>
-STLfacet<VT>& STLfacet<VT>::Move(const STLfacet<VT>::VectorType& trajectory){
+STLfacet<VT>& STLfacet<VT>::Move(const STLfacet<VT>::VectorType& trajectory) {
     points[0] += trajectory;
     points[1] += trajectory;
     points[2] += trajectory;
@@ -50,8 +50,8 @@ STLfacet<VT>& STLfacet<VT>::Move(const STLfacet<VT>::VectorType& trajectory){
 }
 
 template <typename VT>
-STLfacet<VT>& STLfacet<VT>::operator=(const STLfacet<VT>& f){
-    if(&f == this)
+STLfacet<VT>& STLfacet<VT>::operator=(const STLfacet<VT>& f) {
+    if (&f == this)
         return *this;
 
     points[0] = f.points[0];
@@ -64,12 +64,12 @@ STLfacet<VT>& STLfacet<VT>::operator=(const STLfacet<VT>& f){
 }
 
 template <typename VT>
-const typename STLfacet<VT>::VectorType& STLfacet<VT>::GetNormal(){
+const typename STLfacet<VT>::VectorType& STLfacet<VT>::GetNormal() {
     return normal;
 }
 
 template <typename VT>
-const typename STLfacet<VT>::VectorType& STLfacet<VT>::GetNormal() const{
+const typename STLfacet<VT>::VectorType& STLfacet<VT>::GetNormal() const {
     return normal;
 }
 
@@ -84,19 +84,19 @@ const typename STLfacet<VT>::PointType* STLfacet<VT>::GetPoints() const {
 }
 
 template <typename VT>
-void STLfacet<VT>::ComputeNormal(){
+void STLfacet<VT>::ComputeNormal() {
     const VectorType v1(points[1] - points[0]);
     const VectorType v2(points[2] - points[0]);
     normal = v1.cross(v2);
 #ifndef NDEBUG
-    if(normal.length() == static_cast<VT>(0))
+    if (normal.length() == static_cast<VT>(0))
         std::cerr << "determined facet with normal length of 0, expect division by 0\n";
 #endif
     normal /= normal.length();
 }
 
-template<typename VT>
-STL<VT>::STL(){
+template <typename VT>
+STL<VT>::STL() {
 }
 
 template <typename VT>
@@ -113,7 +113,7 @@ STL<VT>::STL(const std::string& file) {
 }
 
 template <typename VT>
-bool STL<VT>::ReadFile(const std::string& file){
+bool STL<VT>::ReadFile(const std::string& file) {
     std::ifstream in(file, std::ios::in | std::ios::binary);
     if (!in) {
         std::cerr << "Could not open file '" << file << "'! Aborting read operation!" << std::endl;
@@ -125,16 +125,16 @@ bool STL<VT>::ReadFile(const std::string& file){
     else
         success = ReadBinary(in);
 
-    if(!success){
-        std::cerr << "An error occured while reading the file '" << file << "!"<< std::endl;
+    if (!success) {
+        std::cerr << "An error occured while reading the file '" << file << "!" << std::endl;
     }
     return success;
 }
 
 template <typename VT>
-bool STL<VT>::WriteToFile(const std::string& file, bool write_ASCII){
+bool STL<VT>::WriteToFile(const std::string& file, bool write_ASCII) {
     std::ofstream ofs(file, std::ios::out | std::ios::binary);
-    if(!ofs){
+    if (!ofs) {
         std::cerr << "Could not open file " << file << "! Aborting write operation!" << std::endl;
         return false;
     }
@@ -144,19 +144,18 @@ bool STL<VT>::WriteToFile(const std::string& file, bool write_ASCII){
     else
         success = WriteToBinary(ofs);
 
-    if(!success){
+    if (!success) {
         std::cerr << "An error occured while writing to " << file << "!" << std::endl;
     }
     return success;
 }
 
 template <typename VT>
-bool STL<VT>::IsASCII(std::ifstream& in){
+bool STL<VT>::IsASCII(std::ifstream& in) {
     char check_line[5];
-    try{
+    try {
         in.read(check_line, 5);
-    }
-    catch (const std::exception& ex){
+    } catch (const std::exception& ex) {
         std::cerr << "Follwing error occured during reading: " << ex.what() << ". Aborting!" << std::endl;
         return false;
     }
@@ -166,20 +165,20 @@ bool STL<VT>::IsASCII(std::ifstream& in){
 }
 
 template <typename VT>
-bool STL<VT>::ReadASCII(std::ifstream& in){
+bool STL<VT>::ReadASCII(std::ifstream& in) {
     std::size_t num_facets{0};
     std::string dummy;
 
     while (getline(in, dummy))
         ++num_facets;
 
-    if(num_facets < 3){
+    if (num_facets < 3) {
         std::cerr << "Cannot find any facets in the file! Aborting!" << std::endl;
         return false;
     }
 
     num_facets = (num_facets - 2) / 7;
-    if (num_facets == 0 ) {
+    if (num_facets == 0) {
         std::cerr << "File corrupted! Aborting!" << std::endl;
         return false;
     }
@@ -219,7 +218,7 @@ bool STL<VT>::ReadASCII(std::ifstream& in){
 }
 
 template <typename VT>
-bool STL<VT>::ReadBinary(std::ifstream& in){
+bool STL<VT>::ReadBinary(std::ifstream& in) {
     using INT32 = int32_t;
     using REAL32 = float;
 
@@ -270,8 +269,7 @@ bool STL<VT>::ReadBinary(std::ifstream& in){
 }
 
 template <typename VT>
-bool STL<VT>::WriteToASCII(std::ostream& ofs){
-
+bool STL<VT>::WriteToASCII(std::ostream& ofs) {
     ofs << "object\n";
 
     for (auto& f : facets) {
@@ -282,8 +280,8 @@ bool STL<VT>::WriteToASCII(std::ostream& ofs){
         ofs << "outer loop\n";
         for (uint8_t i{0}; i < 3; i++)
             ofs << "vertex " << f.GetPoints()[i].x()
-                     << ' ' << f.GetPoints()[i].y()
-                     << ' ' << f.GetPoints()[i].z() << '\n';
+                << ' ' << f.GetPoints()[i].y()
+                << ' ' << f.GetPoints()[i].z() << '\n';
 
         ofs << "endloop\n";
         ofs << "endfacet\n";
@@ -296,7 +294,7 @@ bool STL<VT>::WriteToASCII(std::ostream& ofs){
 }
 
 template <typename VT>
-bool STL<VT>::WriteToBinary(std::ostream& ofs){
+bool STL<VT>::WriteToBinary(std::ostream& ofs) {
     using REAL32 = float;
     static_assert(sizeof(REAL32) == 4, "type float is not a 32 bit number!");
     uint32_t n_facets{static_cast<uint32_t>(facets.size())};
@@ -329,7 +327,7 @@ bool STL<VT>::WriteToBinary(std::ostream& ofs){
 }
 
 template <typename VT>
-const typename STL<VT>::TriangleContainer& STL<VT>::GetFacets(){
+const typename STL<VT>::TriangleContainer& STL<VT>::GetFacets() {
     return facets;
 }
 
@@ -338,4 +336,4 @@ const typename STL<VT>::TriangleContainer& STL<VT>::GetFacets() const {
     return facets;
 }
 
-} // end namespace dare::ff
+}  // end namespace dare::ff

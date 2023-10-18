@@ -28,7 +28,7 @@
 #include <cstddef>
 #include <type_traits>
 
-namespace dare::utils{
+namespace dare::utils {
 
 /*! \struct _vector_functor
  * @tparam N number of elements in the data set
@@ -49,12 +49,16 @@ struct _vector_functor {
  * @tparam T type of integer
  */
 template <std::size_t N, typename T>
-struct _vector_functor<N, T, std::enable_if_t<std::is_integral_v<T>>> {
+struct _vector_functor<N, T, std::enable_if_t<std::is_integral_v<T>>> : public _vector_functor<N-1, T> {
+    explicit _vector_functor(T* ptr) : _vector_functor<N - 1, T>(ptr) {}
+};
 
-    /*!
-     * \brief constructor
-     * @param ptr ptr to the main data
-     */
+/*! \struct _vector_functor
+ * \brief specialization for integer types and N == 1
+ * @tparam T type of integer
+ */
+template <typename T>
+struct _vector_functor<1, T, std::enable_if_t<std::is_integral_v<T>>> {
     explicit _vector_functor(T* ptr) : p_data(ptr) {}
 
     /*!
@@ -63,35 +67,49 @@ struct _vector_functor<N, T, std::enable_if_t<std::is_integral_v<T>>> {
     T& i() { return p_data[0]; }
 
     /*!
-     * \brief getter for second variable
-     */
-    typename std::enable_if_t<(N > 1), T&>
-    j() { return p_data[1]; }
-
-    /*!
-     * \brief getter for third variable
-     */
-    typename std::enable_if_t<(N > 2), T&>
-    k() { return p_data[2]; }
-
-    /*!
      * \brief const getter for first variable
      */
     T i() const { return p_data[0]; }
 
+    T* p_data;  //!< pointer to data
+};
+
+/*! \struct _vector_functor
+ * \brief specialization for integer types and N == 2
+ * @tparam T type of integer
+ */
+template <typename T>
+struct _vector_functor<2, T, std::enable_if_t<std::is_integral_v<T>>> : public _vector_functor<1, T> {
+    explicit _vector_functor(T* ptr) : _vector_functor<1, T>(ptr) {}
+
+    /*!
+     * \brief getter for second variable
+     */
+    T& j() { return this->p_data[1]; }
+
     /*!
      * \brief const getter for second variable
      */
-    typename std::enable_if_t<(N > 1), T>
-    j() const { return p_data[1]; }
+    T j() const { return this->p_data[1]; }
+};
+
+/*! \struct _vector_functor
+ * \brief specialization for integer types and N == 2
+ * @tparam T type of integer
+ */
+template <typename T>
+struct _vector_functor<3, T, std::enable_if_t<std::is_integral_v<T>>> : public _vector_functor<2, T> {
+    explicit _vector_functor(T* ptr) : _vector_functor<2, T>(ptr) {}
 
     /*!
-     * \brief const getter for third variable
+     * \brief getter for second variable
      */
-    typename std::enable_if_t<(N > 2), T>
-    k() const { return p_data[2]; }
+    T& k() { return this->p_data[2]; }
 
-    T* p_data;      //! pointer to data
+    /*!
+     * \brief const getter for second variable
+     */
+    T k() const { return this->p_data[2]; }
 };
 
 /*! \struct _vector_functor
@@ -100,7 +118,20 @@ struct _vector_functor<N, T, std::enable_if_t<std::is_integral_v<T>>> {
  * @tparam T type of floating point numbers
  */
 template <std::size_t N, typename T>
-struct _vector_functor<N, T, std::enable_if_t<std::is_floating_point_v<T>>> {
+struct _vector_functor<N, T, std::enable_if_t<std::is_floating_point_v<T>>> : public _vector_functor<N - 1, T> {
+    /*!
+     * \brief constructor
+     * @param ptr pointer to beginning of data
+     */
+    explicit _vector_functor(T* ptr) : _vector_functor<N - 1, T>(ptr) {}
+};
+
+/*! \struct _vector_functor
+ * \brief specialization for floating point types and N == 1
+ * @tparam T type of floating point numbers
+ */
+template <typename T>
+struct _vector_functor<1, T, std::enable_if_t<std::is_floating_point_v<T>>> {
     explicit _vector_functor(T* ptr) : p_data(ptr) {}
 
     /*!
@@ -109,37 +140,51 @@ struct _vector_functor<N, T, std::enable_if_t<std::is_floating_point_v<T>>> {
     T& x() { return p_data[0]; }
 
     /*!
-     * \brief getter for second variable
-     */
-    typename std::enable_if_t<(N > 1), T&>
-    y() { return p_data[1]; }
-
-    /*!
-     * \brief getter for third variable
-     */
-    typename std::enable_if_t<(N > 2), T&>
-    z() { return p_data[2]; }
-
-    /*!
      * \brief const getter for first variable
      */
     T x() const { return p_data[0]; }
 
+    T* p_data;  //! pointer to data
+};
+
+/*! \struct _vector_functor
+ * \brief specialization for floating point types and N == 2
+ * @tparam T type of floating point numbers
+ */
+template <typename T>
+struct _vector_functor<2, T, std::enable_if_t<std::is_floating_point_v<T>>> : public _vector_functor<1, T> {
+    explicit _vector_functor(T* ptr) : _vector_functor<1, T>(ptr) {}
+
+    /*!
+     * \brief getter for second variable
+     */
+    T& y() { return this->p_data[1]; }
+
     /*!
      * \brief const getter for second variable
      */
-    typename std::enable_if_t<(N > 1), T>
-    y() const { return p_data[1]; }
+    T y() const { return this->p_data[1]; }
+};
+
+/*! \struct _vector_functor
+ * \brief specialization for floating point types and N == 3
+ * @tparam T type of floating point numbers
+ */
+template <typename T>
+struct _vector_functor<3, T, std::enable_if_t<std::is_floating_point_v<T>>> : public _vector_functor<2, T> {
+    explicit _vector_functor(T* ptr) : _vector_functor<2, T>(ptr) {}
+
+    /*!
+     * \brief getter for third variable
+     */
+    T& z() { return this->p_data[2]; }
 
     /*!
      * \brief const getter for third variable
      */
-    typename std::enable_if_t<(N > 2), T>
-    z() const { return p_data[2]; }
-
-    T* p_data;  //! pointer to data
+    T z() const { return this->p_data[2]; }
 };
 
-} // namespace dare::utils
+}  // namespace dare::utils
 
-#endif // UTILITIES_VECTOR_TRAITS_H_
+#endif  // UTILITIES_VECTOR_TRAITS_H_

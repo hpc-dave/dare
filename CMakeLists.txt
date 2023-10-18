@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(DaRe
-	VERSION 0.0.1
+	VERSION 0.0.2
 	DESCRIPTION "Dave's repository"
 	LANGUAGES CXX
 )
@@ -15,7 +15,7 @@ add_executable(exec)
 add_library(dare STATIC)
 
 # exports compile_command.json with relevant parths
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 # set the properties of the target (might be moved to another file)
 set_target_properties(exec
@@ -53,10 +53,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 else()
 	message(WARNING "DaRe: Flags have not been implemented for the current compiler! (${CMAKE_CXX_COMPILER_ID})")
 endif()
-
-# set(CMAKE_CXX_EXTENSIONS OFF CACHE BOOL
-# 	"Disbled CXX extensions" FORCE
-# )
 
 # locate packages
 find_package(OpenMP REQUIRED)

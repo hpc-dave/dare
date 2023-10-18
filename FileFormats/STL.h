@@ -32,7 +32,7 @@
 #include <cstring>
 #include "../Utilities/Vector.h"
 
-namespace dare::ff{
+namespace dare::ff {
 
 /*! \class STLfacet
  * \brief represents a single facet of an STL file
@@ -133,7 +133,6 @@ public:
     bool WriteToFile(const std::string& file, bool write_ASCII = false);
 
 private:
-
     bool IsASCII(std::ifstream& in);
 
     bool ReadASCII(std::ifstream& in);
@@ -145,8 +144,8 @@ private:
     TriangleContainer facets;
 };
 
-} // end namespace dare::ff
+}  // end namespace dare::ff
 
 #include "STL.inl"
 
-#endif // FILEFORMATS_STL_H_
+#endif  // FILEFORMATS_STL_H_

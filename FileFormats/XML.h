@@ -25,20 +25,20 @@
 #ifndef FILEFORMATS_XML_H_
 #define FILEFORMATS_XML_H_
 
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
-namespace dare::ff{
+namespace dare::ff {
 
-struct _XMLAttribute{
-    _XMLAttribute(std::string _name, std::string _value) : name(_name), value(_value){}
-    _XMLAttribute() : name(""), value(""){}
+struct _XMLAttribute {
+    _XMLAttribute(std::string _name, std::string _value) : name(_name), value(_value) {}
+    _XMLAttribute() : name(""), value("") {}
     std::string name;
     std::string value;
 };
 
-class XMLNode{
+class XMLNode {
 public:
     XMLNode();
     explicit XMLNode(const std::string& _tag);
@@ -66,10 +66,10 @@ private:
     std::vector<XMLNode> children;
 };
 
-class XML{
+class XML {
 public:
     XML();
-    XML(const XMLNode& node);
+    explicit XML(const XMLNode& node);
 
     XML& AddNode(const XMLNode& node);
     XML& operator<<(const XMLNode& node);
@@ -82,6 +82,6 @@ private:
     std::vector<XMLNode> nodes;
 };
 
-} // namespace dare::ff
+}  // namespace dare::ff
 
-#endif // FILEFORMATS_XML_H_
+#endif  // FILEFORMATS_XML_H_

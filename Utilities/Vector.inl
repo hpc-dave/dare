@@ -279,7 +279,7 @@ typename Vector<N, T>::ConstIterator Vector<N, T>::end() const {
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::ConstIterator Vector<N, T>::cend() const {
-    return Iterator(&_data[N]);
+    return ConstIterator(&_data[N]);
 }
 
 template <std::size_t N, typename T>
@@ -347,6 +347,12 @@ template <std::size_t N, typename T>
 template <std::size_t I>
 void Vector<N, T>::SetValues() {
     SetValues<0>(static_cast<T>(0));
+}
+
+template <std::size_t N, typename T>
+void Vector<N, T>::SetAllValues(const T& val) {
+    for (std::size_t n{0}; n < N; n++)
+        _data[n] = val;
 }
 
 template <std::size_t N, typename T>

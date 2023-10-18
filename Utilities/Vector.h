@@ -121,14 +121,14 @@ public:
          */
         bool operator==(const Iterator& a) const {
             return ptr == a.ptr;
-        };
+        }
 
         /*!
          * \brief non-equal comparison operator
          */
         bool operator!=(const Iterator& a) const {
             return ptr != a.ptr;
-        };
+        }
 
         bool operator<=(const Iterator& a) const {
             return ptr <= a.ptr;
@@ -222,10 +222,11 @@ public:
 
         bool operator==(const ConstIterator& a) {
             return ptr == a.ptr;
-        };
+        }
+
         bool operator!=(const ConstIterator& a) {
             return ptr != a.ptr;
-        };
+        }
 
         bool operator<=(const ConstIterator& a) {
             return ptr <= a.ptr;
@@ -307,10 +308,11 @@ public:
 
         bool operator==(const ReverseIterator& a) {
             return ptr == a.ptr;
-        };
+        }
+
         bool operator!=(const ReverseIterator& a) {
             return ptr != a.ptr;
-        };
+        }
 
         bool operator<=(const ReverseIterator& a) {
             return ptr >= a.ptr;
@@ -392,10 +394,11 @@ public:
 
         bool operator==(const ConstReverseIterator& a) {
             return ptr == a.ptr;
-        };
+        }
+
         bool operator!=(const ConstReverseIterator& a) {
             return ptr != a.ptr;
-        };
+        }
 
         bool operator<=(const ConstReverseIterator& a) {
             return ptr >= a.ptr;
@@ -437,7 +440,7 @@ public:
      * \brief constructor
      * Takes a variable amount of input values for construction. Those values
      * have to be the same type as the specified template type T and a maximum
-     * of N values can be provided, missing values will be given a default value
+     * of N values can be provided, missing values will be given the value 0
      * \warning implicit conversion is NOT allowed, depending on the compiler you
      * might receive strange error-message
      */
@@ -663,7 +666,7 @@ public:
 
     /*!
      * \tparam I value to access in the data set
-     * \tparam Ts parameter pack with remainder
+     * \tparam Ts parameter .pack with remainder
      * @param arg argument to set at I
      * @param args parameter pack with remaining values
      */
@@ -679,6 +682,12 @@ public:
      */
     template <std::size_t I>
     void SetValues();
+
+    /*!
+     * @brief sets all values to specified value
+     * @param val value to apply
+     */
+    void SetAllValues(const T& val);
 
     /*!
      * \brief computes dot product with another vector

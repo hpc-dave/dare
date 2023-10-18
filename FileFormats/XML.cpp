@@ -22,14 +22,15 @@
  * SOFTWARE.
  */
 
-#include <fstream>
 #include "XML.h"
 
-namespace dare::ff{
+#include <fstream>
+
+namespace dare::ff {
 
 std::size_t XMLNode::indent_length = 2;
 
-XMLNode::XMLNode(){}
+XMLNode::XMLNode() {}
 
 XMLNode::XMLNode(const std::string& _tag)
     : tag(_tag) {
@@ -45,7 +46,7 @@ XMLNode::XMLNode(const std::string& _tag, const std::vector<XMLNode>& _nodes)
     : tag(_tag), children(_nodes) {
 }
 
-XMLNode::XMLNode(const std::string& _tag, const std::vector<_XMLAttribute>& _att) : tag(_tag), attributes(_att){
+XMLNode::XMLNode(const std::string& _tag, const std::vector<_XMLAttribute>& _att) : tag(_tag), attributes(_att) {
 }
 
 XMLNode::XMLNode(const std::string& _tag, const _XMLAttribute& _att)
@@ -56,27 +57,27 @@ XMLNode::XMLNode(const std::string& _tag, const std::vector<_XMLAttribute>& _att
     : tag(_tag), attributes(_att), children(_nodes) {}
 
 XMLNode::XMLNode(const std::string& _tag, const std::vector<_XMLAttribute>& _att, const std::string& _data)
-    : tag(_tag), attributes(_att), data(_data){
+    : tag(_tag), attributes(_att), data(_data) {
 }
 
-void XMLNode::SetIndentLength(std::size_t length){
+void XMLNode::SetIndentLength(std::size_t length) {
     indent_length = length;
 }
 
-std::size_t XMLNode::GetIndentLength(){
+std::size_t XMLNode::GetIndentLength() {
     return indent_length;
 }
 
-XMLNode& XMLNode::operator<<(const XMLNode& node){
+XMLNode& XMLNode::operator<<(const XMLNode& node) {
     return AddChild(node);
 }
 
-XMLNode& XMLNode::AddChild(const XMLNode& node){
+XMLNode& XMLNode::AddChild(const XMLNode& node) {
     children.push_back(node);
     return *this;
 }
 
-void XMLNode::AppendToOutput(const std::size_t indent_level, std::ostream& os){
+void XMLNode::AppendToOutput(const std::size_t indent_level, std::ostream& os) {
     std::string indent(indent_level * indent_length, ' ');
     const std::string newl("\n");
 
@@ -84,20 +85,20 @@ void XMLNode::AppendToOutput(const std::size_t indent_level, std::ostream& os){
 
     os << indent << '<' << tag;
 
-    if(is_empty){
+    if (is_empty) {
         os << " />" << newl;
         return;
     }
 
-    if(!attributes.empty()){
-        for(const auto& a : attributes){
+    if (!attributes.empty()) {
+        for (const auto& a : attributes) {
             os << ' ' << a.name << '=' << '\"' << a.value << '\"';
         }
     }
 
     os << ">";
 
-    if(!data.empty()){
+    if (!data.empty()) {
         os << data;
     } else {
         os << newl;
@@ -110,41 +111,41 @@ void XMLNode::AppendToOutput(const std::size_t indent_level, std::ostream& os){
     os << "</" << tag << '>' << newl;
 }
 
-XML::XML(){
+XML::XML() {
 }
 
-XML::XML(const XMLNode& node) : nodes(std::vector<XMLNode>({node})){
+XML::XML(const XMLNode& node) : nodes(std::vector<XMLNode>({node})) {
 }
 
-XML& XML::AddNode(const XMLNode& node){
+XML& XML::AddNode(const XMLNode& node) {
     nodes.push_back(node);
     return *this;
 }
 
-XML& XML::operator<<(const XMLNode& node){
+XML& XML::operator<<(const XMLNode& node) {
     return AddNode(node);
 }
 
-XML& XML::operator<<(const XML& other){
+XML& XML::operator<<(const XML& other) {
     return AddXMLObject(other);
 }
 
-XML& XML::AddXMLObject(const XML& other){
+XML& XML::AddXMLObject(const XML& other) {
     nodes.insert(nodes.end(), other.nodes.begin(), other.nodes.end());
     return *this;
 }
 
-void XML::WriteToFile(const std::string& file_name, std::ios::openmode mode){
+void XML::WriteToFile(const std::string& file_name, std::ios::openmode mode) {
     std::ofstream ofs(file_name, std::ios::out);
-    if(!ofs){
+    if (!ofs) {
         std::cerr << "Couldn't open file " << file_name << " aborting writing" << std::endl;
     }
 
-    for(auto& n : nodes){
+    for (auto& n : nodes) {
         n.AppendToOutput(0, ofs);
     }
 
     ofs.close();
 }
 
-} // namespace dare::ff
+}  // namespace dare::ff
