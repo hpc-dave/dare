@@ -332,11 +332,13 @@ std::size_t Vector<N, T>::GetHash() const {
 
 template <std::size_t N, typename T>
 template <std::size_t I,
+          typename Tin,
           typename... Ts,
           typename A,
-          typename B>
-void Vector<N, T>::SetValues(const T& arg, const Ts&... args) {
-    _data[I] = arg;
+          typename B,
+          typename C>
+void Vector<N, T>::SetValues(const Tin& arg, const Ts&... args) {
+    _data[I] = static_cast<T>(arg);
     if constexpr (sizeof...(args) > 0 && (I + 1 < N))
         SetValues<I + 1>(args...);
     else if constexpr (I + 1 < N)
@@ -350,9 +352,10 @@ void Vector<N, T>::SetValues() {
 }
 
 template <std::size_t N, typename T>
-void Vector<N, T>::SetAllValues(const T& val) {
+template <typename A, typename B>
+void Vector<N, T>::SetAllValues(const A& val) {
     for (std::size_t n{0}; n < N; n++)
-        _data[n] = val;
+        _data[n] = static_cast<T>(val);
 }
 
 template <std::size_t N, typename T>

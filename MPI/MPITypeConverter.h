@@ -116,6 +116,6 @@ inline MPI_Datatype GetMPIType<uint64_t>() {
     return MPI_UINT64_T;
 }
 
-} // namespace dare::mpi
+}  // namespace dare::mpi
 
 #endif  // MPI_MPITYPECONVERTER_H_

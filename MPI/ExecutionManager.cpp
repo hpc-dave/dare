@@ -27,16 +27,16 @@
 namespace dare::mpi {
 
 ExecutionManager::ExecutionManager(MPI_Comm _communicator, Verbosity _output_level)
-    : communicator(_communicator), output_level(_output_level) {
+    : communicator(_communicator), rank_root(0), output_level(_output_level) {
     MPI_Comm_rank(communicator, &rank);
     MPI_Comm_size(communicator, &num_proc);
 
-    is_root = rank == 0;
+    is_root = rank == rank_root;
 
     is_serial = num_proc == 1;
-};
+}
 
-ExecutionManager::~ExecutionManager(){};
+ExecutionManager::~ExecutionManager() {}
 
 std::ostream& ExecutionManager::operator()(Verbosity level) {
     return Print(level);

@@ -48,4 +48,8 @@ MPI_Comm ExecutionManager::GetCommunicator() const {
     return communicator;
 }
 
+int ExecutionManager::GetRankRoot() const {
+    return rank_root;
+}
+
 }  // namespace dare::mpi

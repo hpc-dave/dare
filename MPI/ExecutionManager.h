@@ -338,10 +338,17 @@ public:
      */
     inline MPI_Comm GetCommunicator() const;
 
+    /*!
+     * @brief returns rank of root process
+     * @return rank of root process
+     */
+    inline int GetRankRoot() const;
+
 private:
     MPI_Comm communicator;  //!< mpi communicator of this execution manager
     bool is_root;           //!< identifier, if associated process is root
     bool is_serial;         //!< identifier, if code is executed in serial
+    int rank_root;          //!< rank of root processor
     int rank;               //!< rank of process within communicator
     int num_proc;           //!< number of processes within communicator
 

@@ -37,7 +37,7 @@
 namespace dare::utils {
 
 template <typename T, typename... Ts>
-using AllSame = std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>;
+using AllConvertible = std::enable_if_t<std::conjunction_v<std::is_convertible<T, Ts>...>>;
 
 /*! \class Vector
  * \tparam N number of values in the data set
@@ -445,7 +445,7 @@ public:
      * might receive strange error-message
      */
     template <typename... Ts,
-              typename = AllSame<T, Ts...>,
+              typename = AllConvertible<T, Ts...>,
               typename = std::enable_if_t<sizeof...(Ts) <= N>>
     explicit Vector(const Ts&... args);
 
@@ -671,10 +671,12 @@ public:
      * @param args parameter pack with remaining values
      */
     template <std::size_t I = 0,
+              typename A,
               typename... Ts,
-              typename = AllSame<T, Ts...>,
+              typename = std::is_convertible<A, T>,
+              typename = AllConvertible<T, Ts...>,
               typename = std::enable_if_t<sizeof...(Ts) <= N>>
-    void SetValues(const T& arg, const Ts&... args);
+    void SetValues(const A& arg, const Ts&... args);
 
     /*!
      * \brief sets all values to default values
@@ -687,7 +689,8 @@ public:
      * @brief sets all values to specified value
      * @param val value to apply
      */
-    void SetAllValues(const T& val);
+    template<typename A, typename = std::is_convertible<A, T>>
+    void SetAllValues(const A& val);
 
     /*!
      * \brief computes dot product with another vector
