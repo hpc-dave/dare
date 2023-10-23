@@ -453,7 +453,9 @@ public:
      * \brief copy constructor
      * @param other object to copy from
      */
-    Vector(const Vector<N, T>& other);
+    template <typename A,
+              typename = std::enable_if_t<std::is_convertible_v<A, T>> >
+    Vector(const Vector<N, A>& other);
 
     /*!
      * \brief provides direct access to the data
@@ -469,7 +471,9 @@ public:
      * \brief assignment constructor
      * @param other object to copy from
      */
-    Vector<N, T>& operator=(const Vector<N, T>& other);
+    template <typename A,
+              typename = std::enable_if_t<std::is_convertible_v<A, T>>>
+    Vector<N, T>& operator=(const Vector<N, A>& other);
 
     /*!
      * \brief access operator

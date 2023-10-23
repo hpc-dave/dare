@@ -34,16 +34,21 @@ Vector<N, T>::Vector(const Ts&... args) : _vector_functor<N, T>(this->_data) {
 }
 
 template <std::size_t N, typename T>
-Vector<N, T>::Vector(const Vector<N, T>& other) : _vector_functor<N, T>(this->_data) {
-    std::copy(other._data, other._data + N, _data);
+template <typename A, typename B>
+Vector<N, T>::Vector(const Vector<N, A>& other) : _vector_functor<N, T>(this->_data) {
+    for (std::size_t n{0}; n < N; n++)
+        _data[n] = static_cast<T>(other[n]);
 }
 
 template <std::size_t N, typename T>
-Vector<N, T>& Vector<N, T>::operator=(const Vector<N, T>& other) {
-    if (&other == this)
-        return *this;
+template <typename A, typename B>
+Vector<N, T>& Vector<N, T>::operator=(const Vector<N, A>& other) {
+    if constexpr (std::is_same_v<A, T>)
+        if (&other == this)
+            return *this;
 
-    std::copy(other._data, other._data + N, _data);
+    for (std::size_t n{0}; n < N; n++)
+        _data[n] = static_cast<T>(other[n]);
 
     return *this;
 }
