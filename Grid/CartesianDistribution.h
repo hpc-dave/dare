@@ -44,7 +44,7 @@ void CubicalCartesianDistribution(int num_proc,
                                   const utils::Vector<Dim, GO>& resolution_global,
                                   std::vector<utils::Vector<Dim, LO>>* vec_res_local,
                                   std::vector<utils::Vector<Dim, GO>>* vec_offsets) {
-    const double max_ratio_deviation{1.5};  // acceptable volume ration of domains
+    const double max_ratio_deviation{1.2};  // acceptable volume ration of domains
     // Determine direction with maximum number of cells
     std::size_t pos_max_res{0};
     for (std::size_t n{1}; n < Dim; n++)
@@ -195,17 +195,27 @@ void CubicalCartesianDistribution(int num_proc,
         num_cells_regular *= e;
 
     double max_ratio{1.};
+    GO delta_cell_max{0};
     for (int n{n_pre_last_slice}; n < num_proc; n++) {
         GO num_cells_sd{1};
         for (auto e : (*vec_res_local)[n])
             num_cells_sd *= e;
         max_ratio = std::max(max_ratio, static_cast<double>(num_cells_sd) / num_cells_regular);
+        delta_cell_max = std::max(num_cells_sd - num_cells_regular, delta_cell_max);
     }
+
     // if the inequality is too big, we remove some layers of the last slice and distribute them
     // on the previous ones
-    if (max_ratio > max_ratio_deviation) {
-        LO n_cell_redistribute = 1. / max_ratio * (*vec_res_local)[0][pos_max_res];
-        LO n_cell_redist_slice = std::max(1, n_cell_redistribute / n_pre_last_slice);
+    if ((topo[pos_max_res] > 1) && (max_ratio > max_ratio_deviation)) {
+        GO cell_per_slice{1};
+        for (std::size_t dim{0}; dim < Dim; dim++)
+            if (dim != pos_max_res)
+                cell_per_slice *= resolution_global[dim];
+
+        // total number of cells to redistribute
+        LO n_cell_redistribute = delta_cell_max;
+        // number of cells in main direction, which will be removed per subdomain slice
+        LO n_cell_redist_slice = std::max(GO(1), delta_cell_max / cell_per_slice / (topo[pos_max_res] - 1));
 
         int proc_per_slice{1};
         for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -229,7 +239,7 @@ void CubicalCartesianDistribution(int num_proc,
                 (*vec_offsets)[n_proc][pos_max_res] += n_cell_redist_slice;
                 (*vec_res_local)[n_proc][pos_max_res] -= n_cell_redist_slice;
             }
-            n_cell_redistribute -= n_cell_redist_slice;
+            n_cell_redistribute -= n_cell_redist_slice * cell_per_slice;
         }
     }
 }
