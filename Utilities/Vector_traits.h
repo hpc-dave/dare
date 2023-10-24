@@ -30,159 +30,197 @@
 
 namespace dare::utils {
 
-/*! \struct _vector_functor
+/*! \class VectorBase
  * @tparam N number of elements in the data set
  * @tparam T type of variables
+ * The main target of this class is to provide basic functionality and memory allocation
+ * for Vector class. It serves as parent class for the decorator below.
+ * \note all common functionality is currently implemented by the Vector class
+ */
+template <std::size_t N, typename T>
+class VectorBase {
+public:
+    /*!
+     * @brief default constructor
+     */
+    VectorBase() {}
+protected:
+    T _data[N];
+};
+
+/*! \class VectorDecorator
+ * @tparam N specialization for n-th element
+ * @tparam Dim number of elements in the data set
+ * @tparam T type of variables
  * @tparam Enable SFINAE type placeholder
- * The main target of this class is to provide specialized functionality to the
+ * This class uses the decorator design pattern to provide specialized functionality to the
  * Vector class, depending on the provided type. Good examples are the
  * getters and setters, which might be different.
+ * The default version doesn't add anything.
  */
-template <std::size_t N, typename T, typename Enable = void>
-struct _vector_functor {
-    explicit _vector_functor(T* ptr) {}
+template <std::size_t N, std::size_t Dim, typename T, typename Enable = void>
+class VectorDecorator : public VectorBase<Dim, T> {
+public:
+    /*!
+     * @brief default constructor
+     */
+    VectorDecorator() : VectorBase<Dim, T>(){}
 };
 
-/*! \struct _vector_functor
+/*! \class VectorDecorator
  * \brief specialization for integer types
- * @tparam N number of elements in the data set
+ * @tparam N specialization for n-th element
+ * @tparam Dim number of elements in the data set
  * @tparam T type of integer
  */
-template <std::size_t N, typename T>
-struct _vector_functor<N, T, std::enable_if_t<std::is_integral_v<T>>> : public _vector_functor<N-1, T> {
-    explicit _vector_functor(T* ptr) : _vector_functor<N - 1, T>(ptr) {}
+template <std::size_t N, std::size_t Dim, typename T>
+class VectorDecorator<N, Dim, T, std::enable_if_t<std::is_integral_v<T>>> : public VectorDecorator<N - 1, Dim, T> {
+public:
+    VectorDecorator() : VectorDecorator<N - 1, Dim, T>() {}
 };
 
-/*! \struct _vector_functor
+/*! \class VectorDecorator
  * \brief specialization for integer types and N == 1
+ * @tparam Dim number of elements in the data set
  * @tparam T type of integer
  */
-template <typename T>
-struct _vector_functor<1, T, std::enable_if_t<std::is_integral_v<T>>> {
-    explicit _vector_functor(T* ptr) : p_data(ptr) {}
+template <std::size_t Dim, typename T>
+class VectorDecorator<1, Dim, T, std::enable_if_t<std::is_integral_v<T>>> : public VectorBase<Dim, T> {
+public:
+    VectorDecorator() : VectorBase<Dim, T>() {}
 
     /*!
      * \brief getter for first variable
      */
-    T& i() { return p_data[0]; }
+    T& i() { return this->_data[0]; }
 
     /*!
      * \brief const getter for first variable
      */
-    T i() const { return p_data[0]; }
-
-    T* p_data;  //!< pointer to data
+    T i() const { return this->_data[0]; }
 };
 
-/*! \struct _vector_functor
+/*! \class VectorDecorator
  * \brief specialization for integer types and N == 2
+ * @tparam Dim number of elements in the data set
  * @tparam T type of integer
  */
-template <typename T>
-struct _vector_functor<2, T, std::enable_if_t<std::is_integral_v<T>>> : public _vector_functor<1, T> {
-    explicit _vector_functor(T* ptr) : _vector_functor<1, T>(ptr) {}
+template <std::size_t Dim, typename T>
+class VectorDecorator<2, Dim, T, std::enable_if_t<std::is_integral_v<T>>> : public VectorDecorator<1, Dim, T> {
+public:
+    VectorDecorator() : VectorDecorator<1, Dim, T>() {}
 
     /*!
      * \brief getter for second variable
      */
-    T& j() { return this->p_data[1]; }
+    T& j() { return this->_data[1]; }
 
     /*!
      * \brief const getter for second variable
      */
-    T j() const { return this->p_data[1]; }
+    T j() const { return this->_data[1]; }
 };
 
-/*! \struct _vector_functor
+/*! \class VectorDecorator
  * \brief specialization for integer types and N == 2
+ * @tparam Dim number of elements in the data set
  * @tparam T type of integer
  */
-template <typename T>
-struct _vector_functor<3, T, std::enable_if_t<std::is_integral_v<T>>> : public _vector_functor<2, T> {
-    explicit _vector_functor(T* ptr) : _vector_functor<2, T>(ptr) {}
+template <std::size_t Dim, typename T>
+class VectorDecorator<3, Dim, T, std::enable_if_t<std::is_integral_v<T>>> : public VectorDecorator<2, Dim, T> {
+public:
+    VectorDecorator() : VectorDecorator<2, Dim, T>() {}
 
     /*!
      * \brief getter for second variable
      */
-    T& k() { return this->p_data[2]; }
+    T& k() { return this->_data[2]; }
 
     /*!
      * \brief const getter for second variable
      */
-    T k() const { return this->p_data[2]; }
+    T k() const { return this->_data[2]; }
 };
 
-/*! \struct _vector_functor
+/*! \class VectorDecorator
  * \brief specialization for floating point types
- * @tparam N number of elements in the data set
+ * @tparam N specialization for n-th element
+ * @tparam Dim number of elements in the data set
  * @tparam T type of floating point numbers
  */
-template <std::size_t N, typename T>
-struct _vector_functor<N, T, std::enable_if_t<std::is_floating_point_v<T>>> : public _vector_functor<N - 1, T> {
+template <std::size_t N, std::size_t Dim, typename T>
+class VectorDecorator<N, Dim, T, std::enable_if_t<std::is_floating_point_v<T>>>
+        : public VectorDecorator<N - 1, Dim, T> {
+public:
     /*!
      * \brief constructor
-     * @param ptr pointer to beginning of data
+     * @param  pointer to beginning of data
      */
-    explicit _vector_functor(T* ptr) : _vector_functor<N - 1, T>(ptr) {}
+    VectorDecorator() : VectorDecorator<N - 1, Dim, T>() {}
 };
 
-/*! \struct _vector_functor
+/*! \class VectorDecorator
  * \brief specialization for floating point types and N == 1
+ * @tparam Dim number of elements in the data set
  * @tparam T type of floating point numbers
  */
-template <typename T>
-struct _vector_functor<1, T, std::enable_if_t<std::is_floating_point_v<T>>> {
-    explicit _vector_functor(T* ptr) : p_data(ptr) {}
+template <std::size_t Dim, typename T>
+class VectorDecorator<1, Dim, T, std::enable_if_t<std::is_floating_point_v<T>>>
+    : VectorBase<Dim, T>{
+public:
+    VectorDecorator() {}
 
     /*!
      * \brief getter for first variable
      */
-    T& x() { return p_data[0]; }
+    T& x() { return this->_data[0]; }
 
     /*!
      * \brief const getter for first variable
      */
-    T x() const { return p_data[0]; }
-
-    T* p_data;  //! pointer to data
+    T x() const { return this->_data[0]; }
 };
 
-/*! \struct _vector_functor
+/*! \class VectorDecorator
  * \brief specialization for floating point types and N == 2
+ * @tparam Dim number of elements in the data set
  * @tparam T type of floating point numbers
  */
-template <typename T>
-struct _vector_functor<2, T, std::enable_if_t<std::is_floating_point_v<T>>> : public _vector_functor<1, T> {
-    explicit _vector_functor(T* ptr) : _vector_functor<1, T>(ptr) {}
+template <std::size_t Dim, typename T>
+class VectorDecorator<2, Dim, T, std::enable_if_t<std::is_floating_point_v<T>>> : public VectorDecorator<1, Dim, T> {
+public:
+    VectorDecorator() : VectorDecorator<1, Dim, T>() {}
 
     /*!
      * \brief getter for second variable
      */
-    T& y() { return this->p_data[1]; }
+    T& y() { return this->_data[1]; }
 
     /*!
      * \brief const getter for second variable
      */
-    T y() const { return this->p_data[1]; }
+    T y() const { return this->_data[1]; }
 };
 
-/*! \struct _vector_functor
+/*! \class VectorDecorator
  * \brief specialization for floating point types and N == 3
+ * @tparam Dim number of elements in the data set
  * @tparam T type of floating point numbers
  */
-template <typename T>
-struct _vector_functor<3, T, std::enable_if_t<std::is_floating_point_v<T>>> : public _vector_functor<2, T> {
-    explicit _vector_functor(T* ptr) : _vector_functor<2, T>(ptr) {}
+template <std::size_t Dim, typename T>
+class VectorDecorator<3, Dim, T, std::enable_if_t<std::is_floating_point_v<T>>> : public VectorDecorator<2, Dim, T> {
+public:
+    VectorDecorator() : VectorDecorator<2, Dim, T>() {}
 
     /*!
      * \brief getter for third variable
      */
-    T& z() { return this->p_data[2]; }
+    T& z() { return this->_data[2]; }
 
     /*!
      * \brief const getter for third variable
      */
-    T z() const { return this->p_data[2]; }
+    T z() const { return this->_data[2]; }
 };
 
 }  // namespace dare::utils

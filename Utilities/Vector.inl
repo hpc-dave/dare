@@ -29,15 +29,15 @@ template <std::size_t N, typename T>
 template <typename... Ts,
           typename A,
           typename B>
-Vector<N, T>::Vector(const Ts&... args) : _vector_functor<N, T>(this->_data) {
+Vector<N, T>::Vector(const Ts&... args) : VectorDecorator<N, N, T>() {
     SetValues<0>(args...);
 }
 
 template <std::size_t N, typename T>
 template <typename A, typename B>
-Vector<N, T>::Vector(const Vector<N, A>& other) : _vector_functor<N, T>(this->_data) {
+Vector<N, T>::Vector(const Vector<N, A>& other) : VectorDecorator<N, N, T>(this->_data) {
     for (std::size_t n{0}; n < N; n++)
-        _data[n] = static_cast<T>(other[n]);
+        this->_data[n] = static_cast<T>(other[n]);
 }
 
 template <std::size_t N, typename T>
@@ -48,19 +48,19 @@ Vector<N, T>& Vector<N, T>::operator=(const Vector<N, A>& other) {
             return *this;
 
     for (std::size_t n{0}; n < N; n++)
-        _data[n] = static_cast<T>(other[n]);
+        this->_data[n] = static_cast<T>(other[n]);
 
     return *this;
 }
 
 template <std::size_t N, typename T>
 T* Vector<N, T>::data() {
-    return _data;
+    return this->_data;
 }
 
 template <std::size_t N, typename T>
 const T* Vector<N, T>::data() const {
-    return _data;
+    return this->_data;
 }
 
 template <std::size_t N, typename T>
@@ -70,7 +70,7 @@ T& Vector<N, T>::operator[](std::size_t n) {
         std::cerr << __func__ << ": access @" << n << " out of bounds, size is " << N << std::endl;
     }
 #endif
-    return _data[n];
+    return this->_data[n];
 }
 
 template <std::size_t N, typename T>
@@ -80,7 +80,7 @@ const T& Vector<N, T>::operator[](std::size_t n) const {
         std::cerr << __func__ << ": access @" << n << " out of bounds, size is " << N << std::endl;
     }
 #endif
-    return _data[n];
+    return this->_data[n];
 }
 
 template <std::size_t N, typename T>
@@ -104,14 +104,14 @@ Vector<N, T> Vector<N, T>::operator+(const T& val) const {
 template <std::size_t N, typename T>
 void Vector<N, T>::operator+=(const Vector<N, T>& other) {
     for (std::size_t i{0}; i < N; ++i) {
-        _data[i] += other[i];
+        this->_data[i] += other[i];
     }
 }
 
 template <std::size_t N, typename T>
 void Vector<N, T>::operator+=(const T& val) {
     for (std::size_t i{0}; i < N; ++i) {
-        _data[i] += val;
+        this->_data[i] += val;
     }
 }
 
@@ -136,14 +136,14 @@ Vector<N, T> Vector<N, T>::operator-(const T& val) const {
 template <std::size_t N, typename T>
 void Vector<N, T>::operator-=(const Vector<N, T>& other) {
     for (std::size_t i{0}; i < N; ++i) {
-        _data[i] -= other[i];
+        this->_data[i] -= other[i];
     }
 }
 
 template <std::size_t N, typename T>
 void Vector<N, T>::operator-=(const T& val) {
     for (std::size_t i{0}; i < N; ++i) {
-        _data[i] -= val;
+        this->_data[i] -= val;
     }
 }
 
@@ -168,14 +168,14 @@ Vector<N, T> Vector<N, T>::operator*(const T& val) const {
 template <std::size_t N, typename T>
 void Vector<N, T>::operator*=(const Vector<N, T>& other) {
     for (std::size_t i{0}; i < N; ++i) {
-        _data[i] *= other[i];
+        this->_data[i] *= other[i];
     }
 }
 
 template <std::size_t N, typename T>
 void Vector<N, T>::operator*=(const T& val) {
     for (std::size_t i{0}; i < N; ++i) {
-        _data[i] *= val;
+        this->_data[i] *= val;
     }
 }
 
@@ -200,14 +200,14 @@ Vector<N, T> Vector<N, T>::operator/(const T& val) const {
 template <std::size_t N, typename T>
 void Vector<N, T>::operator/=(const Vector<N, T>& other) {
     for (std::size_t i{0}; i < N; ++i) {
-        _data[i] /= other[i];
+        this->_data[i] /= other[i];
     }
 }
 
 template <std::size_t N, typename T>
 void Vector<N, T>::operator/=(const T& val) {
     for (std::size_t i{0}; i < N; ++i) {
-        _data[i] /= val;
+        this->_data[i] /= val;
     }
 }
 
@@ -215,7 +215,7 @@ template <std::size_t N, typename T>
 bool Vector<N, T>::operator==(const Vector<N, T>& other) const {
     bool is_same{true};
     for (std::size_t n{0}; n < N; n++)
-        is_same &= (_data[n] == other[n]);
+        is_same &= (this->_data[n] == other[n]);
     return is_same;
 }
 
@@ -244,7 +244,7 @@ T Vector<N, T>::length() const {
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::Iterator Vector<N, T>::begin() {
-    return Iterator(&_data[0]);
+    return Iterator(&this->_data[0]);
 }
 
 template <std::size_t N, typename T>
@@ -254,12 +254,12 @@ typename Vector<N, T>::ConstIterator Vector<N, T>::begin() const {
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::ConstIterator Vector<N, T>::cbegin() const {
-    return ConstIterator(&_data[0]);
+    return ConstIterator(&this->_data[0]);
 }
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::ReverseIterator Vector<N, T>::rbegin() {
-    return ReverseIterator(&_data[N - 1]);
+    return ReverseIterator(&this->_data[N - 1]);
 }
 
 template <std::size_t N, typename T>
@@ -269,12 +269,12 @@ typename Vector<N, T>::ConstReverseIterator Vector<N, T>::rbegin() const {
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::ConstReverseIterator Vector<N, T>::crbegin() const {
-    return ConstReverseIterator(&_data[N - 1]);
+    return ConstReverseIterator(&this->_data[N - 1]);
 }
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::Iterator Vector<N, T>::end() {
-    return Iterator(&_data[N]);
+    return Iterator(&this->_data[N]);
 }
 
 template <std::size_t N, typename T>
@@ -284,12 +284,12 @@ typename Vector<N, T>::ConstIterator Vector<N, T>::end() const {
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::ConstIterator Vector<N, T>::cend() const {
-    return ConstIterator(&_data[N]);
+    return ConstIterator(&this->_data[N]);
 }
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::ReverseIterator Vector<N, T>::rend() {
-    return ReverseIterator(&_data[0])--;
+    return ReverseIterator(&this->_data[0])--;
 }
 
 template <std::size_t N, typename T>
@@ -299,23 +299,23 @@ typename Vector<N, T>::ConstReverseIterator Vector<N, T>::rend() const {
 
 template <std::size_t N, typename T>
 typename Vector<N, T>::ConstReverseIterator Vector<N, T>::crend() const {
-    return ConstReverseIterator((&_data[0])--);
+    return ConstReverseIterator((&this->_data[0])--);
 }
 
 template <std::size_t N, typename T>
 T Vector<N, T>::dot(const Vector<N, T>& other) const {
     T res{static_cast<T>(0)};
     for (std::size_t n{0}; n < N; ++n)
-        res += _data[n] * other[n];
+        res += this->_data[n] * other[n];
     return res;
 }
 
 template <std::size_t N, typename T>
 template <std::size_t Ns>
 typename std::enable_if<(Ns == 3), Vector<N, T>>::type Vector<N, T>::cross(const Vector<N, T>& other) const {
-    Vector<N, T> vec(_data[1] * other[2] - _data[2] * other[1],
-                     _data[2] * other[0] - _data[0] * other[2],
-                     _data[0] * other[1] - _data[1] * other[0]);
+    Vector<N, T> vec(this->_data[1] * other[2] - this->_data[2] * other[1],
+                     this->_data[2] * other[0] - this->_data[0] * other[2],
+                     this->_data[0] * other[1] - this->_data[1] * other[0]);
     return vec;
 }
 
@@ -328,7 +328,7 @@ std::size_t Vector<N, T>::GetHash() const {
 
     size_t result{_FNVparam<sizeof(std::size_t)>::offset};      // FNV offset
     const size_t prime{_FNVparam<sizeof(std::size_t)>::prime};  // FNV prime
-    const char* ptr{reinterpret_cast<const char*>(_data)};      // ptr to the beginning of the data
+    const char* ptr{reinterpret_cast<const char*>(this->_data)};      // ptr to the beginning of the data
     for (size_t count{0}; count < (sizeof(T) * N); ++count)
         result = (result * prime) ^ (*(ptr + count));  // (hash * FNV-prime) XOR (byte_of_data)
 
@@ -343,7 +343,7 @@ template <std::size_t I,
           typename B,
           typename C>
 void Vector<N, T>::SetValues(const Tin& arg, const Ts&... args) {
-    _data[I] = static_cast<T>(arg);
+    this->_data[I] = static_cast<T>(arg);
     if constexpr (sizeof...(args) > 0 && (I + 1 < N))
         SetValues<I + 1>(args...);
     else if constexpr (I + 1 < N)
@@ -360,7 +360,7 @@ template <std::size_t N, typename T>
 template <typename A, typename B>
 void Vector<N, T>::SetAllValues(const A& val) {
     for (std::size_t n{0}; n < N; n++)
-        _data[n] = static_cast<T>(val);
+        this->_data[n] = static_cast<T>(val);
 }
 
 template <std::size_t N, typename T>

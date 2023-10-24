@@ -50,7 +50,7 @@ using AllConvertible = std::enable_if_t<std::conjunction_v<std::is_convertible<T
  * ==, !=, +, -, *, /, +=, -=, *=, /=-operators, as well as being copyable
  */
 template <std::size_t N, typename T = double>
-class Vector : public _vector_functor<N, T>{
+class Vector : public VectorDecorator<N, N, T>{
 public:
     typedef T InternalType;
     typedef std::random_access_iterator_tag iterator_tag;
