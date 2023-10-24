@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(DaRe
-	VERSION 0.0.2
+	VERSION 0.1.0
 	DESCRIPTION "Dave's repository"
 	LANGUAGES CXX
+)
+
+option(DEBUG
+    "Enables debugging statements for the repository"
+    OFF
 )
 
 include(GNUInstallDirs)
@@ -69,23 +74,18 @@ if(MPI_CXX_FOUND)
 	)
 endif()
 
-# find_package(Trilinos ${Trilinos_MINIMUM_VERSION} REQUIRED)
-# if(Trilinos_FOUND)
-# 	# update user
-# 	message(STATUS "Found Trilinos version ${Trilinos_VERSION} at ${Trilinos_DIR} - Generating custom target")
-
-# 	# create interface library
-# 	add_library(trilinos INTERFACE)
-
-# 	set_target_properties(trilinos PROPERTIES
-# 		INTERFACE_LINK_LIBRARIES "${Trilinos_LIBRARIES}"
-# 		INTERFACE_INCLUDE_DIRECTORIES "${Trilinos_INCLUDE_DIRS}"
-# 	)
-# endif()
-
 add_subdirectory(FileFormats                                          )
 add_subdirectory(Utilities                                            )
 add_subdirectory(MPI                                                  )
+add_subdirectory(Grid                                                 )
+
+if(${DEBUG})
+    message("\nCompiling in DEBUG mode\n")
+else()
+    target_compile_definitions(dare
+        PUBLIC -DDARE_NDEBUG
+    )
+endif()
 
 # add target sources
 target_sources(exec
