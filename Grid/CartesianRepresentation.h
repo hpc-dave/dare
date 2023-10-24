@@ -189,6 +189,10 @@ public:
         return resolution_global;
     }
 
+    /*!
+     * @brief prints distribution of domains without ghost cells to file as CSV
+     * @param fname filename (should be CSV)
+     */
     void PrintDistribution(std::string fname) const {
         for (int n{0}; n < grid->GetExecutionManager()->GetNumberProcesses(); n++) {
             if (n == grid->GetExecutionManager()->GetRank()) {
@@ -208,7 +212,7 @@ public:
                     std::cout << "Could not open file " << fname << std::endl;
                 ofs << n << ',';
                 for (std::size_t dim{0}; dim < Dim; dim++)
-                    ofs << resolution_local[dim] << ',';
+                    ofs << resolution_local[dim] - 2* grid->GetNumGhost() << ',';
                 for (std::size_t dim{0}; dim < Dim - 1; dim++)
                     ofs << offset_cells[dim] << ',';
                 ofs << offset_cells[Dim - 1] << '\n';

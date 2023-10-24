@@ -33,6 +33,209 @@
 
 namespace dare::Grid {
 
+namespace details {
+/*!
+ * \brief routine for decomposition for Cartesian grid
+ * This decomposition aims at providing as many cubical domains as possible
+ * and will only subdivide the domains at the longest end unequally.
+ */
+template <std::size_t Dim, class LO, class GO>
+void CubicalCartesianDistribution(int num_proc,
+                                  const utils::Vector<Dim, GO>& resolution_global,
+                                  std::vector<utils::Vector<Dim, LO>>* vec_res_local,
+                                  std::vector<utils::Vector<Dim, GO>>* vec_offsets) {
+    const double max_ratio_deviation{1.5};  // acceptable volume ration of domains
+    // Determine direction with maximum number of cells
+    std::size_t pos_max_res{0};
+    for (std::size_t n{1}; n < Dim; n++)
+        if (resolution_global[n] > resolution_global[n - 1])
+            pos_max_res = n;
+
+    // Determine approximately number of cells per subdomain
+    std::size_t num_cells_total{1};
+    for (auto e : resolution_global)
+        num_cells_total *= e;
+    double avg_cells_proc = static_cast<double>(num_cells_total) / num_proc;
+    double length_side = std::pow(avg_cells_proc, 1. / Dim);
+
+    // set and correct number of cells per direction of subdomain
+    dare::utils::Vector<Dim, GO> subdomain_res;
+    subdomain_res.SetAllValues(static_cast<GO>(length_side));
+
+    for (std::size_t dim{0}; dim < Dim; dim++)
+        subdomain_res[dim] = std::min(subdomain_res[dim], resolution_global[dim]);
+
+    dare::utils::Vector<Dim, int> topo, topo_hierarchic_sum;
+    // remaining cells which cannot be evenly distributed
+    dare::utils::Vector<Dim, GO> remaining_cells;
+
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        topo[dim] = resolution_global[dim] / subdomain_res[dim];
+        remaining_cells[dim] = resolution_global[dim] - (subdomain_res[dim] * topo[dim]);
+        subdomain_res[dim] += remaining_cells[dim] / topo[dim];
+        if (dim == pos_max_res)
+            remaining_cells[dim] = 0;  // special treatment later
+        else
+            remaining_cells[dim] = resolution_global[dim] - (subdomain_res[dim] * topo[dim]);
+    }
+    int delta_proc = 1;
+    for (auto e : topo)
+        delta_proc *= e;
+    delta_proc = num_proc - delta_proc;
+    int num_proc_slice = 1;
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        if (dim == pos_max_res)
+            continue;
+        num_proc_slice *= topo[dim];
+    }
+    int missing_slices = delta_proc / num_proc_slice;
+    if (delta_proc > 0 && (delta_proc % num_proc_slice))
+        missing_slices += 1;
+
+    topo[pos_max_res] += missing_slices;
+    subdomain_res[pos_max_res] = resolution_global[pos_max_res] / topo[pos_max_res];
+    remaining_cells[pos_max_res] = resolution_global[pos_max_res] - (subdomain_res[pos_max_res] * topo[pos_max_res]);
+
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        topo_hierarchic_sum[dim] = 1;
+        for (std::size_t n{dim + 1}; n < Dim; n++)
+            topo_hierarchic_sum[dim] *= topo[n];
+    }
+
+    for (int n{0}; n < num_proc; n++) {
+        utils::Vector<Dim, int> proc_ind;
+        int loc_n{n};
+        for (std::size_t dim{0}; dim < Dim; dim++) {
+            proc_ind[dim] = loc_n / topo_hierarchic_sum[dim];
+            loc_n -= proc_ind[dim] * topo_hierarchic_sum[dim];
+        }
+        for (std::size_t dim{0}; dim < Dim; dim++) {
+            (*vec_res_local)[n][dim] = subdomain_res[dim];
+            (*vec_offsets)[n][dim] = subdomain_res[dim] * proc_ind[dim];
+            if (proc_ind[dim] == (topo[dim] - 1)) {
+                (*vec_res_local)[n][dim] += remaining_cells[dim];
+            }
+        }
+    }
+
+    // at this point we have equally distributed domains, with
+    // a few missing cells in the longest direction, those need to be distributed now
+    // among the last layer
+    // To do so, we determine the number of processes in the last slice and then subdivide
+    int n_subdomain = topo[0];
+    for (std::size_t dim{1}; dim < Dim; dim++)
+        n_subdomain *= topo[dim];
+
+    int surplus_domains = n_subdomain - num_proc;
+
+    int n_pre_last_slice{1};
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        if (dim == pos_max_res) {
+            n_pre_last_slice *= topo[dim] - 1;
+        } else {
+            n_pre_last_slice *= topo[dim];
+        }
+    }
+
+    // Note, that in 1D, no remaining splitting can occur, so we don't need to care for that case
+    int mod{0}, counter{0};
+    std::size_t slice_dir{0};
+    if (slice_dir == pos_max_res)
+        slice_dir++;
+
+    // Here we need to reduce the number of subdomains as indicated by surplus domains
+    // For this purpose, all subdomains in the last slice in the dominant direction
+    // are merged to 1 and subsequently split into two, until we have created all required
+    // subdomains
+    for (int n{0}; n < surplus_domains; n++) {
+        // for the first processor in the final slice, we reset it to account for the whole slice
+        if (n == 0) {
+            for (std::size_t dim{0}; dim < Dim; dim++) {
+                if (dim != pos_max_res) {
+                    (*vec_res_local)[n_pre_last_slice + n][dim] = resolution_global[dim];
+                    (*vec_offsets)[n_pre_last_slice + n][dim] = 0;
+                }
+            }
+            mod = 2;
+        } else {
+            // Subsequently, all elements in the slice are halfed
+            // Once we have done that with all the elements in the slice
+            // we start again, until we have reached the number of
+            // desired processes
+            (*vec_res_local)[n] = (*vec_res_local)[n_pre_last_slice + counter];
+            (*vec_offsets)[n] = (*vec_offsets)[n_pre_last_slice + counter];
+
+            GO subres = (*vec_res_local)[n_pre_last_slice + counter][slice_dir];
+            GO subres_first = subres / 2;
+            GO subres_second = subres - subres_first;
+            (*vec_res_local)[n_pre_last_slice + counter][slice_dir] = subres_first;
+            (*vec_res_local)[n][slice_dir] = subres_second;
+            (*vec_offsets)[n][slice_dir] = (*vec_offsets)[n_pre_last_slice + counter][slice_dir] + subres_first;
+
+            if (counter == mod) {
+                counter = 0;
+                mod *= 2;
+                slice_dir++;
+                if (slice_dir == pos_max_res)
+                    slice_dir++;
+                if (slice_dir == Dim) {
+                    slice_dir = 0;
+                    if (pos_max_res == 0)
+                        slice_dir = 1;
+                }
+            } else {
+                counter++;
+            }
+        }
+    }
+
+    // control the max volume occupied by subdomains on the last slice
+    GO num_cells_regular{1};
+    for (auto e : (*vec_res_local)[0])
+        num_cells_regular *= e;
+
+    double max_ratio{1.};
+    for (int n{n_pre_last_slice}; n < num_proc; n++) {
+        GO num_cells_sd{1};
+        for (auto e : (*vec_res_local)[n])
+            num_cells_sd *= e;
+        max_ratio = std::max(max_ratio, static_cast<double>(num_cells_sd) / num_cells_regular);
+    }
+    // if the inequality is too big, we remove some layers of the last slice and distribute them
+    // on the previous ones
+    if (max_ratio > max_ratio_deviation) {
+        LO n_cell_redistribute = 1. / max_ratio * (*vec_res_local)[0][pos_max_res];
+        LO n_cell_redist_slice = std::max(1, n_cell_redistribute / n_pre_last_slice);
+
+        int proc_per_slice{1};
+        for (std::size_t dim{0}; dim < Dim; dim++) {
+            if (dim == pos_max_res)
+                continue;
+            proc_per_slice *= topo[dim];
+        }
+        int slice_pre_last_slice = topo[pos_max_res] - 2;
+        for (int n{slice_pre_last_slice}; n >= 0; n--) {
+            if (n_cell_redistribute <= 0)
+                break;
+            int proc_start = n * proc_per_slice;
+
+            for (int n_proc{proc_start}; n_proc < (proc_start + proc_per_slice); n_proc++)
+                (*vec_res_local)[n_proc][pos_max_res] += n_cell_redist_slice;
+
+            for (int n_proc{proc_start + proc_per_slice}; n_proc < n_pre_last_slice; n_proc++)
+                (*vec_offsets)[n_proc][pos_max_res] += n_cell_redist_slice;
+
+            for (int n_proc{n_pre_last_slice}; n_proc < num_proc; n_proc++) {
+                (*vec_offsets)[n_proc][pos_max_res] += n_cell_redist_slice;
+                (*vec_res_local)[n_proc][pos_max_res] -= n_cell_redist_slice;
+            }
+            n_cell_redistribute -= n_cell_redist_slice;
+        }
+    }
+}
+
+}  // namespace details
+
 /*!
  * \brief decomposition for Cartesian grid
  * This decomposition aims at providing as many cubical domains as possible
@@ -45,7 +248,6 @@ void RegularCartesianDistribution(mpi::ExecutionManager* exec_man,
                                   utils::Vector<Dim, GO>* offset) {
     int tag_res{1000};                      // tag for MPI communication
     int tag_off{1001};                      // tag for MPI communication
-    const double max_ratio_deviation{1.5};  // acceptable volume ration of domains
 
     if (exec_man->AmIRoot()) {
         int num_proc = exec_man->GetNumberProcesses();
@@ -54,192 +256,13 @@ void RegularCartesianDistribution(mpi::ExecutionManager* exec_man,
         std::vector<utils::Vector<Dim, LO>> vec_res_local(num_proc);
         std::vector<utils::Vector<Dim, GO>> vec_offsets(num_proc);
 
-        // Determine direction with maximum number of cells
-        std::size_t pos_max_res{0};
-        for (std::size_t n{1}; n < Dim; n++)
-            if (resolution_global[n] > resolution_global[n - 1])
-                pos_max_res = n;
+        details::CubicalCartesianDistribution(num_proc, resolution_global,
+                                              &vec_res_local, &vec_offsets);
 
-        // Determine approximately number of cells per subdomain
+#ifndef DARE_NDEBUG
         std::size_t num_cells_total{1};
         for (auto e : resolution_global)
             num_cells_total *= e;
-        double avg_cells_proc = static_cast<double>(num_cells_total) / num_proc;
-        double length_side = std::pow(avg_cells_proc, 1. / Dim);
-
-        // set and correct number of cells per direction of subdomain
-        dare::utils::Vector<Dim, GO> subdomain_res;
-        subdomain_res.SetAllValues(static_cast<GO>(length_side));
-
-        for (std::size_t dim{0}; dim < Dim; dim++)
-            subdomain_res[dim] = std::min(subdomain_res[dim], resolution_global[dim]);
-
-        dare::utils::Vector<Dim, int> topo, topo_hierarchic_sum;
-        // remaining cells which cannot be evenly distributed
-        dare::utils::Vector<Dim, GO> remaining_cells;
-
-        for (std::size_t dim{0}; dim < Dim; dim++) {
-            topo[dim] = resolution_global[dim] / subdomain_res[dim];
-            remaining_cells[dim] = resolution_global[dim] % subdomain_res[dim];
-            subdomain_res[dim] += remaining_cells[dim] / topo[dim];
-            if (dim == pos_max_res)
-                remaining_cells[dim] = 0;  // special treatment later
-            else
-                remaining_cells[dim] = resolution_global[dim] % subdomain_res[dim];
-        }
-        int delta_proc = 1;
-        for (auto e : topo)
-            delta_proc *= e;
-        delta_proc = num_proc - delta_proc;
-        int num_proc_slice = 1;
-        for (std::size_t dim{0}; dim < Dim; dim++) {
-            if (dim == pos_max_res)
-                continue;
-            num_proc_slice *= topo[dim];
-        }
-        int missing_slices = delta_proc / num_proc_slice;
-        if (delta_proc > 0 && (delta_proc % num_proc_slice))
-            missing_slices += 1;
-
-        topo[pos_max_res] += missing_slices;
-        subdomain_res[pos_max_res] = resolution_global[pos_max_res] / topo[pos_max_res];
-        remaining_cells[pos_max_res] = resolution_global[pos_max_res] % subdomain_res[pos_max_res];
-
-        for (std::size_t dim{0}; dim < Dim; dim++) {
-            topo_hierarchic_sum[dim] = 1;
-            for (std::size_t n{dim + 1}; n < Dim; n++)
-                topo_hierarchic_sum[dim] *= topo[n];
-        }
-
-        for (int n{0}; n < num_proc; n++) {
-            utils::Vector<Dim, int> proc_ind;
-            int loc_n{n};
-            for (std::size_t dim{0}; dim < Dim; dim++) {
-                proc_ind[dim] = loc_n / topo_hierarchic_sum[dim];
-                loc_n -= proc_ind[dim] * topo_hierarchic_sum[dim];
-            }
-            for (std::size_t dim{0}; dim < Dim; dim++) {
-                vec_res_local[n][dim] = subdomain_res[dim];
-                vec_offsets[n][dim] = subdomain_res[dim] * proc_ind[dim];
-                if (proc_ind[dim] == (topo[dim] - 1)) {
-                    vec_res_local[n][dim] += remaining_cells[dim];
-                }
-            }
-        }
-
-        // at this point we have equally distributed domains, with
-        // a few missing cells in the longest direction, those need to be distributed now
-        // among the last layer
-        // To do so, we determine the number of processes in the last slice and then subdivie
-
-        int n_subdomain = topo[0];
-        for (std::size_t dim{1}; dim < Dim; dim++)
-            n_subdomain *= topo[dim];
-
-        int surplus_domains = n_subdomain - num_proc;
-
-        int n_pre_last_slice{1};
-        for (std::size_t dim{1}; dim < Dim; dim++) {
-            if (dim == pos_max_res) {
-                n_pre_last_slice *= topo[dim] - 1;
-            } else {
-                n_pre_last_slice *= topo[dim];
-            }
-        }
-
-        // Note, that in 1D, no remaining splitting can occur, so we don't need to care for that case
-        int mod{0}, counter{0};
-        std::size_t slice_dir{0};
-        if (slice_dir == pos_max_res)
-            slice_dir++;
-
-        for (int n{0}; n < surplus_domains; n++) {
-            // for the first processor in the final slice, we reset it to account for the whole slice
-            if (n == 0) {
-                for (std::size_t dim{0}; dim < Dim; dim++) {
-                    if (dim != pos_max_res) {
-                        vec_res_local[n_pre_last_slice + n][dim] = resolution_global[dim];
-                        vec_offsets[n_pre_last_slice + n][dim] = 0;
-                    }
-                }
-                mod = 2;
-            } else {
-                // Subsequently, all elements in the slice are halfed
-                // Once we have done that with all the elements in the slice
-                // we start again, until we have reached the number of
-                // desired processes
-                vec_res_local[n] = vec_res_local[n_pre_last_slice + counter];
-                vec_offsets[n] = vec_offsets[n_pre_last_slice + counter];
-
-                GO subres = vec_res_local[n_pre_last_slice + counter][slice_dir];
-                GO subres_first = subres / 2;
-                GO subres_second = subres - subres_first;
-                vec_res_local[n_pre_last_slice + counter][slice_dir] = subres_first;
-                vec_res_local[n][slice_dir] = subres_second;
-                vec_offsets[n][slice_dir] = vec_offsets[n_pre_last_slice + counter][slice_dir] + subres_first;
-
-                if (counter == mod) {
-                    counter = 0;
-                    mod *= 2;
-                    slice_dir++;
-                    if (slice_dir == pos_max_res)
-                        slice_dir++;
-                    if (slice_dir == Dim) {
-                        slice_dir = 0;
-                        if (pos_max_res == 0)
-                            slice_dir = 1;
-                    }
-                } else {
-                    counter++;
-                }
-            }
-        }
-
-        // control the max volume occupied by subdomains on the last slice
-        GO num_cells_regular{1};
-        for (auto e : vec_res_local[0])
-            num_cells_regular *= e;
-
-        double max_ratio{1.};
-        for (int n{n_pre_last_slice}; n < num_proc; n++) {
-            GO num_cells_sd{1};
-            for (auto e : vec_res_local[n])
-                num_cells_sd *= e;
-            max_ratio = std::max(max_ratio, static_cast<double>(num_cells_sd) / num_cells_regular);
-        }
-        // if the inequality is too big, we remove some layers of the last slice and distribute them
-        // on the previous ones
-        if (max_ratio > max_ratio_deviation) {
-            LO n_cell_redistribute = 1. / max_ratio * vec_res_local[0][pos_max_res];
-            LO n_cell_redist_slice = std::max(1, n_cell_redistribute / n_pre_last_slice);
-
-            int proc_per_slice{1};
-            for (std::size_t dim{0}; dim < Dim; dim++) {
-                if (dim == pos_max_res)
-                    continue;
-                proc_per_slice *= topo[dim];
-            }
-
-            for (int n{n_pre_last_slice - 1}; n < 0; n--) {
-                if (n_cell_redistribute <= 0)
-                    break;
-                int proc_start = n * proc_per_slice;
-
-                for (int n_proc{proc_start}; n_proc < (proc_start + proc_per_slice); n_proc++)
-                    vec_res_local[n_proc][pos_max_res] += n_cell_redist_slice;
-
-                for (int n_proc{proc_start + proc_per_slice}; n_proc < n_pre_last_slice; n_proc++)
-                    vec_offsets[n_proc][pos_max_res] += n_cell_redist_slice;
-
-                for (int n_proc{n_pre_last_slice}; n_proc < num_proc; n_proc++) {
-                    vec_offsets[n_proc][pos_max_res] += n_cell_redist_slice;
-                    vec_res_local[n_proc][pos_max_res] -= n_cell_redist_slice;
-                }
-                n_cell_redistribute -= n_cell_redist_slice;
-            }
-        }
-
-#ifndef DARE_NDEBUG
         std::size_t sum_cells{0};
         for (const auto& r_sub : vec_res_local) {
             LO n_sub{1};

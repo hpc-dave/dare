@@ -64,20 +64,20 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
 
     if (offset_cells[0] == 0)
         id_boundaries &= BOUNDARIES_WEST;
-    if ((offset_cells[0] + size_local[0]) == resolution_global[0])
+    if ((offset_cells[0] + resolution_local[0]) == resolution_global[0])
         id_boundaries &= BOUNDARIES_EAST;
 
     if constexpr (Dim > 1) {
         if (offset_cells[1] == 0)
             id_boundaries &= BOUNDARIES_SOUTH;
-        if ((offset_cells[1] + size_local[1]) == resolution_global[1])
+        if ((offset_cells[1] + resolution_local[1]) == resolution_global[1])
             id_boundaries &= BOUNDARIES_NORTH;
     }
 
     if constexpr (Dim > 2) {
         if (offset_cells[2] == 0)
             id_boundaries &= BOUNDARIES_BOTTOM;
-        if ((offset_cells[2] + size_local[2]) == resolution_global[2])
+        if ((offset_cells[2] + resolution_local[2]) == resolution_global[2])
             id_boundaries &= BOUNDARIES_TOP;
     }
 
