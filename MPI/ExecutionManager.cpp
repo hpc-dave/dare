@@ -72,11 +72,11 @@ int ExecutionManager::GetNumberThreadsAverage() {
 void ExecutionManager::Terminate(std::string function, std::string message) const {
     std::cerr << "Terminating execution due to error in " << function
               << " on rank " << GetRank() << "! Following error description was received: "
-              << message << std::endl;
+              << message << "!" << std::endl;
     MPI_Abort(communicator, EXIT_FAILURE);
 }
 
-void ExecutionManager::Barrier() {
+void ExecutionManager::Barrier() const {
     if (IsSerial())
         return;
 

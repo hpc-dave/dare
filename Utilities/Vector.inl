@@ -35,7 +35,7 @@ Vector<N, T>::Vector(const Ts&... args) : VectorDecorator<N, N, T>() {
 
 template <std::size_t N, typename T>
 template <typename A, typename B>
-Vector<N, T>::Vector(const Vector<N, A>& other) : VectorDecorator<N, N, T>(this->_data) {
+Vector<N, T>::Vector(const Vector<N, A>& other) : VectorDecorator<N, N, T>() {
     for (std::size_t n{0}; n < N; n++)
         this->_data[n] = static_cast<T>(other[n]);
 }

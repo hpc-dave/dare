@@ -153,7 +153,7 @@ public:
      * \brief invokes barrier if required
      * \note requires communication, not threadsafe
      */
-    void Barrier();
+    void Barrier() const;
 
     /*!
      * \brief wrapper around the MPI-routine of the same name for a single value
