@@ -3,6 +3,7 @@ set(DaRe_HEADER_FILES
     "Vector.inl"
     "Vector_traits.h"
     "Hashes.h"
+    "InitializationTracker.h"
 )
 
 target_sources(dare

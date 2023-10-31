@@ -183,12 +183,15 @@ const utils::Vector<Dim, LO>& Cartesian<Dim, LO, GO, SC>::GetPeriodicity() const
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
-mpi::ExecutionManager* Cartesian<Dim, LO, GO, SC>::GetExecutionManager() {
-    return exec_man;
+bool Cartesian<Dim, LO, GO, SC>::IsPeriodic() const {
+    bool is_periodic{false};
+    for (auto e : periodicity)
+        is_periodic |= (e != 0);
+    return is_periodic;
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
-const mpi::ExecutionManager* Cartesian<Dim, LO, GO, SC>::GetExecutionManager() const {
+mpi::ExecutionManager* Cartesian<Dim, LO, GO, SC>::GetExecutionManager() const {
     return exec_man;
 }
 

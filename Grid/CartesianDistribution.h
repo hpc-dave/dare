@@ -48,7 +48,7 @@ void CubicalCartesianDistribution(int num_proc,
     // Determine direction with maximum number of cells
     std::size_t pos_max_res{0};
     for (std::size_t n{1}; n < Dim; n++)
-        if (resolution_global[n] > resolution_global[n - 1])
+        if (resolution_global[n] > resolution_global[pos_max_res])
             pos_max_res = n;
 
     // Determine approximately number of cells per subdomain

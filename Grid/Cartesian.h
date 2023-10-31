@@ -143,9 +143,10 @@ public:
 
     uint8_t GetBoundaryID() const;
     const VecLO& GetPeriodicity() const;
+    bool IsPeriodic() const;
 
-    mpi::ExecutionManager* GetExecutionManager();
-    const mpi::ExecutionManager* GetExecutionManager() const;
+    // mpi::ExecutionManager* GetExecutionManager();
+    mpi::ExecutionManager* GetExecutionManager() const;
 
 private:
     VecLO resolution_local;

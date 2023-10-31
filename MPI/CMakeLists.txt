@@ -4,6 +4,10 @@ set(DaRe_HEADER_FILES
     "ExecutionManager.h"
     "ExecutionManager.inl"
     "ExecutionManager_MPI.inl"
+    "HaloBuffer.h"
+    "HaloBuffer.inl"
+    "SingleHaloBuffer.h"
+    "SingleHaloBuffer.inl"
 )
 
 set(DaRe_SOURCE_FILES
