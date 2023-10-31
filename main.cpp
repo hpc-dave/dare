@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 David Rieder
+ * Copyright (c) 2023 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,45 +24,56 @@
 
 #include <iostream>
 #include "Utilities/Vector.h"
-#include "FileFormats/STL.h"
-#include "FileFormats/XML.h"
-#include "FileFormats/STL.h"
+#include "MPI/ExecutionManager.h"
+#include "Grid/Cartesian.h"
 
+int main(int argc, char* argv[]) {
+    const std::size_t Dim = 3;
+    using LO = int32_t;
+    using GO = int64_t;
+    using SC = double;
 
-int main(int argc, char* argv[]){
-    // dare::utils::Vector<3, int> vec;
-    // dare::utils::Vector<3, double> vec_d;
+    MPI_Init(&argc, &argv);
 
-    // vec.i() = 1;
-    // vec.j() = 2;
-    // vec.k() = 3;
-    // for(auto v : vec){
-    //     std::cout << v << std::endl;
-    // }
-    // vec_d.x() = 4;
-    // vec_d.y() = 2;
-    // vec_d.z() = 3;
-    // for(auto v : vec_d){
-    //     std::cout << v << std::endl;
-    // }
+    MPI_Request request[2];
+    // MPI_Request_free(&request);
 
-    // using P = dare::ff::STLfacet<double>::PointType;
-    // P v1(0., 0., 0.);
-    // P v2(1., 0., 0.);
-    // P v3(0., 1., 0.);
-    // dare::ff::STLfacet<double> facet(v1, v2, v3);
-    // std::cout << facet << std::endl;
+    // std::cout << "trying MPI_wait" << std::endl;
+    // MPI_Wait(&request, &status);
 
-    dare::ff::XMLNode node("test", { dare::ff::_XMLAttribute("attrib", "one")} , "mydata");
-    // std::ostream os;
-    dare::ff::XMLNode parent("parent", dare::ff::_XMLAttribute("att", "two"));
-    parent << node;
-    // std::ofstream ofs("test.xml", std::ios::out);
-    // parent.AppendToOutput(0, ofs);
-    // ofs << os;
-    // ofs.close();
-    dare::ff::XML xml(parent);
-    xml.WriteToFile("output.xml");
-    std::cout << "Hello world\n";
+    // std::cout << "success" << std::endl;
+    dare::mpi::ExecutionManager exman;
+    std::vector<double> send_buffer(10), recv_buffer(10);
+
+    for (int n = 0; n < 10; n++) {
+        send_buffer[n] = 0. + n + exman.GetRank();
+    }
+
+    std::cout << "Rank " << exman.GetRank() << ": starting exchange" << std::endl;
+    exman.Iexchange(send_buffer.data(), send_buffer.size(), recv_buffer.data(), recv_buffer.size(),
+                    exman.GetRank(), 1000, &request[0], &request[1]);
+    std::cout << "Rank " << exman.GetRank() << ": starting to wait" << std::endl;
+    MPI_Waitall(2, request, MPI_STATUSES_IGNORE);
+    std::cout << "Rank " << exman.GetRank() << ": finished waiting" << std::endl;
+
+    bool success{true};
+    for (int n = 0; n < 10; n++)
+        success &= send_buffer[n] == recv_buffer[n];
+
+    if (success)
+        std::cout << "Rank " << exman.GetRank() << ": success" << std::endl;
+    else
+        std::cout << "Rank " << exman.GetRank() << ": failure" << std::endl;
+    GO i_size{10}, j_size{10};
+    dare::utils::Vector<Dim, GO> res(30, 20, 10);
+    dare::utils::Vector<Dim, LO> res_i = res;
+    dare::utils::Vector<Dim, SC> size(1., 1., 1.);
+    res_i = size;
+    LO num_ghost = 2;
+    dare::Grid::Cartesian<Dim> grid(&exman, res, size, num_ghost);
+    auto rep = grid.GetRepresentation(dare::utils::Vector<Dim, LO>());
+    rep.PrintDistribution("distribution.csv");
+    MPI_Finalize();
+
     return 0;
 }
