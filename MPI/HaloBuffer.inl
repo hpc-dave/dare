@@ -57,7 +57,7 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
 
     std::vector<std::vector<GO>> list_filtered_IDs(exec_man->GetNumberProcesses());
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
-        for (std::size_t m{0}; m < list_required_IDs_partner[n].size(); n++) {
+        for (std::size_t m{0}; m < list_required_IDs_partner[n].size(); m++) {
             GO id = list_required_IDs_partner[n][m];
             if (is_local(id)) {
                 list_filtered_IDs[n].push_back(id);
@@ -114,6 +114,11 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
             GO id_glob = list_filtered_IDs[proc][n];
             LO id_loc = map_global_to_local(id_glob);
             list_IDs_send[n] = id_loc;
+        }
+        if (proc == exec_man->GetRank()) {
+            std::size_t n_recv{list_IDs_send.size() - 1};
+            for (std::size_t n_send{0}; n_send < list_IDs_send.size(); n_send++)
+                list_IDs_recv[n_recv--] = list_IDs_send[n_send];
         }
         entry.second.FinalizeInitialization(list_IDs_send, list_IDs_recv);
     }

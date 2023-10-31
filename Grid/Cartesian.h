@@ -87,6 +87,13 @@ public:
         mpi::ExecutionManager* exec_man,
         const VecGO& resolution,
         const VecSC& size,
+        const LO num_ghost,
+        const VecLO& periodic);
+
+    Cartesian(
+        mpi::ExecutionManager* exec_man,
+        const VecGO& resolution,
+        const VecSC& size,
         const LO num_ghost);
 
     Cartesian(const Cartesian<Dim, LO, GO, SC>& other) = delete;

@@ -131,17 +131,15 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
                 std::size_t count{0};
                 VecLO periodicity = grid->GetPeriodicity();
                 for (std::size_t dim{0}; dim < Dim; dim++) {
-                    if (periodicity[dim] != 0) {
                         count += ind_glob[dim] < grid->GetNumGhost();
-                        count += ind_glob[dim] > resolution_global[dim] - grid->GetNumGhost();
-                    }
+                        count += ind_glob[dim] >= (resolution_global[dim] - grid->GetNumGhost());
                 }
                 if (count != 1)
                     continue;
                 for (std::size_t dim{0}; dim < Dim; dim++) {
                     if (periodicity[dim] != 0) {
                         bool low_period{ind_glob[dim] < grid->GetNumGhost()};
-                        bool high_period{ind_glob[dim] > resolution_global[dim] - grid->GetNumGhost()};
+                        bool high_period{ind_glob[dim] >= (resolution_global[dim] - grid->GetNumGhost())};
                         if (low_period || high_period) {
                             VecGO ind_period = ind_glob;
                             if (low_period) {

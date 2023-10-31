@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
     dare::utils::Vector<Dim, SC> size(1., 1., 1.);
     res_i = size;
     LO num_ghost = 2;
-    dare::Grid::Cartesian<Dim> grid(&exman, res, size, num_ghost);
+    dare::Grid::Cartesian<Dim> grid(&exman, res, size, num_ghost, dare::utils::Vector<Dim, LO>(1, 0, 0));
     auto rep = grid.GetRepresentation(dare::utils::Vector<Dim, LO>());
     rep.PrintDistribution("distribution.csv");
     MPI_Finalize();

@@ -43,6 +43,7 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
       cell_volume(0.),
       num_ghost(_num_ghost),
       id_boundaries(BOUNDARIES_NONE),
+      periodicity(periodic),
       exec_man(_exec_man) {
     static_assert(std::is_signed_v<LO> && std::is_integral_v<LO>, "The local ordinal needs to be a signed integer!");
     static_assert(std::is_signed_v<GO> && std::is_integral_v<GO>, "The global ordinal needs to be a signed integer!");
@@ -91,18 +92,31 @@ template <std::size_t Dim, class LO, class GO, class SC>
 Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
                                       const utils::Vector<Dim, GO>& res,
                                       const utils::Vector<Dim, SC>& size,
-                                      const LO _num_ghost)
+                                      const LO _num_ghost,
+                                      const VecLO& periodic)
     : Cartesian(_exec_man,
                 res,
                 size,
                 _num_ghost,
-                VecLO(),  // all values default to 0 --> no periodicity
+                periodic,
                 [](mpi::ExecutionManager* a,
                    const utils::Vector<Dim, GO>& b,
                    utils::Vector<Dim, LO>* c,
                    utils::Vector<Dim, GO>* d) {
                     dare::Grid::RegularCartesianDistribution(a, b, c, d);
                 }) {
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
+                                      const utils::Vector<Dim, GO>& res,
+                                      const utils::Vector<Dim, SC>& size,
+                                      const LO _num_ghost)
+    : Cartesian(_exec_man,
+                res,
+                size,
+                _num_ghost,
+                VecLO()) {
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
