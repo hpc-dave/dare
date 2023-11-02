@@ -30,9 +30,10 @@ HaloBuffer<LO, GO, SC>::HaloBuffer() : exec_man(nullptr) {}
 template <typename LO, typename GO, typename SC>
 template <typename Lambda1, typename Lambda2>
 void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
-                                    const std::vector<GO>& list_required_IDs,
-                                    Lambda1 is_local,
-                                    Lambda2 map_global_to_local) {
+                                        const std::vector<GO>& list_required_IDs,
+                                        const std::unordered_map<GO, GO> map_periodic,
+                                        Lambda1 is_local,
+                                        Lambda2 map_global_to_local) {
     exec_man = execution_manager;
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
         buffers[n] = SingleHaloBuffer<LO, GO, SC>(exec_man, n);
@@ -107,6 +108,12 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
         list_IDs_send.resize(list_filtered_IDs[proc].size());
         for (std::size_t n{0}; n < list_IDs_recv.size(); n++) {
             GO id_glob = list_filtered_IDs_partner[proc][n];
+            // correct indices in the periodic case
+            if (!map_periodic.empty()) {
+                const auto& entry = map_periodic.find(id_glob);
+                if (entry != map_periodic.end())
+                    id_glob = entry->second;
+            }
             LO id_loc = map_global_to_local(id_glob);
             list_IDs_recv[n] = id_loc;
         }
@@ -115,10 +122,50 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
             LO id_loc = map_global_to_local(id_glob);
             list_IDs_send[n] = id_loc;
         }
+
+        // Now, there is the problem, that the halo region of the subdomain will also be
+        // part of the send and receive buffer of the subdomain to itself.
+        // This self-communication is quite convenient to deal with periodic domains,
+        // but we need to get rid of those double assigned cells, otherwise we get a super
+        // nice race condition.
         if (proc == exec_man->GetRank()) {
-            std::size_t n_recv{list_IDs_send.size() - 1};
-            for (std::size_t n_send{0}; n_send < list_IDs_send.size(); n_send++)
-                list_IDs_recv[n_recv--] = list_IDs_send[n_send];
+            std::vector<LO> remove_send, remove_recv;
+            remove_send.reserve(list_IDs_send.size() / 4);
+            remove_recv.reserve(list_IDs_recv.size() / 4);
+            for (std::size_t n{0}; n < list_IDs_send.size(); n++) {
+                LO send_id = list_IDs_send[n];
+                for (std::size_t m{0}; m < list_IDs_recv.size(); m++) {
+                    LO recv_id = list_IDs_recv[m];
+                    if (send_id == recv_id) {
+                        remove_send.push_back(send_id);
+                        remove_recv.push_back(recv_id);
+                        break;
+                    }
+                }
+            }
+            std::vector<LO> list_IDs_temp(list_IDs_send.size() - remove_send.size());
+            std::size_t pos_filter{0}, pos_list{0};
+            for (LO id : list_IDs_send) {
+                if (remove_send[pos_filter] == id) {
+                    pos_filter++;
+                } else {
+                    list_IDs_temp[pos_list] = id;
+                    pos_list++;
+                }
+            }
+            list_IDs_send = list_IDs_temp;
+            list_IDs_temp.resize(list_IDs_recv.size() - remove_recv.size());
+            pos_filter = 0;
+            pos_list = 0;
+            for (LO id : list_IDs_send) {
+                if (remove_recv[pos_filter] == id) {
+                    pos_filter++;
+                } else {
+                    list_IDs_temp[pos_list] = id;
+                    pos_list++;
+                }
+            }
+            list_IDs_recv = list_IDs_temp;
         }
         entry.second.FinalizeInitialization(list_IDs_send, list_IDs_recv);
     }

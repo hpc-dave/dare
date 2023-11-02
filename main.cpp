@@ -26,54 +26,32 @@
 #include "Utilities/Vector.h"
 #include "MPI/ExecutionManager.h"
 #include "Grid/Cartesian.h"
+#include "ScopeGuard/ScopeGuard.h"
 
 int main(int argc, char* argv[]) {
     const std::size_t Dim = 3;
     using LO = int32_t;
     using GO = int64_t;
     using SC = double;
+    int rank_stop = 1;
 
-    MPI_Init(&argc, &argv);
+    dare::ScopeGuard scope_guard(argc, argv);
 
-    MPI_Request request[2];
-    // MPI_Request_free(&request);
-
-    // std::cout << "trying MPI_wait" << std::endl;
-    // MPI_Wait(&request, &status);
-
-    // std::cout << "success" << std::endl;
     dare::mpi::ExecutionManager exman;
-    std::vector<double> send_buffer(10), recv_buffer(10);
 
-    for (int n = 0; n < 10; n++) {
-        send_buffer[n] = 0. + n + exman.GetRank();
-    }
-
-    std::cout << "Rank " << exman.GetRank() << ": starting exchange" << std::endl;
-    exman.Iexchange(send_buffer.data(), send_buffer.size(), recv_buffer.data(), recv_buffer.size(),
-                    exman.GetRank(), 1000, &request[0], &request[1]);
-    std::cout << "Rank " << exman.GetRank() << ": starting to wait" << std::endl;
-    MPI_Waitall(2, request, MPI_STATUSES_IGNORE);
-    std::cout << "Rank " << exman.GetRank() << ": finished waiting" << std::endl;
-
-    bool success{true};
-    for (int n = 0; n < 10; n++)
-        success &= send_buffer[n] == recv_buffer[n];
-
-    if (success)
-        std::cout << "Rank " << exman.GetRank() << ": success" << std::endl;
-    else
-        std::cout << "Rank " << exman.GetRank() << ": failure" << std::endl;
-    GO i_size{10}, j_size{10};
+    // GO i_size{10}, j_size{10};
     dare::utils::Vector<Dim, GO> res(30, 20, 10);
     dare::utils::Vector<Dim, LO> res_i = res;
     dare::utils::Vector<Dim, SC> size(1., 1., 1.);
     res_i = size;
     LO num_ghost = 2;
     dare::Grid::Cartesian<Dim> grid(&exman, res, size, num_ghost, dare::utils::Vector<Dim, LO>(1, 0, 0));
+    int stop = 1;
+    if (exman.GetRank() == rank_stop)
+        while (stop == 1) {
+        }
     auto rep = grid.GetRepresentation(dare::utils::Vector<Dim, LO>());
     rep.PrintDistribution("distribution.csv");
-    MPI_Finalize();
 
     return 0;
 }

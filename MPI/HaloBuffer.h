@@ -26,6 +26,7 @@
 #define MPI_HALOBUFFER_H_
 
 #include <map>
+#include <unordered_map>
 #include <sstream>
 #include <vector>
 
@@ -46,6 +47,7 @@ public:
     template <typename Lambda1, typename Lambda2>
     void Initialize(ExecutionManager* exec_man,
                     const std::vector<GO>& list_required_IDs,
+                    const std::unordered_map<GO, GO> map_periodic,
                     Lambda1 is_local,
                     Lambda2 map_global_to_local);
 

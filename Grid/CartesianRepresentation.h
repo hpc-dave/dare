@@ -26,6 +26,7 @@
 #define GRID_CARTESIANREPRESENTATION_H_
 
 #include <map>
+#include <unordered_map>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -77,6 +78,7 @@ public:
 
     bool IsInternal(const VecLO& ind_loc) const;
     bool IsInternal(const VecGO& ind_glob) const;
+    bool IsInternal(LO) const;
 
     VecLO MapCellToIndexLocal(const LO n_loc) const;
     VecLO MapCellToIndexLocalInternal(const LO n_loc) const;

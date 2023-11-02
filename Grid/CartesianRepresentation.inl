@@ -115,12 +115,13 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
     }
     required_halo_IDs.reserve(num_cells);
 
+    std::unordered_map<GO, GO> map_periodic;
     for (LO n{0}; n < GetNumberLocalCells(); n++) {
         VecLO ind = MapCellToIndexLocal(n);
         if (!IsInternal(ind)) {
             VecGO ind_glob = MapLocalToGlobal(ind);
+            GO id_glob = MapIndexToCellGlobal(ind_glob);
             if (IsInternal(ind_glob)) {
-                GO id_glob = MapIndexToCellGlobal(ind_glob);
                 required_halo_IDs.push_back(id_glob);
             } else if (grid->IsPeriodic()) {
                 // counts the number of met conditions
@@ -147,8 +148,9 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
                             } else {
                                 ind_period[dim] -= resolution_global_internal[dim];
                             }
-                            GO id_glob = MapIndexToCellGlobal(ind_period);
-                            required_halo_IDs.push_back(id_glob);
+                            GO id_glob_period = MapIndexToCellGlobal(ind_period);
+                            required_halo_IDs.push_back(id_glob_period);
+                            map_periodic[id_glob_period] = id_glob;
                             break;
                         }
                     }
@@ -163,7 +165,8 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
     auto map_global_to_local = [&](GO id) {
         return MapGlobalToLocal(id);
     };
-    halo_buffer.Initialize(grid->GetExecutionManager(), required_halo_IDs, is_local, map_global_to_local);
+    halo_buffer.Initialize(grid->GetExecutionManager(), required_halo_IDs, map_periodic,
+                           is_local, map_global_to_local);
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
@@ -380,6 +383,12 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(const VecLO& ind_loc) 
         is_internal &= ind_loc[dim] < (resolution_local[dim] - grid->GetNumGhost());
     }
     return is_internal;
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(LO id) const {
+    VecLO ind = MapCellToIndexLocal(id);
+    return IsInternal(ind);
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>

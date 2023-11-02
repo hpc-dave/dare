@@ -74,10 +74,29 @@ if(MPI_CXX_FOUND)
 	)
 endif()
 
+find_package(Boost 1.74 REQUIRED
+    COMPONENTS filesystem
+               regex 
+               serialization
+               system
+)
+
+if(Boost_FOUND)
+    set_target_properties(Boost::boost
+                          Boost::filesystem
+                          Boost::regex
+                          Boost::serialization
+                          Boost::system
+
+        PROPERTIES IMPORTED_GLOBAL TRUE
+    )
+endif()
+
 add_subdirectory(FileFormats                                          )
 add_subdirectory(Utilities                                            )
 add_subdirectory(MPI                                                  )
 add_subdirectory(Grid                                                 )
+add_subdirectory(ScopeGuard                                           )
 
 if(${DEBUG})
     message("\nCompiling in DEBUG mode\n")
@@ -104,14 +123,24 @@ target_include_directories(exec PUBLIC
 
 # link libraries
 target_link_libraries(dare
-	PUBLIC OpenMP::OpenMP_CXX
-	PUBLIC MPI::MPI_CXX
-	# PUBLIC trilinos
+    PUBLIC OpenMP::OpenMP_CXX
+    PUBLIC MPI::MPI_CXX
+    Boost::boost
+    Boost::filesystem
+    Boost::regex
+    Boost::serialization
+    Boost::system
+    # PUBLIC trilinos
 )
 target_link_libraries(exec
-	PUBLIC OpenMP::OpenMP_CXX
-	PUBLIC MPI::MPI_CXX
-	# PUBLIC trilinos
+    PUBLIC OpenMP::OpenMP_CXX
+    PUBLIC MPI::MPI_CXX
+    Boost::boost
+    Boost::filesystem
+    Boost::regex
+    Boost::serialization
+    Boost::system
+    # PUBLIC trilinos
 )
 
 # Create installation rules and configuration scripts
