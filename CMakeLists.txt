@@ -11,6 +11,11 @@ option(DEBUG
     OFF
 )
 
+option(USE_GTEST
+    "Enables debugging statements for the repository"
+    OFF
+)
+
 include(GNUInstallDirs)
 # a few settings
 # set(Trilinos_MINIMUM_VERSION 13.0)
@@ -18,6 +23,9 @@ include(GNUInstallDirs)
 # define main target
 add_executable(exec)
 add_library(dare STATIC)
+if(USE_GTEST)
+    add_executable(unit_test)
+endif()
 
 # exports compile_command.json with relevant parths
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
@@ -32,6 +40,12 @@ set_target_properties(dare
            PROPERTIES CXX_STANDARD 17
            VERSION 0.1
 )
+
+if(USE_GTEST)
+    set_target_properties(unit_test
+           PROPERTIES CXX_STANDARD 17
+)
+endif()
 
 target_include_directories(dare PRIVATE .)
 set(PACKAGE_NAME_EXPORT     "${CMAKE_PROJECT_NAME}Targets"                  )
@@ -80,7 +94,6 @@ find_package(Boost 1.74 REQUIRED
                serialization
                system
 )
-
 if(Boost_FOUND)
     set_target_properties(Boost::boost
                           Boost::filesystem
@@ -92,11 +105,24 @@ if(Boost_FOUND)
     )
 endif()
 
+if(USE_GTEST)
+    find_package(GTest REQUIRED)
+    if(GTest_FOUND)
+        set_target_properties(GTest::GTest
+            PROPERTIES IMPORTED_GLOBAL TRUE
+        )
+    endif()
+endif()
+
 add_subdirectory(FileFormats                                          )
 add_subdirectory(Utilities                                            )
 add_subdirectory(MPI                                                  )
 add_subdirectory(Grid                                                 )
 add_subdirectory(ScopeGuard                                           )
+if(USE_GTEST)
+    add_subdirectory(test)
+endif()
+
 
 if(${DEBUG})
     message("\nCompiling in DEBUG mode\n")
@@ -125,23 +151,41 @@ target_include_directories(exec PUBLIC
 target_link_libraries(dare
     PUBLIC OpenMP::OpenMP_CXX
     PUBLIC MPI::MPI_CXX
-    Boost::boost
-    Boost::filesystem
-    Boost::regex
-    Boost::serialization
-    Boost::system
+    PUBLIC Boost::boost
+    PUBLIC Boost::filesystem
+    PUBLIC Boost::regex
+    PUBLIC Boost::serialization
+    PUBLIC Boost::system
     # PUBLIC trilinos
 )
 target_link_libraries(exec
     PUBLIC OpenMP::OpenMP_CXX
     PUBLIC MPI::MPI_CXX
-    Boost::boost
-    Boost::filesystem
-    Boost::regex
-    Boost::serialization
-    Boost::system
+    PUBLIC Boost::boost
+    PUBLIC Boost::filesystem
+    PUBLIC Boost::regex
+    PUBLIC Boost::serialization
+    PUBLIC Boost::system
     # PUBLIC trilinos
 )
+if(USE_GTEST)
+target_link_libraries(dare
+    PUBLIC GTest::GTest
+)
+target_link_libraries(exec
+    PUBLIC GTest::GTest
+)
+target_link_libraries(unit_test
+    PUBLIC OpenMP::OpenMP_CXX
+    PUBLIC MPI::MPI_CXX
+    PUBLIC Boost::boost
+    PUBLIC Boost::filesystem
+    PUBLIC Boost::regex
+    PUBLIC Boost::serialization
+    PUBLIC Boost::system
+    PUBLIC GTest::GTest
+)
+endif()
 
 # Create installation rules and configuration scripts
 install(
@@ -163,7 +207,6 @@ export(EXPORT "${PACKAGE_NAME_EXPORT}"
     FILE "${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_BUILD_TREE_NAME}/${PACKAGE_NAME_EXPORT}.cmake"
     NAMESPACE ${CMAKE_PROJECT_NAME}::
 )
-
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_BUILD_TREE_NAME}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake"
