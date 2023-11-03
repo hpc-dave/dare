@@ -60,11 +60,12 @@ public:
      * \brief constructor
      * @param argc number of arguments
      * @param argv pointer to the array with string arguments
+     * @param suppress_output identifier, if anything should be printed
      *
      * The constructor will initialize the environments according to the provided
      * terminal arguments
      */
-    ScopeGuard(int argc, char* argv[]);
+    ScopeGuard(int argc, char* argv[], bool suppress_output = false);
 
     /*!
      * \brief default destructor

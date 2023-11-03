@@ -408,6 +408,13 @@ public:
     template <typename T>
     int Irecv(T* buffer, int count, int sender, int tag, MPI_Request* request);
 
+    /*!
+     * @brief Probes a tag
+     * @param source rank of sending process
+     * @param tag tag of the message
+     * @param status poitner to message
+     * @return MPI error
+     */
     inline int Probe(int source, int tag, MPI_Status* status);
 
     /*!

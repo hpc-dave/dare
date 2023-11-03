@@ -54,44 +54,77 @@ public:
     SingleHaloBuffer(ExecutionManager* execution_manager = nullptr,
                int rank_partner = -1);
 
+    /*!
+     * @brief initializes the buffer
+     * @param execution_manager pointer to execution manager
+     * @param rank_partner rank of partner process
+     */
     void Initialize(ExecutionManager* execution_manager,
                     int rank_partner);
 
+    /*!
+     * @brief Communicates the number of halo cell IDs of the follow up message
+     * @param num_send number of IDs send from this process
+     * @param num_recv buffer with number of IDs partner process will send
+     * @param request_send request for non-blocking send operation
+     * @param request_receive request for non-blocking receive operation
+     */
     void CommunicateAmountRequiredHaloCellIDs(std::size_t num_send, std::size_t* num_recv,
                                               MPI_Request* request_send, MPI_Request* request_receive);
 
+    /*!
+     * @brief Communicates ALL IDs which the source process requires
+     * @param list_global_ID IDs from this process, which are required from others
+     * @param list_global_IDs_partner IDs, which the partner process requires
+     * @param request_send request for non-blocking send
+     * @param request_receive request for non-blocking receive
+     */
     void CommunicateRequiredHaloCellIDs(const std::vector<GO>& list_global_ID,
                                         std::vector<GO>* list_global_IDs_partner,
                                         MPI_Request* request_send, MPI_Request* request_receive);
 
+    /*!
+     * @brief Communicates the IDs, which are located on this and partner process
+     * @param list_filtered_ID request IDs, which are actually located on this process
+     * @param list_filtered_IDs_partner required IDs, which are located on the partner process
+     * @param request_send request for non-blocking send
+     * @param request_receive request for non-blocking receive
+     */
     void CommunicateFilteredHaloCellIDs(const std::vector<GO>& list_filtered_ID,
                                         std::vector<GO>* list_filtered_IDs_partner,
                                         MPI_Request* request_send, MPI_Request* request_receive);
 
+    /*!
+     * @brief finalize the initialization and store the grid buffer
+     * @param list_IDs_send IDs of local grid cells, which will be send to partner
+     * @param list_IDs_recv IDs of local grid cells, for which data will be received
+     */
     void FinalizeInitialization(const std::vector<LO>& list_IDs_send, const std::vector<LO>& list_IDs_recv);
 
     /*!
-     * @brief 
-     * @tparam Field 
-     * @param field 
-     * @param buffer_send 
-     * @param buffer_recv 
-     * @param status_send 
-     * @param status_recv 
-     * @return 
+     * @brief Initiates communication to exchange the data of the field
+     * @tparam Field arbitrary field type
+     * @param field field with the data
+     * @param request_send request handle of non-blocking send
+     * @param request_recv request handle of non-blocking recv
      */
     template <typename Field>
-    int Exchange(const Field& field,
-                 MPI_Status* status_send, MPI_Status* status_recv);
+    void Exchange(const Field& field,
+                 MPI_Request* request_send, MPI_Request* request_recv);
 
     /*!
-     * @brief 
-     * @tparam Field 
-     * @param field 
-     * @param buffer 
+     * @brief fills values in the field from buffer
+     * @tparam Field arbitrary field type
+     * @param field pointer to field
      */
     template <typename Field>
     void FillValues(Field* field);
+
+    /*!
+     * @brief returns partner rank
+     * @return partner rank
+     */
+    int GetPartnerRank() const;
 
 private:
     ExecutionManager* exec_man;             //!< reference to execution manager

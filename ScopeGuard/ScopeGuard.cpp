@@ -26,7 +26,7 @@
 
 namespace dare {
 
-ScopeGuard::ScopeGuard(int _argc, char* _argv[]) : argc(_argc), argv(_argv) {
+ScopeGuard::ScopeGuard(int _argc, char* _argv[], bool suppress_output) : argc(_argc), argv(_argv) {
     int num_proc = 1;
     int my_rank = 0;
 
@@ -41,7 +41,7 @@ ScopeGuard::ScopeGuard(int _argc, char* _argv[]) : argc(_argc), argv(_argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
     is_root = my_rank == 0;
-    if (AmIRoot())
+    if (AmIRoot() && !suppress_output)
         std::cout << "\nRunning with " << num_proc << " procs.\n"
                   << std::endl;
 

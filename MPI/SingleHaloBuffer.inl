@@ -92,38 +92,42 @@ void SingleHaloBuffer<LO, GO, SC>::FinalizeInitialization(const std::vector<LO>&
 
 template <typename LO, typename GO, typename SC>
 template <typename Field>
-int SingleHaloBuffer<LO, GO, SC>::Exchange(const Field& field,
-                                           MPI_Status* status_send, MPI_Status* status_recv) {
+void SingleHaloBuffer<LO, GO, SC>::Exchange(const Field& field,
+                                           MPI_Request* request_send, MPI_Request* request_recv) {
     std::size_t num_eq = field.GetNumEquations();
     const int tag_exchange{2100};
     int num_send = list_local_IDs_send.size() * num_eq;
     int num_recv = list_local_IDs_recv.size() * num_eq;
 
     if (num_send > buffer_send.size())
-        buffer_send->resize(num_send);
+        buffer_send.resize(num_send);
     if (num_recv > buffer_recv.size())
         buffer_recv.resize(num_send);
 
     for (std::size_t n{0}; n < list_local_IDs_send.size(); n++) {
         LO id = list_local_IDs_send[n] * num_eq;
         for (std::size_t e{0}; e < num_eq; e++)
-            buffer_send[n + e] = field->at(id + e);
+            buffer_send[n * num_eq + e] = field.at(id + e);
     }
 
-    return exec_man->Iexchange(buffer_send.data(), num_send, buffer_recv.data(), num_recv,
-                               rank_partner_proc, tag_exchange, status_send, status_recv);
+    exec_man->Iexchange(buffer_send.data(), num_send, buffer_recv.data(), num_recv,
+                               rank_partner_proc, tag_exchange, request_send, request_recv);
 }
 
 template <typename LO, typename GO, typename SC>
 template <typename Field>
 void SingleHaloBuffer<LO, GO, SC>::FillValues(Field* field) {
-    std::size_t num_eq = field.GetNumEquations();
+    std::size_t num_eq = field->GetNumEquations();
 
     for (std::size_t n{0}; n < list_local_IDs_recv.size(); n++) {
         LO id = list_local_IDs_recv[n] * num_eq;
         for (std::size_t e{0}; e < num_eq; e++)
-            field->at(id + e) = buffer_recv[n + e];
+            field->at(id + e) = buffer_recv[n * num_eq + e];
     }
 }
 
+template <typename LO, typename GO, typename SC>
+int SingleHaloBuffer<LO, GO, SC>::GetPartnerRank() const {
+    return rank_partner_proc;
+}
 }  // namespace dare::mpi
