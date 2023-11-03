@@ -22,19 +22,42 @@
  * SOFTWARE.
  */
 
-#include <mpi.h>
 #include <gtest/gtest.h>
+#include <mpi.h>
+
+#include <boost/algorithm/string/predicate.hpp>
+
+static std::string xml_report_arg = ""; // NOLINT
 
 int main(int argc, char* argv[]) {
+    // initialize MPI environment
     MPI_Init(&argc, &argv);
     int rank{-1};
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // if output should be generated, we adapt the output files name to include the process ID
+    for (int n{0}; n < argc; n++) {
+        std::string arg = argv[n];
+        if (arg.size() > 15) {
+            if (boost::iequals(arg.substr(0, 15), "--gtest_output=")) {
+                xml_report_arg = arg;
+                std::string proc_id = "_";
+                proc_id += std::to_string(rank);
+                xml_report_arg.insert(xml_report_arg.size() - 4, proc_id, 0, proc_id.size());
+                argv[n] = xml_report_arg.data();
+            }
+        }
+    }
+
     // initializing google test
     testing::InitGoogleTest(&argc, argv);
     // delete the default printers to avoid confusing output on COUT
     testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();
     if (rank != 0) {
+        // remove all output to cout from non-root processes
         delete listeners.Release(listeners.default_result_printer());
+        // remove report writers
+        // delete listeners.Release(listeners.default_xml_generator());
     }
     // run the tests
     int ret = RUN_ALL_TESTS();
