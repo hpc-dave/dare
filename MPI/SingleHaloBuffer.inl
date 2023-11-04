@@ -38,10 +38,10 @@ void SingleHaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manage
 }
 
 template <typename LO, typename GO, typename SC>
-void SingleHaloBuffer<LO, GO, SC>::CommunicateAmountRequiredHaloCellIDs(std::size_t num_send,
-                                                                    std::size_t* num_recv,
-                                                                    MPI_Request* request_send,
-                                                                    MPI_Request* request_recv) {
+void SingleHaloBuffer<LO, GO, SC>::CommunicateNumCellIDs(std::size_t num_send,
+                                                         std::size_t* num_recv,
+                                                         MPI_Request* request_send,
+                                                         MPI_Request* request_recv) {
     const int tag_communicated{2001};
 
     exec_man->Iexchange(&num_send, 1, num_recv, 1, rank_partner_proc, tag_communicated, request_send, request_recv);

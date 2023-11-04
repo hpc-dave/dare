@@ -69,8 +69,8 @@ public:
      * @param request_send request for non-blocking send operation
      * @param request_receive request for non-blocking receive operation
      */
-    void CommunicateAmountRequiredHaloCellIDs(std::size_t num_send, std::size_t* num_recv,
-                                              MPI_Request* request_send, MPI_Request* request_receive);
+    void CommunicateNumCellIDs(std::size_t num_send, std::size_t* num_recv,
+                               MPI_Request* request_send, MPI_Request* request_receive);
 
     /*!
      * @brief Communicates ALL IDs which the source process requires

@@ -42,8 +42,21 @@ namespace dare::mpi {
 template <typename LO, typename GO, typename SC>
 class HaloBuffer : public utils::InitializationTracker {
 public:
+    /*!
+     * @brief default constructor
+     */
     HaloBuffer();
 
+    /*!
+     * @brief prepares all required data
+     * @tparam Lambda1 lambda of form lambda(GO):bool
+     * @tparam Lambda2 lambda of form lambda(GO):LO
+     * @param exec_man pointer to execution manager
+     * @param list_required_IDs list of IDs which are located in halo cells
+     * @param map_periodic map for correlation of periodic cells
+     * @param is_local lambda to determine if an ID is located on subdomain
+     * @param map_global_to_local lambda to convert global to local ID
+     */
     template <typename Lambda1, typename Lambda2>
     void Initialize(ExecutionManager* exec_man,
                     const std::vector<GO>& list_required_IDs,
@@ -51,12 +64,22 @@ public:
                     Lambda1 is_local,
                     Lambda2 map_global_to_local);
 
+    /*!
+     * @brief conducts communication to exchange halo cells
+     * @tparam Field field type
+     * @param field pointer to field
+     * \note the Field type requires an interface with two
+     * functions:
+     *  - GetNumEquations(): std::size_t - number of equations per grid cell
+     *  - at(local_id: LO): SC& - access element of field at local_id
+     *  - at(local_id: LO): SC const - constant version
+     */
     template <typename Field>
     void Exchange(Field* field);
 
 private:
-    ExecutionManager* exec_man;
-    std::map<int, SingleHaloBuffer<LO, GO, SC>> buffers;
+    ExecutionManager* exec_man;                           //!< execution manager
+    std::map<int, SingleHaloBuffer<LO, GO, SC>> buffers;  //!< list of buffers
 };
 }  // namespace dare::mpi
 

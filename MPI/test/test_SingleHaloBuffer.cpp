@@ -24,34 +24,8 @@
 
 #include <float.h>
 #include <gtest/gtest.h>
-#include <vector>
+#include "TestField.h"
 #include "../SingleHaloBuffer.h"
-
-namespace dare::test {
-class TestField {
-public:
-    void ResizeByGridSize(int grid_size) {
-        data.resize(grid_size * GetNumEquations());
-    }
-    double* GetData() {
-        return data.data();
-    }
-    std::size_t GetNumEquations() const {
-        return num_eq;
-    }
-
-    double& at(std::size_t pos) {
-        return data[pos];
-    }
-    double at(std::size_t pos) const {
-        return data[pos];
-    }
-
-private:
-    const std::size_t num_eq = 5;
-    std::vector<double> data;
-};
-}  // namespace dare::test
 
 TEST(SingleHaloBufferTest, Initialize) {
     using LO = int32_t;
@@ -78,8 +52,8 @@ TEST(SingleHaloBufferTest, CommunicateAmountHaloCellIDs) {
     std::vector<std::size_t> recv_buffer(exman.GetNumberProcesses());
     std::vector<MPI_Request> request(exman.GetNumberProcesses()*2);
     for (int n{0}; n < list_buffers.size(); n++)
-        list_buffers[n].CommunicateAmountRequiredHaloCellIDs(send_buffer, &recv_buffer[n],
-                                                             &request[2 * n], &request[2 * n + 1]);
+        list_buffers[n].CommunicateNumCellIDs(send_buffer, &recv_buffer[n],
+                                              &request[2 * n], &request[2 * n + 1]);
     MPI_Waitall(request.size(), request.data(), MPI_STATUSES_IGNORE);
     for (int n{0}; n < exman.GetNumberProcesses(); n++) {
         ASSERT_EQ(n, recv_buffer[n]);

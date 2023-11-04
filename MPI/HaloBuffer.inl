@@ -43,7 +43,7 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
     std::vector<std::size_t> num_send(exec_man->GetNumberProcesses(), list_required_IDs.size());
     std::vector<std::size_t> num_recv(exec_man->GetNumberProcesses(), 0);
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
-        buffers[n].CommunicateAmountRequiredHaloCellIDs(num_send[n], &num_recv[n],
+        buffers[n].CommunicateNumCellIDs(num_send[n], &num_recv[n],
                                                         &requests[2 * n], &requests[2 * n + 1]);
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
@@ -69,7 +69,7 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++)
         num_send[n] = list_filtered_IDs[n].size();
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
-        buffers[n].CommunicateAmountRequiredHaloCellIDs(num_send[n], &num_recv[n],
+        buffers[n].CommunicateNumCellIDs(num_send[n], &num_recv[n],
                                                         &requests[2 * n], &requests[2 * n + 1]);
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
@@ -145,24 +145,32 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
             }
             std::vector<LO> list_IDs_temp(list_IDs_send.size() - remove_send.size());
             std::size_t pos_filter{0}, pos_list{0};
-            for (LO id : list_IDs_send) {
-                if (remove_send[pos_filter] == id) {
-                    pos_filter++;
-                } else {
-                    list_IDs_temp[pos_list] = id;
-                    pos_list++;
+            if (remove_send.empty()) {
+                list_IDs_temp = list_IDs_send;
+            } else {
+                for (LO id : list_IDs_send) {
+                    if (remove_send[pos_filter] == id) {
+                        pos_filter++;
+                    } else {
+                        list_IDs_temp[pos_list] = id;
+                        pos_list++;
+                    }
                 }
             }
             list_IDs_send = list_IDs_temp;
             list_IDs_temp.resize(list_IDs_recv.size() - remove_recv.size());
             pos_filter = 0;
             pos_list = 0;
-            for (LO id : list_IDs_send) {
-                if (remove_recv[pos_filter] == id) {
-                    pos_filter++;
-                } else {
-                    list_IDs_temp[pos_list] = id;
-                    pos_list++;
+            if (remove_recv.empty()) {
+                list_IDs_temp = list_IDs_recv;
+            } else {
+                for (LO id : list_IDs_send) {
+                    if (remove_recv[pos_filter] == id) {
+                        pos_filter++;
+                    } else {
+                        list_IDs_temp[pos_list] = id;
+                        pos_list++;
+                    }
                 }
             }
             list_IDs_recv = list_IDs_temp;
