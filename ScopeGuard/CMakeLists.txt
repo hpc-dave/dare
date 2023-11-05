@@ -16,11 +16,12 @@ target_sources(exec
     PRIVATE ${DaRe_SOURCE_FILES}
 )
 
-target_sources(unit_test
-    PRIVATE ${DaRe_HEADER_FILES}
-    PRIVATE ${DaRe_SOURCE_FILES}
-)
+
 if(USE_GTEST)
+    target_sources(unit_test
+        PRIVATE ${DaRe_HEADER_FILES}
+        PRIVATE ${DaRe_SOURCE_FILES}
+    )
     add_subdirectory(test)
 endif()
 
