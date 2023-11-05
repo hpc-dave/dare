@@ -56,6 +56,16 @@ public:
      * @param map_periodic map for correlation of periodic cells
      * @param is_local lambda to determine if an ID is located on subdomain
      * @param map_global_to_local lambda to convert global to local ID
+     * 
+     * This function prepares a buffer for communication with each process within the
+     * communicator, including itself. <b> IMPORTANT: <\b> the <i> list_of_required_IDs <\i>
+     * refers to the global IDs in the halo/ghost cell area! DO NOT CORRECT THEM for
+     * periodic arrangements. This will be conducted internally with the help of the
+     * <i> map_periodic </i> object.
+     * 
+     * Communication with the local process is a convenient solution for copying
+     * the data within local periodic cells, so the user does not have to care
+     * about that.
      */
     template <typename Lambda1, typename Lambda2>
     void Initialize(ExecutionManager* exec_man,

@@ -55,12 +55,6 @@ TEST(HaloBufferTest, Exchange) {
             map_periodic[exman.GetNumberProcesses() * cell_per_domain + num_ghost + n] = num_ghost + n;
             map_periodic[num_ghost + n] = exman.GetNumberProcesses() * cell_per_domain + num_ghost + n;
         }
-        // if (map_periodic.find(list_required_IDs[n]) != map_periodic.end()) {
-        //     list_required_IDs[n] = map_periodic[list_required_IDs[n]];
-        // }
-        // if (map_periodic.find(list_required_IDs[n + num_ghost]) != map_periodic.end()) {
-        //     list_required_IDs[n + num_ghost] = map_periodic[list_required_IDs[n + num_ghost]];
-        // }
     }
     GO ID_low = exman.GetRank() * cell_per_domain;
     GO ID_high = ID_low + cell_per_domain + 2 * num_ghost;

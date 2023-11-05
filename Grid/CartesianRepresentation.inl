@@ -25,6 +25,10 @@
 namespace dare::Grid {
 
 template <std::size_t Dim, class LO, class GO, class SC>
+CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation()
+    : grid(nullptr) {}
+
+template <std::size_t Dim, class LO, class GO, class SC>
 CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType* grid,
                                                                   typename GridType::Options opt)
             : grid(grid),
@@ -149,8 +153,9 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
                                 ind_period[dim] -= resolution_global_internal[dim];
                             }
                             GO id_glob_period = MapIndexToCellGlobal(ind_period);
-                            required_halo_IDs.push_back(id_glob_period);
+                            required_halo_IDs.push_back(id_glob);
                             map_periodic[id_glob_period] = id_glob;
+                            map_periodic[id_glob] = id_glob_period;
                             break;
                         }
                     }
@@ -167,11 +172,14 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
     };
     halo_buffer.Initialize(grid->GetExecutionManager(), required_halo_IDs, map_periodic,
                            is_local, map_global_to_local);
+
+    this->dare::utils::InitializationTracker::Initialize();
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC
 CartesianRepresentation<Dim, LO, GO, SC>::GetPositionCenter(const VecLO& ind) const {
+    TestIfInitialized(__func__);
     VecSC pos;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         pos[dim] = offset_size[dim] + (ind[dim] - grid->GetNumGhost() + 0.5) * grid->GetCellWidth()[dim];
@@ -182,6 +190,7 @@ CartesianRepresentation<Dim, LO, GO, SC>::GetPositionCenter(const VecLO& ind) co
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC
 CartesianRepresentation<Dim, LO, GO, SC>::GetPositionFace(const VecLO& ind, std::size_t dir) const {
+    TestIfInitialized(__func__);
     VecSC pos;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         pos[dim] = offset_size[dim] + (ind[dim] - grid->GetNumGhost()) * grid->GetCellWidth()[dim];
@@ -192,6 +201,7 @@ CartesianRepresentation<Dim, LO, GO, SC>::GetPositionFace(const VecLO& ind, std:
 
 template <std::size_t Dim, class LO, class GO, class SC>
 LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCellsInternal() const {
+    TestIfInitialized(__func__);
     LO num_cells{1};
     for (LO dim : resolution_local)
         num_cells *= (dim - 2 * grid->GetNumGhost());
@@ -200,6 +210,7 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCellsInternal() const
 
 template <std::size_t Dim, class LO, class GO, class SC>
 LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCells() const {
+    TestIfInitialized(__func__);
     LO num_cells{1};
     for (LO dim : resolution_local)
         num_cells *= dim;
@@ -208,6 +219,7 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCells() const {
 
 template <std::size_t Dim, class LO, class GO, class SC>
 LO CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToLocal(LO n_internal) const {
+    TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return n_internal + grid->GetNumGhost();
     } else {
@@ -227,6 +239,7 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToLocal(LO n_internal) c
 
 template <std::size_t Dim, class LO, class GO, class SC>
 LO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToCellLocal(const VecLO& ind) const {
+    TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return ind[0];
     } else {
@@ -240,6 +253,7 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToCellLocal(const VecLO& in
 
 template <std::size_t Dim, class LO, class GO, class SC>
 LO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToCellLocalInternal(const VecLO& ind) const {
+    TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return ind[0];
     } else {
@@ -253,6 +267,7 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToCellLocalInternal(const V
 
 template <std::size_t Dim, class LO, class GO, class SC>
 GO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToCellGlobal(const VecGO& ind) const {
+    TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return ind[0];
     } else {
@@ -266,6 +281,7 @@ GO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToCellGlobal(const VecGO& i
 
 template <std::size_t Dim, class LO, class GO, class SC>
 GO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToCellGlobalInternal(const VecGO& ind) const {
+    TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return ind[0];
     } else {
@@ -280,6 +296,7 @@ GO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToCellGlobalInternal(const 
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecGO
 CartesianRepresentation<Dim, LO, GO, SC>::MapCellToIndexGlobal(GO n_glob) const {
+    TestIfInitialized(__func__);
     VecGO ind;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         ind[dim] = n_glob / hierarchic_sum_glob[dim];
@@ -291,6 +308,7 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapCellToIndexGlobal(GO n_glob) const 
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecGO
 CartesianRepresentation<Dim, LO, GO, SC>::MapCellToIndexGlobalInternal(GO n_glob) const {
+    TestIfInitialized(__func__);
     VecGO ind;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         ind[dim] = n_glob / hierarchic_sum_glob_internal[dim];
@@ -302,6 +320,7 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapCellToIndexGlobalInternal(GO n_glob
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecLO
 CartesianRepresentation<Dim, LO, GO, SC>::MapCellToIndexLocal(LO n_loc) const {
+    TestIfInitialized(__func__);
     VecLO ind;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         ind[dim] = n_loc / hierarchic_sum_loc[dim];
@@ -313,6 +332,7 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapCellToIndexLocal(LO n_loc) const {
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecLO
 CartesianRepresentation<Dim, LO, GO, SC>::MapCellToIndexLocalInternal(LO n_loc) const {
+    TestIfInitialized(__func__);
     VecLO ind;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         ind[dim] = n_loc / hierarchic_sum_loc_internal[dim];
@@ -323,6 +343,7 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapCellToIndexLocalInternal(LO n_loc) 
 
 template <std::size_t Dim, class LO, class GO, class SC>
 LO CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToLocal(GO id_glob) const {
+    TestIfInitialized(__func__);
     VecGO ind_glob = MapCellToIndexGlobal(id_glob);
     VecLO ind_loc = MapGlobalToLocal(ind_glob);
     return MapIndexToCellLocal(ind_loc);
@@ -331,6 +352,7 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToLocal(GO id_glob) const 
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecLO
 CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToLocal(const VecGO& ind_glob) const {
+    TestIfInitialized(__func__);
     VecLO ind_loc;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         ind_loc[dim] = ind_glob[dim] - offset_cells[dim];
@@ -359,6 +381,7 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocalInternal(GO id_glob) const
 
 template <std::size_t Dim, class LO, class GO, class SC>
 bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocal(const VecGO& ind_glob) const {
+    TestIfInitialized(__func__);
     bool is_local{true};
     for (std::size_t dim{0}; dim < Dim; dim++) {
         is_local &= ind_glob[dim] >= offset_cells[dim];
@@ -369,6 +392,7 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocal(const VecGO& ind_glob) co
 
 template <std::size_t Dim, class LO, class GO, class SC>
 bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocalInternal(VecGO ind_glob) const {
+    TestIfInitialized(__func__);
     for (std::size_t dim{0}; dim < Dim; dim++) {
         ind_glob[dim] += 2 * grid->GetNumGhost();
     }
@@ -377,6 +401,7 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocalInternal(VecGO ind_glob) c
 
 template <std::size_t Dim, class LO, class GO, class SC>
 bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(const VecLO& ind_loc) const {
+    TestIfInitialized(__func__);
     bool is_internal{true};
     for (std::size_t dim{0}; dim < Dim; dim++) {
         is_internal &= ind_loc[dim] >= (grid->GetNumGhost());
@@ -393,6 +418,7 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(LO id) const {
 
 template <std::size_t Dim, class LO, class GO, class SC>
 bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(const VecGO& ind_glob) const {
+    TestIfInitialized(__func__);
     bool is_internal{true};
     for (std::size_t dim{0}; dim < Dim; dim++) {
         is_internal &= ind_glob[dim] >= (grid->GetNumGhost());
@@ -404,6 +430,7 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(const VecGO& ind_glob)
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecGO
 CartesianRepresentation<Dim, LO, GO, SC>::MapLocalToGlobal(const VecLO& ind) const {
+    TestIfInitialized(__func__);
     VecGO ind_g;
     for (std::size_t dim{0}; dim < Dim; dim++)
         ind_g[dim] = ind[dim] + offset_cells[dim];
@@ -449,6 +476,15 @@ void CartesianRepresentation<Dim, LO, GO, SC>::PrintDistribution(std::string fna
         }
         grid->GetExecutionManager()->Barrier();
     }
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+void CartesianRepresentation<Dim, LO, GO, SC>::TestIfInitialized(std::string func) const {
+#ifndef DARE_NDEBUG
+    if(!dare::utils::InitializationTracker::IsInitialized()) {
+        grid->GetExecutionManager()->Terminate(func, "Cannot continue without initialization");
+    }
+#endif
 }
 
 }  // namespace dare::Grid

@@ -32,19 +32,24 @@
 #include <string>
 
 #include "../MPI/HaloBuffer.h"
+#include "../Utilities/InitializationTracker.h"
 namespace dare::Grid {
 
 template <std::size_t Dim, class LO, class GO, class SC>
 class Cartesian;
 
 template <std::size_t Dim, class LO, class GO, class SC>
-class CartesianRepresentation {
+class CartesianRepresentation : public dare::utils::InitializationTracker {
 public:
     using GridType = Cartesian<Dim, LO, GO, SC>;
     using VecLO = typename GridType::VecLO;
     using VecGO = typename GridType::VecGO;
     using VecSC = typename GridType::VecSC;
-    // make a dedicated object to deal with Halo information?
+
+    /*!
+     * @brief default construction without initialization
+     */
+    CartesianRepresentation();
 
     explicit CartesianRepresentation(const GridType* grid, typename GridType::Options opt);
 
@@ -98,6 +103,8 @@ public:
     void PrintDistribution(std::string fname) const;
 
 private:
+    void TestIfInitialized(std::string) const;
+
     const Cartesian<Dim, LO, GO, SC>* grid;  //!< pointer to grid
     typename GridType::Options options;      //!< grid specific options
     VecLO resolution_local;                  //!< resolution of the local grid

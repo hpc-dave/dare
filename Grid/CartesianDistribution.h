@@ -46,6 +46,8 @@ void CubicalCartesianDistribution(int num_proc,
                                   std::vector<utils::Vector<Dim, GO>>* vec_offsets) {
     const double max_ratio_deviation{1.2};  // acceptable volume ration of domains
     // Determine direction with maximum number of cells
+    vec_res_local->resize(num_proc);
+    vec_offsets->resize(num_proc);
     std::size_t pos_max_res{0};
     for (std::size_t n{1}; n < Dim; n++)
         if (resolution_global[n] > resolution_global[pos_max_res])
