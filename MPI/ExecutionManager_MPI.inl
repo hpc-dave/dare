@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 David Rieder
+ * Copyright (c) 2023 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,48 @@
 #ifndef MPI_EXECUTIONMANAGER_MPI_INL_
 #define MPI_EXECUTIONMANAGER_MPI_INL_
 namespace dare::mpi {
+
+template <typename T>
+void ExecutionManager::Exchange(const T* data, int count_send, T* recv,
+                                int count_recv, int rank_other, int tag,
+                                MPI_Status* status_send, MPI_Status* status_recv) {
+    MPI_Request request;
+    Isend(data, count_send, rank_other, tag, &request);
+    Recv(recv, count_recv, rank_other, tag, status_recv);
+    MPI_Wait(&request, status_send);
+}
+
+template <typename T>
+void ExecutionManager::Exchange(const T* data, int count_send,
+              std::vector<T>* recv,
+              int rank_other, int tag,
+              MPI_Status* status_send, MPI_Status* status_recv) {
+    MPI_Request request;
+    Isend(data, count_send, rank_other, tag, &request);
+    Probe(rank_other, tag, status_recv);
+    int count_recv{0};
+    MPI_Get_count(status_recv, GetMPIType<T>(), count_recv);
+    recv->resize(count_recv);
+    Recv(recv->data(), count_recv, rank_other, tag, status_recv);
+    MPI_Wait(&request, status_send);
+}
+
+template <typename T>
+void ExecutionManager::Exchange(const std::vector<T>& send,
+              std::vector<T>* recv,
+              int rank_other, int tag,
+              MPI_Status* status_send, MPI_Status* status_recv) {
+    Exchange(send.data(), send.size(), recv, rank_other, tag, status_send, status_recv);
+}
+
+template <typename T>
+void ExecutionManager::Iexchange(const T* data, int count_send,
+               T* recv, int count_recv,
+               int rank_other, int tag,
+               MPI_Request* request_send, MPI_Request* request_recv) {
+    Isend(data, count_send, rank_other, tag, request_send);
+    Irecv(recv, count_recv, rank_other, tag, request_recv);
+}
 
 template <typename T>
 T ExecutionManager::Allreduce(const T data, MPI_Op op) {
@@ -100,6 +142,10 @@ int ExecutionManager::Recv(T* buffer, int count, int sender, int tag, MPI_Status
 template <typename T>
 int ExecutionManager::Irecv(T* buffer, int count, int sender, int tag, MPI_Request* request) {
     return MPI_Irecv(buffer, count, GetMPIType<T>(), sender, tag, communicator, request);
+}
+
+int ExecutionManager::Probe(int source, int tag, MPI_Status* status) {
+    return MPI_Probe(source, tag, communicator, status);
 }
 }  // namespace dare::mpi
 

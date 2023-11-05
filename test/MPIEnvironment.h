@@ -22,43 +22,43 @@
  * SOFTWARE.
  */
 
-#ifndef UTILITIES_HASHES_H_
-#define UTILITIES_HASHES_H_
-#include <cstddef>
-namespace dare::utils {
+#ifndef TEST_MPIENVIRONMENT_H_
+#define TEST_MPIENVIRONMENT_H_
 
-/*\struct _FNVparam
- * \brief Helpers for hashing with the Fowler-Noll-Vu (FNV) hash function
- *
- * Background of the FNV-hash function:
- *  hash <-- offset (depending on size of hash)
- *  for each byte
- *     hash = hash * FNV-prime
- *     hash = hash XOR byte_of_data
- *  end for
- *
+#include <mpi.h>
+#include <gtest/gtest.h>
+
+namespace dare::test {
+
+/*! \class MPIEnvironment
+ * @brief environment initializing MPI
  */
-template <int bytes>
-struct _FNVparam {
+class MPIEnviroment : public testing::Environment {
+public:
+    /*!
+     * @brief initializes the MPI environment for GTest
+     */
+    virtual void SetUp() {
+        char** argv;
+        int argc = 0;
+        int mpiError = MPI_Init(&argc, &argv);
+        ASSERT_FALSE(mpiError);
+    }
+
+    /*!
+     * @brief script post-testing
+     */
+    virtual void TearDown() {
+        int mpiError = MPI_Finalize();
+        ASSERT_FALSE(mpiError);
+    }
+
+    /*!
+     * @brief destructor
+     */
+    virtual ~MPIEnvironment() {}
 };
 
-/*
- * specialization for 32 bit FNV parameters
- */
-template <>
-struct _FNVparam<4> {
-    static const std::size_t prime{0x01000193};
-    static const std::size_t offset{0x811c9dc5};
-};
+}  // namespace dare::test
 
-/*
- * specialization for 64 bit FNV parameters
- */
-template <>
-struct _FNVparam<8> {
-    static const std::size_t prime{0x00000100000001B3};
-    static const std::size_t offset{0xcbf29ce484222325};
-};
-}  // namespace dare::utils
-
-#endif  // UTILITIES_HASHES_H_
+#endif  // TEST_MPIENVIRONMENT_H_

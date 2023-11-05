@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 David Rieder
+ * Copyright (c) 2023 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,13 @@ public:
         mpi::ExecutionManager* exec_man,
         const VecGO& resolution,
         const VecSC& size,
+        const LO num_ghost,
+        const VecLO& periodic);
+
+    Cartesian(
+        mpi::ExecutionManager* exec_man,
+        const VecGO& resolution,
+        const VecSC& size,
         const LO num_ghost);
 
     Cartesian(const Cartesian<Dim, LO, GO, SC>& other) = delete;
@@ -143,9 +150,10 @@ public:
 
     uint8_t GetBoundaryID() const;
     const VecLO& GetPeriodicity() const;
+    bool IsPeriodic() const;
 
-    mpi::ExecutionManager* GetExecutionManager();
-    const mpi::ExecutionManager* GetExecutionManager() const;
+    // mpi::ExecutionManager* GetExecutionManager();
+    mpi::ExecutionManager* GetExecutionManager() const;
 
 private:
     VecLO resolution_local;

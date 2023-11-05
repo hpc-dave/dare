@@ -3,6 +3,7 @@ set(DaRe_HEADER_FILES
     "Vector.inl"
     "Vector_traits.h"
     "Hashes.h"
+    "InitializationTracker.h"
 )
 
 target_sources(dare
@@ -10,6 +11,10 @@ target_sources(dare
 )
 
 target_sources(exec
+    PRIVATE ${DaRe_HEADER_FILES}
+)
+
+target_sources(unit_test
     PRIVATE ${DaRe_HEADER_FILES}
 )
 

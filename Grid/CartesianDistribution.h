@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 David Rieder
+ * Copyright (c) 2023 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ void CubicalCartesianDistribution(int num_proc,
     // Determine direction with maximum number of cells
     std::size_t pos_max_res{0};
     for (std::size_t n{1}; n < Dim; n++)
-        if (resolution_global[n] > resolution_global[n - 1])
+        if (resolution_global[n] > resolution_global[pos_max_res])
             pos_max_res = n;
 
     // Determine approximately number of cells per subdomain
@@ -289,51 +289,51 @@ void RegularCartesianDistribution(mpi::ExecutionManager* exec_man,
             for (std::size_t n{dim + 1}; n < Dim; n++)
                 glob_hsum[dim] *= resolution_global[n];
         }
-        bool cancel_execution{false};
-        for (GO id{0}; id < static_cast<GO>(num_cells_total); id++) {
-            GO found_id{0};
-            // loop through all subdomains and find the ID
-            for (int n_sub{0}; n_sub < num_proc; n_sub++) {
-                dare::utils::Vector<Dim, GO> offset = vec_offsets[n_sub];
-                dare::utils::Vector<Dim, GO> res_loc = vec_res_local[n_sub];
-                GO num_loc_cells{1};
-                for (std::size_t dim{0}; dim < Dim; dim++) {
-                    num_loc_cells *= res_loc[dim];
-                }
+        // bool cancel_execution{false};
+        // for (GO id{0}; id < static_cast<GO>(num_cells_total); id++) {
+        //     GO found_id{0};
+        //     // loop through all subdomains and find the ID
+        //     for (int n_sub{0}; n_sub < num_proc; n_sub++) {
+        //         dare::utils::Vector<Dim, GO> offset = vec_offsets[n_sub];
+        //         dare::utils::Vector<Dim, GO> res_loc = vec_res_local[n_sub];
+        //         GO num_loc_cells{1};
+        //         for (std::size_t dim{0}; dim < Dim; dim++) {
+        //             num_loc_cells *= res_loc[dim];
+        //         }
 
-                dare::utils::Vector<Dim, LO> loc_hsum;
-                for (std::size_t dim{0}; dim < Dim; dim++) {
-                    loc_hsum[dim] = 1;
-                    for (std::size_t n{dim + 1}; n < Dim; n++)
-                        loc_hsum[dim] *= res_loc[n];
-                }
+        //         dare::utils::Vector<Dim, LO> loc_hsum;
+        //         for (std::size_t dim{0}; dim < Dim; dim++) {
+        //             loc_hsum[dim] = 1;
+        //             for (std::size_t n{dim + 1}; n < Dim; n++)
+        //                 loc_hsum[dim] *= res_loc[n];
+        //         }
 
-                for (LO loc_id{0}; loc_id < num_loc_cells; loc_id++) {
-                    LO n_loc{loc_id};
-                    dare::utils::Vector<Dim, LO> ind_loc;
-                    for (std::size_t dim{0}; dim < Dim; dim++) {
-                        ind_loc[dim] = n_loc / loc_hsum[dim];
-                        n_loc -= ind_loc[dim] * loc_hsum[dim];
-                    }
-                    dare::utils::Vector<Dim, GO> ind_glob = offset + ind_loc;
-                    GO id_glob{0};
-                    for (std::size_t dim{0}; dim < Dim; dim++)
-                        id_glob += glob_hsum[dim] * ind_glob[dim];
-                    found_id += id_glob == id;
-                }
-            }
-            if (found_id == 0) {
-                exec_man->Print(dare::mpi::Verbosity::Low) << "Error: Cell with ID = " << id
-                                                           << " was not found after distribution!" << std::endl;
-            } else if (found_id > 1) {
-                exec_man->Print(dare::mpi::Verbosity::Low) << "Error: Cell with ID = " << id
-                                                           << " was found " << found_id
-                                                           << " times after distribution!" << std::endl;
-            }
-            cancel_execution &= found_id != 1;
-        }
-        if (cancel_execution)
-            exec_man->Terminate(__func__, "Error during distribution");
+        //         for (LO loc_id{0}; loc_id < num_loc_cells; loc_id++) {
+        //             LO n_loc{loc_id};
+        //             dare::utils::Vector<Dim, LO> ind_loc;
+        //             for (std::size_t dim{0}; dim < Dim; dim++) {
+        //                 ind_loc[dim] = n_loc / loc_hsum[dim];
+        //                 n_loc -= ind_loc[dim] * loc_hsum[dim];
+        //             }
+        //             dare::utils::Vector<Dim, GO> ind_glob = offset + ind_loc;
+        //             GO id_glob{0};
+        //             for (std::size_t dim{0}; dim < Dim; dim++)
+        //                 id_glob += glob_hsum[dim] * ind_glob[dim];
+        //             found_id += id_glob == id;
+        //         }
+        //     }
+        //     if (found_id == 0) {
+        //         exec_man->Print(dare::mpi::Verbosity::Low) << "Error: Cell with ID = " << id
+        //                                                    << " was not found after distribution!" << std::endl;
+        //     } else if (found_id > 1) {
+        //         exec_man->Print(dare::mpi::Verbosity::Low) << "Error: Cell with ID = " << id
+        //                                                    << " was found " << found_id
+        //                                                    << " times after distribution!" << std::endl;
+        //     }
+        //     cancel_execution &= found_id != 1;
+        // }
+        // if (cancel_execution)
+        //     exec_man->Terminate(__func__, "Error during distribution");
 #endif
 
         if (!exec_man->IsSerial()) {

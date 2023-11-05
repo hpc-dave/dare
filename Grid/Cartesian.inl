@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 David Rieder
+ * Copyright (c) 2023 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,9 +43,22 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
       cell_volume(0.),
       num_ghost(_num_ghost),
       id_boundaries(BOUNDARIES_NONE),
+      periodicity(periodic),
       exec_man(_exec_man) {
     static_assert(std::is_signed_v<LO> && std::is_integral_v<LO>, "The local ordinal needs to be a signed integer!");
     static_assert(std::is_signed_v<GO> && std::is_integral_v<GO>, "The global ordinal needs to be a signed integer!");
+
+    // Test for some potentially problematic resolutions
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        if (res[dim] <= num_ghost) {
+            std::ostringstream os;
+            os << "The grid needs to have a higher resolution in each direction than the number of ghost/halo cells! "
+               << "The resolution in Dimension " << dim << " was found to be " << res[dim]
+               << " but should be > " << num_ghost << "!\n"
+               << " Otherwise the halo buffers might become problematic\n";
+            exec_man->Terminate(__func__, os.str());
+        }
+    }
     /*
      * 1) compute constant variables like face area, cell volume and the like
      * 2) distribute the grid over all processors
@@ -91,18 +104,31 @@ template <std::size_t Dim, class LO, class GO, class SC>
 Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
                                       const utils::Vector<Dim, GO>& res,
                                       const utils::Vector<Dim, SC>& size,
-                                      const LO _num_ghost)
+                                      const LO _num_ghost,
+                                      const VecLO& periodic)
     : Cartesian(_exec_man,
                 res,
                 size,
                 _num_ghost,
-                VecLO(),  // all values default to 0 --> no periodicity
+                periodic,
                 [](mpi::ExecutionManager* a,
                    const utils::Vector<Dim, GO>& b,
                    utils::Vector<Dim, LO>* c,
                    utils::Vector<Dim, GO>* d) {
                     dare::Grid::RegularCartesianDistribution(a, b, c, d);
                 }) {
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
+                                      const utils::Vector<Dim, GO>& res,
+                                      const utils::Vector<Dim, SC>& size,
+                                      const LO _num_ghost)
+    : Cartesian(_exec_man,
+                res,
+                size,
+                _num_ghost,
+                VecLO()) {
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
@@ -183,12 +209,15 @@ const utils::Vector<Dim, LO>& Cartesian<Dim, LO, GO, SC>::GetPeriodicity() const
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
-mpi::ExecutionManager* Cartesian<Dim, LO, GO, SC>::GetExecutionManager() {
-    return exec_man;
+bool Cartesian<Dim, LO, GO, SC>::IsPeriodic() const {
+    bool is_periodic{false};
+    for (auto e : periodicity)
+        is_periodic |= (e != 0);
+    return is_periodic;
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
-const mpi::ExecutionManager* Cartesian<Dim, LO, GO, SC>::GetExecutionManager() const {
+mpi::ExecutionManager* Cartesian<Dim, LO, GO, SC>::GetExecutionManager() const {
     return exec_man;
 }
 

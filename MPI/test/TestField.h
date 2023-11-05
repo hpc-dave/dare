@@ -22,43 +22,36 @@
  * SOFTWARE.
  */
 
-#ifndef UTILITIES_HASHES_H_
-#define UTILITIES_HASHES_H_
-#include <cstddef>
-namespace dare::utils {
 
-/*\struct _FNVparam
- * \brief Helpers for hashing with the Fowler-Noll-Vu (FNV) hash function
- *
- * Background of the FNV-hash function:
- *  hash <-- offset (depending on size of hash)
- *  for each byte
- *     hash = hash * FNV-prime
- *     hash = hash XOR byte_of_data
- *  end for
- *
- */
-template <int bytes>
-struct _FNVparam {
+#ifndef MPI_TEST_TESTFIELD_H_
+#define MPI_TEST_TESTFIELD_H_
+
+#include <vector>
+
+namespace dare::test {
+class TestField {
+public:
+    void ResizeByGridSize(int grid_size) {
+        data.resize(grid_size * GetNumEquations());
+    }
+    double* GetData() {
+        return data.data();
+    }
+    std::size_t GetNumEquations() const {
+        return num_eq;
+    }
+
+    double& at(std::size_t pos) {
+        return data[pos];
+    }
+    double at(std::size_t pos) const {
+        return data[pos];
+    }
+
+private:
+    const std::size_t num_eq = 5;
+    std::vector<double> data;
 };
+}  // namespace dare::test
 
-/*
- * specialization for 32 bit FNV parameters
- */
-template <>
-struct _FNVparam<4> {
-    static const std::size_t prime{0x01000193};
-    static const std::size_t offset{0x811c9dc5};
-};
-
-/*
- * specialization for 64 bit FNV parameters
- */
-template <>
-struct _FNVparam<8> {
-    static const std::size_t prime{0x00000100000001B3};
-    static const std::size_t offset{0xcbf29ce484222325};
-};
-}  // namespace dare::utils
-
-#endif  // UTILITIES_HASHES_H_
+#endif  // MPI_TEST_TESTFIELD_H_

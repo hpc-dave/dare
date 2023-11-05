@@ -4,6 +4,10 @@ set(DaRe_HEADER_FILES
     "ExecutionManager.h"
     "ExecutionManager.inl"
     "ExecutionManager_MPI.inl"
+    "HaloBuffer.h"
+    "HaloBuffer.inl"
+    "SingleHaloBuffer.h"
+    "SingleHaloBuffer.inl"
 )
 
 set(DaRe_SOURCE_FILES
@@ -19,5 +23,14 @@ target_sources(exec
     PRIVATE ${DaRe_HEADER_FILES}
     PRIVATE ${DaRe_SOURCE_FILES}
 )
+
+target_sources(unit_test
+    PRIVATE ${DaRe_HEADER_FILES}
+    PRIVATE ${DaRe_SOURCE_FILES}
+)
+
+if(USE_GTEST)
+    add_subdirectory(test)
+endif()
 
 install(FILES ${DaRe_HEADER_FILES} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PACKAGE_VERSION_DIR}/MPI")
