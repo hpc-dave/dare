@@ -47,6 +47,24 @@ int main(int argc, char* argv[]) {
                 argv[n] = xml_report_arg.data();
             }
         }
+        if (arg.size() == 2) {
+            if (boost::iequals(arg, "-D") && (n < (argc - 1))) {
+                int rank_stop = 0;
+                try {
+                    rank_stop = std::stoi(argv[n + 1]);
+                } catch (std::exception&) {
+                    if (rank == 0)
+                        std::cout << "cannot convert argument of -D to rank!\n"
+                                  << "hooking up now possible at rank 0!" << std::endl;
+                }
+                if (rank == rank_stop) {
+                    int cont = 0;
+                    while (cont == 0) {
+                    }
+                }
+                MPI_Barrier(MPI_COMM_WORLD);
+            }
+        }
     }
 
     // initializing google test

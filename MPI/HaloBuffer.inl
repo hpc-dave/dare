@@ -56,18 +56,22 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
-    std::vector<std::vector<GO>> list_filtered_IDs(exec_man->GetNumberProcesses());
+    std::vector<std::vector<GO>> list_filtered_IDs_local(exec_man->GetNumberProcesses());
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
         for (std::size_t m{0}; m < list_required_IDs_partner[n].size(); m++) {
             GO id = list_required_IDs_partner[n][m];
-            if (is_local(id)) {
-                list_filtered_IDs[n].push_back(id);
+            GO id_loc = id;
+            if (map_periodic.find(id) != map_periodic.end()) {
+                id_loc = map_periodic.find(id)->second;
+            }
+            if (is_local(id_loc)) {
+                list_filtered_IDs_local[n].push_back(id);
             }
         }
     }
 
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++)
-        num_send[n] = list_filtered_IDs[n].size();
+        num_send[n] = list_filtered_IDs_local[n].size();
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
         buffers[n].CommunicateNumCellIDs(num_send[n], &num_recv[n],
                                                         &requests[2 * n], &requests[2 * n + 1]);
@@ -89,25 +93,28 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
         }
     }
 
-    std::vector<std::vector<GO>> list_filtered_IDs_partner(exec_man->GetNumberProcesses());
+    std::vector<std::vector<GO>> list_filtered_IDs_remote(exec_man->GetNumberProcesses());
     requests.resize(buffers.size() * 2);
     int count{0};
     for (auto& entry : buffers) {
         int proc{entry.first};
-        list_filtered_IDs_partner[proc].resize(num_recv[proc]);
-        entry.second.CommunicateFilteredHaloCellIDs(list_filtered_IDs[proc], &list_filtered_IDs_partner[proc],
+        list_filtered_IDs_remote[proc].resize(num_recv[proc]);
+        entry.second.CommunicateFilteredHaloCellIDs(list_filtered_IDs_local[proc], &list_filtered_IDs_remote[proc],
                                                   &requests[2 * count], &requests[2 * count + 1]);
         count++;
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
     std::vector<LO> list_IDs_recv, list_IDs_send;
+    bool remove_self_communication{false};  // in case of empty buffer, remove it
     for (auto& entry : buffers) {
         int proc{entry.first};
-        list_IDs_recv.resize(list_filtered_IDs_partner[proc].size());
-        list_IDs_send.resize(list_filtered_IDs[proc].size());
-        for (std::size_t n{0}; n < list_IDs_recv.size(); n++) {
-            GO id_glob = list_filtered_IDs_partner[proc][n];
+        // filtered_IDs_local --> IDs which are located on the local domain
+        // filtered_IDs_remote -->IDs located on the partner process
+        list_IDs_send.resize(list_filtered_IDs_local[proc].size());
+        list_IDs_recv.resize(list_filtered_IDs_remote[proc].size());
+        for (std::size_t n{0}; n < list_IDs_send.size(); n++) {
+            GO id_glob = list_filtered_IDs_local[proc][n];
             // correct indices in the periodic case
             if (!map_periodic.empty()) {
                 const auto& entry = map_periodic.find(id_glob);
@@ -115,12 +122,18 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
                     id_glob = entry->second;
             }
             LO id_loc = map_global_to_local(id_glob);
-            list_IDs_recv[n] = id_loc;
-        }
-        for (std::size_t n{0}; n < list_IDs_send.size(); n++) {
-            GO id_glob = list_filtered_IDs[proc][n];
-            LO id_loc = map_global_to_local(id_glob);
             list_IDs_send[n] = id_loc;
+        }
+        for (std::size_t n{0}; n < list_IDs_recv.size(); n++) {
+            GO id_glob = list_filtered_IDs_remote[proc][n];
+            // // correct indices in the periodic case
+            // if (!map_periodic.empty()) {
+            //     const auto& entry = map_periodic.find(id_glob);
+            //     if (entry != map_periodic.end())
+            //         id_glob = entry->second;
+            // }
+            LO id_loc = map_global_to_local(id_glob);
+            list_IDs_recv[n] = id_loc;
         }
 
         // Now, there is the problem, that the halo region of the subdomain will also be
@@ -129,53 +142,39 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
         // but we need to get rid of those double assigned cells, otherwise we get a super
         // nice race condition.
         if (proc == exec_man->GetRank()) {
-            std::vector<LO> remove_send, remove_recv;
-            remove_send.reserve(list_IDs_send.size() / 4);
-            remove_recv.reserve(list_IDs_recv.size() / 4);
-            for (std::size_t n{0}; n < list_IDs_send.size(); n++) {
-                LO send_id = list_IDs_send[n];
-                for (std::size_t m{0}; m < list_IDs_recv.size(); m++) {
-                    LO recv_id = list_IDs_recv[m];
-                    if (send_id == recv_id) {
-                        remove_send.push_back(send_id);
-                        remove_recv.push_back(recv_id);
-                        break;
-                    }
-                }
+            std::vector<std::size_t> remove_pos;
+            std::size_t loop_size = std::min(list_IDs_send.size(), list_IDs_recv.size());
+            remove_pos.reserve(list_IDs_send.size() / 4);
+            // remove_recv.reserve(list_IDs_recv.size() / 4);
+            for (std::size_t n{0}; n < loop_size; n++) {
+                if (list_IDs_recv[n] == list_IDs_send[n])
+                    remove_pos.push_back(n);
             }
-            std::vector<LO> list_IDs_temp(list_IDs_send.size() - remove_send.size());
-            std::size_t pos_filter{0}, pos_list{0};
-            if (remove_send.empty()) {
-                list_IDs_temp = list_IDs_send;
-            } else {
-                for (LO id : list_IDs_send) {
-                    if (remove_send[pos_filter] == id) {
+            if (!remove_pos.empty()) {
+                std::vector<LO> list_IDs_send_temp(list_IDs_send.size() - remove_pos.size());
+                std::vector<LO> list_IDs_recv_temp(list_IDs_recv.size() - remove_pos.size());
+
+                std::size_t pos_filter{0};
+                std::size_t current_pos{0};
+                for (std::size_t pos{0}; pos < loop_size; pos++) {
+                    if (pos == remove_pos[pos_filter]) {
                         pos_filter++;
                     } else {
-                        list_IDs_temp[pos_list] = id;
-                        pos_list++;
+                        list_IDs_send_temp[current_pos] = list_IDs_send[pos];
+                        list_IDs_recv_temp[current_pos] = list_IDs_recv[pos];
+                        current_pos++;
                     }
                 }
+
+                list_IDs_send = list_IDs_send_temp;
+                list_IDs_recv = list_IDs_recv_temp;
             }
-            list_IDs_send = list_IDs_temp;
-            list_IDs_temp.resize(list_IDs_recv.size() - remove_recv.size());
-            pos_filter = 0;
-            pos_list = 0;
-            if (remove_recv.empty()) {
-                list_IDs_temp = list_IDs_recv;
-            } else {
-                for (LO id : list_IDs_send) {
-                    if (remove_recv[pos_filter] == id) {
-                        pos_filter++;
-                    } else {
-                        list_IDs_temp[pos_list] = id;
-                        pos_list++;
-                    }
-                }
-            }
-            list_IDs_recv = list_IDs_temp;
+            remove_self_communication = list_IDs_send.empty() && list_IDs_recv.empty();
         }
         entry.second.FinalizeInitialization(list_IDs_send, list_IDs_recv);
+    }
+    if (remove_self_communication) {
+        buffers.erase(exec_man->GetRank());
     }
 
     this->utils::InitializationTracker::Initialize();

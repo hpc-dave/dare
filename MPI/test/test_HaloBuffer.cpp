@@ -37,7 +37,7 @@ TEST(HaloBufferTest, Exchange) {
     dare::mpi::ExecutionManager exman;
     dare::mpi::HaloBuffer<LO, GO, SC> buffer;
     dare::test::TestField field;
-    std::size_t cell_per_domain = 1;
+    std::size_t cell_per_domain = 2;
     LO num_ghost = 1;
     std::size_t global_field_size = exman.GetNumberProcesses() * cell_per_domain + 2 * num_ghost;
     field.ResizeByGridSize(cell_per_domain + 2*num_ghost);
@@ -51,8 +51,16 @@ TEST(HaloBufferTest, Exchange) {
         // map periodic IDs
         if (exman.GetRank() == 0 || exman.GetRank() == (exman.GetNumberProcesses() - 1)) {
             map_periodic[n] = exman.GetNumberProcesses() * cell_per_domain + n;
+            map_periodic[exman.GetNumberProcesses() * cell_per_domain + n] = n;
             map_periodic[exman.GetNumberProcesses() * cell_per_domain + num_ghost + n] = num_ghost + n;
+            map_periodic[num_ghost + n] = exman.GetNumberProcesses() * cell_per_domain + num_ghost + n;
         }
+        // if (map_periodic.find(list_required_IDs[n]) != map_periodic.end()) {
+        //     list_required_IDs[n] = map_periodic[list_required_IDs[n]];
+        // }
+        // if (map_periodic.find(list_required_IDs[n + num_ghost]) != map_periodic.end()) {
+        //     list_required_IDs[n + num_ghost] = map_periodic[list_required_IDs[n + num_ghost]];
+        // }
     }
     GO ID_low = exman.GetRank() * cell_per_domain;
     GO ID_high = ID_low + cell_per_domain + 2 * num_ghost;
@@ -60,7 +68,7 @@ TEST(HaloBufferTest, Exchange) {
         return id >= ID_low && id < ID_high;
     };
     auto map_global_local = [&](GO id) {
-        return id-ID_low;
+        return id - ID_low;
     };
     buffer.Initialize(&exman, list_required_IDs, map_periodic, is_local, map_global_local);
 
@@ -84,7 +92,13 @@ TEST(HaloBufferTest, Exchange) {
         LO id_low{static_cast<LO>(n * field.GetNumEquations())};
         LO id_high{ static_cast<LO>((num_ghost + cell_per_domain) * field.GetNumEquations())};
         GO v_start_low = (exman.GetRank() * cell_per_domain + n) * field.GetNumEquations();
-        GO v_start_high = ((exman.GetRank() + 1) * cell_per_domain + n) * field.GetNumEquations();
+        GO v_start_high = ((exman.GetRank() + 1) * cell_per_domain + num_ghost + n) * field.GetNumEquations();
+        if (exman.GetRank() == 0) {
+            v_start_low = (exman.GetNumberProcesses() * cell_per_domain + n) * field.GetNumEquations();
+        }
+        if (exman.GetRank() == (exman.GetNumberProcesses() - 1)) {
+            v_start_high = num_ghost * field.GetNumEquations();
+        }
         for (LO e{0}; e < field.GetNumEquations(); e++) {
             double value_low_f = field.at(id_low + e);
             double value_high_f = field.at(id_high + e);

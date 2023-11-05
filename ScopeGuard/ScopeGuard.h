@@ -28,9 +28,10 @@
 #include <mpi.h>
 #include <omp.h>
 
-#include <boost/algorithm/string/predicate.hpp>
 #include <iostream>
 #include <string>
+#include <boost/algorithm/string/predicate.hpp>
+
 
 namespace dare {
 

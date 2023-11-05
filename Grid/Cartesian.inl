@@ -47,6 +47,18 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
       exec_man(_exec_man) {
     static_assert(std::is_signed_v<LO> && std::is_integral_v<LO>, "The local ordinal needs to be a signed integer!");
     static_assert(std::is_signed_v<GO> && std::is_integral_v<GO>, "The global ordinal needs to be a signed integer!");
+
+    // Test for some potentially problematic resolutions
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        if (res[dim] <= num_ghost) {
+            std::ostringstream os;
+            os << "The grid needs to have a higher resolution in each direction than the number of ghost/halo cells! "
+               << "The resolution in Dimension " << dim << " was found to be " << res[dim]
+               << " but should be > " << num_ghost << "!\n"
+               << " Otherwise the halo buffers might become problematic\n";
+            exec_man->Terminate(__func__, os.str());
+        }
+    }
     /*
      * 1) compute constant variables like face area, cell volume and the like
      * 2) distribute the grid over all processors
