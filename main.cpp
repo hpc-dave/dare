@@ -39,7 +39,16 @@ int main(int argc, char* argv[]) {
 
     dare::mpi::ExecutionManager exman;
 
-    // GO i_size{10}, j_size{10};
+    // int dims[] = {0};
+    // MPI_Dims_create(exman.GetNumberProcesses(), 1, dims);
+
+    // if (exman.AmIRoot()) {
+    //     for (int n = 0; n < 1; n++) {
+    //         std::cout << dims[n] << ' ';
+    //     }
+    //     std::cout << std::endl;
+    // }
+    GO i_size{10}, j_size{10};
     dare::utils::Vector<Dim, GO> res(30, 20, 10);
     dare::utils::Vector<Dim, LO> res_i = res;
     dare::utils::Vector<Dim, SC> size(1., 1., 1.);

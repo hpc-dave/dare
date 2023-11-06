@@ -117,7 +117,7 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
                    const utils::Vector<Dim, GO>& b,
                    utils::Vector<Dim, LO>* c,
                    utils::Vector<Dim, GO>* d) {
-                    dare::Grid::RegularCartesianDistribution(a, b, c, d);
+                    dare::Grid::CartesianDistribution_MPI_Dims_create(a, b, c, d);
                 }) {
 }
 

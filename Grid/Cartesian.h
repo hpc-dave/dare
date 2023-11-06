@@ -63,6 +63,8 @@ public:
     using VecSC = utils::Vector<Dim, SC>;
     using Representation = CartesianRepresentation<Dim, LO, GO, SC>;
     using Options = VecLO;
+    using Index = VecLO;
+    using IndexGlobal = VecGO;
 
     /*!
      * \brief default constructor

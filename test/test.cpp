@@ -33,7 +33,9 @@ int main(int argc, char* argv[]) {
     // initialize MPI environment
     MPI_Init(&argc, &argv);
     int rank{-1};
+    int num_proc{-1};
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
 
     // if output should be generated, we adapt the output files name to include the process ID
     for (int n{0}; n < argc; n++) {
@@ -79,6 +81,15 @@ int main(int argc, char* argv[]) {
     }
     // run the tests
     int ret = RUN_ALL_TESTS();
+
+    bool result = ret == MPI_SUCCESS;
+    bool result_global{false};
+    MPI_Allreduce(&result, &result_global, 1, MPI_CXX_BOOL, MPI_LAND, MPI_COMM_WORLD);
+    if(result_global){
+        std::cout << "All tests were successful over all processes" << std::endl;
+    } else {
+        std::cout << "On at least one process the tests failed!" << std::endl;
+    }
     MPI_Finalize();
     return ret;
 }

@@ -45,6 +45,8 @@ public:
     using VecLO = typename GridType::VecLO;
     using VecGO = typename GridType::VecGO;
     using VecSC = typename GridType::VecSC;
+    using Index = typename GridType::Index;
+    using IndexGlobal = typename GridType::IndexGlobal;
 
     /*!
      * @brief default construction without initialization
@@ -58,43 +60,43 @@ public:
     CartesianRepresentation<Dim, LO, GO, SC>&
     operator=(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
 
-    VecSC GetPositionCenter(const VecLO& ind) const;
+    VecSC GetPositionCenter(const Index& ind) const;
 
-    VecSC GetPositionFace(const VecLO& ind, std::size_t dir) const;
+    VecSC GetPositionFace(const Index& ind, std::size_t dir) const;
 
     LO GetNumberLocalCells() const;
     LO GetNumberLocalCellsInternal() const;
 
     LO MapInternalToLocal(LO n_internal) const;
 
-    LO MapIndexToCellLocal(const VecLO& ind) const;
-    LO MapIndexToCellLocalInternal(const VecLO& ind) const;
-    GO MapIndexToCellGlobal(const VecGO& ind) const;
-    GO MapIndexToCellGlobalInternal(const VecGO& ind) const;
+    LO MapIndexToOrdinalLocal(const Index& ind) const;
+    LO MapIndexToOrdinalLocalInternal(const Index& ind) const;
+    GO MapIndexToOrdinalGlobal(const IndexGlobal& ind) const;
+    GO MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind) const;
 
     LO MapGlobalToLocal(GO id_glob) const;
-    VecLO MapGlobalToLocal(const VecGO& ind_glob) const;
+    Index MapGlobalToLocal(const IndexGlobal& ind_glob) const;
     LO MapGlobalToLocalInternal(GO id_glob) const;
 
-        bool IsLocal(GO id_glob) const;
-    bool IsLocal(const VecGO& ind_glob) const;
+    bool IsLocal(GO id_glob) const;
+    bool IsLocal(const IndexGlobal& ind_glob) const;
     bool IsLocalInternal(GO id_glob) const;
-    bool IsLocalInternal(const VecGO ind_glob) const;
+    bool IsLocalInternal(IndexGlobal ind_glob) const;
 
-    bool IsInternal(const VecLO& ind_loc) const;
-    bool IsInternal(const VecGO& ind_glob) const;
-    bool IsInternal(LO) const;
+    bool IsInternal(const Index& ind_loc) const;
+    bool IsInternal(const IndexGlobal& ind_glob) const;
+    bool IsInternal(LO n) const;
 
-    VecLO MapCellToIndexLocal(const LO n_loc) const;
-    VecLO MapCellToIndexLocalInternal(const LO n_loc) const;
-    VecGO MapCellToIndexGlobal(GO n_loc) const;
-    VecGO MapCellToIndexGlobalInternal(GO n_loc) const;
+    Index MapOrdinalToIndexLocal(const LO n_loc) const;
+    Index MapOrdinalToIndexLocalInternal(const LO n_loc) const;
+    IndexGlobal MapOrdinalToIndexGlobal(GO n_loc) const;
+    IndexGlobal MapOrdinalToIndexGlobalInternal(GO n_loc) const;
 
-    VecGO MapLocalToGlobal(const VecLO& ind) const;
+    IndexGlobal MapLocalToGlobal(const Index& ind) const;
 
-    const VecLO& GetLocalResolution() const;
+    const Index& GetLocalResolution() const;
 
-    const VecGO& GetGlobalResolution() const;
+    const IndexGlobal& GetGlobalResolution() const;
 
     /*!
      * @brief prints distribution of domains without ghost cells to file as CSV
