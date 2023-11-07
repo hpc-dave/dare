@@ -94,6 +94,25 @@ find_package(Boost 1.74 REQUIRED
                serialization
                system
 )
+
+# Disable Kokkos warning about not supporting C++ extensions
+set(CMAKE_CXX_EXTENSIONS OFF)
+find_package(Trilinos REQUIRED
+             COMPONENTS Teuchos
+                        Tpetra
+                        Belos
+                        MueLu
+                        Kokkos
+                        Ifpack2
+)
+
+if(Trilinos_FOUND)
+    message(STATUS "Found Trilinos version ${Trilinos_VERSION} in ${Trilinos_DIR}")
+    if(${Trilinos_VERSION} VERSION_LESS "14")
+        message(ERROR "This project requires minimum Trilinos 14.0")
+    endif()
+endif()
+
 if(Boost_FOUND)
     set_target_properties(Boost::boost
                           Boost::filesystem
@@ -156,7 +175,7 @@ target_link_libraries(dare
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
-    # PUBLIC trilinos
+    PUBLIC Trilinos::all_selected_libs
 )
 target_link_libraries(exec
     PUBLIC OpenMP::OpenMP_CXX
@@ -166,7 +185,7 @@ target_link_libraries(exec
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
-    # PUBLIC trilinos
+    PUBLIC Trilinos::all_selected_libs
 )
 if(USE_GTEST)
 target_link_libraries(dare
@@ -184,6 +203,7 @@ target_link_libraries(unit_test
     PUBLIC Boost::serialization
     PUBLIC Boost::system
     PUBLIC GTest::GTest
+    PUBLIC Trilinos::all_selected_libs
 )
 endif()
 

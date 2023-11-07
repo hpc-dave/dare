@@ -53,10 +53,23 @@ public:
      */
     CartesianRepresentation();
 
+    /*!
+     * @brief constructor with initialization
+     * @param grid pointer to the grid
+     * @param opt options related to the grid
+     */
     explicit CartesianRepresentation(const GridType* grid, typename GridType::Options opt);
 
+    /*!
+     * @brief default copy constructor
+     * @param other instance to copy from
+     */
     CartesianRepresentation(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
 
+    /*!
+     * @brief default copy assignment operator
+     * @param other instance to copy from
+     */
     CartesianRepresentation<Dim, LO, GO, SC>&
     operator=(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
 
