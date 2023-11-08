@@ -39,11 +39,62 @@ namespace details {
  * This decomposition aims at providing as many cubical domains as possible
  * and will only subdivide the domains at the longest end unequally.
  */
+
+/*!
+ * \brief routine for decomposition for Cartesian grid
+ * This decomposition aims at providing as many cubical domains as possible
+ * and will only subdivide the domains at the longest end unequally.
+ */
+template <std::size_t Dim, class LO, class GO>
+void CartesianDistribution_MPI_Dims_create(int num_proc,
+                                  const utils::Vector<Dim, GO>& resolution_global,
+                                  std::vector<utils::Vector<Dim, LO>>* vec_res_local,
+                                  std::vector<utils::Vector<Dim, GO>>* vec_offsets) {
+    vec_res_local->resize(num_proc);
+    vec_offsets->resize(num_proc);
+    int ndims = Dim;
+    int dims[Dim];
+    std::fill(dims, dims + Dim, 0);
+    MPI_Dims_create(num_proc, ndims, dims);
+    utils::Vector<Dim, GO> subdomain_res, subdomain_add_to_last;
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        subdomain_res[dim] = resolution_global[dim] / dims[dim];
+        subdomain_add_to_last[dim] = resolution_global[dim] - subdomain_res[dim] * dims[dim];
+    }
+
+    utils::Vector<Dim, int> hsum_topo;
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        hsum_topo[dim] = 1;
+        for (std::size_t n{dim + 1}; n < Dim; n++)
+            hsum_topo[dim] *= dims[n];
+    }
+
+    auto GetIndex = [&](int n) {
+        utils::Vector<Dim, int> ind;
+        for (std::size_t dim{0}; dim < Dim; dim++) {
+            ind[dim] = n / hsum_topo[dim];
+            n -= ind[dim] * hsum_topo[dim];
+        }
+        return ind;
+    };
+
+    for (int n_proc{0}; n_proc < num_proc; n_proc++) {
+        (*vec_res_local)[n_proc] = subdomain_res;
+        utils::Vector<Dim, int> ind = GetIndex(n_proc);
+        for (std::size_t dim{0}; dim < Dim; dim++) {
+            if (ind[dim] == dims[dim]) {
+                (*vec_res_local)[n_proc][dim] += subdomain_add_to_last[dim];
+            }
+            (*vec_offsets)[n_proc][dim] = ind[dim] * subdomain_res[dim];
+        }
+    }
+}
+
 template <std::size_t Dim, class LO, class GO>
 void CubicalCartesianDistribution(int num_proc,
                                   const utils::Vector<Dim, GO>& resolution_global,
                                   std::vector<utils::Vector<Dim, LO>>* vec_res_local,
-                                  std::vector<utils::Vector<Dim, GO>>* vec_offsets) {
+                                  std::vector<utils::Vector<Dim, GO>>* vec_offsets, bool print_warning = true) {
     const double max_ratio_deviation{1.2};  // acceptable volume ration of domains
     // Determine direction with maximum number of cells
     vec_res_local->resize(num_proc);
@@ -244,57 +295,25 @@ void CubicalCartesianDistribution(int num_proc,
             n_cell_redistribute -= n_cell_redist_slice * cell_per_slice;
         }
     }
-}
 
-/*!
- * \brief routine for decomposition for Cartesian grid
- * This decomposition aims at providing as many cubical domains as possible
- * and will only subdivide the domains at the longest end unequally.
- */
-template <std::size_t Dim, class LO, class GO>
-void CartesianDistribution_MPI_Dims_create(int num_proc,
-                                  const utils::Vector<Dim, GO>& resolution_global,
-                                  std::vector<utils::Vector<Dim, LO>>* vec_res_local,
-                                  std::vector<utils::Vector<Dim, GO>>* vec_offsets) {
-    vec_res_local->resize(num_proc);
-    vec_offsets->resize(num_proc);
-    int ndims = Dim;
-    int dims[Dim];
-    std::fill(dims, dims + Dim, 0);
-    MPI_Dims_create(num_proc, ndims, dims);
-    utils::Vector<Dim, GO> subdomain_res, subdomain_add_to_last;
-    for (std::size_t dim{0}; dim < Dim; dim++) {
-        subdomain_res[dim] = resolution_global[dim] / dims[dim];
-        subdomain_add_to_last[dim] = resolution_global[dim] - subdomain_res[dim] * dims[dim];
+    // if a bug is detected, switch to less efficient MPI_Dims_create
+    num_cells_total = 1;
+    for (auto e : resolution_global)
+        num_cells_total *= e;
+    GO sum_cells{0};
+    for (const auto& r_sub : *vec_res_local) {
+        LO n_sub{1};
+        for (LO dim : r_sub)
+            n_sub *= dim;
+        sum_cells += n_sub;
     }
-
-    utils::Vector<Dim, int> hsum_topo;
-    for (std::size_t dim{0}; dim < Dim; dim++) {
-        hsum_topo[dim] = 1;
-        for (std::size_t n{dim + 1}; n < Dim; n++)
-            hsum_topo[dim] *= dims[n];
-    }
-
-    auto GetIndex = [&](int n) {
-        utils::Vector<Dim, int> ind;
-        for (std::size_t dim{0}; dim < Dim; dim++) {
-            ind[dim] = n / hsum_topo[dim];
-            n -= ind[dim] * hsum_topo[dim];
-        }
-        return ind;
-    };
-
-    for (int n_proc{0}; n_proc < num_proc; n_proc++) {
-        (*vec_res_local)[n_proc] = subdomain_res;
-        utils::Vector<Dim, int> ind = GetIndex(n_proc);
-        for (std::size_t dim{0}; dim < Dim; dim++) {
-            if (ind[dim] == dims[dim]) {
-                (*vec_res_local)[n_proc][dim] += subdomain_add_to_last[dim];
-            }
-            (*vec_offsets)[n_proc][dim] = ind[dim] * subdomain_res[dim];
-        }
+    if (sum_cells != num_cells_total) {
+        if (print_warning)
+            std::cout << "Cubical Cartesian distribution failed, switching to MPI_Dims_create instead!" << std::endl;
+        details::CartesianDistribution_MPI_Dims_create(num_proc, resolution_global, vec_res_local, vec_offsets);
     }
 }
+
 }  // namespace details
 
 /*!

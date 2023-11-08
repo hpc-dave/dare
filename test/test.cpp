@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     bool result = ret == MPI_SUCCESS;
     bool result_global{false};
     MPI_Allreduce(&result, &result_global, 1, MPI_CXX_BOOL, MPI_LAND, MPI_COMM_WORLD);
-    if(result_global){
+    if (result_global) {
         std::cout << "All tests were successful over all processes" << std::endl;
     } else {
         std::cout << "On at least one process the tests failed!" << std::endl;

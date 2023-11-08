@@ -28,71 +28,74 @@
 #include "../Cartesian.h"
 #include "../CartesianDistribution.h"
 
-// TEST_P(ConsistencyTest, Cubical_OneDim) {
-//     dare::mpi::ExecutionManager exman;
-//     if (!exman.AmIRoot()) {
-//         SUCCEED();
-//     }
-//     int num_proc = GetParam();
-//     const std::size_t Dim{1};
-//     using Grid = dare::Grid::Cartesian<Dim>;
-//     using LO = typename Grid::LocalOrdinalType;
-//     using GO = typename Grid::GlobalOrdinalType;
-//     using VecLO = typename Grid::VecLO;
-//     using VecGO = typename Grid::VecGO;
-//     VecGO resolution_global(num_proc*5);
-//     std::vector<VecLO> vec_res_local;
-//     std::vector<VecGO> vec_offsets;
-//     dare::Grid::details::CubicalCartesianDistribution(num_proc,
-//                                                       resolution_global,
-//                                                       &vec_res_local, &vec_offsets);
+TEST_P(ConsistencyTest, Cubical_OneDim) {
+    dare::mpi::ExecutionManager exman;
+    if (!exman.AmIRoot()) {
+        SUCCEED();
+    }
+    int num_proc = GetParam();
+    const std::size_t Dim{1};
+    using Grid = dare::Grid::Cartesian<Dim>;
+    using LO = typename Grid::LocalOrdinalType;
+    using GO = typename Grid::GlobalOrdinalType;
+    using VecLO = typename Grid::VecLO;
+    using VecGO = typename Grid::VecGO;
+    VecGO resolution_global(num_proc*5);
+    std::vector<VecLO> vec_res_local;
+    std::vector<VecGO> vec_offsets;
+    dare::Grid::details::CubicalCartesianDistribution(num_proc,
+                                                      resolution_global,
+                                                      &vec_res_local, &vec_offsets,
+                                                      false);
 
-//     dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
-// }
+    dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
+}
 
-// TEST_P(ConsistencyTest, Cubical_TwoDim) {
-//     dare::mpi::ExecutionManager exman;
-//     if (!exman.AmIRoot()) {
-//         SUCCEED();
-//     }
-//     int num_proc = GetParam();
-//     const std::size_t Dim{2};
-//     using Grid = dare::Grid::Cartesian<Dim>;
-//     using LO = typename Grid::LocalOrdinalType;
-//     using GO = typename Grid::GlobalOrdinalType;
-//     using VecLO = typename Grid::VecLO;
-//     using VecGO = typename Grid::VecGO;
-//     VecGO resolution_global(num_proc * 5, num_proc * 5);
-//     std::vector<VecLO> vec_res_local;
-//     std::vector<VecGO> vec_offsets;
-//     dare::Grid::details::CubicalCartesianDistribution(num_proc,
-//                                                       resolution_global,
-//                                                       &vec_res_local, &vec_offsets);
+TEST_P(ConsistencyTest, Cubical_TwoDim) {
+    dare::mpi::ExecutionManager exman;
+    if (!exman.AmIRoot()) {
+        SUCCEED();
+    }
+    int num_proc = GetParam();
+    const std::size_t Dim{2};
+    using Grid = dare::Grid::Cartesian<Dim>;
+    using LO = typename Grid::LocalOrdinalType;
+    using GO = typename Grid::GlobalOrdinalType;
+    using VecLO = typename Grid::VecLO;
+    using VecGO = typename Grid::VecGO;
+    VecGO resolution_global(num_proc * 5, num_proc * 5);
+    std::vector<VecLO> vec_res_local;
+    std::vector<VecGO> vec_offsets;
+    dare::Grid::details::CubicalCartesianDistribution(num_proc,
+                                                      resolution_global,
+                                                      &vec_res_local, &vec_offsets,
+                                                      false);
 
-//     dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
-// }
+    dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
+}
 
-// TEST_P(ConsistencyTest, Cubical_ThreeDim) {
-//     dare::mpi::ExecutionManager exman;
-//     if (!exman.AmIRoot()) {
-//         SUCCEED();
-//     }
-//     int num_proc = GetParam();
-//     const std::size_t Dim{3};
-//     using Grid = dare::Grid::Cartesian<Dim>;
-//     using LO = typename Grid::LocalOrdinalType;
-//     using GO = typename Grid::GlobalOrdinalType;
-//     using VecLO = typename Grid::VecLO;
-//     using VecGO = typename Grid::VecGO;
-//     VecGO resolution_global(num_proc * 5, num_proc * 5, num_proc * 5);
-//     std::vector<VecLO> vec_res_local;
-//     std::vector<VecGO> vec_offsets;
-//     dare::Grid::details::CubicalCartesianDistribution(num_proc,
-//                                                       resolution_global,
-//                                                       &vec_res_local, &vec_offsets);
+TEST_P(ConsistencyTest, Cubical_ThreeDim) {
+    dare::mpi::ExecutionManager exman;
+    if (!exman.AmIRoot()) {
+        SUCCEED();
+    }
+    int num_proc = GetParam();
+    const std::size_t Dim{3};
+    using Grid = dare::Grid::Cartesian<Dim>;
+    using LO = typename Grid::LocalOrdinalType;
+    using GO = typename Grid::GlobalOrdinalType;
+    using VecLO = typename Grid::VecLO;
+    using VecGO = typename Grid::VecGO;
+    VecGO resolution_global(num_proc * 5, num_proc * 5, num_proc * 5);
+    std::vector<VecLO> vec_res_local;
+    std::vector<VecGO> vec_offsets;
+    dare::Grid::details::CubicalCartesianDistribution(num_proc,
+                                                      resolution_global,
+                                                      &vec_res_local, &vec_offsets,
+                                                      false);
 
-//     dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
-// }
+    dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
+}
 
 INSTANTIATE_TEST_SUITE_P(CartesianDistributionTest,
                          ConsistencyTest,
