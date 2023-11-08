@@ -69,25 +69,27 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // initializing google test
-    testing::InitGoogleTest(&argc, argv);
-    // delete the default printers to avoid confusing output on COUT
-    testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();
-    if (rank != 0) {
-        // remove all output to cout from non-root processes
-        delete listeners.Release(listeners.default_result_printer());
-        // remove report writers
-        // delete listeners.Release(listeners.default_xml_generator());
+    int ret = -1;
+    {
+        // initializing google test
+        testing::InitGoogleTest(&argc, argv);
+        // delete the default printers to avoid confusing output on COUT
+        testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();
+        if (rank != 0) {
+            // remove all output to cout from non-root processes
+            delete listeners.Release(listeners.default_result_printer());
+            // remove report writers
+            // delete listeners.Release(listeners.default_xml_generator());
+        }
+        // run the tests
+        ret = RUN_ALL_TESTS();
     }
-    // run the tests
-    int ret = RUN_ALL_TESTS();
-
     bool result = ret == MPI_SUCCESS;
     bool result_global{false};
     MPI_Allreduce(&result, &result_global, 1, MPI_CXX_BOOL, MPI_LAND, MPI_COMM_WORLD);
-    if (result_global) {
+    if (result_global && rank == 0) {
         std::cout << "All tests were successful over all processes" << std::endl;
-    } else {
+    } else if (rank == 0) {
         std::cout << "On at least one process the tests failed!" << std::endl;
     }
     MPI_Finalize();

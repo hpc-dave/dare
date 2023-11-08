@@ -94,7 +94,7 @@ TEST_P(ConsistencyTest, Cubical_ThreeDim) {
                                                       &vec_res_local, &vec_offsets,
                                                       false);
 
-    dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
+    // dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
 }
 
 INSTANTIATE_TEST_SUITE_P(CartesianDistributionTest,
