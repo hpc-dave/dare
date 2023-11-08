@@ -91,7 +91,7 @@ void CartesianDistribution_MPI_Dims_create(int num_proc,
 }
 
 template <std::size_t Dim, class LO, class GO>
-void CubicalCartesianDistribution(int num_proc,
+void CartesianDistribution_Cubical(int num_proc,
                                   const utils::Vector<Dim, GO>& resolution_global,
                                   std::vector<utils::Vector<Dim, LO>>* vec_res_local,
                                   std::vector<utils::Vector<Dim, GO>>* vec_offsets, bool print_warning = true) {
@@ -332,7 +332,7 @@ void CubicalCartesianDistribution(int num_proc,
  * and will only subdivide the domains at the longest end unequally.
  */
 template <std::size_t Dim, class LO, class GO>
-void CubicalCartesianDistribution(mpi::ExecutionManager* exec_man,
+void CartesianDistribution_Cubical(mpi::ExecutionManager* exec_man,
                                   const utils::Vector<Dim, GO>& resolution_global,
                                   utils::Vector<Dim, LO>* resolution_local,
                                   utils::Vector<Dim, GO>* offset) {
@@ -346,7 +346,7 @@ void CubicalCartesianDistribution(mpi::ExecutionManager* exec_man,
         std::vector<utils::Vector<Dim, LO>> vec_res_local(num_proc);
         std::vector<utils::Vector<Dim, GO>> vec_offsets(num_proc);
 
-        details::CubicalCartesianDistribution(num_proc, resolution_global,
+        details::CartesianDistribution_Cubical(num_proc, resolution_global,
                                               &vec_res_local, &vec_offsets);
 
         if (!exec_man->IsSerial()) {

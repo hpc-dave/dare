@@ -28,7 +28,7 @@
 #include "../Cartesian.h"
 #include "../CartesianDistribution.h"
 
-TEST_P(ConsistencyTest, MPI_Dims_create_OneDim) {
+TEST_P(ConsistencyTest, MPIDimscreateOneDim) {
     dare::mpi::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();
@@ -50,7 +50,7 @@ TEST_P(ConsistencyTest, MPI_Dims_create_OneDim) {
     dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
 }
 
-TEST_P(ConsistencyTest, MPI_Dims_create_TwoDim) {
+TEST_P(ConsistencyTest, MPIDimscreateTwoDim) {
     dare::mpi::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();
@@ -72,7 +72,7 @@ TEST_P(ConsistencyTest, MPI_Dims_create_TwoDim) {
     dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
 }
 
-TEST_P(ConsistencyTest, MPI_Dims_create_ThreeDim) {
+TEST_P(ConsistencyTest, MPIDimscreateThreeDim) {
     dare::mpi::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();

@@ -28,7 +28,7 @@
 #include "../Cartesian.h"
 #include "../CartesianDistribution.h"
 
-TEST_P(ConsistencyTest, Cubical_OneDim) {
+TEST_P(ConsistencyTest, CubicalOneDim) {
     dare::mpi::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();
@@ -43,7 +43,7 @@ TEST_P(ConsistencyTest, Cubical_OneDim) {
     VecGO resolution_global(num_proc*5);
     std::vector<VecLO> vec_res_local;
     std::vector<VecGO> vec_offsets;
-    dare::Grid::details::CubicalCartesianDistribution(num_proc,
+    dare::Grid::details::CartesianDistribution_Cubical(num_proc,
                                                       resolution_global,
                                                       &vec_res_local, &vec_offsets,
                                                       false);
@@ -51,7 +51,7 @@ TEST_P(ConsistencyTest, Cubical_OneDim) {
     dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
 }
 
-TEST_P(ConsistencyTest, Cubical_TwoDim) {
+TEST_P(ConsistencyTest, CubicalTwoDim) {
     dare::mpi::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();
@@ -66,7 +66,7 @@ TEST_P(ConsistencyTest, Cubical_TwoDim) {
     VecGO resolution_global(num_proc * 5, num_proc * 5);
     std::vector<VecLO> vec_res_local;
     std::vector<VecGO> vec_offsets;
-    dare::Grid::details::CubicalCartesianDistribution(num_proc,
+    dare::Grid::details::CartesianDistribution_Cubical(num_proc,
                                                       resolution_global,
                                                       &vec_res_local, &vec_offsets,
                                                       false);
@@ -74,7 +74,7 @@ TEST_P(ConsistencyTest, Cubical_TwoDim) {
     dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
 }
 
-TEST_P(ConsistencyTest, Cubical_ThreeDim) {
+TEST_P(ConsistencyTest, CubicalThreeDim) {
     dare::mpi::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();
@@ -89,12 +89,12 @@ TEST_P(ConsistencyTest, Cubical_ThreeDim) {
     VecGO resolution_global(num_proc * 5, num_proc * 5, num_proc * 5);
     std::vector<VecLO> vec_res_local;
     std::vector<VecGO> vec_offsets;
-    dare::Grid::details::CubicalCartesianDistribution(num_proc,
+    dare::Grid::details::CartesianDistribution_Cubical(num_proc,
                                                       resolution_global,
                                                       &vec_res_local, &vec_offsets,
                                                       false);
 
-    // dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
+    dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
 }
 
 INSTANTIATE_TEST_SUITE_P(CartesianDistributionTest,
