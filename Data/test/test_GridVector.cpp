@@ -28,6 +28,10 @@
 #include "../GridVector.h"
 
 namespace dare::Data::test {
+
+/*!
+ * @brief small mock grid with minimal interface for the GridVector type
+ */
 class TestGrid {
 public:
     using LocalOrdinalType = int32_t;
@@ -35,11 +39,28 @@ public:
     using LO = LocalOrdinalType;
     using Index = dare::utils::Vector<3, LocalOrdinalType>;
     using IndexGlobal = dare::utils::Vector<3, GlobalOrdinalType>;
+
+    /*!
+     * @brief represenation of mock grid
+     */
     class TestGridRepresentation {
     public:
         using LO = TestGrid::LocalOrdinalType;
+
+        /*!
+         * @brief default constructor
+         */
         TestGridRepresentation() : TestGridRepresentation(nullptr) {}
+
+        /*!
+         * @brief initializing constructor
+         * @param _g pointer to grid
+         */
         explicit TestGridRepresentation(TestGrid* _g) : grid(_g) {}
+
+        /*!
+         * @brief returns grid size
+         */
         LO GetNumberLocalCells() const {
             LO n{1};
             for (auto e : grid->size)
@@ -47,6 +68,10 @@ public:
             return n;
         }
 
+        /*!
+         * @brief small mapping (Cartesian)
+         * @param ind index for input
+         */
         LO MapIndexToOrdinalLocal(const Index& ind) {
             LO n{0};
             for (std::size_t i{0}; i < ind.size(); i++) {
@@ -59,24 +84,41 @@ public:
         }
 
     private:
-        TestGrid* grid;
+        TestGrid* grid;  //!< pointer to the test grid
     };
     using Representation = TestGridRepresentation;
 
+    /*!
+     * @brief default constructor
+     */
     TestGrid() {}
+
+    /*!
+     * @brief default destructor
+     */
     ~TestGrid() {}
 
+    /*!
+     * @brief Get simple representation
+     */
     Representation GetRepresentation() {
         return Representation(this);
     }
 
+    /*!
+     * @brief set the size of the grid
+     * @param _s size
+     */
     void SetSize(Index _s) { size = _s; }
 
-    Index size;
+    Index size;  //!< size of the grid
 };
 
 }  // namespace dare::Data::test
 
+/*!
+ * @brief Testing suite for GridVector
+ */
 class GridVectorTest : public testing::Test {
 protected:
     using TestGrid = dare::Data::test::TestGrid;
