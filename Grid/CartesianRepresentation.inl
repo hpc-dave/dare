@@ -103,6 +103,8 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
     hierarchic_sum_loc[Dim - 1] = 1;
     hierarchic_sum_glob[Dim - 1] = 1;
 
+    this->dare::utils::InitializationTracker::Initialize();
+
     // Prepare halo-buffers
     std::vector<GO> required_halo_IDs;
 
@@ -172,8 +174,6 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
     };
     halo_buffer.Initialize(grid->GetExecutionManager(), required_halo_IDs, map_periodic,
                            is_local, map_global_to_local);
-
-    this->dare::utils::InitializationTracker::Initialize();
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>

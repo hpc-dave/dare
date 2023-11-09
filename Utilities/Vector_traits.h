@@ -166,7 +166,7 @@ public:
  */
 template <std::size_t Dim, typename T>
 class VectorDecorator<1, Dim, T, std::enable_if_t<std::is_floating_point_v<T>>>
-    : VectorBase<Dim, T>{
+    : public VectorBase<Dim, T>{
 public:
     VectorDecorator() {}
 

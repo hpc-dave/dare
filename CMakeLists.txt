@@ -133,6 +133,7 @@ if(USE_GTEST)
     endif()
 endif()
 
+add_subdirectory(Data                                                 )
 add_subdirectory(FileFormats                                          )
 add_subdirectory(Utilities                                            )
 add_subdirectory(MPI                                                  )

@@ -27,6 +27,7 @@
 #include "MPI/ExecutionManager.h"
 #include "Grid/Cartesian.h"
 #include "ScopeGuard/ScopeGuard.h"
+#include <Kokkos_Core.hpp>
 
 int main(int argc, char* argv[]) {
     const std::size_t Dim = 3;
@@ -37,17 +38,25 @@ int main(int argc, char* argv[]) {
 
     dare::ScopeGuard scope_guard(argc, argv);
 
+    Kokkos::initialize();
+{
+    Kokkos::View<dare::utils::Vector<Dim, LO>*> k_cpy("cpy", 0);
+    {
+    Kokkos::View<dare::utils::Vector<Dim, LO>*> k_arr("test", 0);
+
+    Kokkos::resize(k_arr, 100);
+
+    k_cpy = k_arr;
+    }
+    std::cout << "test " << k_cpy.size() << std::endl;
+
+    Kokkos::parallel_for(
+        100, KOKKOS_LAMBDA(std::size_t N) {
+            for (std::size_t dim{0}; dim < Dim; dim++)
+                k_cpy(N)[dim] = dim;
+        });
     dare::mpi::ExecutionManager exman;
 
-    // int dims[] = {0};
-    // MPI_Dims_create(exman.GetNumberProcesses(), 1, dims);
-
-    // if (exman.AmIRoot()) {
-    //     for (int n = 0; n < 1; n++) {
-    //         std::cout << dims[n] << ' ';
-    //     }
-    //     std::cout << std::endl;
-    // }
     GO i_size{10}, j_size{10};
     dare::utils::Vector<Dim, GO> res(30, 20, 10);
     dare::utils::Vector<Dim, LO> res_i = res;
@@ -61,6 +70,7 @@ int main(int argc, char* argv[]) {
         }
     auto rep = grid.GetRepresentation(dare::utils::Vector<Dim, LO>());
     rep.PrintDistribution("distribution.csv");
-
+}
+    Kokkos::finalize();
     return 0;
 }

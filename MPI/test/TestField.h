@@ -28,7 +28,11 @@
 
 #include <vector>
 
+
 namespace dare::test {
+/*! \class TestField
+ * @brief mock implementation for testing purposes
+ */
 class TestField {
 public:
     void ResizeByGridSize(int grid_size) {
@@ -41,16 +45,16 @@ public:
         return num_eq;
     }
 
-    double& at(std::size_t pos) {
+    double& At(std::size_t pos) {
         return data[pos];
     }
-    double at(std::size_t pos) const {
+    double At(std::size_t pos) const {
         return data[pos];
     }
 
 private:
-    const std::size_t num_eq = 5;
-    std::vector<double> data;
+    const std::size_t num_eq = 5;  //!< mock 5 components
+    std::vector<double> data;      //!< data storage
 };
 }  // namespace dare::test
 

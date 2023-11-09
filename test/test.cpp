@@ -27,6 +27,8 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
+#include <Tpetra_Core.hpp>
+
 static std::string xml_report_arg = ""; // NOLINT
 
 int main(int argc, char* argv[]) {
@@ -68,6 +70,7 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+    Tpetra::initialize(&argc, &argv);
 
     int ret = -1;
     {
@@ -92,6 +95,8 @@ int main(int argc, char* argv[]) {
     } else if (rank == 0) {
         std::cout << "On at least one process the tests failed!" << std::endl;
     }
+
+    Tpetra::finalize();
     MPI_Finalize();
     return ret;
 }
