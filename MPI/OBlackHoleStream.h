@@ -27,6 +27,7 @@
 
 #include <iostream>
 #include <string>
+#include <utility>
 
 namespace dare::mpi {
 
@@ -44,6 +45,23 @@ public:
      * the underlying ostream will never print anything
      */
     BlackHoleOStream() : std::basic_ostream<char, std::char_traits<char>>(NULL) {}
+
+    /*!
+     * @brief move constructor
+     * @param other other entity
+     */
+    BlackHoleOStream(BlackHoleOStream&& other)
+        : std::basic_ostream<char, std::char_traits<char>>::basic_ostream(std::move(other)) {}
+
+    /*!
+     * @brief move operator
+     * @param other other entity
+     */
+    BlackHoleOStream&
+    operator=(BlackHoleOStream&& other) {
+        std::basic_ostream<char, std::char_traits<char>>::operator=(std::move(other));
+        return *this;
+    }
 };
 
 }  // namespace dare::mpi

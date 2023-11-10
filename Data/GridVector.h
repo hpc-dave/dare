@@ -84,7 +84,7 @@ public:
      * @param c component number
      * @return reference to specified value
      */
-    T& At(LO n, std::size_t c = 1);
+    T& At(LO n, std::size_t c);
 
     /*!
      * @brief access based on cell and component
@@ -92,7 +92,7 @@ public:
      * @param c component number
      * @return reference to specified value
      */
-    T& At(const Index& ind, std::size_t c = 1);
+    T& At(const Index& ind, std::size_t c);
 
     /*!
      * @brief const access based on cell and component
@@ -100,7 +100,7 @@ public:
      * @param c component number
      * @return specified value
      */
-    T At(LO n, std::size_t c = 1) const;
+    T At(LO n, std::size_t c) const;
 
     /*!
      * @brief const access based on cell and component
@@ -108,7 +108,7 @@ public:
      * @param c component number
      * @return specified value
      */
-    T At(const Index& ind, std::size_t c = 1) const;
+    T At(const Index& ind, std::size_t c) const;
 
     /*!
      * @brief access to element in the data
