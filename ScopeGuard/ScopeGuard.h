@@ -27,11 +27,11 @@
 
 #include <mpi.h>
 #include <omp.h>
-
 #include <iostream>
+#include <memory>
 #include <string>
+#include <Tpetra_Core.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-
 
 namespace dare {
 
@@ -66,7 +66,7 @@ public:
      * The constructor will initialize the environments according to the provided
      * terminal arguments
      */
-    ScopeGuard(int argc, char* argv[], bool suppress_output = false);
+    ScopeGuard(int* argc, char** argv[], bool suppress_output = false);
 
     /*!
      * \brief default destructor
@@ -121,11 +121,12 @@ private:
      */
     void PrintHelp();
 
-    int argc;         // number of arguments
-    char** argv;      // argument array
+    int* argc;         // number of arguments
+    char*** argv;      // argument array
 
     bool is_root;     // identifier, if this process is root
     bool manage_mpi;  // identifier, if this instance is responsible for managing MPI
+    Teuchos::RCP<Tpetra::ScopeGuard> tpetra_scope;
 };
 
 }  // end namespace dare

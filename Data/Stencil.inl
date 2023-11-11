@@ -22,22 +22,54 @@
  * SOFTWARE.
  */
 
-#include <gtest/gtest.h>
-#include <mpi.h>
+namespace dare::Data {
 
-#include <string>
-
-#include "../ScopeGuard.h"
-
-TEST(ScopeGuardTest, IsRoot) {
-    int argc = 0;
-    std::string args = "";
-    char* argval = args.data();
-    char** argv = &argval;
-    dare::ScopeGuard scope(argc, argv, true);
-
-    int rank{-1};
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    bool is_root = rank == 0;
-    ASSERT_EQ(is_root, scope.AmIRoot());
+template <typename T>
+Stencil<T>::Stencil(std::string identifier, Ordinal stencil_size) : values(identifier, stencil_size) {
 }
+
+template <typename T>
+Stencil<T>::Stencil(const Stencil<T>& other) {
+    *this = other;
+}
+
+template <typename T>
+Stencil<T>& Stencil<T>::operator=(const Stencil<T>& other) {
+    if (&other == this)
+        return *this;
+    Resize(other.GetSize());
+    Kokkos::deep_copy(values, other.values);
+    return *this;
+}
+
+template <typename T>
+void Stencil<T>::Resize(Ordinal stencil_size) {
+    Kokkos::resize(values, stencil_size);
+}
+
+template <typename T>
+typename Stencil<T>::Ordinal Stencil<T>::GetSize() const {
+    return values.size();
+}
+
+template <typename T>
+void Stencil<T>::InsertValue(Ordinal id, const T& value) {
+    values[id] = value;
+}
+
+template <typename T>
+T& Stencil<T>::GetValue(Ordinal pos) {
+    return values[pos];
+}
+
+template <typename T>
+const T& Stencil<T>::GetValue(Ordinal pos) const {
+    return values[pos];
+}
+
+template <typename T>
+const Kokkos::View<T*>& Stencil<T>::GetData() const {
+    return values;
+}
+
+}  // namespace dare::Data

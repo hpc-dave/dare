@@ -22,7 +22,6 @@ if(USE_GTEST)
         PRIVATE ${DaRe_HEADER_FILES}
         PRIVATE ${DaRe_SOURCE_FILES}
     )
-    add_subdirectory(test)
 endif()
 
 # Install header files

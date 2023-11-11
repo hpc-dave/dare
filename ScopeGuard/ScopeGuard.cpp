@@ -26,7 +26,7 @@
 
 namespace dare {
 
-ScopeGuard::ScopeGuard(int _argc, char* _argv[], bool suppress_output) : argc(_argc), argv(_argv) {
+ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_argc), argv(_argv) {
     int num_proc = 1;
     int my_rank = 0;
 
@@ -36,7 +36,9 @@ ScopeGuard::ScopeGuard(int _argc, char* _argv[], bool suppress_output) : argc(_a
     manage_mpi = !static_cast<bool>(flag_mpi_init);
 
     if (manage_mpi)
-        MPI_Init(&_argc, &_argv);
+        MPI_Init(_argc, _argv);
+
+    tpetra_scope = Teuchos::rcp(new Tpetra::ScopeGuard(_argc, _argv));
 
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
@@ -77,15 +79,16 @@ ScopeGuard::ScopeGuard(int _argc, char* _argv[], bool suppress_output) : argc(_a
 }
 
 ScopeGuard::~ScopeGuard() {
+    tpetra_scope = Teuchos::ENull::null;
     if (manage_mpi)
         MPI_Finalize();
 }
 
 bool ScopeGuard::HasArgument(std::string arg, std::string* options) const {
-    for (int n = 1; n < argc; ++n) {
-        if (boost::iequals(arg, argv[n])) {
-            if (options != nullptr && n < (argc - 1))
-                *options = argv[n + 1];
+    for (int n = 1; n < *argc; ++n) {
+        if (boost::iequals(arg, (*argv)[n])) {
+            if (options != nullptr && n < (*argc - 1))
+                *options = (*argv)[n + 1];
             return true;
         }
     }

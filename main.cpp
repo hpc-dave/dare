@@ -36,10 +36,11 @@ int main(int argc, char* argv[]) {
     using SC = double;
     int rank_stop = 1;
 
-    dare::ScopeGuard scope_guard(argc, argv);
+    dare::ScopeGuard scope_guard(&argc, &argv);
 
-    Kokkos::initialize();
+    // Kokkos::initialize();
 {
+    Kokkos::View<double*> k[3];
     Kokkos::View<dare::utils::Vector<Dim, LO>*> k_cpy("cpy", 0);
     {
     Kokkos::View<dare::utils::Vector<Dim, LO>*> k_arr("test", 0);
@@ -71,6 +72,6 @@ int main(int argc, char* argv[]) {
     auto rep = grid.GetRepresentation(dare::utils::Vector<Dim, LO>());
     rep.PrintDistribution("distribution.csv");
 }
-    Kokkos::finalize();
+    // Kokkos::finalize();
     return 0;
 }
