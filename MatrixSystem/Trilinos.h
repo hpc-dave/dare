@@ -36,11 +36,12 @@
 
 #include "../MPI/ExecutionManager.h"
 #include "../Data/GridVector.h"
+#include "../Utilities/InitializationTracker.h"
 
 namespace dare::Matrix {
 
 template <typename SC, typename LO, typename GO>
-class Trilinos {
+class Trilinos : public dare::utils::InitializationTracker {
 public:
     typedef ScalarType SC;
     typedef LocalOrdinalType LO;
@@ -50,6 +51,7 @@ public:
     typedef Tpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal> VecType;
     typedef Tpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal> MultiVecType;
     typedef Tpetra::Map<LocalOrdinal, GlobalOrdinal> MapType;
+    typedef const Teuchos::Comm<int> Communicator;
     typedef typename MatrixType::nonconst_local_inds_host_view_type LOViewType;
     typedef typename MatrixType::nonconst_global_inds_host_view_type GOViewType;
     typedef typename MatrixType::nonconst_values_host_view_type SViewType;
@@ -73,6 +75,13 @@ public:
                Lambda functor,
                bool rebuild);
 
+    template <typename Grid, std::size_t N, typename Lambda>
+    void SetB(const typename Grid::Representation& grid,
+              const dare::Data::GridVector<Grid, SC, N>& field,
+              Lambda functor);
+
+    void SetInitialGuess(const SC value);
+
     const Teuchos::RCP<MatrixType>& GetA() const;
     const Teuchos::RCP<VectorType>& GetB() const;
     Teuchos::RCP<VectorType>& GetX();  // NOLINT
@@ -80,7 +89,27 @@ public:
     const Teuchos::RCP<OpType>& GetM() const;
 
 private:
+    template <typename Grid, std::size_t N, typename Lambda>
+    void BuildNew(const typename Grid::Representation& grid,
+                  const dare::Data::GridVector<Grid, SC, N>& field,
+                  Lambda functor);
+
+    template <typename Grid, std::size_t N, typename Lambda>
+    void BuildReplace(const typename Grid::Representation& grid,
+                      const dare::Data::GridVector<Grid, SC, N>& field,
+                      Lambda functor);
+
+    template <typename Grid, std::size_t N, typename Lambda>
+    void BuildUpdate(const typename Grid::Representation& grid,
+                     const dare::Data::GridVector<Grid, SC, N>& field,
+                     Lambda functor);
+
+    template <typename Grid, std::size_t N>
+    void AllocateMap(const typename Grid::Representation& grid);
+
     dare::mpi::ExecutionManager* exec_man;  //!< pointer to execution manager
+    Teuchos::RCP<Communicator> comm;        //!< mpi communicator for Trilinos
+    Teuchos::RCP<const MapType> map;        //!< map of row distribution
     Teuchos::RCP<MatrixType> A;             //!< Matrix
     Teuchos::RCP<VecType> x;                //!< Solution vector
     Teuchos::RCP<VecType> B;                //!< Right hand side vector

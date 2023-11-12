@@ -28,6 +28,7 @@
 #include "Grid/Cartesian.h"
 #include "ScopeGuard/ScopeGuard.h"
 #include <Kokkos_Core.hpp>
+#include "Data/Stencil.h"
 
 int main(int argc, char* argv[]) {
     const std::size_t Dim = 3;
@@ -40,21 +41,14 @@ int main(int argc, char* argv[]) {
 
     // Kokkos::initialize();
 {
-    Kokkos::View<double*> k[3];
-    Kokkos::View<dare::utils::Vector<Dim, LO>*> k_cpy("cpy", 0);
-    {
-    Kokkos::View<dare::utils::Vector<Dim, LO>*> k_arr("test", 0);
+    std::size_t num_entries = 100000;
+    Kokkos::View<dare::Data::Stencil<double>*> k("test", 0);
 
-    Kokkos::resize(k_arr, 100);
-
-    k_cpy = k_arr;
-    }
-    std::cout << "test " << k_cpy.size() << std::endl;
+    Kokkos::resize(k, num_entries);
 
     Kokkos::parallel_for(
-        100, KOKKOS_LAMBDA(std::size_t N) {
-            for (std::size_t dim{0}; dim < Dim; dim++)
-                k_cpy(N)[dim] = dim;
+        num_entries, KOKKOS_LAMBDA(std::size_t node) {
+            k[node].Resize(7);
         });
     dare::mpi::ExecutionManager exman;
 

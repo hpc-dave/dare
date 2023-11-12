@@ -73,12 +73,12 @@ T GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) const {
 
 template <typename Grid, typename T, std::size_t N>
 T& GridVector<Grid, T, N>::operator[](LO n) {
-    return data(n);
+    return data[n];
 }
 
 template <typename Grid, typename T, std::size_t N>
 T GridVector<Grid, T, N>::operator[](LO n) const {
-    return data(n);
+    return data[n];
 }
 
 template <typename Grid, typename T, std::size_t N>

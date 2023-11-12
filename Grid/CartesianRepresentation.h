@@ -79,6 +79,8 @@ public:
 
     LO GetNumberLocalCells() const;
     LO GetNumberLocalCellsInternal() const;
+    GO GetNumberGlobalCells() const;
+    GO GetNumberGlobalCellsInternal() const;
 
     LO MapInternalToLocal(LO n_internal) const;
 
@@ -90,6 +92,7 @@ public:
     LO MapGlobalToLocal(GO id_glob) const;
     Index MapGlobalToLocal(const IndexGlobal& ind_glob) const;
     LO MapGlobalToLocalInternal(GO id_glob) const;
+    GO MapLocalToGlobalInternal(LO id_glob) const;
 
     bool IsLocal(GO id_glob) const;
     bool IsLocal(const IndexGlobal& ind_glob) const;

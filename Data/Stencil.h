@@ -34,6 +34,7 @@ template <typename T>
 class Stencil {
 public:
     using Ordinal = int;
+    using ArrayType = Kokkos::View<T*>;
 
     /*!
      * @brief constructor
@@ -90,10 +91,10 @@ public:
     /*!
      * @brief returns raw data set
      */
-    const Kokkos::View<T*>& GetData() const;
+    const ArrayType& GetData() const;
 
 private:
-    Kokkos::View<T*> values;  //!< data array
+    ArrayType values;  //!< data array TODO(@dave): check which memory space is used
 };
 
 }  // namespace dare::Data

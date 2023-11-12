@@ -68,7 +68,7 @@ const T& Stencil<T>::GetValue(Ordinal pos) const {
 }
 
 template <typename T>
-const Kokkos::View<T*>& Stencil<T>::GetData() const {
+const typename Stencil<T>::ArrayType& Stencil<T>::GetData() const {
     return values;
 }
 
