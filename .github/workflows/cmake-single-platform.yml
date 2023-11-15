@@ -90,5 +90,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test_reports
-        path: test_build/*xml
+        path: ${pwd}test_build/*xml
 
