@@ -69,6 +69,7 @@ jobs:
       run: |
           cd build_test
           mpirun -n 1 ./unit_test --gtest_output="xml:${pwd}\Report_P1.xml"
+          ls
           
     - name: Run Test 2 Processes
       run: |
