@@ -11,13 +11,7 @@ on:
     branches:
       - main
       - dev
-
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
-  DEBUG: ON
-  USE_GTEST: OFF
-
+    
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
@@ -75,7 +69,7 @@ jobs:
     - name: Run Test Serial
       run: |
           cd build_test
-          mpirun -n 1 ./unit_test
+          mpirun -n 1 ./unit_test --gtest_output="xml:${pwd}\Report_P1.xml"
           
     - name: Run Test 2 Processes
       run: |
