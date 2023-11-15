@@ -25,31 +25,76 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: wsl
     container:
-      image: davevader/fbenv:2.0
+      image: davevader/dare_test:1.0
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Configure CMake
+    - name: Configure CMake Release
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       # run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -GNinja -DUSE_GTEST=${{env.USE_GTEST}}
       # run: echo Hello World
       run: |
-          mkdir build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -GNinja -DUSE_GTEST=${{env.USE_GTEST}}
-    - name: Build executable
+          mkdir build_release && cd build_release
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+          pwd
+          
+    - name: Build Release
       run: |
-          cd build
+          cd build_release
+          ninja -j 4
+          
+    - name: Configure CMake Debug
+      run: |
+          mkdir build_debug && cd build_debug
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -GNinja -DUSE_GTEST=OFF -DDEBUG=ON
+          
+    - name: Build Debug
+      run: |
+          cd build_debug
+          ninja -j 4
+  test:
+    runs-on: wsl
+    container:
+      image: davevader/dare_test:1.0
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure CMake Test
+      run: |
+          mkdir build_test && cd build_test
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=ON -DDEBUG=ON
+
+    - name: Build Test
+      run: |
+          cd build_test
           ninja -j 4
 
-    # - name: Build
-    #   # Build your program with the given configuration
-    #   run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - name: Run Test Serial
+      run: |
+          cd build_test
+          mpirun -n 1 ./unit_test
+          
+    - name: Run Test 2 Processes
+      run: |
+        cd build_test
+        mpirun -n 2 ./unit_test
 
-    # - name: Test
-    #   working-directory: ${{github.workspace}}/build
-    #   # Execute tests defined by the CMake configuration.
-    #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-    #   run: ctest -C ${{env.BUILD_TYPE}}
+    - name: Run Test 3 Processes
+      run: |
+        cd build_test
+        mpirun -n 3 ./unit_test
+        
+    - name: Run Test 4 Processes
+      run: |
+        cd build_test
+        mpirun -n 4 ./unit_test
+
+    - name: Archive Testing Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: test_reports
+        path: test_build/*xml
 
