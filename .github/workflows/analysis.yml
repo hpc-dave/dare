@@ -66,6 +66,7 @@ jobs:
 
     - name: Evaluate result
       run: |
+          readlink -f $(which sh)
           tail -n 1 CPPLINT_LOG.out > error_string.txt
           echo error_string.txt
           error_string=$(echo error_string.txt)
