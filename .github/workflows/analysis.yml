@@ -66,7 +66,7 @@ jobs:
 
     - name: Evaluate result
       run: |
-          bash
+          chsh -s /bin/bash
           readlink -f $(which sh)
           tail -n 1 CPPLINT_LOG.out > error_string.txt
           error_string=$(echo tail -n 1 CPPLINT_LOG.out)
