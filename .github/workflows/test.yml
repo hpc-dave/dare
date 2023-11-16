@@ -11,14 +11,18 @@ on:
       - dev
     
 jobs:
-  Gtest:
+
+  Serial:
     runs-on: wsl
     container:
       image: davevader/dare_test:1.0
 
+    strategy:
+      matrix:
+        procs: [1, 2, 3, 4]
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Configure CMake Test
       run: |
           mkdir build_test && cd build_test
@@ -29,32 +33,32 @@ jobs:
           cd build_test
           ninja -j 4
 
-    - name: Run Test Serial
+    - name: Run Test
       run: |
           cd build_test
-          mpirun -n 1 ./unit_test --gtest_output="xml:${pwd}Report_P1.xml"
+          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_P${{matrix.procs}}.xml"
           mv *xml ../
           
-    - name: Run Test 2 Processes
-      run: |
-        cd build_test
-        mpirun -n 2 ./unit_test --gtest_output="xml:${pwd}Report_P2.xml"
-        mv *xml ../
+    # - name: Run Test 2 Processes
+    #   run: |
+    #     cd build_test
+    #     mpirun -n 2 ./unit_test --gtest_output="xml:${pwd}Report_P2.xml"
+    #     mv *xml ../
 
-    - name: Run Test 3 Processes
-      run: |
-        cd build_test
-        mpirun -n 3 ./unit_test --gtest_output="xml:${pwd}Report_P3.xml"
-        mv *xml ../
+    # - name: Run Test 3 Processes
+    #   run: |
+    #     cd build_test
+    #     mpirun -n 3 ./unit_test --gtest_output="xml:${pwd}Report_P3.xml"
+    #     mv *xml ../
         
-    - name: Run Test 4 Processes
-      run: |
-        cd build_test
-        mpirun -n 4 ./unit_test --gtest_output="xml:${pwd}Report_P4.xml"
-        mv *xml ../
+    # - name: Run Test 4 Processes
+    #   run: |
+    #     cd build_test
+    #     mpirun -n 4 ./unit_test --gtest_output="xml:${pwd}Report_P4.xml"
+    #     mv *xml ../
 
     - name: Archive Testing Reports
       uses: actions/upload-artifact@v3
       with:
-        name: test_reports
+        name: test_reports_${{matrix.procs}}
         path: ./*.xml
