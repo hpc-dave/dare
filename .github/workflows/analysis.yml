@@ -64,12 +64,11 @@ jobs:
         name: CPPLINT_reports
         path: ./*.out
 
-          
     - name: Evaluate result
       run: |
-          ls
-          tail -n 1 CPPLINT_LOG.out
-          error_string=$(tail -n 1 CPPLINT_LOG.out)
+          tail -n 1 CPPLINT_LOG.out error_string.txt
+          echo error_string.txt
+          error_string=$(echo error_string.txt)
           num_errors=$(echo "${error_string//[!0-9]/}")
           echo Found $num_errors problems in the formatting
           if [[ $num_errors -gt 5450 ]]; then
