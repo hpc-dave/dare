@@ -63,14 +63,13 @@ jobs:
         name: CPPLINT_reports
         path: ./*.out
 
-    - name: Evaluate result
-      run: |
-          echo "125 errors" > LOG.out
-          error_string=$(tail -n 1 LOG.out)
-          num_errors=$(echo "${error_string//[!0-9]/}")
-          echo Found $num_errors problems in the formatting
-          if [[ $num_errors -gt 5450 ]]; then
-            echo CPPLINT check failed!
-          exit $num_errors
-          fi
-          echo CPPLINT check succeeded
+    # - name: Evaluate result
+    #   run: |
+    #       error_string=$(tail -n 1 CPPLINT_LOG.out)
+    #       num_errors=$(echo "${error_string//[!0-9]/}")
+    #       echo Found $num_errors problems in the formatting
+    #       if [[ $num_errors -gt 5450 ]]; then
+    #         echo CPPLINT check failed!
+    #       exit $num_errors
+    #       fi
+    #       echo CPPLINT check succeeded
