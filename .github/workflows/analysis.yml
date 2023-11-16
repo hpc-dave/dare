@@ -57,10 +57,16 @@ jobs:
         -whitespace/indent,\
         . 1> CPPLINT_LOG.out 2>CPPLINT_ERRORS.out || true
 
+        
+    - name: Archive Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: CPPLINT_reports
+        path: ./*.out
+
           
     - name: Evaluate result
       run: |
-          ls
           error_string=$(tail -n 1 /.CPPLINT_LOG.out)
           num_errors=$(echo "${error_string//[!0-9]/}")
           echo Found $num_errors problems in the formatting
@@ -69,9 +75,3 @@ jobs:
           exit $num_errors
           fi
           echo CPPLINT check succeeded
-
-    - name: Archive Reports
-      uses: actions/upload-artifact@v3
-      with:
-        name: CPPLINT_reports
-        path: ./*.out
