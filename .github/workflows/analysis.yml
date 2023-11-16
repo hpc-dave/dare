@@ -57,7 +57,6 @@ jobs:
         -whitespace/indent \
         . 1>CPPLINT_LOG.out 2>CPPLINT_ERRORS.out || true
 
-        
     - name: Archive Reports
       uses: actions/upload-artifact@v3
       with:
@@ -66,10 +65,8 @@ jobs:
 
     - name: Evaluate result
       run: |
-          chsh -s /bin/bash
-          readlink -f $(which sh)
-          tail -n 1 CPPLINT_LOG.out > error_string.txt
-          error_string=$(echo tail -n 1 CPPLINT_LOG.out)
+          echo tail -n 1 CPPLINT_LOG.out
+          error_string=$(tail -n 1 CPPLINT_LOG.out)
           num_errors=$(echo "${error_string//[!0-9]/}")
           echo Found $num_errors problems in the formatting
           if [[ $num_errors -gt 5450 ]]; then
