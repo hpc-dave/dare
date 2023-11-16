@@ -54,7 +54,7 @@ jobs:
         --counting=detailed \
         --linelength=120 \
         --filter=-build/include,+build/include_what_you_use,+build/include_order,\
-        -whitespace/indent,\
+        -whitespace/indent \
         . 1> CPPLINT_LOG.out 2>CPPLINT_ERRORS.out || true
 
         
