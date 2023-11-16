@@ -1,0 +1,76 @@
+name: Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  Doxygen:
+    runs-on: wsl
+    container:
+      image: davevader/dare_test:1.0
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: generate Doxygen documentation
+      run: doxygen DoxyFile
+          
+    - name: Evaluate result
+      run: |
+          num_warnings=$(grep -F / DoxygenWarnings.txt | wc -l)
+          echo Found $num_warnings problems in the documentation
+          if [[ $num_warnings -gt 2000 ]]; then
+            echo Doxygen check failed!
+            exit $1
+          fi
+          echo Doxygen succeded
+    - name: Archive Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: Doxygen_report
+        path: ./*.txt
+
+
+  cpplint:
+    runs-on: wsl
+    container:
+      image: davevader/dare_test:1.0
+
+    steps:
+    - name: Run CPPLINT
+      run: |
+        cpplint \
+        --output=emacs \
+        --recursive \
+        --extensions=h,inl,cpp \
+        --exclude=build* \
+        --counting=detailed \
+        --linelength=120 \
+        --filter=-build/include,+build/include_what_you_use,+build/include_order,\
+        -whitespace/indent,\
+        . 1> CPPLINT_LOG.out 2>CPPLINT_ERRORS.out
+
+          
+    - name: Evaluate result
+      run: |
+          error_string=$(tail -n 1 CPPLINT_LOG.out)
+          num_errors=$(echo "${error_string//[!0-9]/}")
+          echo Found $num_errors problems in the formatting
+          if [[ $num_errors -gt 5450 ]]; then
+            echo CPPLINT check failed!
+          exit $num_errors
+          fi
+          echo CPPLINT check succeeded
+
+    - name: Archive Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: CPPLINT_reports
+        path: ./*.out
