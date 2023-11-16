@@ -67,7 +67,7 @@ jobs:
           
     - name: Evaluate result
       run: |
-          error_string=$(tail -n 1 /.CPPLINT_LOG.out)
+          error_string=$(tail -n 1 CPPLINT_LOG.out)
           num_errors=$(echo "${error_string//[!0-9]/}")
           echo Found $num_errors problems in the formatting
           if [[ $num_errors -gt 5450 ]]; then
