@@ -25,12 +25,15 @@
 #include <gtest/gtest.h>
 #include "../MatrixBlockBase.h"
 
+/*!
+ * @brief Fixture for testing MatrixBlockBase
+ */
 class MatrixBlockBaseTest : public testing::Test {
 public:
-    using O = int;
-    using SC = double;
-    static const std::size_t N = 5;
-    using SizeHintVector = dare::utils::Vector<N, std::size_t>;
+    using O = int;                      //!< ordinal type
+    using SC = double;                  //!< scalar type
+    static const std::size_t N = 5;     //!< number of components
+    using SizeHintVector = dare::utils::Vector<N, std::size_t>;  // type of vector for size hint
 };
 
 TEST_F(MatrixBlockBaseTest, Initialization) {

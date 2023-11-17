@@ -51,7 +51,7 @@ MatrixBlockBase<O, SC, N>::MatrixBlockBase(const MatrixBlockBase<O, SC, N>& othe
 
 template <typename O, typename SC, std::size_t N>
 MatrixBlockBase<O, SC, N>& MatrixBlockBase<O, SC, N>::operator=(const MatrixBlockBase<O, SC, N>& other) {
-    if(this == &other)
+    if (this == &other)
         return *this;
     node = other.node;
     for (std::size_t n{0}; n < N; n++) {

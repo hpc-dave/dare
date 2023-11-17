@@ -49,7 +49,7 @@ WORKDIR /home/user
 # clone and install Trilinos
 RUN git clone https://github.com/trilinos/Trilinos.git TrilinosGit
 WORKDIR ./TrilinosGit
-RUN git checkout trilinos-release-14-4-0
+RUN git checkout trilinos-release-15-0-0
 WORKDIR ./build
 RUN cmake ..\
     -DCMAKE_CXX_COMPILER=mpic++ \
