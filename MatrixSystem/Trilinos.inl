@@ -209,7 +209,7 @@ void Trilinos<SC, LO, GO>::BuildReplace(const typename Grid::Representation& gri
         KOKKOS_LAMBDA(const LO node) {
             // initialize matrix block
             // MatrixBlock matrix_block(grid, field, node);
-            // dare::utils::Vector<N, std::size_hint> size_hint;
+            // dare::utils::Vector<N, std::size_t> size_hint;
             // for (std::size_t n{0}; n < N; n++)
             //     size_hint[n] = A->getNumEntriesInLocalRow(matrix_block.GetLocalRow(n));
             // matrix_block.ProvideSizeHint(size_hint);
