@@ -230,4 +230,84 @@ void MatrixBlockBase<O, SC, N>::SetCoefficients(std::size_t n_row,
         coefficients[n_row][n] = values[n];
     }
 }
+
+template <typename O, typename SC, std::size_t N>
+void MatrixBlockBase<O, SC, N>::RemoveCoefficientByPosition(std::size_t n, std::size_t pos) {
+    const std::size_t range_new{ordinals[n].size() - 1};
+    for (; pos < range_new; pos++) {
+        ordinals[n][pos] = ordinals[n][pos + 1];
+        coefficients[n][pos] = coefficients[n][pos + 1];
+    }
+    Kokkos::resize(ordinals[n], range_new);
+    Kokkos::resize(coefficients[n], range_new);
+}
+
+template <typename O, typename SC, std::size_t N>
+template <typename Array>
+void MatrixBlockBase<O, SC, N>::RemoveCoefficientsByPositions(std::size_t n,
+                                                              const Array& positions,
+                                                              std::size_t num_entries) {
+    // std::size_t removed_entries{0};
+    // std::size_t range_new{ordinals[n].size()};
+    // for (std::size_t pos_o{0}; pos_o < range_new; pos_o++) {
+    //     for (std::size_t pos_a{0}; pos_a < num_entries; pos_a++) {
+    //         if (ordinals[n][pos_o] == positions[pos_a]) {
+    //             for (std::size_t p{pos_o}; p < (range_new - 1); p++) {
+    //                 ordinals[n][p] = ordinals[n][p + 1];
+    //                 coefficients[n][p] = coefficients[n][p + 1];
+    //             }
+    //             ++removed_entries;
+    //             --range_new;
+    //             break;
+    //         }
+    //     }
+    // }
+
+    Kokkos::View<O*> ordinals_new("ordinals", ordinals[n].size() - num_entries);
+    Kokkos::View<SC*> coefficients_new("coefficients", coefficients[n].size() - num_entries);
+    std::size_t q{0};
+    for (std::size_t p{0}; p < ordinals[n].size(); p++) {
+        bool skip{false};
+        for (std::size_t i{0}; i < num_entries; i++) {
+            skip |= positions[i] == p;
+        }
+        if (skip)
+            continue;
+
+        ordinals_new[q] = ordinals[n][p];
+        coefficients_new[q] = coefficients[n][p];
+        ++q;
+    }
+    Kokkos::resize(ordinals[n], ordinals[n].size() - num_entries);
+    Kokkos::resize(coefficients[n], coefficients[n].size() - num_entries);
+    Kokkos::deep_copy(ordinals[n], ordinals_new);
+    Kokkos::deep_copy(coefficients[n], coefficients_new);
+}
+
+template <typename O, typename SC, std::size_t N>
+void MatrixBlockBase<O, SC, N>::RemoveCoefficientByOrdinal(std::size_t n, O ordinal) {
+    std::size_t pos{0};
+    for (; pos < ordinals[n].size(); pos++) {
+        if (ordinals[n][pos] == ordinal)
+            break;
+    }
+    RemoveCoefficientByPosition(n, pos);
+}
+
+template <typename O, typename SC, std::size_t N>
+template <typename Array>
+void MatrixBlockBase<O, SC, N>::RemoveCoefficientsByOrdinals(std::size_t n,
+                                                             const Array& col_ids,
+                                                             std::size_t num_entries) {
+    Kokkos::View<std::size_t*> pos("pos", num_entries);
+    for (std::size_t p{0}; p < num_entries; p++) {
+        for (std::size_t q{0}; q < ordinals[n].size(); q++) {
+            if (col_ids[p] == ordinals[n][q]) {
+                pos[p] = q;
+                break;
+            }
+        }
+    }
+    RemoveCoefficientsByPositions(n, pos, num_entries);
+}
 }  // namespace dare::Matrix

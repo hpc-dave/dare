@@ -244,6 +244,42 @@ public:
     template <typename Array1, typename Array2>
     void SetCoefficients(std::size_t n_row, std::size_t size, const Array1& id_col, const Array2& values);
 
+    /*!
+     * @brief removes coefficient from array
+     * @param n component ID
+     * @param pos position in array
+     * \warning This function should be used with care! Potentially it's expensive!
+     */
+    void RemoveCoefficientByPosition(std::size_t n, std::size_t pos);
+
+    /*!
+     * @brief removes multiple coefficients
+     * @tparam Array some kind of array which can be accessed by []
+     * @param n component ID
+     * @param positions array with positions
+     * @param num_entries number of entries in the array
+     */
+    template <typename Array>
+    void RemoveCoefficientsByPositions(std::size_t n, const Array& positions, std::size_t num_entries);
+
+    /*!
+     * @brief removes coefficient from array
+     * @param n component ID
+     * @param ordinal column ordinal associated with value
+     * \warning This function should be used with care! Potentially it's expensive!
+     */
+    void RemoveCoefficientByOrdinal(std::size_t n, O ordinal);
+
+    /*!
+     * @brief removes multiple coefficients
+     * @tparam Array some kind of array which can be accessed by []
+     * @param n component ID
+     * @param ordinals array with column ordinals
+     * @param num_entries number of entries in the array
+     */
+    template <typename Array>
+    void RemoveCoefficientsByOrdinals(std::size_t n, const Array& ordinals, std::size_t num_entries);
+
 private:
     OrdinalArray ordinals[N];       //!< arrays with columns indices
     ScalarArray coefficients[N];    //!< arrays with column coefficients

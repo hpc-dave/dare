@@ -177,3 +177,75 @@ TEST_F(MatrixBlockBaseTest, GettersAndSetter) {
         }
     }
 }
+
+TEST_F(MatrixBlockBaseTest, RemoveEntries) {
+    O node = 17;
+    SizeHintVector size_hint;
+    for (std::size_t n{0}; n < N; n++)
+        size_hint[n] = n + 10;
+    dare::Matrix::MatrixBlockBase<O, SC, N> mblock(node, size_hint);
+
+    O col_count{0};
+    SC val_count{0.};
+    SC rhs_count{0.};
+    SC init_count{0.};
+    O d_col{2};
+    SC d_val{1.5}, d_rhs{0.5}, d_init{0.7};
+    std::vector<O> cmp_col[N];
+    std::vector<SC> cmp_coef[N];
+    std::vector<SC> cmp_rhs, cmp_init;
+    for (std::size_t n{0}; n < N; n++) {
+        for (std::size_t col_id{0}; col_id < mblock.GetNumEntries(n); col_id++) {
+            mblock.SetCoefficient(n, col_count, val_count);
+            cmp_col[n].push_back(col_count);
+            cmp_coef[n].push_back(val_count);
+            col_count += d_col;
+            val_count += d_val;
+        }
+        mblock.SetRhs(n, rhs_count);
+        mblock.SetInitialGuess(n, init_count);
+        cmp_rhs.push_back(rhs_count);
+        cmp_init.push_back(init_count);
+        rhs_count += d_rhs;
+        init_count += d_init;
+    }
+    // Remove first coefficient
+    for (std::size_t n{0}; n < N; n++) {
+        mblock.RemoveCoefficientByPosition(n, 0);
+        EXPECT_EQ(mblock.GetNumEntries(n), cmp_col[n].size() - 1);
+        for (std::size_t p{0}; p < mblock.GetNumEntries(n); p++) {
+            EXPECT_EQ(mblock.GetOrdinalByPosition(n, p), cmp_col[n][p + 1]);
+            EXPECT_EQ(mblock.GetCoefficientByPosition(n, p), cmp_coef[n][p + 1]);
+            EXPECT_EQ(mblock.GetCoefficientByOrdinal(n, cmp_col[n][p + 1]), cmp_coef[n][p + 1]);
+        }
+        mblock.RemoveCoefficientByOrdinal(n, cmp_col[n][1]);
+        EXPECT_EQ(mblock.GetNumEntries(n), cmp_col[n].size() - 2);
+        for (std::size_t p{0}; p < mblock.GetNumEntries(n); p++) {
+            EXPECT_EQ(mblock.GetOrdinalByPosition(n, p), cmp_col[n][p + 2]);
+            EXPECT_EQ(mblock.GetCoefficientByPosition(n, p), cmp_coef[n][p + 2]);
+            EXPECT_EQ(mblock.GetCoefficientByOrdinal(n, cmp_col[n][p + 2]), cmp_coef[n][p + 2]);
+        }
+
+        // prepare arrays with ordinals to remove and compare with
+        // only the last two entries are kept
+        std::vector<O> o_remove(cmp_col[n].size() - 4);
+        for (std::size_t i{2}; i < cmp_col[n].size() - 2; i++) {
+            o_remove[i - 2] = cmp_col[n][i];
+        }
+        cmp_col[n][0] = cmp_col[n][cmp_col[n].size() - 2];
+        cmp_col[n][1] = cmp_col[n][cmp_col[n].size() - 1];
+        cmp_coef[n][0] = cmp_coef[n][cmp_coef[n].size() - 2];
+        cmp_coef[n][1] = cmp_coef[n][cmp_coef[n].size() - 1];
+        cmp_col[n].resize(2);
+        cmp_coef[n].resize(2);
+
+        // remove the values
+        mblock.RemoveCoefficientsByOrdinals(n, o_remove, o_remove.size());
+
+        EXPECT_EQ(mblock.GetNumEntries(n), 2);
+        for (std::size_t i{0}; i < mblock.GetNumEntries(n); i++) {
+            EXPECT_EQ(mblock.GetOrdinalByPosition(n, i), cmp_col[n][i]);
+            EXPECT_EQ(mblock.GetCoefficientByPosition(n, i), cmp_coef[n][i]);
+        }
+    }
+}

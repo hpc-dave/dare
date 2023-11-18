@@ -3,7 +3,7 @@
 # The final image features:
 # - OS: debian bookworm
 # - libraries: gcc, cmake, ninja, boost, eigen3, OpenMPI, sqlite 3, doxygen, python, cpplint, cppcheck, Trilinos
-# - Trilinos: 14.4.0 - compiled with release optimization
+# - Trilinos: 15.0.0 - compiled with release optimization
 # - default entrypoint: /home/user
 #
 # Note, that this image only contains a root-user and therefore certain libraries may complain, e.g. OpenMPI. 
