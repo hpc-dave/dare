@@ -30,19 +30,19 @@ MatrixBlock<Grid, O, SC, N>::MatrixBlock()
 
 template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::MatrixBlock(GridRepresentation* _g_rep,
-                                         Ordinal Node,
+                                         O _node,
                                          const dare::utils::Vector<N, std::size_t>& size_hint)
-    : MatrixBlockBase<O, SC, N>(node, size_hint), g_rep(_g_rep) {
-    static_assert(std::is_same_v<O, tpyename GridRepresentation::LocalOrdinalType>
-               || std::is_same_v<O, tpyename GridRepresentation::GlobalOrdinalType>,
+    : MatrixBlockBase<O, SC, N>(_node, size_hint), g_rep(_g_rep) {
+    static_assert(std::is_same_v<O, typename Grid::LocalOrdinalType>
+               || std::is_same_v<O, typename Grid::GlobalOrdinalType>,
                   "The ordinal type needs to be either a local or global ordinal type!");
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::MatrixBlock(const SelfType& other)
     : MatrixBlockBase<O, SC, N>(other), g_rep(other.g_rep) {
-    static_assert(std::is_same_v<O, tpyename GridRepresentation::LocalOrdinalType>
-               || std::is_same_v<O, tpyename GridRepresentation::GlobalOrdinalType>,
+    static_assert(std::is_same_v<O, typename Grid::LocalOrdinalType>
+               || std::is_same_v<O, typename Grid::GlobalOrdinalType>,
                   "The ordinal type needs to be either a local or global ordinal type!");
 }
 
@@ -50,9 +50,12 @@ template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::~MatrixBlock() {}
 
 template <typename Grid, typename O, typename SC, std::size_t N>
-SelfType& MatrixBlock<Grid, O, SC, N>::operator=(const SelfType& other) {
-    MatrixBase<O, SC, N>::operator=(other);
+MatrixBlock<Grid, O, SC, N>& MatrixBlock<Grid, O, SC, N>::operator=(const MatrixBlock<Grid, O, SC, N>& other) {
+    if (&other == this)
+        return *this;
+    MatrixBlockBase<O, SC, N>::operator=(other);
     g_rep = other.g_rep;
+    return *this;
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>

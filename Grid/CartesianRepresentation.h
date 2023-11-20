@@ -35,9 +35,11 @@
 #include "../Utilities/InitializationTracker.h"
 namespace dare::Grid {
 
+// forward declaration for the grid
 template <std::size_t Dim, class LO, class GO, class SC>
 class Cartesian;
 
+/*!*/
 template <std::size_t Dim, class LO, class GO, class SC>
 class CartesianRepresentation : public dare::utils::InitializationTracker {
 public:
@@ -73,16 +75,58 @@ public:
     CartesianRepresentation<Dim, LO, GO, SC>&
     operator=(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
 
-    VecSC GetPositionCenter(const Index& ind) const;
+    /*!
+     * @brief provides spatial position of the specified cell
+     * @param ind local index
+     * @return vector of size Dim with coordinates
+     */
+    VecSC GetCoordinatesCenter(const Index& ind) const;
 
-    VecSC GetPositionFace(const Index& ind, std::size_t dir) const;
+    /*!
+     * @brief provides spatial position of specified face
+     * @param ind local index
+     * @param dir one of the dimensions in positive direction
+     * @return 
+     */
+    VecSC GetCoordinatesFace(const Index& ind, std::size_t dir) const;
 
+    /*!
+     * @brief number of cells in local subgrid including ghost/halo cells
+     */
     LO GetNumberLocalCells() const;
+
+    /*!
+     * @brief number of cells in local subgrid excluding ghost/halo cells
+     */
     LO GetNumberLocalCellsInternal() const;
+
+    /*!
+     * @brief number of cells in global grid including ghost/halo cells
+     */
     GO GetNumberGlobalCells() const;
+
+    /*!
+     * @brief number of cells in global grid excluding ghost/halo cells
+     */
     GO GetNumberGlobalCellsInternal() const;
 
+    /*!
+     * @brief adds ghost/halo cells to ordinal
+     * @param n_internal local ordinal without ghost/halo cells
+     */
     LO MapInternalToLocal(LO n_internal) const;
+
+    /*!
+     * @brief removes ghost/halo cells from local index
+     * @param ind_local local index
+     */
+    Index MapLocalToInternal(Index ind_local) const;
+
+    /*!
+     * @brief remoes ghost cells from global index
+     * @param ind_global global index
+     */
+    IndexGlobal MapGlobalToInternal(IndexGlobal ind_global) const;
 
     LO MapIndexToOrdinalLocal(const Index& ind) const;
     LO MapIndexToOrdinalLocalInternal(const Index& ind) const;

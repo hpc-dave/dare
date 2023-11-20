@@ -91,6 +91,11 @@ public:
     void ProvideSizeHint(const dare::utils::Vector<N, std::size_t>& hint);
 
     /*!
+     * @brief provides grid node
+     */
+    O GetNode() const;
+
+    /*!
      * @brief returns the local row of component n
      * @param n ID of component
      */

@@ -178,7 +178,7 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
 
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC
-CartesianRepresentation<Dim, LO, GO, SC>::GetPositionCenter(const Index& ind) const {
+CartesianRepresentation<Dim, LO, GO, SC>::GetCoordinatesCenter(const Index& ind) const {
     TestIfInitialized(__func__);
     VecSC pos;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -189,7 +189,7 @@ CartesianRepresentation<Dim, LO, GO, SC>::GetPositionCenter(const Index& ind) co
 
 template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC
-CartesianRepresentation<Dim, LO, GO, SC>::GetPositionFace(const Index& ind, std::size_t dir) const {
+CartesianRepresentation<Dim, LO, GO, SC>::GetCoordinatesFace(const Index& ind, std::size_t dir) const {
     TestIfInitialized(__func__);
     VecSC pos;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -253,6 +253,24 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToLocal(LO n_internal) c
 
         return MapIndexToOrdinalLocal(ind);
     }
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+typename CartesianRepresentation<Dim, LO, GO, SC>::Index
+CartesianRepresentation<Dim, LO, GO, SC>::MapLocalToInternal(Index ind_local) const {
+    for (auto& e : ind_local) {
+        e -= grid->GetNumGhost();
+    }
+    return ind_local;
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal
+CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToInternal(IndexGlobal ind_global) const {
+    for (auto& e : ind_global) {
+        e -= grid->GetNumGhost();
+    }
+    return ind_global;
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>

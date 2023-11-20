@@ -87,7 +87,12 @@ void MatrixBlockBase<O, SC, N>::ProvideSizeHint(const dare::utils::Vector<N, std
 }
 
 template <typename O, typename SC, std::size_t N>
-O MatrixBlockBase<O, SC, N>::GetRow(std::size_t n) const {
+O MatrixBlockBase<O, SC, N>::GetNode() const {
+    return node;
+}
+
+    template <typename O, typename SC, std::size_t N>
+    O MatrixBlockBase<O, SC, N>::GetRow(std::size_t n) const {
     return node * N + n;
 }
 
@@ -219,9 +224,9 @@ void MatrixBlockBase<O, SC, N>::SetCoefficients(std::size_t n_row,
                                                 const Array1& id_col,
                                                 const Array2& values) {
 #ifndef DARE_NDEBUG
-    if (size > ordinals.size())
+    if (size > ordinals[n_row].size())
         std::cerr << "SetCoefficients received a size value larger than the allocated storage "
-                  << "(" << size << " > " << ordinals.size() << ")! "
+                  << "(" << size << " > " << ordinals[n_row].size() << ")! "
                   << "Expect Segmentation fault!" << std::endl;
 #endif
 
@@ -247,22 +252,6 @@ template <typename Array>
 void MatrixBlockBase<O, SC, N>::RemoveCoefficientsByPositions(std::size_t n,
                                                               const Array& positions,
                                                               std::size_t num_entries) {
-    // std::size_t removed_entries{0};
-    // std::size_t range_new{ordinals[n].size()};
-    // for (std::size_t pos_o{0}; pos_o < range_new; pos_o++) {
-    //     for (std::size_t pos_a{0}; pos_a < num_entries; pos_a++) {
-    //         if (ordinals[n][pos_o] == positions[pos_a]) {
-    //             for (std::size_t p{pos_o}; p < (range_new - 1); p++) {
-    //                 ordinals[n][p] = ordinals[n][p + 1];
-    //                 coefficients[n][p] = coefficients[n][p + 1];
-    //             }
-    //             ++removed_entries;
-    //             --range_new;
-    //             break;
-    //         }
-    //     }
-    // }
-
     Kokkos::View<O*> ordinals_new("ordinals", ordinals[n].size() - num_entries);
     Kokkos::View<SC*> coefficients_new("coefficients", coefficients[n].size() - num_entries);
     std::size_t q{0};
