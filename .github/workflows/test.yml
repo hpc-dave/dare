@@ -15,7 +15,7 @@ jobs:
   GoogleTest:
     runs-on: wsl
     container:
-      image: davevader/dare_test:1.0
+      image: davevader/dare_test:1.1
 
     strategy:
       matrix:
