@@ -44,6 +44,7 @@ GridVector<Grid, T, N>::~GridVector() {}
 template <typename Grid, typename T, std::size_t N>
 void GridVector<Grid, T, N>::Resize(LO n) {
     Kokkos::resize(data, n);
+    Kokkos::resize(data_h, n);
 }
 
 template <typename Grid, typename T, std::size_t N>
@@ -84,6 +85,16 @@ T GridVector<Grid, T, N>::operator[](LO n) const {
 template <typename Grid, typename T, std::size_t N>
 std::size_t GridVector<Grid, T, N>::GetSize() const {
     return data.size();
+}
+
+template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::CopyToHost() const {
+    Kokkos::deep_copy(data_h, data);
+}
+
+template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::CopytoDevice() const {
+    Kokkos::deep_copy(data, data_h);
 }
 
 }  // namespace dare::Data

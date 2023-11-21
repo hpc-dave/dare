@@ -44,6 +44,10 @@ public:
         LocalOrdinalType MapGlobalToLocalInternal(GlobalOrdinalType node) {
             return node - offset;
         }
+
+        bool IsLocalInternal(GlobalOrdinalType id_glob) const {
+            return id_glob >= offset;
+        }
     };
     using Representation = TestRepresentation;
 
@@ -80,6 +84,26 @@ TEST_F(MatrixBlockTest, Initialization) {
         EXPECT_EQ(mblock.GetNumEntries(n), mblock_copy_construct.GetNumEntries(n));
         EXPECT_EQ(mblock.GetNumEntries(n), mblock_copy_assign.GetNumEntries(n));
     }
+}
+
+TEST_F(MatrixBlockTest, IsStencilLocalTest) {
+    GridRepresentation g_rep = grid.GetRepresentation();
+    LO node_local = 11;
+    GO node_global = node_local + g_rep.offset;
+    dare::utils::Vector<N, std::size_t> size_hint;
+    for (auto& e : size_hint)
+        e = 3;
+
+    dare::Matrix::MatrixBlock<GridType, GO, SC, N> mblock_is_local(&g_rep, node_local, size_hint);
+    dare::Matrix::MatrixBlock<GridType, GO, SC, N> mblock_is_not_local(&g_rep, node_global, size_hint);
+    for (std::size_t n{0}; n < N; n++) {
+        for (std::size_t i{0}; i < size_hint[n]; i++) {
+            mblock_is_local.SetCoefficient(n, node_global * N + n + i, 1.);
+            mblock_is_not_local.SetCoefficient(n, n * N + i, 1.);
+        }
+    }
+    EXPECT_TRUE(mblock_is_local.IsStencilLocal());
+    EXPECT_FALSE(mblock_is_not_local.IsStencilLocal());
 }
 
 TEST_F(MatrixBlockTest, Convert) {

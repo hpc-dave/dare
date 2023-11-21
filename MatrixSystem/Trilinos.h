@@ -38,25 +38,35 @@
 #include "../Data/GridVector.h"
 #include "../Utilities/InitializationTracker.h"
 
+#include "MatrixBlock.h"
+
 namespace dare::Matrix {
 
 template <typename SC, typename LO, typename GO>
 class Trilinos : public dare::utils::InitializationTracker {
 public:
-    typedef ScalarType SC;
-    typedef LocalOrdinalType LO;
-    typedef GlobalOrdinalType GO;
-    typedef Tpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal> MatrixType;
-    typedef Tpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal> OpType;
-    typedef Tpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal> VecType;
-    typedef Tpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal> MultiVecType;
-    typedef Tpetra::Map<LocalOrdinal, GlobalOrdinal> MapType;
-    typedef const Teuchos::Comm<int> Communicator;
-    typedef typename MatrixType::nonconst_local_inds_host_view_type LOViewType;
-    typedef typename MatrixType::nonconst_global_inds_host_view_type GOViewType;
-    typedef typename MatrixType::nonconst_values_host_view_type SViewType;
+    using ScalarType = SC;
+    using LocalOrdinalType = LO;
+    using GlobalOrdinalType = GO;
+    using MatrixType = Tpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal>;
+    using OpType = Tpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal>;
+    using VecType = Tpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal>;
+    using MultiVecType = Tpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal>;
+    using MapType = Tpetra::Map<LocalOrdinal, GlobalOrdinal>;
+    using Communicator = const Teuchos::Comm<int>;
+    using LOViewType = typename MatrixType::nonconst_local_inds_host_view_type;
+    using GOViewType = typename MatrixType::nonconst_global_inds_host_view_type;
+    using SViewType =  typename MatrixType::nonconst_values_host_view_type;
 
+    /*!
+     * @brief initializing constructor
+     * @param exman pointer to execution manager
+     */
     explicit Trilinos(dare::mpi::ExecutionManager* exman);
+
+    /*!
+     * @brief default destructor
+     */
     virtual ~Trilinos();
 
     /*!
@@ -114,6 +124,8 @@ private:
     Teuchos::RCP<VecType> x;                //!< Solution vector
     Teuchos::RCP<VecType> B;                //!< Right hand side vector
     Teuchos::RCP<OpType> M;                 //!< Preconditioner
+    Kokkos::View<std::size_t*> g_stencil;   //!< cells with global stencil
+    Kokkos::View<std::size_t*> l_stencil;   //!< cells with local stencil
 };
 
 }  // namespace dare::Matrix

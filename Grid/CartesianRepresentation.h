@@ -39,7 +39,13 @@ namespace dare::Grid {
 template <std::size_t Dim, class LO, class GO, class SC>
 class Cartesian;
 
-/*!*/
+/*!
+ * @brief Representation of Cartesian grid
+ * @tparam LO local ordinal type
+ * @tparam GO global ordinal type
+ * @tparam SC scalar type
+ * @tparam Dim dimension of grid
+ */
 template <std::size_t Dim, class LO, class GO, class SC>
 class CartesianRepresentation : public dare::utils::InitializationTracker {
 public:
@@ -138,9 +144,30 @@ public:
     LO MapGlobalToLocalInternal(GO id_glob) const;
     GO MapLocalToGlobalInternal(LO id_glob) const;
 
+    /*!
+     * @brief tests, if a global ordinals belongs to subgrid
+     * @param id_glob global ordinal
+     * \note assumes the grid including ghost cells
+     */
     bool IsLocal(GO id_glob) const;
+
+    /*!
+     * @brief tests, if a global index belongs to subgrid
+     * @param ind_glob global index
+     * \note assumes the grid including ghost cells
+     */
     bool IsLocal(const IndexGlobal& ind_glob) const;
+
+    /*!
+     * @brief tests, if the ordinal belongs to internal subgrid
+     * @param id_glob global internal ordinal
+     */
     bool IsLocalInternal(GO id_glob) const;
+
+    /*!
+     * @brief tests, if index belongs to internal subgrid
+     * @param ind_glob global internal index
+     */
     bool IsLocalInternal(IndexGlobal ind_glob) const;
 
     bool IsInternal(const Index& ind_loc) const;
@@ -154,8 +181,16 @@ public:
 
     IndexGlobal MapLocalToGlobal(const Index& ind) const;
 
+    /*!
+     * @brief provides resolution of local grid
+     * @return local index with number of cells in each direction
+     */
     const Index& GetLocalResolution() const;
 
+    /*!
+     * @brief provides resolution of global grid
+     * @return global index with number of cells in each direction
+     */
     const IndexGlobal& GetGlobalResolution() const;
 
     /*!
@@ -165,7 +200,11 @@ public:
     void PrintDistribution(std::string fname) const;
 
 private:
-    void TestIfInitialized(std::string) const;
+    /*!
+     * @brief Tests if grid is initialized
+     * @param function name of function to show in error message
+     */
+    void TestIfInitialized(std::string function) const;
 
     const Cartesian<Dim, LO, GO, SC>* grid;  //!< pointer to grid
     typename GridType::Options options;      //!< grid specific options

@@ -30,6 +30,12 @@ MatrixBlock<Grid, O, SC, N>::MatrixBlock()
 
 template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::MatrixBlock(GridRepresentation* _g_rep,
+                                         O _node)
+    : MatrixBlock<Grid, O, SC, N>(_g_rep, _node, dare::utils::Vector<N, std::size_t>()) {
+}
+
+template <typename Grid, typename O, typename SC, std::size_t N>
+MatrixBlock<Grid, O, SC, N>::MatrixBlock(GridRepresentation* _g_rep,
                                          O _node,
                                          const dare::utils::Vector<N, std::size_t>& size_hint)
     : MatrixBlockBase<O, SC, N>(_node, size_hint), g_rep(_g_rep) {
@@ -59,6 +65,19 @@ MatrixBlock<Grid, O, SC, N>& MatrixBlock<Grid, O, SC, N>::operator=(const Matrix
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
+void MatrixBlock<Grid, O, SC, N>::Initialize(GridRepresentation* _g_rep, O _node) {
+    Initialize(_g_rep, _node, dare::utils::Vector<N, std::size_t>());
+}
+
+template <typename Grid, typename O, typename SC, std::size_t N>
+void MatrixBlock<Grid, O, SC, N>::Initialize(GridRepresentation* _g_rep,
+                                             O _node,
+                                             const dare::utils::Vector<N, std::size_t>& size_hint) {
+    MatrixBlockBase<O, SC, N>::Initialize(_node, size_hint);
+    g_rep = _g_rep;
+}
+
+template <typename Grid, typename O, typename SC, std::size_t N>
 typename MatrixBlock<Grid, O, SC, N>::GridRepresentation*
 MatrixBlock<Grid, O, SC, N>::GetRepresentation() const {
     return g_rep;
@@ -67,6 +86,21 @@ MatrixBlock<Grid, O, SC, N>::GetRepresentation() const {
 template <typename Grid, typename O, typename SC, std::size_t N>
 bool MatrixBlock<Grid, O, SC, N>::IsGlobal() const {
     return std::is_same_v<O, GlobalOrdinalType>;
+}
+
+template <typename Grid, typename O, typename SC, std::size_t N>
+bool MatrixBlock<Grid, O, SC, N>::IsStencilLocal() const {
+    if constexpr (std::is_same_v<LocalOrdinalType, O>) {
+        return true;
+    } else {
+        bool is_local{true};
+        for (std::size_t n{0}; n < N; n++) {
+            for (std::size_t i{0}; i < this->GetNumEntries(n); i++) {
+                is_local &= g_rep->IsLocalInternal(this->GetOrdinalByPosition(n, i) / N);
+            }
+        }
+        return is_local;
+    }
 }
 
 }  // end namespace dare::Matrix

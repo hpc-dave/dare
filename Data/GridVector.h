@@ -137,12 +137,23 @@ public:
      */
     constexpr std::size_t GetNumEquations() const { return N; }
 
+    /*!
+     * @brief copies data from device to host
+     */
+    void CopyToHost() const;
+
+    /*!
+     * @brief copies data from host to device
+     */
+    void CopytoDevice() const;
+
 protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);
 
 private:
-    GridRepresentation grid;    //!< representation and reference to grid
-    Kokkos::View<T*> data;      //!< array with data
+    GridRepresentation grid;        //!< representation and reference to grid
+    Kokkos::View<T*> data;          //!< array with data
+    typename Kokkos::View<T*>::HostMirror data_h;  //!< host view of data
 };
 
 }  // namespace dare::Data

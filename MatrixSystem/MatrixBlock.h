@@ -40,18 +40,35 @@ public:
     using GlobalOrdinalType = typename Grid::GlobalOrdinalType;
     using SelfType = MatrixBlock<Grid, O, SC, N>;
     MatrixBlock();
-    MatrixBlock(GridRepresentation* g_rep, O Node, const dare::utils::Vector<N, std::size_t>& size_hint);
+
+    MatrixBlock(GridRepresentation* g_rep,
+                O node,
+                const dare::utils::Vector<N, std::size_t>& size_hint);
+
+    MatrixBlock(GridRepresentation* g_rep, O node);
+
     MatrixBlock(const SelfType& other);     // NOLINT
     virtual ~MatrixBlock();
 
     SelfType& operator=(const SelfType& other);
 
+    void Initialize(GridRepresentation* g_rep, O Node);
+
+    void Initialize(GridRepresentation* g_rep,
+                    O Node,
+                    const dare::utils::Vector<N, std::size_t>& size_hint);
+
     bool IsGlobal() const;
 
     GridRepresentation* GetRepresentation() const;
 
+    /*!
+     * @brief tests if all ordinals are local
+     */
+    bool IsStencilLocal() const;
+
 private:
-    GridRepresentation* g_rep;
+    GridRepresentation* g_rep;  //!< reference to grid representation
 };
 
 /*!
