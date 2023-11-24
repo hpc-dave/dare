@@ -35,7 +35,10 @@ GridVector<Grid, T, N>::GridVector(std::string identifier, GridRepresentation _g
 
 template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>::GridVector(std::string identifier, LO num_cells, GridRepresentation _grid)
-    : data(identifier, num_cells * N), grid(_grid) {
+    : ident_string(identifier),
+      grid(_grid),
+      data(identifier, num_cells * N),
+      data_h(identifier + "_host", num_cells * N) {
 }
 
 template <typename Grid, typename T, std::size_t N>
@@ -95,6 +98,22 @@ void GridVector<Grid, T, N>::CopyToHost() const {
 template <typename Grid, typename T, std::size_t N>
 void GridVector<Grid, T, N>::CopytoDevice() const {
     Kokkos::deep_copy(data, data_h);
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::GetDeepCopy() const {
+    GridVector<Grid, T, N> other(ident_string, data.size(), grid);
+    GetDeepCopy(&other);
+    return other;
+}
+
+template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::GetDeepCopy(GridVector<Grid, T, N>* other) const {
+    other->ident_string = ident_string;
+    Kokkos::resize(other->data, data.size());
+    Kokkos::resize(other->data_h, data_h.size());
+    Kokkos::deep_copy(other->data, data);
+    Kokkos::deep_copy(other->data_h, data_h);
 }
 
 }  // namespace dare::Data

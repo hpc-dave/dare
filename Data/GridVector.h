@@ -147,10 +147,23 @@ public:
      */
     void CopytoDevice() const;
 
+    /*!
+     * @brief provides deep copy of this instance
+     * @return 
+     */
+    GridVector<Grid, T, N> GetDeepCopy() const;
+
+    /*!
+     * @brief provides deep copy to other instance
+     * @param other instance to copy to
+     */
+    void GetDeepCopy(GridVector<Grid, T, N>* other) const;
+
 protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);
 
 private:
+    std::string ident_string;       //!< identification string
     GridRepresentation grid;        //!< representation and reference to grid
     Kokkos::View<T*> data;          //!< array with data
     typename Kokkos::View<T*>::HostMirror data_h;  //!< host view of data
