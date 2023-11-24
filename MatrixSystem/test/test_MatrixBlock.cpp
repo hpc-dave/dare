@@ -37,11 +37,11 @@ public:
         using GlobalOrdinalType = Grid::GlobalOrdinalType;
         using LocalOrdinalType = Grid::LocalOrdinalType;
         const GlobalOrdinalType offset{10};
-        GlobalOrdinalType MapLocalToGlobalInternal(LocalOrdinalType node) {
+        GlobalOrdinalType MapLocalToGlobalInternal(LocalOrdinalType node) const {
             return node + offset;
         }
 
-        LocalOrdinalType MapGlobalToLocalInternal(GlobalOrdinalType node) {
+        LocalOrdinalType MapGlobalToLocalInternal(GlobalOrdinalType node) const {
             return node - offset;
         }
 
@@ -56,6 +56,9 @@ public:
 
 }  // end namespace dare::Matrix::test
 
+/*!
+ * @brief fixture for matrix block testing
+ */
 class MatrixBlockTest : public testing::Test {
 public:
     using GridType = dare::Matrix::test::Grid;

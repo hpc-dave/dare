@@ -41,26 +41,26 @@ public:
     using SelfType = MatrixBlock<Grid, O, SC, N>;
     MatrixBlock();
 
-    MatrixBlock(GridRepresentation* g_rep,
+    MatrixBlock(const GridRepresentation* g_rep,
                 O node,
                 const dare::utils::Vector<N, std::size_t>& size_hint);
 
-    MatrixBlock(GridRepresentation* g_rep, O node);
+    MatrixBlock(const GridRepresentation* g_rep, O node);
 
     MatrixBlock(const SelfType& other);     // NOLINT
     virtual ~MatrixBlock();
 
     SelfType& operator=(const SelfType& other);
 
-    void Initialize(GridRepresentation* g_rep, O Node);
+    void Initialize(const GridRepresentation* g_rep, O Node);
 
-    void Initialize(GridRepresentation* g_rep,
+    void Initialize(const GridRepresentation* g_rep,
                     O Node,
                     const dare::utils::Vector<N, std::size_t>& size_hint);
 
     bool IsGlobal() const;
 
-    GridRepresentation* GetRepresentation() const;
+    const GridRepresentation* GetRepresentation() const;
 
     /*!
      * @brief tests if all ordinals are local
@@ -68,7 +68,7 @@ public:
     bool IsStencilLocal() const;
 
 private:
-    GridRepresentation* g_rep;  //!< reference to grid representation
+    const GridRepresentation* g_rep;  //!< reference to grid representation
 };
 
 /*!
@@ -89,7 +89,7 @@ MatrixBlock<Grid, Otarget, SC, N> Convert(const MatrixBlock<Grid, Osource, SC, N
     if constexpr (std::is_same_v<Osource, Otarget>) {
         return source;
     }
-    typename Grid::Representation* g_rep = source.GetRepresentation();
+    const typename Grid::Representation* g_rep = source.GetRepresentation();
     dare::utils::Vector<N, std::size_t> size_hint;
     for (std::size_t n{0}; n < N; n++)
         size_hint[n] = source.GetNumEntries(n);

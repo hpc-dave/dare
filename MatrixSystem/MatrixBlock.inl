@@ -29,13 +29,13 @@ MatrixBlock<Grid, O, SC, N>::MatrixBlock()
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
-MatrixBlock<Grid, O, SC, N>::MatrixBlock(GridRepresentation* _g_rep,
+MatrixBlock<Grid, O, SC, N>::MatrixBlock(const GridRepresentation* _g_rep,
                                          O _node)
     : MatrixBlock<Grid, O, SC, N>(_g_rep, _node, dare::utils::Vector<N, std::size_t>()) {
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
-MatrixBlock<Grid, O, SC, N>::MatrixBlock(GridRepresentation* _g_rep,
+MatrixBlock<Grid, O, SC, N>::MatrixBlock(const GridRepresentation* _g_rep,
                                          O _node,
                                          const dare::utils::Vector<N, std::size_t>& size_hint)
     : MatrixBlockBase<O, SC, N>(_node, size_hint), g_rep(_g_rep) {
@@ -65,12 +65,12 @@ MatrixBlock<Grid, O, SC, N>& MatrixBlock<Grid, O, SC, N>::operator=(const Matrix
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
-void MatrixBlock<Grid, O, SC, N>::Initialize(GridRepresentation* _g_rep, O _node) {
+void MatrixBlock<Grid, O, SC, N>::Initialize(const GridRepresentation* _g_rep, O _node) {
     Initialize(_g_rep, _node, dare::utils::Vector<N, std::size_t>());
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
-void MatrixBlock<Grid, O, SC, N>::Initialize(GridRepresentation* _g_rep,
+void MatrixBlock<Grid, O, SC, N>::Initialize(const GridRepresentation* _g_rep,
                                              O _node,
                                              const dare::utils::Vector<N, std::size_t>& size_hint) {
     MatrixBlockBase<O, SC, N>::Initialize(_node, size_hint);
@@ -78,7 +78,7 @@ void MatrixBlock<Grid, O, SC, N>::Initialize(GridRepresentation* _g_rep,
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
-typename MatrixBlock<Grid, O, SC, N>::GridRepresentation*
+const typename MatrixBlock<Grid, O, SC, N>::GridRepresentation*
 MatrixBlock<Grid, O, SC, N>::GetRepresentation() const {
     return g_rep;
 }
