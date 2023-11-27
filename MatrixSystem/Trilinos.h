@@ -25,6 +25,7 @@
 #ifndef MATRIXSYSTEM_TRILINOS_H_
 #define MATRIXSYSTEM_TRILINOS_H_
 
+#include "mpi.h"
 #include <Teuchos_GlobalMPISession.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 // Tpetra  -- Vectors and Matrices
@@ -33,11 +34,20 @@
 #include <Tpetra_Version.hpp>
 // Xpetra  -- Wrapper for dual use of Tpetra and Epetra (required by MueLu)
 #include <Xpetra_CrsMatrix.hpp>
+// Belos   -- Iterative solvers
+#include <BelosSolverFactory.hpp>
+#include <BelosTpetraAdapter.hpp>
+#include <Ifpack2_Factory.hpp>
+#include <Ifpack2_Parameters.hpp>
+// MueLu   -- Multigrid solvers & preconditioners
+#include <MueLu.hpp>
+#include <MueLu_HierarchyManager.hpp>
+#include <MueLu_ParameterListInterpreter.hpp>
+#include <MueLu_TpetraOperator.hpp>
 
-#include "../MPI/ExecutionManager.h"
 #include "../Data/GridVector.h"
+#include "../MPI/ExecutionManager.h"
 #include "../Utilities/InitializationTracker.h"
-
 #include "MatrixBlock.h"
 
 namespace dare::Matrix {
@@ -48,15 +58,20 @@ public:
     using ScalarType = SC;
     using LocalOrdinalType = LO;
     using GlobalOrdinalType = GO;
-    using MatrixType = Tpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal>;
-    using OpType = Tpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal>;
-    using VecType = Tpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal>;
-    using MultiVecType = Tpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal>;
-    using MapType = Tpetra::Map<LocalOrdinal, GlobalOrdinal>;
-    using Communicator = const Teuchos::Comm<int>;
+    using MatrixType = Tpetra::CrsMatrix<ScalarType, LocalOrdinalType, GlobalOrdinalType>;
+    using OpType = Tpetra::Operator<ScalarType, LocalOrdinalType, GlobalOrdinalType>;
+    using VecType = Tpetra::Vector<ScalarType, LocalOrdinalType, GlobalOrdinalType>;
+    using MultiVecType = Tpetra::MultiVector<ScalarType, LocalOrdinalType, GlobalOrdinalType>;
+    using MapType = Tpetra::Map<LocalOrdinalType, GlobalOrdinalType>;
+    using Communicator = Teuchos::Comm<int>;
     using LOViewType = typename MatrixType::nonconst_local_inds_host_view_type;
     using GOViewType = typename MatrixType::nonconst_global_inds_host_view_type;
     using SViewType =  typename MatrixType::nonconst_values_host_view_type;
+
+    /*!
+     * @brief default constructor
+     */
+    Trilinos();
 
     /*!
      * @brief initializing constructor
@@ -70,6 +85,12 @@ public:
     virtual ~Trilinos();
 
     /*!
+     * @brief Initializes the object
+     * @param exman reference to execution manager
+     */
+    void Initialize(dare::mpi::ExecutionManager* exman);
+
+    /*!
      * @brief constructs matrix system according to functor
      * @tparam Grid type
      * @tparam Field type of field
@@ -78,6 +99,7 @@ public:
      * @param field instance of the field
      * @param functor instructions for building matrix
      * @param rebuild identifies if matrix graph changes
+     * \note synchronize the device with the host view prior to this call!
      */
     template<typename Grid, std::size_t N, typename Lambda>
     void Build(const typename Grid::Representation& grid,
@@ -85,6 +107,15 @@ public:
                Lambda functor,
                bool rebuild);
 
+    /*!
+     * @brief sets rhs vector according to functor
+     * @tparam Grid grid type
+     * @tparam Lambda functor of form (MatrixBlock*):void
+     * @tparam N number of components
+     * @param grid grid representation
+     * @param field reference to field
+     * @param functor functor for matrix assembly
+     */
     template <typename Grid, std::size_t N, typename Lambda>
     void SetB(const typename Grid::Representation& grid,
               const dare::Data::GridVector<Grid, SC, N>& field,
@@ -93,9 +124,9 @@ public:
     void SetInitialGuess(const SC value);
 
     const Teuchos::RCP<MatrixType>& GetA() const;
-    const Teuchos::RCP<VectorType>& GetB() const;
-    Teuchos::RCP<VectorType>& GetX();  // NOLINT
-    const Teuchos::RCP<VectorType>& GetX() const;
+    const Teuchos::RCP<VecType>& GetB() const;
+    Teuchos::RCP<VecType>& GetX();  // NOLINT
+    const Teuchos::RCP<VecType>& GetX() const;
     const Teuchos::RCP<OpType>& GetM() const;
 
 private:
@@ -118,14 +149,14 @@ private:
     void AllocateMap(const typename Grid::Representation& grid);
 
     dare::mpi::ExecutionManager* exec_man;  //!< pointer to execution manager
-    Teuchos::RCP<Communicator> comm;        //!< mpi communicator for Trilinos
+    Teuchos::RCP<const Communicator> comm;        //!< mpi communicator for Trilinos
     Teuchos::RCP<const MapType> map;        //!< map of row distribution
     Teuchos::RCP<MatrixType> A;             //!< Matrix
     Teuchos::RCP<VecType> x;                //!< Solution vector
     Teuchos::RCP<VecType> B;                //!< Right hand side vector
     Teuchos::RCP<OpType> M;                 //!< Preconditioner
-    Kokkos::View<std::size_t*> g_stencil;   //!< cells with global stencil
-    Kokkos::View<std::size_t*> l_stencil;   //!< cells with local stencil
+    Kokkos::View<LO*> g_stencil;   //!< cells with global stencil
+    Kokkos::View<LO*> l_stencil;   //!< cells with local stencil
 };
 
 }  // namespace dare::Matrix

@@ -3,6 +3,8 @@ set(DaRe_HEADER_FILES
     "Trilinos.inl"
     "MatrixBlockBase.h"
     "MatrixBlockBase.inl"
+    "MatrixBlock.h"
+    "MatrixBlock.inl"
 )
 
 target_sources(dare

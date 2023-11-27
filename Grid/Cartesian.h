@@ -26,16 +26,21 @@
 #define GRID_CARTESIAN_H_
 
 #include <unordered_map>
+
 #include "../MPI/ExecutionManager.h"
 #include "../Utilities/Vector.h"
 #include "../Utilities/InitializationTracker.h"
+#include "DefaultTypes.h"
 #include "CartesianDistribution.h"
 #include "CartesianRepresentation.h"
 
 namespace dare::Grid {
 
-template <std::size_t Dim, class LO = int32_t, class GO = int64_t, class SC = double>
-class Cartesian : public dare::utils::InitializationTracker{
+template <std::size_t Dim,
+          class LO = dare::Grid::details::LocalOrdinalType,
+          class GO = dare::Grid::details::GlobalOrdinalType,
+          class SC = double>
+class Cartesian : public dare::utils::InitializationTracker {
 public:
     enum {
         BOUNDARIES_NONE = 0b00000000,

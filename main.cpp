@@ -22,12 +22,31 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-#include "Utilities/Vector.h"
-#include "MPI/ExecutionManager.h"
-#include "Grid/Cartesian.h"
-#include "ScopeGuard/ScopeGuard.h"
 #include <Kokkos_Core.hpp>
+#include <Teuchos_GlobalMPISession.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include <Tpetra_Core.hpp>
+#include <Tpetra_CrsMatrix.hpp>
+#include <iostream>
+
+#include "Grid/Cartesian.h"
+#include "MPI/ExecutionManager.h"
+#include "ScopeGuard/ScopeGuard.h"
+#include "Utilities/Vector.h"
+#include "mpi.h"
+// Tpetra  -- Vectors and Matrices
+#include <Tpetra_Core.hpp>
+#include <Tpetra_CrsMatrix.hpp>
+#include <Tpetra_Version.hpp>
+// Xpetra  -- Wrapper for dual use of Tpetra and Epetra (required by MueLu)
+#include <Xpetra_CrsMatrix.hpp>
+// Belos   -- Iterative solvers
+#include <BelosSolverFactory.hpp>
+#include <BelosTpetraAdapter.hpp>
+#include <Ifpack2_Factory.hpp>
+#include <Ifpack2_Parameters.hpp>
+
+#include <MatrixSystem/Trilinos.h>
 #include "Data/Stencil.h"
 
 int main(int argc, char* argv[]) {

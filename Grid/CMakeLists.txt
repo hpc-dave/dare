@@ -4,6 +4,7 @@ set(DaRe_HEADER_FILES
     "CartesianRepresentation.h"
     "Cartesian.inl"
     "CartesianRepresentation.inl"
+    "DefaultTypes.h"
 )
 
 target_sources(dare
