@@ -27,6 +27,7 @@
 
 #include <string>
 #include <Kokkos_Core.hpp>
+#include <Kokkos_DualView.hpp>
 
 namespace dare::Data {
 
@@ -45,6 +46,11 @@ public:
     using GO = typename Grid::GlobalOrdinalType;
     using Index = typename Grid::Index;
     using IndexGlobal = typename Grid::IndexGlobal;
+    using DualViewType = Kokkos::DualView<T*>;
+    using DeviceViewType = typename DualViewType::t_dev;
+    using HostViewType = typename DualViewType::t_dev;
+    using HostSpace = typename DualViewType::host_mirror_space;
+    using ExecutionSpace = typename DualViewType::execution_space;
 
     /*!
      * @brief default constructor
@@ -138,14 +144,11 @@ public:
     constexpr std::size_t GetNumEquations() const { return N; }
 
     /*!
-     * @brief copies data from device to host
+     * @brief synchronizes host and execution space
+     * @tparam TargetSpace identifer, to which space a copy will be send
      */
-    void CopyToHost() const;
-
-    /*!
-     * @brief copies data from host to device
-     */
-    void CopytoDevice() const;
+    template<typename TargetSpace>
+    void Synchronize();
 
     /*!
      * @brief provides deep copy of this instance
@@ -159,14 +162,23 @@ public:
      */
     void GetDeepCopy(GridVector<Grid, T, N>* other) const;
 
+    /*!
+     * @brief returns data on device
+     */
+    DeviceViewType& GetDeviceView();
+
+    /*!
+     * @brief returns data on device
+     */
+    const DeviceViewType& GetDeviceView() const;
+
 protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);
 
 private:
     std::string ident_string;       //!< identification string
     GridRepresentation grid;        //!< representation and reference to grid
-    Kokkos::View<T*> data;          //!< array with data
-    typename Kokkos::View<T*>::HostMirror data_h;  //!< host view of data
+    DualViewType data;      //!< array with data
 };
 
 }  // namespace dare::Data

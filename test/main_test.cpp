@@ -52,25 +52,8 @@ int main(int argc, char* argv[]) {
                     argv[n] = xml_report_arg.data();
                 }
             }
-            if (arg.size() == 2) {
-                if (boost::iequals(arg, "-D") && (n < (argc - 1))) {
-                    int rank_stop = 0;
-                    try {
-                        rank_stop = std::stoi(argv[n + 1]);
-                    } catch (std::exception&) {
-                        if (rank == 0)
-                            std::cout << "cannot convert argument of -D to rank!\n"
-                                      << "hooking up now possible at rank 0!" << std::endl;
-                    }
-                    if (rank == rank_stop) {
-                        int cont = 0;
-                        while (cont == 0) {
-                        }
-                    }
-                    MPI_Barrier(MPI_COMM_WORLD);
-                }
-            }
         }
+        int rank_results{0};
 
         int ret = -1;
         {
@@ -78,7 +61,7 @@ int main(int argc, char* argv[]) {
             testing::InitGoogleTest(&argc, argv);
             // delete the default printers to avoid confusing output on COUT
             testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();
-            if (rank != 0) {
+            if (!scope_guard.AmIRoot()) {
                 // remove all output to cout from non-root processes
                 delete listeners.Release(listeners.default_result_printer());
                 // remove report writers
@@ -88,12 +71,16 @@ int main(int argc, char* argv[]) {
             ret = RUN_ALL_TESTS();
         }
         bool result = ret == MPI_SUCCESS;
+        int did_fail = ret == 0 ? 0 : 1;
         bool result_global{false};
+        int n_fail{0};
         MPI_Allreduce(&result, &result_global, 1, MPI_CXX_BOOL, MPI_LAND, MPI_COMM_WORLD);
-        if (result_global && rank == 0) {
+        MPI_Allreduce(&did_fail, &n_fail, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+        if (result_global && scope_guard.AmIRoot()) {
             std::cout << "All tests were successful over all processes" << std::endl;
-        } else if (rank == 0) {
-            std::cout << "On at least one process the tests failed!" << std::endl;
+        } else if (scope_guard.AmIRoot()) {
+            std::cout << "On " << n_fail << " out of " << num_proc << " process" << (num_proc > 1 ? "es" : "")
+                      << " the tests failed!" << std::endl;
         }
 
         return ret;

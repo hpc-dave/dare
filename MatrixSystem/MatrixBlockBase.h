@@ -25,7 +25,10 @@
 #ifndef MATRIXSYSTEM_MATRIXBLOCKBASE_H_
 #define MATRIXSYSTEM_MATRIXBLOCKBASE_H_
 
+#include <type_traits>
+
 #include <Kokkos_Core.hpp>
+#include <Kokkos_DualView.hpp>
 
 #include "../Utilities/Vector.h"
 
@@ -36,14 +39,25 @@ namespace dare::Matrix {
  * @tparam O ordinal type
  * @tparam SC scalar type
  * @tparam N number of components
+ * 
+ * This object features the memory model of the Kokkos ecosystem. By default,
+ * all getters and setters are working on the host space. Only if specifically
+ * mentioned otherwise, the setters on the execution space are employed.
+ * Take care to mark the changes and sync with the device, if necessary!
  */
 template <typename O, typename SC, std::size_t N>
 class MatrixBlockBase {
 public:
     using OrdinalType = O;
     using ScalarType = SC;
-    using OrdinalArray = Kokkos::View<O*>;
-    using ScalarArray = Kokkos::View<SC*>;
+    using DualViewOrdinalArrayType = Kokkos::DualView<O*>;
+    using DualViewScalarArrayType = Kokkos::DualView<SC*>;
+    using OrdinalArray = typename DualViewOrdinalArrayType::t_host;
+    using ScalarArray = typename DualViewScalarArrayType::t_host;
+    using OrdinalArrayDevice = typename DualViewOrdinalArrayType::t_dev;
+    using ScalarArrayDevice = typename DualViewScalarArrayType::t_dev;
+    using HostSpace = typename DualViewOrdinalArrayType::host_mirror_space;
+    using ExecutionSpace = typename DualViewOrdinalArrayType::execution_space;
 
     /*!
      * @brief default constructor
@@ -91,6 +105,13 @@ public:
     void ProvideSizeHint(const dare::utils::Vector<N, std::size_t>& hint);
 
     /*!
+     * @brief resizes a certain row
+     * @param n component ID
+     * @param size new size
+     */
+    void Resize(std::size_t n, std::size_t size);
+
+    /*!
      * @brief provides grid node
      */
     O GetNode() const;
@@ -132,16 +153,28 @@ public:
     std::size_t GetNumEntries(std::size_t n) const;
 
     /*!
-     * @brief returns array with columns ordinal of the row
-     * @param n ID of associated component
+     * @brief returns host-array with column ordinals of the row
+     * @param n component id
      */
     const OrdinalArray& GetColumnOrdinals(std::size_t n) const;
 
     /*!
-     * @brief returns array with column values of the row
+     * @brief returns device-array with columns ordinal of the row
+     * @param n ID of associated component
+     */
+    const OrdinalArrayDevice& GetColumnOrdinalsDevice(std::size_t n) const;
+
+    /*!
+     * @brief returns host-array with column values of the row
      * @param n ID of associated component
      */
     const ScalarArray& GetColumnValues(std::size_t n) const;
+
+    /*!
+     * @brief returns device-array with column values of the row
+     * @param n ID of associated component
+     */
+    const ScalarArrayDevice& GetColumnValuesDevice(std::size_t n) const;
 
     /*!
      * @brief returns reference ordinal according to specified position in array
@@ -285,13 +318,21 @@ public:
     template <typename Array>
     void RemoveCoefficientsByOrdinals(std::size_t n, const Array& ordinals, std::size_t num_entries);
 
+    /*!
+     * @brief synchronizes the data on the different devices
+     * @tparam TargetSpace identifier of the space that data should be copied to
+     */
+    template <typename TargetSpace>
+    void Synchronize();
+
 private:
-    OrdinalArray ordinals[N];       //!< arrays with columns indices
-    ScalarArray coefficients[N];    //!< arrays with column coefficients
-    ScalarArray initial_guess;      //!< array with initial guess
-    ScalarArray rhs;                //!< array with rhs
-    OrdinalType node;                   //!< node associated with this matrix block
+    DualViewOrdinalArrayType ordinals[N];       //!< arrays with columns indices
+    DualViewScalarArrayType coefficients[N];    //!< arrays with column coefficients
+    DualViewScalarArrayType initial_guess;      //!< array with initial guess
+    DualViewScalarArrayType rhs;                //!< array with rhs
+    OrdinalType node;                      //!< node associated with this matrix block
 };
+
 }  // namespace dare::Matrix
 
 #include "MatrixBlockBase.inl"

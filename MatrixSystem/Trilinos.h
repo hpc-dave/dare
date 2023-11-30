@@ -24,6 +24,7 @@
 
 #ifndef MATRIXSYSTEM_TRILINOS_H_
 #define MATRIXSYSTEM_TRILINOS_H_
+#include <vector>
 
 #include "mpi.h"
 #include <Teuchos_GlobalMPISession.hpp>
@@ -67,7 +68,9 @@ public:
     using LOViewType = typename MatrixType::nonconst_local_inds_host_view_type;
     using GOViewType = typename MatrixType::nonconst_global_inds_host_view_type;
     using SViewType =  typename MatrixType::nonconst_values_host_view_type;
-
+    using constLOViewType = typename MatrixType::local_inds_host_view_type;
+    using constGOViewType = typename MatrixType::global_inds_host_view_type;
+    using constSViewType = typename MatrixType::values_host_view_type;
     /*!
      * @brief default constructor
      */
@@ -94,12 +97,14 @@ public:
      * @brief constructs matrix system according to functor
      * @tparam Grid type
      * @tparam Field type of field
-     * @tparam Lambda functor with instruction
+     * @tparam Lambda functor with instruction of type (auto*):void
      * @param grid grid representation
      * @param field instance of the field
      * @param functor instructions for building matrix
      * @param rebuild identifies if matrix graph changes
-     * \note synchronize the device with the host view prior to this call!
+     * This function ONLY works on the host view and uses OpenMP directives
+     * for acceleration, if you want to use the device defined by Trilinos,
+     * write a custom build function.
      */
     template<typename Grid, std::size_t N, typename Lambda>
     void Build(const typename Grid::Representation& grid,
@@ -110,7 +115,7 @@ public:
     /*!
      * @brief sets rhs vector according to functor
      * @tparam Grid grid type
-     * @tparam Lambda functor of form (MatrixBlock*):void
+     * @tparam Lambda functor of form (auto*):void
      * @tparam N number of components
      * @param grid grid representation
      * @param field reference to field
@@ -123,11 +128,17 @@ public:
 
     void SetInitialGuess(const SC value);
 
-    const Teuchos::RCP<MatrixType>& GetA() const;
-    const Teuchos::RCP<VecType>& GetB() const;
-    Teuchos::RCP<VecType>& GetX();  // NOLINT
-    const Teuchos::RCP<VecType>& GetX() const;
-    const Teuchos::RCP<OpType>& GetM() const;
+    Teuchos::RCP<MatrixType>& GetA();
+    Teuchos::RCP<VecType>& GetB();
+    Teuchos::RCP<VecType>& GetX();
+    Teuchos::RCP<OpType>& GetM();
+    Teuchos::RCP<const MapType>& GetMap();
+
+    Teuchos::RCP<const MatrixType> GetA() const;
+    Teuchos::RCP<const VecType> GetB() const;
+    Teuchos::RCP<const VecType> GetX() const;
+    Teuchos::RCP<const OpType> GetM() const;
+    Teuchos::RCP<const MapType> GetMap() const;
 
 private:
     template <typename Grid, std::size_t N, typename Lambda>
@@ -155,8 +166,8 @@ private:
     Teuchos::RCP<VecType> x;                //!< Solution vector
     Teuchos::RCP<VecType> B;                //!< Right hand side vector
     Teuchos::RCP<OpType> M;                 //!< Preconditioner
-    Kokkos::View<LO*> g_stencil;   //!< cells with global stencil
-    Kokkos::View<LO*> l_stencil;   //!< cells with local stencil
+    std::vector<GO> g_stencil;              //!< cells with global stencil
+    std::vector<LO> l_stencil;              //!< cells with local stencil
 };
 
 }  // namespace dare::Matrix
