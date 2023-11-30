@@ -97,9 +97,10 @@ public:
     void Initialize(dare::mpi::ExecutionManager* _exman) {
         exman = _exman;
         local_size = size_global / exman->GetNumberProcesses();
+        LocalOrdinalType subdomain_size = local_size;
         if (exman->GetRank() == (exman->GetNumberProcesses() - 1))
             local_size += size_global - _exman->GetNumberProcesses() * local_size;
-        offset = local_size * exman->GetRank();
+        offset = subdomain_size * exman->GetRank();
     }
 
     GlobalOrdinalType size_global{10000};
@@ -272,6 +273,130 @@ TEST_F(TrilinosTest, Build) {
                 EXPECT_EQ(val_sorted[1], field.At(node, i) + offset_coef);
                 EXPECT_EQ(ind_sorted[2], row + 1);
                 EXPECT_EQ(val_sorted[2], field.At(node, i) + 2. * offset_coef);
+            }
+        }
+    }
+
+    auto functor_update = [&](auto mblock) {
+        const std::size_t num_rows = grid.size_global * N;
+
+        GO node_g{0};
+        LO node_l{0};
+        if (node_l == 0 || node_l == (grid.local_size - 1)) {
+            EXPECT_TRUE(mblock->IsGlobal());
+            node_g = mblock->GetNode();
+            node_l = g_rep.MapInternalToLocal(g_rep.MapGlobalToLocalInternal(node_g));
+        } else {
+            EXPECT_FALSE(mblock->IsGlobal());
+            node_l = mblock->GetNode();
+            node_g = g_rep.MapInternalToLocal(g_rep.MapLocalToGlobalInternal(node_g));
+        }
+
+        for (std::size_t n{0}; n < N; n++) {
+            if (mblock->GetRow(n) == 0 || mblock->GetRow(n) == (num_rows - 1)) {
+                mblock->Resize(n, 2);
+            } else {
+                mblock->Resize(n, 3);
+            }
+            if (mblock->GetRow(n) > 0)
+                mblock->SetCoefficient(n, mblock->GetRow(n) - 1, field.At(node_l, n) - 2. * offset_coef);
+            mblock->SetCoefficient(n, mblock->GetRow(n), field.At(node_l, n) - offset_coef);
+            if (mblock->GetRow(n) < (num_rows - 1))
+                mblock->SetCoefficient(n, mblock->GetRow(n) + 1, field.At(node_l, n));
+            mblock->SetRhs(n, mblock->GetRow(n) - offset_rhs);
+            mblock->SetInitialGuess(n, mblock->GetRow(n) - offset_init);
+        }
+    };
+
+    trilinos.Build(g_rep, field, functor_update, false);
+
+    for (LO node{0}; node < grid.local_size; node++) {
+        GO node_g = g_rep.MapLocalToGlobalInternal(node);
+        for (LO i{0}; i < N; i++) {
+            LO row = node * N + i;
+            GO row_g = node_g * N + i;
+            EXPECT_EQ(trilinos.GetX()->getData()[row], row_g - offset_init);
+            EXPECT_EQ(trilinos.GetB()->getData()[row], row_g - offset_rhs);
+            if (row == 0 || row == (grid.local_size * N - 1)) {
+                std::size_t num_entries = trilinos.GetA()->getNumEntriesInGlobalRow(row_g);
+                GOViewType indices("ind", num_entries);
+                SViewType values("coef", num_entries);
+                trilinos.GetA()->getGlobalRowCopy(row_g, indices, values, num_entries);
+                std::vector<GO> ind_sorted(num_entries);
+                std::vector<SC> val_sorted(num_entries);
+                for (std::size_t n{0}; n < num_entries; n++) {
+                    ind_sorted[n] = indices[n];
+                    val_sorted[n] = values[n];
+                }
+                for (std::size_t n{0}; n < num_entries; n++) {
+                    std::size_t lowest_id_pos = n;
+                    for (std::size_t pos{n + 1}; pos < num_entries; pos++) {
+                        if (ind_sorted[pos] < ind_sorted[lowest_id_pos])
+                            lowest_id_pos = pos;
+                    }
+                    if (lowest_id_pos != n) {
+                        std::swap(ind_sorted[n], ind_sorted[lowest_id_pos]);
+                        std::swap(val_sorted[n], val_sorted[lowest_id_pos]);
+                    }
+                }
+                if (node_g == 0) {
+                    EXPECT_EQ(num_entries, 2);
+                    EXPECT_EQ(ind_sorted.size(), 2);
+                    EXPECT_EQ(val_sorted.size(), 2);
+                    EXPECT_EQ(ind_sorted[0], 0);
+                    EXPECT_EQ(val_sorted[0], field.At(0, 0) - offset_coef);
+                    EXPECT_EQ(ind_sorted[1], 1);
+                    EXPECT_EQ(val_sorted[1], field.At(0, 0));
+                } else if (node_g == (grid.size_global - 1)) {
+                    EXPECT_EQ(num_entries, 2);
+                    EXPECT_EQ(ind_sorted.size(), 2);
+                    EXPECT_EQ(val_sorted.size(), 2);
+                    EXPECT_EQ(ind_sorted[0], num_rows_g - 2);
+                    EXPECT_EQ(val_sorted[0], field.At(grid.local_size - 1, N - 1) - 2. * offset_coef);
+                    EXPECT_EQ(ind_sorted[1], num_rows_g - 1);
+                    EXPECT_EQ(val_sorted[1], field.At(grid.local_size - 1, N - 1) - offset_coef);
+                } else {
+                    EXPECT_EQ(num_entries, 3);
+                    EXPECT_EQ(ind_sorted.size(), 3);
+                    EXPECT_EQ(val_sorted.size(), 3);
+                    EXPECT_EQ(ind_sorted[0], row_g - 1);
+                    EXPECT_EQ(val_sorted[0], field.At(node, i) - 2. * offset_coef);
+                    EXPECT_EQ(ind_sorted[1], row_g);
+                    EXPECT_EQ(val_sorted[1], field.At(node, i) - offset_coef);
+                    EXPECT_EQ(ind_sorted[2], row_g + 1);
+                    EXPECT_EQ(val_sorted[2], field.At(node, i));
+                }
+            } else {
+                std::size_t num_entries = trilinos.GetA()->getNumEntriesInLocalRow(row);
+                LOViewType indices("ind", num_entries);
+                SViewType values("coef", num_entries);
+                trilinos.GetA()->getLocalRowCopy(row, indices, values, num_entries);
+                std::vector<LO> ind_sorted(num_entries);
+                std::vector<SC> val_sorted(num_entries);
+                for (std::size_t n{0}; n < num_entries; n++) {
+                    ind_sorted[n] = indices[n];
+                    val_sorted[n] = values[n];
+                }
+                for (std::size_t n{0}; n < num_entries; n++) {
+                    std::size_t lowest_id_pos = n;
+                    for (std::size_t pos{n + 1}; pos < num_entries; pos++) {
+                        if (ind_sorted[pos] < ind_sorted[lowest_id_pos])
+                            lowest_id_pos = pos;
+                    }
+                    if (lowest_id_pos != n) {
+                        std::swap(ind_sorted[n], ind_sorted[lowest_id_pos]);
+                        std::swap(val_sorted[n], val_sorted[lowest_id_pos]);
+                    }
+                }
+                EXPECT_EQ(num_entries, 3);
+                EXPECT_EQ(ind_sorted.size(), 3);
+                EXPECT_EQ(val_sorted.size(), 3);
+                EXPECT_EQ(ind_sorted[0], row - 1);
+                EXPECT_EQ(val_sorted[0], field.At(node, i) - 2. * offset_coef);
+                EXPECT_EQ(ind_sorted[1], row);
+                EXPECT_EQ(val_sorted[1], field.At(node, i) - offset_coef);
+                EXPECT_EQ(ind_sorted[2], row + 1);
+                EXPECT_EQ(val_sorted[2], field.At(node, i));
             }
         }
     }

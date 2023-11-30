@@ -141,6 +141,15 @@ public:
     Teuchos::RCP<const MapType> GetMap() const;
 
 private:
+    /*!
+     * @brief constructs new matrix from scratch and overwrites
+     * @tparam Grid type of grid
+     * @tparam Lambda functor with matrix block
+     * @tparam N number of components
+     * @param grid reference to grid
+     * @param field reference to field with data
+     * @param functor functor
+     */
     template <typename Grid, std::size_t N, typename Lambda>
     void BuildNew(const typename Grid::Representation& grid,
                   const dare::Data::GridVector<Grid, SC, N>& field,
@@ -156,11 +165,22 @@ private:
                      const dare::Data::GridVector<Grid, SC, N>& field,
                      Lambda functor);
 
+    /*!
+     * @brief allocates the map depending on the provided grid
+     * @tparam Grid type of grid
+     * @tparam N number of components
+     * @param grid reference to grid
+     * Right now, the local maps contain ONLY internal cells, excluding halo cells.
+     * In principle, it might be preferable to include the halo cells to the local map,
+     * sharing the entries between processes. Then looping through the internal cells
+     * would only require local information and the build process for a matrix might be
+     * sped up.
+     */
     template <typename Grid, std::size_t N>
     void AllocateMap(const typename Grid::Representation& grid);
 
     dare::mpi::ExecutionManager* exec_man;  //!< pointer to execution manager
-    Teuchos::RCP<const Communicator> comm;        //!< mpi communicator for Trilinos
+    Teuchos::RCP<const Communicator> comm;  //!< mpi communicator for Trilinos
     Teuchos::RCP<const MapType> map;        //!< map of row distribution
     Teuchos::RCP<MatrixType> A;             //!< Matrix
     Teuchos::RCP<VecType> x;                //!< Solution vector

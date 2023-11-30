@@ -268,6 +268,7 @@ void Trilinos<SC, LO, GO>::BuildNew(const typename Grid::Representation& grid,
             ++row;
         }
     }
+
     A->fillComplete();
 }
 
@@ -383,8 +384,9 @@ void Trilinos<SC, LO, GO>::AllocateMap(const typename Grid::Representation& grid
 #pragma omp parallel for
     for (LO node = 0; node < grid.GetNumberLocalCellsInternal(); node++) {
         GO row = grid.MapLocalToGlobalInternal(node) * N;
-        for (std::size_t n{0}; n < N; n++)
+        for (std::size_t n{0}; n < N; n++) {
             elements_on_proc.h_view[node * N + n] = row + n;
+        }
     }
     elements_on_proc.template modify<typename Kokkos::DualView<GO*>::host_mirror_space>();
     elements_on_proc.template sync<typename Kokkos::DualView<GO*>::execution_space>();
