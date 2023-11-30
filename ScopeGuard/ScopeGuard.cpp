@@ -25,10 +25,10 @@
 #include "ScopeGuard.h"
 
 namespace dare {
-
 ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_argc), argv(_argv) {
     int num_proc = 1;
     int my_rank = 0;
+    std::string option;
 
     int flag_mpi_init = 0;
     MPI_Initialized(&flag_mpi_init);
@@ -38,16 +38,33 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
     if (manage_mpi)
         MPI_Init(_argc, _argv);
 
-    tpetra_scope = Teuchos::rcp(new Tpetra::ScopeGuard(_argc, _argv));
-
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
     is_root = my_rank == 0;
+
+    if (HasArgument("--threads", &option)) {
+        int specified_threads = omp_get_max_threads();
+        try {
+            specified_threads = std::stoi(option);
+        } catch (std::exception&) {
+            if (is_root)
+                std::cerr << "Cannot convert second argument of --threads '" << option
+                          << "' to an integer_value, aborting now!" << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 1);
+        }
+        omp_set_num_threads(specified_threads);
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    tpetra_scope = Teuchos::rcp(new Tpetra::ScopeGuard(_argc, _argv));
+
     if (AmIRoot() && !suppress_output)
-        std::cout << "\nRunning with " << num_proc << " procs.\n"
+        std::cout << "\nRunning with " << num_proc << " procs and "
+                  << omp_get_num_threads() << " thread" << (omp_get_num_threads() > 1 ? "s" : "") << "\n"
                   << std::endl;
 
-    std::string option;
+    // stop for debugger
     if (HasArgument("-D", &option) || HasArgument("--debug", &option)) {
         bool skip_by_error{false};
         int proc{-1};
@@ -64,6 +81,24 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
                 // if you end up here, then change the value of stop in your debugger
                 // and continue the debugging
             }
+        }
+    }
+
+    if (HasArgument("-R", &option) || HasArgument("--root", &option)) {
+        int new_root{0};
+        try {
+            new_root = std::stoi(option);
+        } catch (const std::exception& ex) {
+            if (AmIRoot())
+                std::cerr << "Cannot convert second argument of -r/--root '" << option
+                          << "' to an integer_value, setting value to 0!" << std::endl;
+            new_root = 0;
+        }
+        if (new_root < num_proc) {
+            is_root = new_root == my_rank;
+        } else {
+            if (AmIRoot())
+                std::cerr << "Provided root process id exceeds number of process IDs!" << std::endl;
         }
     }
 
@@ -107,10 +142,15 @@ void ScopeGuard::Terminate(std::string message, int error_code) const {
 }
 
 void ScopeGuard::PrintHelp() {
-    std::cout << "Use following command line options with this executable:\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "------- DaRe command line arguments --------------------------------------------\n";
+    std::cout << "--------------------------------------------------------------------------------\n";
+    std::cout << "\n";
+    std::cout << "             --threads <n>           Sets number of OpenMP threads to <n>\n";
     std::cout << "    -D    or --debug <rank>          The process of <rank> will be caught in an infinite loop,\n"
               << "                                     which can be escaped from with a debugger.\n";
     std::cout << "    -H    or --help                  Displays this message\n";
+    std::cout << "    -R    or --root <rank>           Sets root rank to <rank>\n";
     std::cout << std::endl;
 }
 }  // end namespace dare

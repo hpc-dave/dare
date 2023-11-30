@@ -54,7 +54,6 @@ namespace dare {
  *
  * }
  */
-
 class ScopeGuard {
 public:
     /*!
@@ -126,7 +125,7 @@ private:
 
     bool is_root;     // identifier, if this process is root
     bool manage_mpi;  // identifier, if this instance is responsible for managing MPI
-    Teuchos::RCP<Tpetra::ScopeGuard> tpetra_scope;
+    Teuchos::RCP<Tpetra::ScopeGuard> tpetra_scope;  //!< scope guard for initialization of Trilinos
 };
 
 }  // end namespace dare
