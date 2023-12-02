@@ -33,18 +33,6 @@
 #include <Tpetra_Core.hpp>
 #include <Tpetra_CrsMatrix.hpp>
 #include <Tpetra_Version.hpp>
-// Xpetra  -- Wrapper for dual use of Tpetra and Epetra (required by MueLu)
-#include <Xpetra_CrsMatrix.hpp>
-// Belos   -- Iterative solvers
-#include <BelosSolverFactory.hpp>
-#include <BelosTpetraAdapter.hpp>
-#include <Ifpack2_Factory.hpp>
-#include <Ifpack2_Parameters.hpp>
-// MueLu   -- Multigrid solvers & preconditioners
-#include <MueLu.hpp>
-#include <MueLu_HierarchyManager.hpp>
-#include <MueLu_ParameterListInterpreter.hpp>
-#include <MueLu_TpetraOperator.hpp>
 
 #include "../Data/GridVector.h"
 #include "../MPI/ExecutionManager.h"
@@ -53,6 +41,12 @@
 
 namespace dare::Matrix {
 
+/*!
+ * @brief holds matrices, vectors and preconditioners for solving a LES
+ * @tparam SC type of scalar value
+ * @tparam LO local ordinal type
+ * @tparam GO global ordinal type
+ */
 template <typename SC, typename LO, typename GO>
 class Trilinos : public dare::utils::InitializationTracker {
 public:
@@ -71,6 +65,7 @@ public:
     using constLOViewType = typename MatrixType::local_inds_host_view_type;
     using constGOViewType = typename MatrixType::global_inds_host_view_type;
     using constSViewType = typename MatrixType::values_host_view_type;
+
     /*!
      * @brief default constructor
      */
@@ -126,18 +121,70 @@ public:
               const dare::Data::GridVector<Grid, SC, N>& field,
               Lambda functor);
 
+    /*!
+     * @brief Sets the initial guess to the specified value
+     * @param value specific value
+     */
     void SetInitialGuess(const SC value);
 
+    /*!
+     * @brief returns the matrix
+     * @return Tpetra::CrsMatrix
+     */
     Teuchos::RCP<MatrixType>& GetA();
+
+    /*!
+     * @brief returns RHS vector
+     * @return Tpetra::Vector
+     */
     Teuchos::RCP<VecType>& GetB();
+
+    /*!
+     * @brief returns initial guess and solution vector
+     * @return Tpetra::Vector
+     */
     Teuchos::RCP<VecType>& GetX();
+
+    /*!
+     * @brief returns preconditioner
+     * @return Tpetra::Operator
+     */
     Teuchos::RCP<OpType>& GetM();
+
+    /*!
+     * @brief returns map
+     * @return const Tpetra::Map
+     */
     Teuchos::RCP<const MapType>& GetMap();
 
+    /*!
+     * @brief returns the matrix
+     * @return Tpetra::CrsMatrix
+     */
     Teuchos::RCP<const MatrixType> GetA() const;
+
+    /*!
+     * @brief returns RHS vector
+     * @return Tpetra::Vector
+     */
     Teuchos::RCP<const VecType> GetB() const;
+
+    /*!
+     * @brief returns initial guess and solution vector
+     * @return Tpetra::Vector
+     */
     Teuchos::RCP<const VecType> GetX() const;
+
+    /*!
+     * @brief returns preconditioner
+     * @return Tpetra::Operator
+     */
     Teuchos::RCP<const OpType> GetM() const;
+
+    /*!
+     * @brief returns map
+     * @return const Tpetra::Map
+     */
     Teuchos::RCP<const MapType> GetMap() const;
 
 private:
@@ -155,11 +202,32 @@ private:
                   const dare::Data::GridVector<Grid, SC, N>& field,
                   Lambda functor);
 
+    /*!
+     * @brief builds matrix, but reuses the existing one
+     * @tparam Grid type of grid
+     * @tparam Lambda type of functor
+     * @tparam N number of components
+     * @param grid reference to grid
+     * @param field field with data
+     * @param functor actual functor
+     * You can only overwrite existing entries, the graph of
+     * the matrix is constant!
+     */
     template <typename Grid, std::size_t N, typename Lambda>
     void BuildReplace(const typename Grid::Representation& grid,
                       const dare::Data::GridVector<Grid, SC, N>& field,
                       Lambda functor);
 
+    /*!
+     * @brief updates matrix graph and entries
+     * @tparam Grid type of grid
+     * @tparam Lambda type of functor
+     * @tparam N number of components
+     * @param grid reference to grid
+     * @param field reference to field
+     * @param functor actual functor
+     * currently call the BuildNew function
+     */
     template <typename Grid, std::size_t N, typename Lambda>
     void BuildUpdate(const typename Grid::Representation& grid,
                      const dare::Data::GridVector<Grid, SC, N>& field,

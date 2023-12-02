@@ -1,6 +1,10 @@
 set(DaRe_HEADER_FILES
+    "BiCGStab2.h"
+    "BiCGStab2.inl"
     "Trilinos.h"
     "Trilinos.inl"
+    "TrilinosSolver.h"
+    "TrilinosSolver.inl"
     "MatrixBlockBase.h"
     "MatrixBlockBase.inl"
     "MatrixBlock.h"
