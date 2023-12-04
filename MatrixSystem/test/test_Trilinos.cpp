@@ -24,94 +24,8 @@
 
 #include <gtest/gtest.h>
 #include "../Trilinos.h"
-#include "../../Grid/DefaultTypes.h"
-
-namespace dare::Matrix::test {
-class TrilinosTestGrid {
-public:
-    using GlobalOrdinalType = dare::Grid::details::GlobalOrdinalType;
-    using LocalOrdinalType = dare::Grid::details::LocalOrdinalType;
-    using ScalarType = double;
-    using Index = dare::utils::Vector<1, LocalOrdinalType>;
-    using IndexGlobal = dare::utils::Vector<1, GlobalOrdinalType>;
-    class TestRepresentation {
-    public:
-        using GlobalOrdinalType = TrilinosTestGrid::GlobalOrdinalType;
-        using LocalOrdinalType = TrilinosTestGrid::LocalOrdinalType;
-
-        TestRepresentation() : TestRepresentation(nullptr) {}
-
-        explicit TestRepresentation(dare::Matrix::test::TrilinosTestGrid* _grid) {
-            grid = _grid;
-            if (grid) {
-                offset = _grid->offset;
-                local_size = _grid->local_size;
-                size_global = _grid->size_global;
-            }
-        }
-
-        GlobalOrdinalType MapLocalToGlobalInternal(LocalOrdinalType node) const {
-            return node + offset;
-        }
-
-        LocalOrdinalType MapGlobalToLocalInternal(GlobalOrdinalType node) const {
-            return node - offset;
-        }
-
-        LocalOrdinalType MapInternalToLocal(LocalOrdinalType n_internal) const {
-            return n_internal;
-        }
-
-        GlobalOrdinalType MapInternalToLocal(GlobalOrdinalType n_internal) const {
-            return n_internal;
-        }
-
-        bool IsLocalInternal(GlobalOrdinalType id_glob) const {
-            return id_glob >= grid->offset && id_glob < (grid->offset * grid->local_size);
-            // return id_glob >= offset && id_glob < (offset * local_size);
-        }
-
-        LocalOrdinalType GetNumberLocalCellsInternal() const {
-            // return local_size;
-            return grid->local_size;
-        }
-
-        LocalOrdinalType GetNumberLocalCells() const {
-            return GetNumberLocalCellsInternal();
-        }
-
-        GlobalOrdinalType GetNumberGlobalCellsInternal() const {
-            return grid->size_global;
-            // return size_global;
-        }
-
-        dare::Matrix::test::TrilinosTestGrid* grid;
-        GlobalOrdinalType size_global{0};
-        LocalOrdinalType local_size{0};
-        GlobalOrdinalType offset{0};
-    };
-    using Representation = TestRepresentation;
-
-    Representation GetRepresentation() { return Representation(this); }
-
-    void Initialize(dare::mpi::ExecutionManager* _exman) {
-        exman = _exman;
-        local_size = size_global / exman->GetNumberProcesses();
-        LocalOrdinalType subdomain_size = local_size;
-        if (exman->GetRank() == (exman->GetNumberProcesses() - 1))
-            local_size += size_global - _exman->GetNumberProcesses() * local_size;
-        offset = subdomain_size * exman->GetRank();
-    }
-
-    GlobalOrdinalType size_global{10000};
-    LocalOrdinalType local_size{0};
-    GlobalOrdinalType offset{0};
-    dare::mpi::ExecutionManager* exman;
-};
-
-static const std::size_t N{4};
-
-}  // end namespace dare::Matrix::test
+#include "../TrilinosSolver.h"
+#include "test_TrilinosTestGrid.h"
 
 /*!
  * @brief Fixture for testing the trilinos implementation
@@ -401,3 +315,70 @@ TEST_F(TrilinosTest, Build) {
         }
     }
 }
+
+// TEST_F(TrilinosTest, SolverBiCGStab2) {
+//     auto package = dare::Matrix::TrilinosSolver<SC, LO, GO>::SolverPackage::BumbleBee;
+//     // using dare::Matrix::TrilinosSolver<SC, LO, GO>::PreCondPackage;
+//     GridRepresentation g_rep{grid.GetRepresentation()};
+
+//     for (LO node = 0; node < grid.local_size; node++) {
+//         LO row = node * N;
+//         for (LO i{0}; i < N; i++) {
+//             field.At(node, i) = 0.5;
+//         }
+//     }
+
+//     auto functor = [&](auto mblock) {
+//         const std::size_t num_rows = grid.size_global * N;
+//         GO node_g = mblock->GetNode();
+//         LO node_l = g_rep.MapInternalToLocal(g_rep.MapGlobalToLocalInternal(node_g));
+//         for (std::size_t n{0}; n < N; n++) {
+//             bool is_left_edge = mblock->GetRow(n) == 0;
+//             bool is_right_edge = mblock->GetRow(n) == (num_rows - 1);
+//             if (is_left_edge || is_right_edge) {
+//                 mblock->Resize(n, 2);
+//             } else {
+//                 mblock->Resize(n, 3);
+//             }
+//             if (is_left_edge) {
+//                 mblock->SetCoefficient(n, mblock->GetRow(n), 3.);
+//                 mblock->SetCoefficient(n, mblock->GetRow(n) + 1, -1.);
+//                 mblock->SetRhs(n, 0.);
+//             } else if (is_right_edge) {
+//                 mblock->SetCoefficient(n, mblock->GetRow(n) - 1, -1.);
+//                 mblock->SetCoefficient(n, mblock->GetRow(n), 3.);
+//                 mblock->SetRhs(n, 2.);
+//                 mblock->SetInitialGuess(n, 1.);
+//             } else {
+//                 mblock->SetCoefficient(n, mblock->GetRow(n) - 1, -1.);
+//                 mblock->SetCoefficient(n, mblock->GetRow(n), 2.);
+//                 mblock->SetCoefficient(n, mblock->GetRow(n) + 1, -1.);
+//                 mblock->SetRhs(n, 0.);
+//             }
+//         }
+//     };
+
+//     dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
+//     trilinos.Build(g_rep, field, functor, false);
+
+//     dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+
+//     Teuchos::RCP<Teuchos::ParameterList> param = Teuchos::rcp(new Teuchos::ParameterList());
+//     param->set("Convergence Tolerance", 1e-13);
+//     param->set("Maximum Iterations", 5000);
+//     Belos::ReturnType ret = solver.Solve(package, "BICGSTAB2",
+//                                          trilinos.GetA(), trilinos.GetX(), trilinos.GetB(), param);
+//     bool is_converged = ret == Belos::ReturnType::Converged;
+//     ASSERT_TRUE(is_converged);
+
+//     double d_phi = 1. / (grid.size_global * N);
+//     for (LO node_l{0}; node_l < g_rep.GetNumberLocalCellsInternal(); node_l++) {
+//         GO node_g = g_rep.MapLocalToGlobalInternal(node_l);
+//         for (std::size_t n{0}; n < N; n++) {
+//             double phi = (node_g * N + n + 0.5) * d_phi;
+//             double val = trilinos.GetX()->getData()[node_l * N + n];
+//             EXPECT_TRUE(std::fabs(phi - val) < 1e-8) << "Expected: " << phi << " and found: " << val
+//                                                      << " deviation is: " << std::fabs(phi - val);
+//         }
+//     }
+// }

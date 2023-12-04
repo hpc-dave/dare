@@ -56,16 +56,17 @@ namespace dare::Matrix {
  * target to adapt the solver, have a look at the functions provided in <b>BelosMultiVecTraits.hpp</b>
  */
 template <typename SC, typename MV, typename OP>
-class BiCGStab2 : public Belos::SolverManager<ST, MV, OP> {
+class BiCGStab2 : public Belos::SolverManager<SC, MV, OP> {
+public:
     using ScalarType = SC;
     using MultiVectorType = MV;
     using OperatorType = OP;
     using LocalOrdinal = typename MV::local_ordinal_type;
     using GlobalOrdinal = typename MV::global_ordinal_type;
     using Node = typename MV::node_type;
-    using STS = Teuchos::ScalarTraits<ST>;
+    using STS = Teuchos::ScalarTraits<SC>;
     using Magnitude = typename STS::magnitudeType;
-    using Problem = Belos::LinearProblem<ST, MV, OP>;
+    using Problem = Belos::LinearProblem<SC, MV, OP>;
     using MapType = typename MultiVectorType::map_type;
 
     enum ConvergenceCriteria {
@@ -84,7 +85,7 @@ class BiCGStab2 : public Belos::SolverManager<ST, MV, OP> {
     /// \brief clone the solver manager.
     ///
     /// Implements the DII inversion and injection pattern
-    Teuchos::RCP<Belos::SolverManager<ST, MV, OP> > clone() const override;
+    Teuchos::RCP<Belos::SolverManager<SC, MV, OP> > clone() const override;
     //@}
 
     //! @name Accessor methods
@@ -141,9 +142,9 @@ class BiCGStab2 : public Belos::SolverManager<ST, MV, OP> {
 
     //! Set user-defined convergence status test.
     virtual void setUserConvStatusTest(
-        const Teuchos::RCP<Belos::StatusTest<ST, MV, OP> >& userConvStatusTest,
-        const typename Belos::StatusTestCombo<ST, MV, OP>::ComboType& comboType =
-            Belos::StatusTestCombo<ST, MV, OP>::SEQ);
+        const Teuchos::RCP<Belos::StatusTest<SC, MV, OP> >& userConvStatusTest,
+        const typename Belos::StatusTestCombo<SC, MV, OP>::ComboType& comboType =
+            Belos::StatusTestCombo<SC, MV, OP>::SEQ);
 
     //! Set user-defined debug status test.
     virtual void setDebugStatusTest(const Teuchos::RCP<Belos::StatusTest<ScalarType, MV, OP> >& debugStatusTest);

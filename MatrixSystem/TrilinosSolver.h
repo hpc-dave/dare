@@ -45,6 +45,7 @@
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_TpetraOperator.hpp>
 
+#include "BiCGStab2.h"
 namespace dare::Matrix {
 
 template <typename SC, typename LO, typename GO>
@@ -68,18 +69,18 @@ public:
     using MultiVectorType = Tpetra::MultiVector<SC, LO, GO>;
     using ParameterList = Teuchos::ParameterList;
     using ReturnType = Belos::ReturnType;
-    using SolverManager = Belos::SolverManager<ScalarType, MultiVecType, OperatorType>;
-    typedef Belos::LinearProblem<Scalar, MultiVecType, OpType> ProblemType;
+    using SolverManager = Belos::SolverManager<ScalarType, MultiVectorType, OperatorType>;
+    using ProblemType = Belos::LinearProblem<ScalarType, MultiVectorType, OperatorType>;
 
     /*!
      * @brief default constructor
      */
-    TrilinosSolver();
+    TrilinosSolver() = default;
 
     /*!
      * @brief default destructor
      */
-    virtual ~TrilinosSolver();
+    virtual ~TrilinosSolver() = default;
 
     ReturnType Solve(SolverPackage solver_pack,
                      const std::string& type,
@@ -111,26 +112,27 @@ public:
                      Teuchos::RCP<MultiVectorType> B,
                      Teuchos::RCP<ParameterList> param);
 
-    Teuchos::RCP<Operator> BuildPreconditioner(PreCondPackage precond_packag,
-                                               const std::string& type,
-                                               Teuchos::RCP<ParameterList> param,
-                                               Teuchos::RCP<MatrixType> A);
+    Teuchos::RCP<OperatorType> BuildPreconditioner(PreCondPackage precond_packag,
+                                                   const std::string& type,
+                                                   Teuchos::RCP<ParameterList> param,
+                                                   Teuchos::RCP<MatrixType> A);
 
 private:
     Teuchos::RCP<SolverManager> CreateSolver(SolverPackage solver_pack,
                                              const std::string& type,
-                                             Teuchos::RCP<ParamterList> param);
+                                             Teuchos::RCP<ParameterList> param);
 
     Teuchos::RCP<OperatorType> CreatePreconditionerIfPack2(const std::string& type,
-                                                           Teuchos::RCP<ParamterList> param,
-                                                           Teuchos::RCP<Matrixtype> A);
+                                                           Teuchos::RCP<ParameterList> param,
+                                                           Teuchos::RCP<MatrixType> A);
 
     Teuchos::RCP<OperatorType> CreatePreconditionerMueLu(const std::string& type,
-                                                         Teuchos::RCP<ParamterList> param,
-                                                         Teuchos::RCP<Matrixtype> A);
+                                                         Teuchos::RCP<ParameterList> param,
+                                                         Teuchos::RCP<MatrixType> A);
 };
 
-#include "TrilinosSolver.inl"
 }  // namespace dare::Matrix
+
+#include "TrilinosSolver.inl"
 
 #endif  // MATRIXSYSTEM_TRILINOSSOLVER_H_
