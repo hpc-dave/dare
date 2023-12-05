@@ -75,16 +75,20 @@ TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
                                   Teuchos::RCP<MultiVectorType> x,
                                   Teuchos::RCP<MultiVectorType> B,
                                   Teuchos::RCP<ParameterList> param) {
-    Teuchos::RCP<SolverManager> solver = CreateSolver(solver_pack, type, param);
-    Teuchos::RCP<ProblemType> problem = Teuchos::rcp(new ProblemType(A, x, B));
+    if (solver_pack == SolverPackage::Amesos2) {
+        return SolveWithAmesos2(type, A, x, B, param);
+    } else {
+        Teuchos::RCP<SolverManager> solver = CreateSolver(solver_pack, type, param);
+        Teuchos::RCP<ProblemType> problem = Teuchos::rcp(new ProblemType(A, x, B));
 
-    if (!M.is_null())
-        problem->setRightPrec(M);
+        if (!M.is_null())
+            problem->setRightPrec(M);
 
-    problem->setProblem();
-    solver->setProblem(problem);
+        problem->setProblem();
+        solver->setProblem(problem);
 
-    return solver->solve();
+        return solver->solve();
+    }
 }
 
 template <typename SC, typename LO, typename GO>
@@ -129,9 +133,9 @@ TrilinosSolver<SC, LO, GO>::CreateSolver(SolverPackage solver_pack,
 
     Teuchos::RCP<SolverManager> sm;
     switch (solver_pack) {
-        case SolverPackage::Amesos:
+        case SolverPackage::Amesos2:
             if (am_i_root)
-                std::cerr << "Amesos solver are not yet implemented!" << std::endl;
+                std::cerr << "Amesos solver should not end up here!" << std::endl;
             MPI_Abort(MPI_COMM_WORLD, -5);
             break;
         case SolverPackage::Belos:
@@ -236,5 +240,19 @@ TrilinosSolver<SC, LO, GO>::CreatePreconditionerMueLu(const std::string& type,
     Teuchos::RCP<OperatorType> M = rcp(new MueLuTpetraAdapater(H));
 
     return M;
+}
+
+template <typename SC, typename LO, typename GO>
+typename TrilinosSolver<SC, LO, GO>::ReturnType
+TrilinosSolver<SC, LO, GO>::SolveWithAmesos2(const std::string& type,
+                                             Teuchos::RCP<MatrixType> A,
+                                             Teuchos::RCP<MultiVectorType> x,
+                                             Teuchos::RCP<MultiVectorType> B,
+                                             Teuchos::RCP<ParameterList> param) {
+    Teuchos::RCP<Amesos2::Solver<MatrixType, MultiVectorType>> solver;
+    solver = Amesos2::create<MatrixType, MultiVectorType>(type, A, x, B);
+    solver->setParameters(param);
+    solver->solve();
+    return Belos::ReturnType::Converged;
 }
 }  // end namespace dare::Matrix

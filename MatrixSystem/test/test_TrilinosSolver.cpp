@@ -86,18 +86,28 @@ public:
     FieldType field;
     dare::mpi::ExecutionManager exec_man;
     Teuchos::RCP<Teuchos::ParameterList> solver_param;
+    bool multiSolves = false;
     void SetUp() {
         grid.Initialize(&exec_man);
         field = FieldType("test field", grid.GetRepresentation());
-         solver_param = Teuchos::rcp(new Teuchos::ParameterList());
-        solver_param->set("Convergence Tolerance", 1e-12);
-        solver_param->set("Maximum Iterations", 5000);
-        solver_param->set("Num Blocks", 100);  // for GMRES
     }
 };
 
 TEST_P(TrilinosSolverTest, SolveLaplace) {
     dare::Matrix::test::_solverTestParam test_param = GetParam();
+
+    if (test_param.package == dare::Matrix::test::_solverTestParam::PT::Amesos2) {
+        solver_param = Teuchos::rcp(new Teuchos::ParameterList("Amesos2"));
+        // using standard solver parameters
+        // The KLU solver only works in serial
+        if (!exec_man.IsSerial())
+            return;
+    } else {
+        solver_param = Teuchos::rcp(new Teuchos::ParameterList());
+        solver_param->set("Convergence Tolerance", 1e-12);
+        solver_param->set("Maximum Iterations", 5000);
+        solver_param->set("Num Blocks", 100);  // for GMRES
+    }
 
     GridRepresentation g_rep{grid.GetRepresentation()};
 
@@ -219,4 +229,5 @@ INSTANTIATE_TEST_SUITE_P(SolverConvergence,
                              _solverTestParam(_solverTestParam::PT::Belos, "GMRES",
                                               _solverTestParam::PTM::Ifpack2, "ILUT"),
                              _solverTestParam(_solverTestParam::PT::Belos, "GMRES",
-                                              _solverTestParam::PTM::MueLu, "AMG")));
+                                              _solverTestParam::PTM::MueLu, "AMG"),
+                             _solverTestParam(_solverTestParam::PT::Amesos2, "KLU")));

@@ -45,6 +45,8 @@
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_TpetraOperator.hpp>
 
+#include <Amesos2.hpp>
+
 #include "BiCGStab2.h"
 namespace dare::Matrix {
 
@@ -57,7 +59,7 @@ public:
         MueLu
     };
     enum class SolverPackage {
-        Amesos,
+        Amesos2,
         Belos,
         BumbleBee
     };
@@ -130,6 +132,12 @@ private:
     Teuchos::RCP<OperatorType> CreatePreconditionerMueLu(const std::string& type,
                                                          Teuchos::RCP<ParameterList> param,
                                                          Teuchos::RCP<MatrixType> A);
+
+    ReturnType SolveWithAmesos2(const std::string& type,
+                                Teuchos::RCP<MatrixType> A,
+                                Teuchos::RCP<MultiVectorType> x,
+                                Teuchos::RCP<MultiVectorType> B,
+                                Teuchos::RCP<ParameterList> param);
 };
 
 }  // namespace dare::Matrix
