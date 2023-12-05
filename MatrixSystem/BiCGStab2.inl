@@ -511,10 +511,24 @@ bool BiCGStab2<ST, MV, OP>::Solve(const OP& A, MV& x, const MV& B) {  // NOLINT
         tau -= nu * nu / mu;
 
         if (tau == 0.0) {
+            // it may happen, that the norm is already reached by luck and tau is subsequently 0
+            if (is_right_prec) {
+                problem->applyRightPrec(x, tmp);
+                x.assign(tmp);
+            }
+            r.assign(B);
+            A.apply(x, v);
+            r.update(-1., v, 1.);
+            r.norm2(norms);
+            convergence_check = norms[0] / normalizer;
+            if (convergence_check <= tol)
+                return true;
+
             s.norm2(norms);
             double norm_s = norms[0];
             t.norm2(norms);
             double norm_t = norms[0];
+
             if (is_root)
                 PrintError(21, "tau == 0.0", {{"nu:     ", nu}, {"norm s: ", norm_s}, {"norm t: ", norm_t}});
             break;

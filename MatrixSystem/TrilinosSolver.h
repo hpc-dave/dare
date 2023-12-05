@@ -52,6 +52,7 @@ template <typename SC, typename LO, typename GO>
 class TrilinosSolver {
 public:
     enum class PreCondPackage {
+        None,
         Ifpack2,
         MueLu
     };
@@ -124,7 +125,7 @@ private:
 
     Teuchos::RCP<OperatorType> CreatePreconditionerIfPack2(const std::string& type,
                                                            Teuchos::RCP<ParameterList> param,
-                                                           Teuchos::RCP<MatrixType> A);
+                                                           Teuchos::RCP<const MatrixType> A);
 
     Teuchos::RCP<OperatorType> CreatePreconditionerMueLu(const std::string& type,
                                                          Teuchos::RCP<ParameterList> param,

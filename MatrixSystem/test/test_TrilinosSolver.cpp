@@ -36,10 +36,34 @@ struct _solverTestParam {
     using LO = dare::Grid::details::LocalOrdinalType;
     using GO = dare::Grid::details::GlobalOrdinalType;
     using PT = dare::Matrix::TrilinosSolver<SC, LO, GO>::SolverPackage;
-    dare::Matrix::TrilinosSolver<SC, LO, GO>::SolverPackage package;
+    using PTM = dare::Matrix::TrilinosSolver<SC, LO, GO>::PreCondPackage;
+    PT package;
     std::string type;
-    _solverTestParam(PT pack, std::string typ) : package(pack), type(typ){}
+    PTM package_pre;
+    std::string type_pre;
+
+    _solverTestParam(PT pack, std::string typ, PTM pack_pre = PTM::None, std::string typ_pre = "none")
+        : package(pack), type(typ), package_pre(pack_pre), type_pre(typ_pre) {}
 };
+
+Teuchos::RCP<Teuchos::ParameterList> GetPreconditionerParameters(_solverTestParam::PTM pack, std::string type) {
+    Teuchos::RCP<Teuchos::ParameterList> parameters = Teuchos::rcp(new Teuchos::ParameterList());
+    switch (pack) {
+    case _solverTestParam::PTM::Ifpack2:
+        // paramters for ILU
+        parameters->set("fact: drop tolerance", 1e-9);
+        parameters->set("fact: level of fill", 1);
+        parameters->set("schwarz: combine mode", "Add");
+        break;
+    case _solverTestParam::PTM::MueLu:
+        parameters->set("problem: type", "MHD");  // works best in our cases
+        parameters->set("verbosity", "none");
+        break;
+    otherwise:
+        {}
+    }
+    return parameters;
+}
 
 }  // end namespace dare::Matrix::test
 
@@ -74,6 +98,7 @@ public:
 
 TEST_P(TrilinosSolverTest, SolveLaplace) {
     dare::Matrix::test::_solverTestParam test_param = GetParam();
+
     GridRepresentation g_rep{grid.GetRepresentation()};
 
     for (LO node = 0; node < grid.local_size; node++) {
@@ -83,32 +108,50 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
         }
     }
 
+    // assembles a pseudo-2D problem, since the preconditioners of Ifpack and MueLu seem
+    // to have issues with fully 1D problems
     auto functor = [&](auto mblock) {
         const std::size_t num_rows = grid.size_global * N;
         GO node_g = mblock->GetNode();
         LO node_l = g_rep.MapInternalToLocal(g_rep.MapGlobalToLocalInternal(node_g));
+        bool is_left_edge = node_g == 0;
+        bool is_right_edge = node_g == (g_rep.GetNumberGlobalCellsInternal()-1);
         for (std::size_t n{0}; n < N; n++) {
-            bool is_left_edge = mblock->GetRow(n) == 0;
-            bool is_right_edge = mblock->GetRow(n) == (num_rows - 1);
+            std::size_t size_stencil{0};
             if (is_left_edge || is_right_edge) {
-                mblock->Resize(n, 2);
+                size_stencil += 4;
             } else {
-                mblock->Resize(n, 3);
+                size_stencil += 5;
             }
+            if (n == 0)
+                size_stencil--;
+            if (n == (N - 1))
+                size_stencil--;
+
+            mblock->Resize(n, size_stencil);
             if (is_left_edge) {
                 mblock->SetCoefficient(n, mblock->GetRow(n), 3.);
-                mblock->SetCoefficient(n, mblock->GetRow(n) + 1, -1.);
+                mblock->SetCoefficient(n, mblock->GetRow(n) + N, -1.);
                 mblock->SetRhs(n, 0.);
+                mblock->SetInitialGuess(n, 0.);
             } else if (is_right_edge) {
-                mblock->SetCoefficient(n, mblock->GetRow(n) - 1, -1.);
+                mblock->SetCoefficient(n, mblock->GetRow(n) - N, -1.);
                 mblock->SetCoefficient(n, mblock->GetRow(n), 3.);
                 mblock->SetRhs(n, 2.);
                 mblock->SetInitialGuess(n, 1.);
             } else {
-                mblock->SetCoefficient(n, mblock->GetRow(n) - 1, -1.);
+                mblock->SetCoefficient(n, mblock->GetRow(n) - N, -1.);
                 mblock->SetCoefficient(n, mblock->GetRow(n), 2.);
-                mblock->SetCoefficient(n, mblock->GetRow(n) + 1, -1.);
+                mblock->SetCoefficient(n, mblock->GetRow(n) + N, -1.);
                 mblock->SetRhs(n, 0.);
+            }
+            if (n != 0) {
+                mblock->SetCoefficient(n, mblock->GetRow(n) - 1, -1.);
+                mblock->GetCoefficientByOrdinal(n, mblock->GetRow(n)) += 1;
+            }
+            if (n != (N-1)) {
+                mblock->SetCoefficient(n, mblock->GetRow(n) + 1, -1.);
+                mblock->GetCoefficientByOrdinal(n, mblock->GetRow(n)) += 1;
             }
         }
     };
@@ -118,7 +161,14 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
 
     dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
 
-    Belos::ReturnType ret = solver.Solve(test_param.package, test_param.type,
+    auto precond_param = dare::Matrix::test::GetPreconditionerParameters(test_param.package_pre, test_param.type_pre);
+
+    trilinos.GetM() = solver.BuildPreconditioner(test_param.package_pre,
+                                                 test_param.type_pre,
+                                                 precond_param,
+                                                 trilinos.GetA());
+
+    Belos::ReturnType ret = solver.Solve(test_param.package, test_param.type, trilinos.GetM(),
                                          trilinos.GetA(), trilinos.GetX(), trilinos.GetB(), solver_param);
     bool is_converged = ret == Belos::ReturnType::Converged;
     Tpetra::Vector<SC, LO, GO> r(trilinos.GetMap());
@@ -128,13 +178,16 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
     trilinos.GetA()->apply(*trilinos.GetX(), v);
     r.update(-1., v, 1.);
     SC norm2 = r.norm2();
-    ASSERT_TRUE(is_converged) << "Did not converge with solver " << test_param.type << " and Euclidian norm: " << norm2;
 
-    double d_phi = 1. / (grid.size_global * N);
+    ASSERT_TRUE(is_converged) << "Did not converge with solver: " << test_param.type
+                              << ", preconditioner " << test_param.type_pre
+                              << " and Euclidian norm: " << norm2;
+
+    double d_phi = 1. / grid.size_global;
     for (LO node_l{0}; node_l < g_rep.GetNumberLocalCellsInternal(); node_l++) {
         GO node_g = g_rep.MapLocalToGlobalInternal(node_l);
         for (std::size_t n{0}; n < N; n++) {
-            double phi = (node_g * N + n + 0.5) * d_phi;
+            double phi = (node_g + 0.5) * d_phi;
             double val = trilinos.GetX()->getData()[node_l * N + n];
             EXPECT_TRUE(std::fabs(phi - val) < 1e-8) << "Expected: " << phi << " and found: " << val
                                                      << " deviation is: " << std::fabs(phi - val);
@@ -148,6 +201,22 @@ INSTANTIATE_TEST_SUITE_P(SolverConvergence,
                          TrilinosSolverTest,
                          testing::Values(
                              _solverTestParam(_solverTestParam::PT::BumbleBee, "BICGSTAB2"),
+                             _solverTestParam(_solverTestParam::PT::BumbleBee, "BICGSTAB2",
+                                              _solverTestParam::PTM::Ifpack2, "ILUT"),
+                             _solverTestParam(_solverTestParam::PT::BumbleBee, "BICGSTAB2",
+                                              _solverTestParam::PTM::MueLu, "AMG"),
                              _solverTestParam(_solverTestParam::PT::Belos, "CG"),
+                             _solverTestParam(_solverTestParam::PT::Belos, "CG",
+                                              _solverTestParam::PTM::Ifpack2, "ILUT"),
+                             //  _solverTestParam(_solverTestParam::PT::Belos, "CG",
+                             //                   _solverTestParam::PTM::MueLu, "AMG"),
                              _solverTestParam(_solverTestParam::PT::Belos, "BICGSTAB"),
-                             _solverTestParam(_solverTestParam::PT::Belos, "GMRES")));
+                             _solverTestParam(_solverTestParam::PT::Belos, "BICGSTAB",
+                                              _solverTestParam::PTM::Ifpack2, "ILUT"),
+                             //  _solverTestParam(_solverTestParam::PT::Belos, "BICGSTAB",
+                             //                   _solverTestParam::PTM::MueLu, "AMG"),
+                             _solverTestParam(_solverTestParam::PT::Belos, "GMRES"),
+                             _solverTestParam(_solverTestParam::PT::Belos, "GMRES",
+                                              _solverTestParam::PTM::Ifpack2, "ILUT"),
+                             _solverTestParam(_solverTestParam::PT::Belos, "GMRES",
+                                              _solverTestParam::PTM::MueLu, "AMG")));

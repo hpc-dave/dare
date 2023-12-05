@@ -94,6 +94,8 @@ TrilinosSolver<SC, LO, GO>::BuildPreconditioner(PreCondPackage precond_package,
                                                 Teuchos::RCP<ParameterList> param,
                                                 Teuchos::RCP<MatrixType> A) {
     Teuchos::RCP<OperatorType> M;
+    if (precond_package == PreCondPackage::None)
+        return M;
 
     switch (precond_package) {
     case PreCondPackage::Ifpack2:
@@ -101,6 +103,8 @@ TrilinosSolver<SC, LO, GO>::BuildPreconditioner(PreCondPackage precond_package,
         break;
     case PreCondPackage::MueLu:
         M = CreatePreconditionerMueLu(type, param, A);
+    otherwise:
+        {}
     }
 
     if (M.is_null()) {
@@ -154,11 +158,11 @@ template <typename SC, typename LO, typename GO>
 Teuchos::RCP<typename TrilinosSolver<SC, LO, GO>::OperatorType>
 TrilinosSolver<SC, LO, GO>::CreatePreconditionerIfPack2(const std::string& type,
                                                         Teuchos::RCP<ParameterList> param,
-                                                        Teuchos::RCP<MatrixType> A) {
+                                                        Teuchos::RCP<const MatrixType> A) {
     using PrecType = Ifpack2::Preconditioner<SC, LO, GO>;
     Ifpack2::Factory factory;
     Teuchos::RCP<PrecType> prec = factory.create(type, A);
-    prec->setParameters(param);
+    prec->setParameters(*param);
     prec->initialize();
     prec->compute();
     return prec;
@@ -186,7 +190,7 @@ TrilinosSolver<SC, LO, GO>::CreatePreconditionerMueLu(const std::string& type,
     // typedef XpetraTpetraMVecAdapter = Xpetra::TpetraMultiVector<SC, LO, GO>;
 
     RCP<XpetraMatrix> A_xpetra = MueLu::TpetraCrs_To_XpetraMatrix<SC, LO, GO>(A);
-    RCP<HierarchyManager> factory = rcp(new MueLu::ParameterListInterpreter<SC, LO, GO>(param));
+    RCP<HierarchyManager> factory = rcp(new MueLu::ParameterListInterpreter<SC, LO, GO>(*param));
     RCP<Hierarchy> H = factory->CreateHierarchy();
 
     // // for now we just set it to one, later optimization may change this (then mulitvector is required)

@@ -42,13 +42,13 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
     MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
     is_root = my_rank == 0;
 
-    if (HasArgument("--threads", &option)) {
+    if (HasArgument("-T", &option)) {
         int specified_threads = omp_get_max_threads();
         try {
             specified_threads = std::stoi(option);
         } catch (std::exception&) {
             if (is_root)
-                std::cerr << "Cannot convert second argument of --threads '" << option
+                std::cerr << "Cannot convert second argument of -T '" << option
                           << "' to an integer_value, aborting now!" << std::endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
@@ -146,7 +146,7 @@ void ScopeGuard::PrintHelp() {
     std::cout << "------- DaRe command line arguments --------------------------------------------\n";
     std::cout << "--------------------------------------------------------------------------------\n";
     std::cout << "\n";
-    std::cout << "             --threads <n>           Sets number of OpenMP threads to <n>\n";
+    std::cout << "    -T <n>                           Sets number of OpenMP threads to <n>\n";
     std::cout << "    -D    or --debug <rank>          The process of <rank> will be caught in an infinite loop,\n"
               << "                                     which can be escaped from with a debugger.\n";
     std::cout << "    -H    or --help                  Displays this message\n";
