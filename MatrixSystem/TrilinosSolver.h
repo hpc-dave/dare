@@ -50,19 +50,20 @@
 #include "BiCGStab2.h"
 namespace dare::Matrix {
 
+enum class PreCondPackage {
+    None,
+    Ifpack2,
+    MueLu
+};
+enum class SolverPackage {
+    Amesos2,
+    Belos,
+    BumbleBee
+};
+
 template <typename SC, typename LO, typename GO>
 class TrilinosSolver {
 public:
-    enum class PreCondPackage {
-        None,
-        Ifpack2,
-        MueLu
-    };
-    enum class SolverPackage {
-        Amesos2,
-        Belos,
-        BumbleBee
-    };
     using ScalarType = SC;
     using LocalOrdinalType = LO;
     using GlobalOrdinalType = GO;

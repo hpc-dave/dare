@@ -35,8 +35,8 @@ struct _solverTestParam {
     using SC = double;
     using LO = dare::Grid::details::LocalOrdinalType;
     using GO = dare::Grid::details::GlobalOrdinalType;
-    using PT = dare::Matrix::TrilinosSolver<SC, LO, GO>::SolverPackage;
-    using PTM = dare::Matrix::TrilinosSolver<SC, LO, GO>::PreCondPackage;
+    using PT = dare::Matrix::SolverPackage;
+    using PTM = dare::Matrix::PreCondPackage;
     PT package;
     std::string type;
     PTM package_pre;

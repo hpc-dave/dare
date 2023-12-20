@@ -84,9 +84,22 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
     GridType::Options opt(0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
+    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
     dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
     const double value_west{0.};
     const double value_east{1.};
+
+    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const std::string solver_type = "BICGSTAB2";
+    const dare::Matrix::PreCondPackage precond_pack = dare::Matrix::PreCondPackage::MueLu;
+    const std::string precond_type = "AMG";
+
+    Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
+    param_solver->set("Convergence Tolerance", 1e-14);
+    param_solver->set("Maximum Iterations", 5000);
+    Teuchos::RCP<Teuchos::ParameterList> param_precond = Teuchos::rcp(new Teuchos::ParameterList());
+    param_precond->set("problem: type", "MHD");  // works best in our cases
+    param_precond->set("verbosity", "none");
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
@@ -121,10 +134,106 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
         mblock->Finalize();
     };
 
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
     trilinos.Build(g_rep, data, functor, false);
+
+    trilinos.GetM() = solver.BuildPreconditioner(precond_pack,
+                                                 precond_type,
+                                                 param_precond,
+                                                 trilinos.GetA());
+
+    Belos::ReturnType ret = solver.Solve(solver_pack, solver_type,
+                                         trilinos.GetM(),
+                                         trilinos.GetA(), trilinos.GetX(), trilinos.GetB(),
+                                         param_solver);
+    bool is_converged = ret == Belos::ReturnType::Converged;
+    EXPECT_TRUE(is_converged);
+    double d_phi = (value_east - value_west) / g_rep.GetGlobalResolutionInternal()[0];
+    for (LO node_l{0}; node_l < g_rep.GetNumberLocalCellsInternal(); node_l++) {
+        GO node_g = g_rep.MapLocalToGlobalInternal(node_l);
+        IndexGlobal ind = g_rep.MapOrdinalToIndexGlobalInternal(node_g);
+        for (std::size_t n{0}; n < N; n++) {
+            double phi = value_west + (ind.i() + 0.5) * d_phi;
+            double val = trilinos.GetX()->getData()[node_l * N + n];
+            EXPECT_NEAR(phi, val, 1e-8) << "Expected: " << phi << " and found: " << val
+                                                     << " deviation is: " << std::fabs(phi - val);
+        }
+    }
 }
 
-// TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
+TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
+    using CN = dare::Matrix::CartesianNeighbor;
+    GridType::Options opt(1);  // staggered
+    auto g_rep = grid->GetRepresentation(opt);
+    GridVector data("test", g_rep);
+    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    const double value_west{0.};
+    const double value_east{1.};
 
-// }
+    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const std::string solver_type = "BICGSTAB2";
+    const dare::Matrix::PreCondPackage precond_pack = dare::Matrix::PreCondPackage::MueLu;
+    const std::string precond_type = "AMG";
+
+    Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
+    param_solver->set("Convergence Tolerance", 1e-14);
+    param_solver->set("Maximum Iterations", 5000);
+    Teuchos::RCP<Teuchos::ParameterList> param_precond = Teuchos::rcp(new Teuchos::ParameterList());
+    param_precond->set("problem: type", "MHD");  // works best in our cases
+    param_precond->set("verbosity", "none");
+
+    auto functor = [&](auto mblock) {
+        EXPECT_TRUE(mblock->IsGlobal());
+        GO node_g = mblock->GetNode();
+        bool is_left_edge{node_g == 0};
+        bool is_right_edge{node_g == (g_rep.GetGlobalResolutionInternal()[0] - 1)};
+        std::size_t stencil_size{3};
+        if (is_left_edge)
+            stencil_size = 1;
+        else if (is_right_edge)
+            stencil_size = 1;
+        for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
+            mblock->Resize(n, stencil_size);
+            if (is_left_edge) {
+                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->GetRhs(n) = value_west;
+                mblock->SetInitialGuess(n, value_west);
+            } else if (is_right_edge) {
+                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->GetRhs(n) = value_east;
+                mblock->SetInitialGuess(n, value_east);
+            } else {
+                mblock->template Get<CN::CENTER>(n) = 2.;
+                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->GetRhs(n) = 0.;
+            }
+        }
+        mblock->Finalize();
+    };
+
+    trilinos.Build(g_rep, data, functor, false);
+
+    trilinos.GetM() = solver.BuildPreconditioner(precond_pack,
+                                                 precond_type,
+                                                 param_precond,
+                                                 trilinos.GetA());
+
+    Belos::ReturnType ret = solver.Solve(solver_pack, solver_type,
+                                         trilinos.GetM(),
+                                         trilinos.GetA(), trilinos.GetX(), trilinos.GetB(),
+                                         param_solver);
+    bool is_converged = ret == Belos::ReturnType::Converged;
+    EXPECT_TRUE(is_converged);
+    double d_phi = (value_east - value_west) / (g_rep.GetGlobalResolutionInternal()[0] - 1);
+    for (LO node_l{0}; node_l < g_rep.GetNumberLocalCellsInternal(); node_l++) {
+        GO node_g = g_rep.MapLocalToGlobalInternal(node_l);
+        IndexGlobal ind = g_rep.MapOrdinalToIndexGlobalInternal(node_g);
+        for (std::size_t n{0}; n < N; n++) {
+            double phi = value_west + ind.i()* d_phi;
+            double val = trilinos.GetX()->getData()[node_l * N + n];
+            EXPECT_NEAR(phi, val, 1e-8) << "Expected: " << phi << " and found: " << val
+                                        << " deviation is: " << std::fabs(phi - val);
+        }
+    }
+}
