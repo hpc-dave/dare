@@ -12,7 +12,7 @@ on:
 
 jobs:
   build_release:
-    runs-on: ubuntu_wsl
+    runs-on: self-hosted
     container:
       image: davevader/dare_test:1.1
 
@@ -30,7 +30,7 @@ jobs:
           ninja -j 4
 
   build_debug:
-    runs-on: ubuntu_wsl
+    runs-on: self-hosted
     container:
       image: davevader/dare_test:1.1
 
