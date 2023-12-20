@@ -71,6 +71,11 @@ public:
     using Index = VecLO;
     using IndexGlobal = VecGO;
 
+    template < typename O>
+    struct GetIndexType {
+        using type = utils::Vector<Dim, O>;
+    };
+
     /*!
      * \brief default constructor
      */

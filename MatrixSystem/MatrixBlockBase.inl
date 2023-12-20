@@ -97,8 +97,22 @@ void MatrixBlockBase<O, SC, N>::Resize(std::size_t n, std::size_t size) {
     coefficients[n].resize(size);
     for (std::size_t i{old_size}; i < size; i++) {
         ordinals[n].d_view[i] = -1;
-        ordinals[n].d_view[i] = -1;
+        ordinals[n].h_view[i] = -1;
     }
+}
+
+template <typename O, typename SC, std::size_t N>
+template <typename Space>
+std::size_t MatrixBlockBase<O, SC, N>::GetSize(std::size_t n) const {
+    if constexpr (std::is_same_v<Space, HostSpace>)
+        return ordinals[n].h_view.size();
+    else
+        return ordinals[n].d_view.size();
+}
+
+template <typename O, typename SC, std::size_t N>
+constexpr std::size_t MatrixBlockBase<O, SC, N>::GetNumComponents() const {
+    return N;
 }
 
 template <typename O, typename SC, std::size_t N>
@@ -263,16 +277,23 @@ void MatrixBlockBase<O, SC, N>::SetCoefficients(std::size_t n_row,
                                                 std::size_t size,
                                                 const Array1& id_col,
                                                 const Array2& values) {
+    bool is_empty{ordinals[n_row].h_view[0] < 0};
 #ifndef DARE_NDEBUG
     if (size > ordinals[n_row].h_view.size())
-        std::cerr << "SetCoefficients received a size value larger than the allocated storage "
+        std::cerr << "In " << __func__ << ": received a size value larger than the allocated storage "
                   << "(" << size << " > " << ordinals[n_row].h_view.size() << ")! "
                   << "Expect Segmentation fault!" << std::endl;
 #endif
 
-    for (std::size_t n{0}; n < size; n++) {
-        ordinals[n_row].h_view[n] = id_col[n];
-        coefficients[n_row].h_view[n] = values[n];
+    if (is_empty) {
+        for (std::size_t n{0}; n < size; n++) {
+            ordinals[n_row].h_view[n] = id_col[n];
+            coefficients[n_row].h_view[n] = values[n];
+        }
+    } else {
+        for (std::size_t n{0}; n < size; n++) {
+            SetCoefficient(n_row, id_col[n], values[n]);
+        }
     }
 }
 

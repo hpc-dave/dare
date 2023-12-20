@@ -197,7 +197,7 @@ void Trilinos<SC, LO, GO>::BuildNew(const typename Grid::Representation& grid,
     for (LO node = 0; node < num_cells; node++) {
         //  initialize matrix block
         MatrixBlockType* matrix_block = &list_matrix_blocks[node];
-        const GO node_global = grid.MapInternalToLocal(grid.MapLocalToGlobalInternal(node));
+        const GO node_global = grid.MapLocalToGlobalInternal(node);
         matrix_block->Initialize(&grid, node_global);
         // set initial guess
         LO node_full = grid.MapInternalToLocal(node);
@@ -255,7 +255,7 @@ void Trilinos<SC, LO, GO>::BuildNew(const typename Grid::Representation& grid,
 
     A = Teuchos::rcp(new MatrixType(map, num_entries_per_row()));
     Teuchos::Ptr<MatrixType> ptr_A = A.ptr();
-#pragma omp parallel for
+// #pragma omp parallel for
     for (LO node = 0; node < num_cells; node++) {
         GO row = grid.MapLocalToGlobalInternal(node) * N;
         for (std::size_t n{0}; n < N; n++) {
@@ -263,7 +263,7 @@ void Trilinos<SC, LO, GO>::BuildNew(const typename Grid::Representation& grid,
             const auto& values = list_matrix_blocks[node].GetColumnValues(n);
             Teuchos::ArrayView<GO> cview(columns.data(), columns.size());
             Teuchos::ArrayView<SC> vview(values.data(), values.size());
-#pragma omp critical
+// #pragma omp critical
             ptr_A->insertGlobalValues(row, cview, vview);
             ++row;
         }

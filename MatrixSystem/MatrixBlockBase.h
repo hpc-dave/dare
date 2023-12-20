@@ -59,6 +59,18 @@ public:
     using HostSpace = typename DualViewOrdinalArrayType::host_mirror_space;
     using ExecutionSpace = typename DualViewOrdinalArrayType::execution_space;
 
+    template <typename DView, typename Space>
+    struct ReturnTypeDV {
+    };
+    template <typename DView>
+    struct ReturnTypeDV<DView, HostSpace> {
+        using type = typename DView::t_host;
+    };
+    template <typename DView>
+    struct ReturnTypeDV<DView, ExecutionSpace> {
+        using type = typename DView::t_dev;
+    };
+
     /*!
      * @brief default constructor
      */
@@ -110,6 +122,19 @@ public:
      * @param size new size
      */
     void Resize(std::size_t n, std::size_t size);
+
+    /*!
+     * @brief returns size of buffers
+     * @tparam Space execution space
+     * @param n component ID
+     */
+    template<typename Space = HostSpace>
+    std::size_t GetSize(std::size_t n) const;
+
+    /*!
+     * @brief returns number of components
+     */
+    constexpr std::size_t GetNumComponents() const;
 
     /*!
      * @brief provides grid node

@@ -70,6 +70,7 @@ int main(int argc, char* argv[]) {
             // run the tests
             ret = RUN_ALL_TESTS();
         }
+
         bool result = ret == MPI_SUCCESS;
         int did_fail = ret == 0 ? 0 : 1;
         bool result_global{false};

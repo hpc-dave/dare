@@ -265,10 +265,28 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapLocalToInternal(Index ind_local) co
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
+typename CartesianRepresentation<Dim, LO, GO, SC>::Index
+CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToLocal(Index ind_local) const {
+    for (auto& e : ind_local) {
+        e += grid->GetNumGhost();
+    }
+    return ind_local;
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
 typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal
 CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToInternal(IndexGlobal ind_global) const {
     for (auto& e : ind_global) {
         e -= grid->GetNumGhost();
+    }
+    return ind_global;
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal
+CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToGlobal(IndexGlobal ind_global) const {
+    for (auto& e : ind_global) {
+        e += grid->GetNumGhost();
     }
     return ind_global;
 }
@@ -487,9 +505,21 @@ CartesianRepresentation<Dim, LO, GO, SC>::GetLocalResolution() const {
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
+const typename CartesianRepresentation<Dim, LO, GO, SC>::Index&
+CartesianRepresentation<Dim, LO, GO, SC>::GetLocalResolutionInternal() const {
+    return resolution_local_internal;
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
 const typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal&
 CartesianRepresentation<Dim, LO, GO, SC>::GetGlobalResolution() const {
     return resolution_global;
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+const typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal&
+CartesianRepresentation<Dim, LO, GO, SC>::GetGlobalResolutionInternal() const {
+    return resolution_global_internal;
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>

@@ -129,10 +129,22 @@ public:
     Index MapLocalToInternal(Index ind_local) const;
 
     /*!
-     * @brief remoes ghost cells from global index
+     * @brief adds ghost/halo cells to local index
+     * @param ind_local local index
+     */
+    Index MapInternalToLocal(Index ind_internal) const;
+
+    /*!
+     * @brief removes ghost cells from global index
      * @param ind_global global index
      */
     IndexGlobal MapGlobalToInternal(IndexGlobal ind_global) const;
+
+    /*!
+     * @brief adds ghost cells to global index
+     * @param ind_global global index
+     */
+    IndexGlobal MapInternalToGlobal(IndexGlobal ind_internal) const;
 
     LO MapIndexToOrdinalLocal(const Index& ind) const;
     LO MapIndexToOrdinalLocalInternal(const Index& ind) const;
@@ -188,10 +200,22 @@ public:
     const Index& GetLocalResolution() const;
 
     /*!
+     * @brief provides resolution of local grid
+     * @return local index with number of cells in each direction
+     */
+    const Index& GetLocalResolutionInternal() const;
+
+    /*!
      * @brief provides resolution of global grid
      * @return global index with number of cells in each direction
      */
     const IndexGlobal& GetGlobalResolution() const;
+
+    /*!
+     * @brief provides resolution of global grid
+     * @return global index with number of cells in each direction
+     */
+    const IndexGlobal& GetGlobalResolutionInternal() const;
 
     /*!
      * @brief prints distribution of domains without ghost cells to file as CSV

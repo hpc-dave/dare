@@ -8,7 +8,10 @@ set(DaRe_HEADER_FILES
     "MatrixBlockBase.h"
     "MatrixBlockBase.inl"
     "MatrixBlock.h"
-    "MatrixBlock.inl"
+    "MatrixBlock_Default.h"
+    "MatrixBlock_Default.inl"
+    "MatrixBlock_Cartesian.h"
+    "MatrixBlock_Cartesian.inl"
 )
 
 target_sources(dare
