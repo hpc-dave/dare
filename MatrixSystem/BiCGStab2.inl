@@ -312,6 +312,7 @@ bool BiCGStab2<ST, MV, OP>::Solve(const OP& A, MV& x, const MV& B) {  // NOLINT
     if (convergence_check < tol) {
         num_iteration = k;
         norm_residual = convergence_check;
+        x.assign(x0);
         return true;
     }
 
