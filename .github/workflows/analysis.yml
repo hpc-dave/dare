@@ -12,7 +12,7 @@ on:
 
 jobs:
   Doxygen:
-    runs-on: wsl
+    runs-on: ubuntu_wsl
     container:
       image: davevader/dare_test:1.1
 
@@ -39,7 +39,7 @@ jobs:
 
 
   cpplint:
-    runs-on: wsl
+    runs-on: ubuntu_wsl
     container:
       image: davevader/dare_test:1.1
 
