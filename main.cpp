@@ -22,69 +22,32 @@
  * SOFTWARE.
  */
 
-#include <Kokkos_Core.hpp>
-#include <Teuchos_GlobalMPISession.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-#include <Tpetra_Core.hpp>
-#include <Tpetra_CrsMatrix.hpp>
-#include <iostream>
-
-#include "Grid/Cartesian.h"
-#include "MPI/ExecutionManager.h"
 #include "ScopeGuard/ScopeGuard.h"
-#include "Utilities/Vector.h"
-#include "mpi.h"
-// Tpetra  -- Vectors and Matrices
-#include <Tpetra_Core.hpp>
-#include <Tpetra_CrsMatrix.hpp>
-#include <Tpetra_Version.hpp>
-// Xpetra  -- Wrapper for dual use of Tpetra and Epetra (required by MueLu)
-#include <Xpetra_CrsMatrix.hpp>
-// Belos   -- Iterative solvers
-#include <BelosSolverFactory.hpp>
-#include <BelosTpetraAdapter.hpp>
-#include <Ifpack2_Factory.hpp>
-#include <Ifpack2_Parameters.hpp>
-
-#include <MatrixSystem/Trilinos.h>
-#include "Data/Stencil.h"
 
 int main(int argc, char* argv[]) {
-    const std::size_t Dim = 3;
-    using LO = int32_t;
-    using GO = int64_t;
-    using SC = double;
-    int rank_stop = 1;
-
     dare::ScopeGuard scope_guard(&argc, &argv);
-
-    // Kokkos::initialize();
-{
-    std::size_t num_entries = 100000;
-    Kokkos::View<dare::Data::Stencil<double>*> k("test", 0);
-
-    Kokkos::resize(k, num_entries);
-
-    Kokkos::parallel_for(
-        num_entries, KOKKOS_LAMBDA(std::size_t node) {
-            k[node].Resize(7);
-        });
-    dare::mpi::ExecutionManager exman;
-
-    GO i_size{10}, j_size{10};
-    dare::utils::Vector<Dim, GO> res(30, 20, 10);
-    dare::utils::Vector<Dim, LO> res_i = res;
-    dare::utils::Vector<Dim, SC> size(1., 1., 1.);
-    res_i = size;
-    LO num_ghost = 2;
-    dare::Grid::Cartesian<Dim> grid(&exman, res, size, num_ghost, dare::utils::Vector<Dim, LO>(1, 0, 0));
-    int stop = 1;
-    if (exman.GetRank() == rank_stop)
-        while (stop == 1) {
+    {
+        if (scope_guard.AmIRoot()) {
+            std::cout << "Hello, nice that you are here!" << std::endl
+                      << std::endl;
+            std::cout << "  _,-'`''-~`) \n"
+                      << "(`~_,=========\\ \n"
+                      << " |---,___.-.__,\\ \n"
+                      << " |        o     \\ ___  _,,,,_     _.--.\n"
+                      << "  \\      `^`    /`_.-'~      `~-;`     \\ \n"
+                      << "   \\_      _  .'                 `,     |\n"
+                      << "    |`-                           \\'__/\n"
+                      << "   /                      ,_       \\  `'-.\n"
+                      << "  /    .-''~~--.            `'-,   ;_    /\n"
+                      << " |              \\               \\  | `''`\n"
+                      << " \\__.--'`'-.   /_               |'\n"
+                      << "             `'`  `~~~---..,     |\n"
+                      << " jgs                         \\ _.-'`-.\n"
+                      << "                             \\       \\ \n"
+                      << "                              '.     /\n"
+                      << "                                `'~'`\n";
+            // copyright by Joan G. Stark, taken from https://www.asciiart.eu/animals/bears
         }
-    auto rep = grid.GetRepresentation(dare::utils::Vector<Dim, LO>());
-    rep.PrintDistribution("distribution.csv");
-}
-    // Kokkos::finalize();
+    }
     return 0;
 }

@@ -80,6 +80,7 @@ using IntegrationCartesianTrilinos2D = IntegrationCartesianTrilinos<2>;
 using IntegrationCartesianTrilinos3D = IntegrationCartesianTrilinos<3>;
 
 TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
+
     using CN = dare::Matrix::CartesianNeighbor;
     GridType::Options opt(0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
@@ -91,19 +92,11 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
 
     const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
-    // const dare::Matrix::PreCondPackage precond_pack = dare::Matrix::PreCondPackage::Ifpack2;
-    // const std::string precond_type = "ILUT";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
     param_solver->set("Convergence Tolerance", 1e-14);
     param_solver->set("Maximum Iterations", 5000);
     param_solver->set("Verbosity", "high");
-    // Teuchos::RCP<Teuchos::ParameterList> param_precond = Teuchos::rcp(new Teuchos::ParameterList());
-    // param_precond->set("fact: drop tolerance", 1e-9);
-    // param_precond->set("fact: level of fill", 1);
-    // param_precond->set("schwarz: combine mode", "Add");
-    // // param_precond->set("problem: type", "MHD");  // works best in our cases
-    // // param_precond->set("verbosity", "none");
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
@@ -140,17 +133,13 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
 
     trilinos.Build(g_rep, data, functor, false);
 
-    // trilinos.GetM() = solver.BuildPreconditioner(precond_pack,
-    //                                              precond_type,
-    //                                              param_precond,
-    //                                              trilinos.GetA());
-
     Belos::ReturnType ret = solver.Solve(solver_pack, solver_type,
                                          trilinos.GetM(),
                                          trilinos.GetA(), trilinos.GetX(), trilinos.GetB(),
                                          param_solver);
     bool is_converged = ret == Belos::ReturnType::Converged;
     EXPECT_TRUE(is_converged);
+
     double d_phi = (value_east - value_west) / g_rep.GetGlobalResolutionInternal()[0];
     for (LO node_l{0}; node_l < g_rep.GetNumberLocalCellsInternal(); node_l++) {
         GO node_g = g_rep.MapLocalToGlobalInternal(node_l);
@@ -176,16 +165,11 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
 
     const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
-    // const dare::Matrix::PreCondPackage precond_pack = dare::Matrix::PreCondPackage::MueLu;
-    // const std::string precond_type = "AMG";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
     param_solver->set("Convergence Tolerance", 1e-14);
     param_solver->set("Maximum Iterations", 5000);
     param_solver->set("Verbosity", "low");
-    // Teuchos::RCP<Teuchos::ParameterList> param_precond = Teuchos::rcp(new Teuchos::ParameterList());
-    // param_precond->set("problem: type", "MHD");  // works best in our cases
-    // param_precond->set("verbosity", "none");
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
@@ -219,11 +203,6 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
 
     trilinos.Build(g_rep, data, functor, false);
 
-    // trilinos.GetM() = solver.BuildPreconditioner(precond_pack,
-    //                                              precond_type,
-    //                                              param_precond,
-    //                                              trilinos.GetA());
-
     Belos::ReturnType ret = solver.Solve(solver_pack, solver_type,
                                          trilinos.GetM(),
                                          trilinos.GetA(), trilinos.GetX(), trilinos.GetB(),
@@ -255,13 +234,11 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
 
     const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
-    const dare::Matrix::PreCondPackage precond_pack = dare::Matrix::PreCondPackage::Ifpack2;
-    const std::string precond_type = "ILUT";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
     param_solver->set("Convergence Tolerance", 1e-14);
     param_solver->set("Maximum Iterations", 5000);
-    param_solver->set("Verbosity", "high");
+    param_solver->set("Verbosity", "low");
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
@@ -351,13 +328,11 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
 
     const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
-    const dare::Matrix::PreCondPackage precond_pack = dare::Matrix::PreCondPackage::Ifpack2;
-    const std::string precond_type = "ILUT";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
     param_solver->set("Convergence Tolerance", 1e-14);
     param_solver->set("Maximum Iterations", 5000);
-    param_solver->set("Verbosity", "high");
+    param_solver->set("Verbosity", "low");
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
