@@ -82,7 +82,7 @@ void CartesianDistribution_MPI_Dims_create(int num_proc,
         (*vec_res_local)[n_proc] = subdomain_res;
         utils::Vector<Dim, int> ind = GetIndex(n_proc);
         for (std::size_t dim{0}; dim < Dim; dim++) {
-            if (ind[dim] == dims[dim]) {
+            if (ind[dim] == (dims[dim] - 1)) {
                 (*vec_res_local)[n_proc][dim] += subdomain_add_to_last[dim];
             }
             (*vec_offsets)[n_proc][dim] = ind[dim] * subdomain_res[dim];
