@@ -283,6 +283,18 @@ void MatrixBlockBase<O, SC, N>::SetCoefficients(std::size_t n_row,
         std::cerr << "In " << __func__ << ": received a size value larger than the allocated storage "
                   << "(" << size << " > " << ordinals[n_row].h_view.size() << ")! "
                   << "Expect Segmentation fault!" << std::endl;
+    for (std::size_t n{0}; n < n_row; n++) {
+        if (id_col[n] < 0) {
+            std::cerr << "In " << __func__ << ": received an ordinal < 0 "
+                      << "(" << id_col[n] << ") at row " << n_row << "! "
+                      << "Expect error thrown by Trilinos!" << std::endl;
+        }
+        if (std::isnan(values[n]) || !std::isfinite(values[n])) {
+            std::cerr << "In " << __func__ << ": received an unreal coefficient "
+                      << "(" << values[n] << ") at row " << n_row << " and column " << id_col[n] << "! "
+                      << "Expect nonsense solution!" << std::endl;
+        }
+    }
 #endif
 
     if (is_empty) {

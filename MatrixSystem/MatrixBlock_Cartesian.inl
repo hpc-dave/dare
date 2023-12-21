@@ -261,16 +261,16 @@ SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t n) {
     } else if constexpr (IsSame<CartesianNeighbor::EAST, CNB>()) {
         GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::EAST);
         return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::EAST));
-    } else if constexpr (IsSame<CartesianNeighbor::SOUTH, CNB> && (Dim > 1)) {
+    } else if constexpr (IsSame<CartesianNeighbor::SOUTH, CNB>() && (Dim > 1)) {
         GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::SOUTH);
         return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::SOUTH));
-    } else if constexpr (IsSame<CartesianNeighbor::NORTH, CNB> && (Dim > 1)) {
+    } else if constexpr (IsSame<CartesianNeighbor::NORTH, CNB>() && (Dim > 1)) {
         GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::NORTH);
         return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::NORTH));
-    } else if constexpr (IsSame<CartesianNeighbor::BOTTOM, CNB> && (Dim > 2)) {
+    } else if constexpr (IsSame<CartesianNeighbor::BOTTOM, CNB>() && (Dim > 2)) {
         GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::BOTTOM);
         return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::BOTTOM));
-    } else if constexpr (IsSame<CartesianNeighbor::TOP, CNB> && (Dim > 2)) {
+    } else if constexpr (IsSame<CartesianNeighbor::TOP, CNB>() && (Dim > 2)) {
         GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::TOP);
         return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::TOP));
     }
