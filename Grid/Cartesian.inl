@@ -76,28 +76,30 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
     dist(exec_man, resolution_global, &resolution_local, &offset_cells);
 
     if (offset_cells[0] == 0)
-        id_boundaries &= BOUNDARIES_WEST;
+        id_boundaries |= BOUNDARIES_WEST;
     if ((offset_cells[0] + resolution_local[0]) == resolution_global[0])
-        id_boundaries &= BOUNDARIES_EAST;
+        id_boundaries |= BOUNDARIES_EAST;
 
     if constexpr (Dim > 1) {
         if (offset_cells[1] == 0)
-            id_boundaries &= BOUNDARIES_SOUTH;
+            id_boundaries |= BOUNDARIES_SOUTH;
         if ((offset_cells[1] + resolution_local[1]) == resolution_global[1])
-            id_boundaries &= BOUNDARIES_NORTH;
+            id_boundaries |= BOUNDARIES_NORTH;
     }
 
     if constexpr (Dim > 2) {
         if (offset_cells[2] == 0)
-            id_boundaries &= BOUNDARIES_BOTTOM;
+            id_boundaries |= BOUNDARIES_BOTTOM;
         if ((offset_cells[2] + resolution_local[2]) == resolution_global[2])
-            id_boundaries &= BOUNDARIES_TOP;
+            id_boundaries |= BOUNDARIES_TOP;
     }
 
     for (std::size_t dim{0}; dim < Dim; dim++) {
         offset_size[dim] = offset_cells[dim] * cell_width[dim];
         size_local[dim] = resolution_local[dim] * cell_width[dim];
     }
+
+    this->dare::utils::InitializationTracker::Initialize();
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
@@ -115,7 +117,7 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
                    const utils::Vector<Dim, GO>& b,
                    utils::Vector<Dim, LO>* c,
                    utils::Vector<Dim, GO>* d) {
-                    dare::Grid::RegularCartesianDistribution(a, b, c, d);
+                    dare::Grid::CartesianDistribution_MPI_Dims_create(a, b, c, d);
                 }) {
 }
 
@@ -135,8 +137,14 @@ template <std::size_t Dim, class LO, class GO, class SC>
 Cartesian<Dim, LO, GO, SC>::~Cartesian() {}
 
 template <std::size_t Dim, class LO, class GO, class SC>
-typename Cartesian<Dim, LO, GO, SC>::Representation Cartesian<Dim, LO, GO, SC>::GetRepresentation(Options opt) const {
-    return Representation(this, opt);
+typename Cartesian<Dim, LO, GO, SC>::Representation Cartesian<Dim, LO, GO, SC>::GetRepresentation(Options opt) {
+    if (!this->dare::utils::InitializationTracker::IsInitialized()) {
+        exec_man->Terminate(__func__, "Grid needs to be initialized before providing a Representation");
+    }
+    if (map_representations.find(opt) == map_representations.end()) {
+        map_representations.insert({opt, Representation(this, opt)});
+    }
+    return map_representations[opt];
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
@@ -167,15 +175,6 @@ const utils::Vector<Dim, GO>& Cartesian<Dim, LO, GO, SC>::GetOffsetCells() const
 template <std::size_t Dim, class LO, class GO, class SC>
 const utils::Vector<Dim, SC>& Cartesian<Dim, LO, GO, SC>::GetOffsetSize() const {
     return offset_size;
-}
-
-template <std::size_t Dim, class LO, class GO, class SC>
-utils::Vector<Dim, SC> Cartesian<Dim, LO, GO, SC>::GetPosition(const VecLO& ind) const {
-    VecSC pos;
-    for (std::size_t dim{0}; dim < Dim; dim++) {
-        pos[dim] = cell_width[dim] * (ind[dim] + offset_cells[dim] - num_ghost);
-    }
-    return pos;
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>

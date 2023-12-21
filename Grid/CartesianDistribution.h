@@ -39,13 +39,66 @@ namespace details {
  * This decomposition aims at providing as many cubical domains as possible
  * and will only subdivide the domains at the longest end unequally.
  */
+
+/*!
+ * \brief routine for decomposition for Cartesian grid
+ * This decomposition aims at providing as many cubical domains as possible
+ * and will only subdivide the domains at the longest end unequally.
+ */
 template <std::size_t Dim, class LO, class GO>
-void CubicalCartesianDistribution(int num_proc,
+void CartesianDistribution_MPI_Dims_create(int num_proc,
                                   const utils::Vector<Dim, GO>& resolution_global,
                                   std::vector<utils::Vector<Dim, LO>>* vec_res_local,
                                   std::vector<utils::Vector<Dim, GO>>* vec_offsets) {
+    vec_res_local->resize(num_proc);
+    vec_offsets->resize(num_proc);
+    int ndims = Dim;
+    int dims[Dim];
+    std::fill(dims, dims + Dim, 0);
+    MPI_Dims_create(num_proc, ndims, dims);
+    utils::Vector<Dim, GO> subdomain_res, subdomain_add_to_last;
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        subdomain_res[dim] = resolution_global[dim] / dims[dim];
+        subdomain_add_to_last[dim] = resolution_global[dim] - subdomain_res[dim] * dims[dim];
+    }
+
+    utils::Vector<Dim, int> hsum_topo;
+    for (std::size_t dim{0}; dim < Dim; dim++) {
+        hsum_topo[dim] = 1;
+        for (std::size_t n{dim + 1}; n < Dim; n++)
+            hsum_topo[dim] *= dims[n];
+    }
+
+    auto GetIndex = [&](int n) {
+        utils::Vector<Dim, int> ind;
+        for (std::size_t dim{0}; dim < Dim; dim++) {
+            ind[dim] = n / hsum_topo[dim];
+            n -= ind[dim] * hsum_topo[dim];
+        }
+        return ind;
+    };
+
+    for (int n_proc{0}; n_proc < num_proc; n_proc++) {
+        (*vec_res_local)[n_proc] = subdomain_res;
+        utils::Vector<Dim, int> ind = GetIndex(n_proc);
+        for (std::size_t dim{0}; dim < Dim; dim++) {
+            if (ind[dim] == (dims[dim] - 1)) {
+                (*vec_res_local)[n_proc][dim] += subdomain_add_to_last[dim];
+            }
+            (*vec_offsets)[n_proc][dim] = ind[dim] * subdomain_res[dim];
+        }
+    }
+}
+
+template <std::size_t Dim, class LO, class GO>
+void CartesianDistribution_Cubical(int num_proc,
+                                  const utils::Vector<Dim, GO>& resolution_global,
+                                  std::vector<utils::Vector<Dim, LO>>* vec_res_local,
+                                  std::vector<utils::Vector<Dim, GO>>* vec_offsets, bool print_warning = true) {
     const double max_ratio_deviation{1.2};  // acceptable volume ration of domains
     // Determine direction with maximum number of cells
+    vec_res_local->resize(num_proc);
+    vec_offsets->resize(num_proc);
     std::size_t pos_max_res{0};
     for (std::size_t n{1}; n < Dim; n++)
         if (resolution_global[n] > resolution_global[pos_max_res])
@@ -137,7 +190,7 @@ void CubicalCartesianDistribution(int num_proc,
         }
     }
 
-    // Note, that in 1D, no remaining splitting can occur, so we don't need to care for that case
+    // // Note, that in 1D, no remaining splitting can occur, so we don't need to care for that case
     int mod{0}, counter{0};
     std::size_t slice_dir{0};
     if (slice_dir == pos_max_res)
@@ -147,6 +200,7 @@ void CubicalCartesianDistribution(int num_proc,
     // For this purpose, all subdomains in the last slice in the dominant direction
     // are merged to 1 and subsequently split into two, until we have created all required
     // subdomains
+    bool failed{false};  // intermediate feature, until the issues below are resolved
     for (int n{0}; n < surplus_domains; n++) {
         // for the first processor in the final slice, we reset it to account for the whole slice
         if (n == 0) {
@@ -162,6 +216,10 @@ void CubicalCartesianDistribution(int num_proc,
             // Once we have done that with all the elements in the slice
             // we start again, until we have reached the number of
             // desired processes
+            if (n_pre_last_slice + counter >= vec_res_local->size()) {
+                failed = true;
+                break;
+            }
             (*vec_res_local)[n] = (*vec_res_local)[n_pre_last_slice + counter];
             (*vec_offsets)[n] = (*vec_offsets)[n_pre_last_slice + counter];
 
@@ -189,58 +247,80 @@ void CubicalCartesianDistribution(int num_proc,
         }
     }
 
-    // control the max volume occupied by subdomains on the last slice
-    GO num_cells_regular{1};
-    for (auto e : (*vec_res_local)[0])
-        num_cells_regular *= e;
+    if (!failed) {
+        // control the max volume occupied by subdomains on the last slice
+        GO num_cells_regular{1};
+        for (auto e : (*vec_res_local)[0])
+            num_cells_regular *= e;
 
-    double max_ratio{1.};
-    GO delta_cell_max{0};
-    for (int n{n_pre_last_slice}; n < num_proc; n++) {
-        GO num_cells_sd{1};
-        for (auto e : (*vec_res_local)[n])
-            num_cells_sd *= e;
-        max_ratio = std::max(max_ratio, static_cast<double>(num_cells_sd) / num_cells_regular);
-        delta_cell_max = std::max(num_cells_sd - num_cells_regular, delta_cell_max);
+        double max_ratio{1.};
+        GO delta_cell_max{0};
+        for (int n{n_pre_last_slice}; n < num_proc; n++) {
+            GO num_cells_sd{1};
+            for (auto e : (*vec_res_local)[n])
+                num_cells_sd *= e;
+            max_ratio = std::max(max_ratio, static_cast<double>(num_cells_sd) / num_cells_regular);
+            delta_cell_max = std::max(num_cells_sd - num_cells_regular, delta_cell_max);
+        }
+
+        // if the inequality is too big, we remove some layers of the last slice and distribute them
+        // on the previous ones
+        if ((topo[pos_max_res] > 1) && (max_ratio > max_ratio_deviation)) {
+            GO cell_per_slice{1};
+            for (std::size_t dim{0}; dim < Dim; dim++)
+                if (dim != pos_max_res)
+                    cell_per_slice *= resolution_global[dim];
+
+            // total number of cells to redistribute
+            LO n_cell_redistribute = delta_cell_max;
+            // number of cells in main direction, which will be removed per subdomain slice
+            LO n_cell_redist_slice = std::max(GO(1), delta_cell_max / cell_per_slice / (topo[pos_max_res] - 1));
+
+            int proc_per_slice{1};
+            for (std::size_t dim{0}; dim < Dim; dim++) {
+                if (dim == pos_max_res)
+                    continue;
+                proc_per_slice *= topo[dim];
+            }
+            int slice_pre_last_slice = topo[pos_max_res] - 2;
+            for (int n{slice_pre_last_slice}; n >= 0; n--) {
+                if (n_cell_redistribute <= 0)
+                    break;
+                int proc_start = n * proc_per_slice;
+
+                for (int n_proc{proc_start}; n_proc < (proc_start + proc_per_slice); n_proc++)
+                    (*vec_res_local)[n_proc][pos_max_res] += n_cell_redist_slice;
+
+                for (int n_proc{proc_start + proc_per_slice}; n_proc < n_pre_last_slice; n_proc++)
+                    (*vec_offsets)[n_proc][pos_max_res] += n_cell_redist_slice;
+
+                for (int n_proc{n_pre_last_slice}; n_proc < num_proc; n_proc++) {
+                    (*vec_offsets)[n_proc][pos_max_res] += n_cell_redist_slice;
+                    (*vec_res_local)[n_proc][pos_max_res] -= n_cell_redist_slice;
+                }
+                n_cell_redistribute -= n_cell_redist_slice * cell_per_slice;
+            }
+        }
     }
 
-    // if the inequality is too big, we remove some layers of the last slice and distribute them
-    // on the previous ones
-    if ((topo[pos_max_res] > 1) && (max_ratio > max_ratio_deviation)) {
-        GO cell_per_slice{1};
-        for (std::size_t dim{0}; dim < Dim; dim++)
-            if (dim != pos_max_res)
-                cell_per_slice *= resolution_global[dim];
-
-        // total number of cells to redistribute
-        LO n_cell_redistribute = delta_cell_max;
-        // number of cells in main direction, which will be removed per subdomain slice
-        LO n_cell_redist_slice = std::max(GO(1), delta_cell_max / cell_per_slice / (topo[pos_max_res] - 1));
-
-        int proc_per_slice{1};
-        for (std::size_t dim{0}; dim < Dim; dim++) {
-            if (dim == pos_max_res)
-                continue;
-            proc_per_slice *= topo[dim];
+    // if a bug is detected, switch to less efficient MPI_Dims_create
+    if (!failed) {
+        num_cells_total = 1;
+        for (auto e : resolution_global)
+            num_cells_total *= e;
+        GO sum_cells{0};
+        for (const auto& r_sub : *vec_res_local) {
+            LO n_sub{1};
+            for (LO dim : r_sub)
+                n_sub *= dim;
+            sum_cells += n_sub;
         }
-        int slice_pre_last_slice = topo[pos_max_res] - 2;
-        for (int n{slice_pre_last_slice}; n >= 0; n--) {
-            if (n_cell_redistribute <= 0)
-                break;
-            int proc_start = n * proc_per_slice;
-
-            for (int n_proc{proc_start}; n_proc < (proc_start + proc_per_slice); n_proc++)
-                (*vec_res_local)[n_proc][pos_max_res] += n_cell_redist_slice;
-
-            for (int n_proc{proc_start + proc_per_slice}; n_proc < n_pre_last_slice; n_proc++)
-                (*vec_offsets)[n_proc][pos_max_res] += n_cell_redist_slice;
-
-            for (int n_proc{n_pre_last_slice}; n_proc < num_proc; n_proc++) {
-                (*vec_offsets)[n_proc][pos_max_res] += n_cell_redist_slice;
-                (*vec_res_local)[n_proc][pos_max_res] -= n_cell_redist_slice;
-            }
-            n_cell_redistribute -= n_cell_redist_slice * cell_per_slice;
-        }
+        failed = sum_cells != num_cells_total;
+    }
+    if (failed) {
+        if (print_warning)
+            std::cout << "Cubical Cartesian distribution failed, switching to MPI_Dims_create instead!" << std::endl;
+        details::CartesianDistribution_MPI_Dims_create(num_proc, resolution_global, vec_res_local, vec_offsets);
     }
 }
 
@@ -252,7 +332,7 @@ void CubicalCartesianDistribution(int num_proc,
  * and will only subdivide the domains at the longest end unequally.
  */
 template <std::size_t Dim, class LO, class GO>
-void RegularCartesianDistribution(mpi::ExecutionManager* exec_man,
+void CartesianDistribution_Cubical(mpi::ExecutionManager* exec_man,
                                   const utils::Vector<Dim, GO>& resolution_global,
                                   utils::Vector<Dim, LO>* resolution_local,
                                   utils::Vector<Dim, GO>* offset) {
@@ -266,75 +346,8 @@ void RegularCartesianDistribution(mpi::ExecutionManager* exec_man,
         std::vector<utils::Vector<Dim, LO>> vec_res_local(num_proc);
         std::vector<utils::Vector<Dim, GO>> vec_offsets(num_proc);
 
-        details::CubicalCartesianDistribution(num_proc, resolution_global,
+        details::CartesianDistribution_Cubical(num_proc, resolution_global,
                                               &vec_res_local, &vec_offsets);
-
-#ifndef DARE_NDEBUG
-        std::size_t num_cells_total{1};
-        for (auto e : resolution_global)
-            num_cells_total *= e;
-        std::size_t sum_cells{0};
-        for (const auto& r_sub : vec_res_local) {
-            LO n_sub{1};
-            for (LO dim : r_sub)
-                n_sub *= dim;
-            sum_cells += n_sub;
-        }
-        if (sum_cells != num_cells_total)
-            exec_man->Terminate(__func__, "total number of cells are not equal after distribution");
-
-        dare::utils::Vector<Dim, GO> glob_hsum;
-        for (std::size_t dim{0}; dim < Dim; dim++) {
-            glob_hsum[dim] = 1;
-            for (std::size_t n{dim + 1}; n < Dim; n++)
-                glob_hsum[dim] *= resolution_global[n];
-        }
-        // bool cancel_execution{false};
-        // for (GO id{0}; id < static_cast<GO>(num_cells_total); id++) {
-        //     GO found_id{0};
-        //     // loop through all subdomains and find the ID
-        //     for (int n_sub{0}; n_sub < num_proc; n_sub++) {
-        //         dare::utils::Vector<Dim, GO> offset = vec_offsets[n_sub];
-        //         dare::utils::Vector<Dim, GO> res_loc = vec_res_local[n_sub];
-        //         GO num_loc_cells{1};
-        //         for (std::size_t dim{0}; dim < Dim; dim++) {
-        //             num_loc_cells *= res_loc[dim];
-        //         }
-
-        //         dare::utils::Vector<Dim, LO> loc_hsum;
-        //         for (std::size_t dim{0}; dim < Dim; dim++) {
-        //             loc_hsum[dim] = 1;
-        //             for (std::size_t n{dim + 1}; n < Dim; n++)
-        //                 loc_hsum[dim] *= res_loc[n];
-        //         }
-
-        //         for (LO loc_id{0}; loc_id < num_loc_cells; loc_id++) {
-        //             LO n_loc{loc_id};
-        //             dare::utils::Vector<Dim, LO> ind_loc;
-        //             for (std::size_t dim{0}; dim < Dim; dim++) {
-        //                 ind_loc[dim] = n_loc / loc_hsum[dim];
-        //                 n_loc -= ind_loc[dim] * loc_hsum[dim];
-        //             }
-        //             dare::utils::Vector<Dim, GO> ind_glob = offset + ind_loc;
-        //             GO id_glob{0};
-        //             for (std::size_t dim{0}; dim < Dim; dim++)
-        //                 id_glob += glob_hsum[dim] * ind_glob[dim];
-        //             found_id += id_glob == id;
-        //         }
-        //     }
-        //     if (found_id == 0) {
-        //         exec_man->Print(dare::mpi::Verbosity::Low) << "Error: Cell with ID = " << id
-        //                                                    << " was not found after distribution!" << std::endl;
-        //     } else if (found_id > 1) {
-        //         exec_man->Print(dare::mpi::Verbosity::Low) << "Error: Cell with ID = " << id
-        //                                                    << " was found " << found_id
-        //                                                    << " times after distribution!" << std::endl;
-        //     }
-        //     cancel_execution &= found_id != 1;
-        // }
-        // if (cancel_execution)
-        //     exec_man->Terminate(__func__, "Error during distribution");
-#endif
 
         if (!exec_man->IsSerial()) {
             // communicate the result with remaining processes
@@ -366,6 +379,28 @@ void RegularCartesianDistribution(mpi::ExecutionManager* exec_man,
         exec_man->Recv(resolution_local->data(), resolution_local->size(), exec_man->GetRankRoot(), tag_res);
         exec_man->Recv(offset->data(), offset->size(), exec_man->GetRankRoot(), tag_off);
     }
+}
+
+/*!
+ * \brief decomposition for Cartesian grid
+ * Employs MPI_Dims_create
+ */
+template <std::size_t Dim, class LO, class GO>
+void CartesianDistribution_MPI_Dims_create(mpi::ExecutionManager* exec_man,
+                                  const utils::Vector<Dim, GO>& resolution_global,
+                                  utils::Vector<Dim, LO>* resolution_local,
+                                  utils::Vector<Dim, GO>* offset) {
+    int num_proc = exec_man->GetNumberProcesses();
+
+    // storage for each subdomain
+    std::vector<utils::Vector<Dim, LO>> vec_res_local(num_proc);
+    std::vector<utils::Vector<Dim, GO>> vec_offsets(num_proc);
+
+    details::CartesianDistribution_MPI_Dims_create(num_proc, resolution_global,
+                                                   &vec_res_local, &vec_offsets);
+
+    *resolution_local = vec_res_local[exec_man->GetRank()];
+    *offset = vec_offsets[exec_man->GetRank()];
 }
 
 }  // namespace dare::Grid

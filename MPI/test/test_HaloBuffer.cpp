@@ -55,12 +55,6 @@ TEST(HaloBufferTest, Exchange) {
             map_periodic[exman.GetNumberProcesses() * cell_per_domain + num_ghost + n] = num_ghost + n;
             map_periodic[num_ghost + n] = exman.GetNumberProcesses() * cell_per_domain + num_ghost + n;
         }
-        // if (map_periodic.find(list_required_IDs[n]) != map_periodic.end()) {
-        //     list_required_IDs[n] = map_periodic[list_required_IDs[n]];
-        // }
-        // if (map_periodic.find(list_required_IDs[n + num_ghost]) != map_periodic.end()) {
-        //     list_required_IDs[n + num_ghost] = map_periodic[list_required_IDs[n + num_ghost]];
-        // }
     }
     GO ID_low = exman.GetRank() * cell_per_domain;
     GO ID_high = ID_low + cell_per_domain + 2 * num_ghost;
@@ -75,14 +69,14 @@ TEST(HaloBufferTest, Exchange) {
     // Initializing field with default value
     for (LO n{0}; n < (cell_per_domain + 2 * num_ghost); n++) {
         for (LO e{0}; e < field.GetNumEquations(); e++) {
-            field.at(n * field.GetNumEquations() + e) = -1.;
+            field.At(n * field.GetNumEquations() + e) = -1.;
         }
     }
     // Filling internal field with values;
     for (LO n{num_ghost}; n < (num_ghost + cell_per_domain); n++) {
         GO v_start = (exman.GetRank() * cell_per_domain + n) * field.GetNumEquations();
         for (LO e{0}; e < field.GetNumEquations(); e++)
-            field.at(n * field.GetNumEquations() + e) = v_start + e;
+            field.At(n * field.GetNumEquations() + e) = v_start + e;
     }
 
     // Exchanging the values
@@ -100,8 +94,8 @@ TEST(HaloBufferTest, Exchange) {
             v_start_high = num_ghost * field.GetNumEquations();
         }
         for (LO e{0}; e < field.GetNumEquations(); e++) {
-            double value_low_f = field.at(id_low + e);
-            double value_high_f = field.at(id_high + e);
+            double value_low_f = field.At(id_low + e);
+            double value_high_f = field.At(id_high + e);
             double value_low_e = v_start_low + e;
             double value_high_e = v_start_high + e;
             double err_low = std::abs(value_low_f - value_low_e);

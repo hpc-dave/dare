@@ -1,0 +1,128 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2023 David Rieder
+
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+namespace dare::Data {
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>::GridVector() : GridVector("not_specified", 0, GridRepresentation()) {
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>::GridVector(std::string identifier, GridRepresentation _grid)
+    : GridVector(identifier, _grid.GetNumberLocalCells(), _grid) {
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>::GridVector(std::string identifier, LO num_cells, GridRepresentation _grid)
+    : ident_string(identifier),
+      grid(_grid),
+      data(identifier, num_cells * N) {
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>::~GridVector() {}
+
+template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::Resize(LO n) {
+    data.resize(n);
+}
+
+template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::ResizeByGrid(LO n) {
+    Resize(n * N);
+}
+
+template <typename Grid, typename T, std::size_t N>
+T& GridVector<Grid, T, N>::At(LO n, std::size_t c) {
+    return operator[](n * N + c);
+}
+
+template <typename Grid, typename T, std::size_t N>
+T& GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) {
+    return At(grid.MapIndexToOrdinalLocal(ind), c);
+}
+
+template <typename Grid, typename T, std::size_t N>
+T GridVector<Grid, T, N>::At(LO n, std::size_t c) const {
+    return operator[](n * N + c);
+}
+
+template <typename Grid, typename T, std::size_t N>
+T GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) const {
+    return At(grid.MapIndexToOrdinalLocal(ind), c);
+}
+
+template <typename Grid, typename T, std::size_t N>
+T& GridVector<Grid, T, N>::operator[](LO n) {
+    return data.h_view[n];
+}
+
+template <typename Grid, typename T, std::size_t N>
+T GridVector<Grid, T, N>::operator[](LO n) const {
+    return data.h_view[n];
+}
+
+template <typename Grid, typename T, std::size_t N>
+std::size_t GridVector<Grid, T, N>::GetSize() const {
+    return data.h_view.size();
+}
+
+template <typename Grid, typename T, std::size_t N>
+template <typename TargetSpace>
+void GridVector<Grid, T, N>::Synchronize() {
+    if constexpr (std::is_same_v<TargetSpace, HostSpace>) {
+        data.template modify<ExecutionSpace>();
+        data.template sync<HostSpace>();
+    } else if (std::is_same_v<TargetSpace, ExecutionSpace>) {
+        data.template modify<HostSpace>();
+        data.template sync<ExecutionSpace>();
+    }
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::GetDeepCopy() const {
+    GridVector<Grid, T, N> other(ident_string, data.h_view.size(), grid);
+    GetDeepCopy(&other);
+    return other;
+}
+
+template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::GetDeepCopy(GridVector<Grid, T, N>* other) const {
+    other->ident_string = ident_string;
+    other->grid = grid;
+    other->data.resize(GetSize());
+    Kokkos::deep_copy(other->data, data);
+}
+
+template <typename Grid, typename T, std::size_t N>
+typename GridVector<Grid, T, N>::DeviceViewType& GridVector<Grid, T, N>::GetDeviceView() {
+    return data.d_view;
+}
+
+template <typename Grid, typename T, std::size_t N>
+const typename GridVector<Grid, T, N>::DeviceViewType& GridVector<Grid, T, N>::GetDeviceView() const {
+    return data.h_view;
+}
+
+}  // namespace dare::Data

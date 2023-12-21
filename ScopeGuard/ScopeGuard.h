@@ -27,11 +27,13 @@
 
 #include <mpi.h>
 #include <omp.h>
-
 #include <iostream>
+#include <memory>
 #include <string>
+#include <Tpetra_Core.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
+static std::string kokkos_num_threads = "--kokkos-threads=";  // NOLINT
 
 namespace dare {
 
@@ -54,7 +56,6 @@ namespace dare {
  *
  * }
  */
-
 class ScopeGuard {
 public:
     /*!
@@ -66,7 +67,7 @@ public:
      * The constructor will initialize the environments according to the provided
      * terminal arguments
      */
-    ScopeGuard(int argc, char* argv[], bool suppress_output = false);
+    ScopeGuard(int* argc, char** argv[], bool suppress_output = false);
 
     /*!
      * \brief default destructor
@@ -81,19 +82,19 @@ public:
      *
      * Example:
      *
-     * In terminal: ./exec -c 1
+     * In terminal: ./exec -T 1
      *
      * In code:
      * int main(int argc, char** argv){
      *
      * FoxBerry::ScopeGuard scope(argc, argv);
      * {
-     *   if(scope.HasArgument("-c")){
-     *    // will execute, since "-c" exists in the list or arguments
+     *   if(scope.HasArgument("-T")){
+     *    // will execute, since "-T" exists in the list or arguments
      *   }
      *
-     *   if(scope.HasArgument("c"){
-     *    // won't execute, since "c" is only part of an argument, not a full argument!
+     *   if(scope.HasArgument("T"){
+     *    // won't execute, since "T" is only part of an argument, not a full argument!
      *   }
      * }
      */
@@ -121,11 +122,12 @@ private:
      */
     void PrintHelp();
 
-    int argc;         // number of arguments
-    char** argv;      // argument array
+    int* argc;         // number of arguments
+    char*** argv;      // argument array
 
     bool is_root;     // identifier, if this process is root
     bool manage_mpi;  // identifier, if this instance is responsible for managing MPI
+    Teuchos::RCP<Tpetra::ScopeGuard> tpetra_scope;  //!< scope guard for initialization of Trilinos
 };
 
 }  // end namespace dare

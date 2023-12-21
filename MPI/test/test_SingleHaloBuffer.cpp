@@ -92,9 +92,9 @@ TEST(SingleHaloBufferTest, ExchangeAndFill) {
     std::size_t size_field = (num_halo_IDs * (exman.GetNumberProcesses() + 1) * field.GetNumEquations());
     std::size_t size_send = (num_halo_IDs * exman.GetNumberProcesses() * field.GetNumEquations());
     for (std::size_t n{0}; n < size_send; n++)
-        field.at(n) = -1.;
+        field.At(n) = -1.;
     for (std::size_t n{size_send}; n < size_field; n++)
-        field.at(n) = exman.GetRank() + n - size_send;
+        field.At(n) = exman.GetRank() + n - size_send;
 
     std::vector<MPI_Request> requests(exman.GetNumberProcesses() * 2);
     for (int m{0}; m < list_buffers.size(); m++) {
@@ -106,7 +106,7 @@ TEST(SingleHaloBufferTest, ExchangeAndFill) {
     }
     for (int n{0}; n < list_buffers.size(); n++) {
         for (std::size_t m{0}; m < buffer_size * field.GetNumEquations(); m++) {
-            double value_field = field.at(n * buffer_size * field.GetNumEquations() + m);
+            double value_field = field.At(n * buffer_size * field.GetNumEquations() + m);
             double value_expec = n + m;
             bool success = std::abs(value_field - value_expec) < DBL_EPSILON;
             EXPECT_TRUE(success) << "communication with field was not successful, expect "

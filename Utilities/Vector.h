@@ -744,7 +744,7 @@ private:
     template <std::size_t I = 0, typename Expr, typename Op>
     auto IterateValues(Expr lambda, Op op) const;
 
-    T _data[N];  //!< internal data set
+    // T _data[N];  //!< internal data set
 };
 
 typedef Vector<3, double> Vector3;  //!< convenient typedef

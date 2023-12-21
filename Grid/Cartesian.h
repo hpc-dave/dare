@@ -25,23 +25,23 @@
 #ifndef GRID_CARTESIAN_H_
 #define GRID_CARTESIAN_H_
 
+#include <unordered_map>
+
 #include "../MPI/ExecutionManager.h"
 #include "../Utilities/Vector.h"
+#include "../Utilities/InitializationTracker.h"
+#include "DefaultTypes.h"
 #include "CartesianDistribution.h"
 #include "CartesianRepresentation.h"
 
 namespace dare::Grid {
 
-template <std::size_t Dim, class LO = int32_t, class GO = int64_t, class SC = double>
-class Cartesian {
+template <std::size_t Dim,
+          class LO = dare::Grid::details::LocalOrdinalType,
+          class GO = dare::Grid::details::GlobalOrdinalType,
+          class SC = double>
+class Cartesian : public dare::utils::InitializationTracker {
 public:
-    // enum class STAGGERED : uint8_t {
-    //     SCALAR = 0,
-    //     XSTAGGERED = 1,
-    //     YSTAGGERED = 2,
-    //     ZSTAGGERED = 3
-    // };
-
     enum {
         BOUNDARIES_NONE = 0b00000000,
         BOUNDARIES_WEST = 0b00000001,
@@ -68,6 +68,13 @@ public:
     using VecSC = utils::Vector<Dim, SC>;
     using Representation = CartesianRepresentation<Dim, LO, GO, SC>;
     using Options = VecLO;
+    using Index = VecLO;
+    using IndexGlobal = VecGO;
+
+    template < typename O>
+    struct GetIndexType {
+        using type = utils::Vector<Dim, O>;
+    };
 
     /*!
      * \brief default constructor
@@ -108,7 +115,7 @@ public:
      * \brief returns Representation object
      * \brief opt Options for the target grid
      */
-    Representation GetRepresentation(Options opt) const;
+    Representation GetRepresentation(Options opt);
 
     /*!
      * \brief returns cell width
@@ -140,40 +147,63 @@ public:
      */
     const VecSC& GetOffsetSize() const;
 
-    VecSC GetPosition(const VecLO& ind) const;
-
+    /*!
+     * @brief returns the local resolution
+     */
     const VecLO& GetLocalResolution() const;
+    /*!
+     * @brief returns global resolution
+     */
     const VecGO& GetGlobalResolution() const;
 
+    /*!
+     * @brief returns local size
+     */
     const VecSC& GetLocalSize() const;
+    /*!
+     * @brief returns global size
+     */
     const VecSC& GetGlobalSize() const;
 
+    /*!
+     * @brief provides boundary identifier
+     */
     uint8_t GetBoundaryID() const;
+    /*!
+     * @brief returns periodicity
+     */
     const VecLO& GetPeriodicity() const;
+    /*!
+     * @brief quick inquiriy, if the grid is periodic
+     */
     bool IsPeriodic() const;
 
-    // mpi::ExecutionManager* GetExecutionManager();
+    /*!
+     * @brief returns pointer to execution manager
+     */
     mpi::ExecutionManager* GetExecutionManager() const;
 
 private:
-    VecLO resolution_local;
-    VecGO resolution_global;
-    VecGO offset_cells;
+    VecLO resolution_local;     //!< resolution of local internal grid
+    VecGO resolution_global;    //!< resolution of global internal grid
+    VecGO offset_cells;         //!< offset of local grid to origin
 
-    VecSC size_local;
-    VecSC size_global;
-    VecSC offset_size;
+    VecSC size_local;           //!< dimensions of the local grid
+    VecSC size_global;          //!< dimensions of the global grid
+    VecSC offset_size;          //!< offset to origin
 
-    VecSC cell_width;
-    VecSC face_area;
-    SC cell_volume;
+    VecSC cell_width;           //!< width of a cell in each dimension
+    VecSC face_area;            //!< face area of a cell in each dimension
+    SC cell_volume;             //!< cell volume
 
-    LO num_ghost;
+    LO num_ghost;               //!< number of ghost cells
 
-    uint8_t id_boundaries;
-    VecLO periodicity;
+    uint8_t id_boundaries;      //!< identifier of boundaries
+    VecLO periodicity;          //!< identifier of periodicity
 
-    mpi::ExecutionManager* exec_man;
+    std::unordered_map<Options, Representation> map_representations;  //!< representation storage
+
+    mpi::ExecutionManager* exec_man;    //!< pointer to execution manager
 };
 
 }  // namespace dare::Grid

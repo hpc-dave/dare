@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(DaRe
-	VERSION 0.1.3
+	VERSION 0.2.0
 	DESCRIPTION "Dave's repository"
 	LANGUAGES CXX
 )
@@ -18,7 +18,6 @@ option(USE_GTEST
 
 include(GNUInstallDirs)
 # a few settings
-# set(Trilinos_MINIMUM_VERSION 13.0)
 
 # define main target
 add_executable(exec)
@@ -29,6 +28,8 @@ endif()
 
 # exports compile_command.json with relevant parths
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+set(CMAKE_FIND_PACKAGE_SORT_ORDER NATURAL)
+set(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
 
 # set the properties of the target (might be moved to another file)
 set_target_properties(exec
@@ -94,6 +95,51 @@ find_package(Boost 1.74 REQUIRED
                serialization
                system
 )
+
+# Disable Kokkos warning about not supporting C++ extensions
+set(CMAKE_CXX_EXTENSIONS OFF)
+find_package(Trilinos REQUIRED
+             COMPONENTS Teuchos
+                        Tpetra
+                        Belos
+                        MueLu
+                        Kokkos
+                        Ifpack2
+)
+
+if(Trilinos_FOUND)
+    message(STATUS "Found Trilinos version ${Trilinos_VERSION} in ${Trilinos_DIR}")
+    if(${Trilinos_VERSION} VERSION_LESS "14")
+        message(ERROR "This project requires minimum Trilinos 14.0")
+    endif()
+
+    MESSAGE("\nFollowing Trilinos variables were determined:")
+        MESSAGE("   Trilinos_DIR               = ${Trilinos_DIR}")
+        MESSAGE("   Trilinos_VERSION           = ${Trilinos_VERSION}")
+        MESSAGE("   Trilinos_PACKAGE_LIST      = ${Trilinos_PACKAGE_LIST}")
+        MESSAGE("   Trilinos_BUILD_SHARED_LIBS = ${Trilinos_BUILD_SHARED_LIBS}")
+        MESSAGE("   Trilinos_INCLUDE_DIRS      = ${Trilinos_INCLUDE_DIRS}")
+        MESSAGE("   Trilinos_LIBRARY_DIRS      = ${Trilinos_LIBRARY_DIRS}")
+        MESSAGE("   Trilinos_MPI_LIBRARIES     = ${Trilinos_MPI_LIBRARIES}")
+        MESSAGE("   Trilinos_CXX_COMPILER      = ${Trilinos_CXX_COMPILER}")
+        MESSAGE("   Trilinos_CXX_COMPILER_FLAGS= ${Trilinos_CXX_COMPILER_FLAGS}")
+        MESSAGE("   Trilinos_TPL_LIST          = ${Trilinos_TPL_LIST}")
+        MESSAGE("   Trilinos_TPL_INCLUDE_DIRS  = ${Trilinos_TPL_INCLUDE_DIRS}")
+        MESSAGE("   Trilinos_TPL_LIBRARY_DIRS  = ${Trilinos_TPL_LIBRARY_DIRS}")
+        MESSAGE("   Trilinos_LIBRARIES         = ${Trilinos_LIBRARIES}")
+
+# Interesting, yet massive output, skipping that for now
+#        MESSAGE("   Trilinos_TPL_LIBRARIES = ${Trilinos_TPL_LIBRARIES}")
+        
+        MESSAGE("\n")
+
+    # add_library(trilinos INTERFACE)
+    # set_target_properties(trilinos PROPERTIES
+    #     INTERFACE_LINK_LIBRARIES "${Trilinos_LIBRARIES};${Trilinos_TPL_LIBRARIES};"
+    #     INTERFACE_INCLUDE_DIRECTORIES "${Trilinos_INCLUDE_DIRS};${Trilinos_TPL_INCLUDE_DIRS};"
+    # )
+endif()
+
 if(Boost_FOUND)
     set_target_properties(Boost::boost
                           Boost::filesystem
@@ -114,10 +160,12 @@ if(USE_GTEST)
     endif()
 endif()
 
+add_subdirectory(Data                                                 )
 add_subdirectory(FileFormats                                          )
 add_subdirectory(Utilities                                            )
 add_subdirectory(MPI                                                  )
 add_subdirectory(Grid                                                 )
+add_subdirectory(MatrixSystem                                         )
 add_subdirectory(ScopeGuard                                           )
 if(USE_GTEST)
     add_subdirectory(test)
@@ -130,11 +178,14 @@ else()
     target_compile_definitions(dare
         PUBLIC -DDARE_NDEBUG
     )
+    target_compile_definitions(exec
+        PUBLIC -DDARE_NDEBUG
+    )
 endif()
 
 # add target sources
 target_sources(exec
-	PUBLIC main.cpp
+    PUBLIC main.cpp
 )
 
 # Specify the include directories
@@ -156,6 +207,7 @@ target_link_libraries(dare
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
+    PUBLIC Trilinos::all_selected_libs
     # PUBLIC trilinos
 )
 target_link_libraries(exec
@@ -166,6 +218,7 @@ target_link_libraries(exec
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
+    PUBLIC Trilinos::all_selected_libs
     # PUBLIC trilinos
 )
 if(USE_GTEST)
@@ -175,6 +228,7 @@ target_link_libraries(dare
 target_link_libraries(exec
     PUBLIC GTest::GTest
 )
+target_link_libraries(unit_test PUBLIC Trilinos::all_selected_libs)
 target_link_libraries(unit_test
     PUBLIC OpenMP::OpenMP_CXX
     PUBLIC MPI::MPI_CXX
@@ -183,11 +237,23 @@ target_link_libraries(unit_test
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
+    # PUBLIC Trilinos::all_selected_libs
     PUBLIC GTest::GTest
 )
+
 endif()
 
-# Create installation rules and configuration scripts
+
+# # Create installation rules and configuration scripts
+# install(
+#     TARGETS trilinos
+#     EXPORT "${PACKAGE_NAME_EXPORT}"
+#     RUNTIME DESTINATION  "${CMAKE_INSTALL_BINDIR}"
+#     LIBRARY DESTINATION  "${CMAKE_INSTALL_LIBDIR}/${PACKAGE_VERSION_DIR}"
+#     ARCHIVE DESTINATION  "${CMAKE_INSTALL_LIBDIR}/${PACKAGE_VERSION_DIR}"
+#     INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PACKAGE_VERSION_DIR}"
+# )
+
 install(
     TARGETS dare
     EXPORT "${PACKAGE_NAME_EXPORT}"

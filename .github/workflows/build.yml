@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build_release:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:1.1
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake Release
+      run: |
+          mkdir build_release && cd build_release
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+          
+    - name: Build Release
+      run: |
+          cd build_release
+          ninja -j 4
+
+  build_debug:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:1.1
+
+    steps:
+    - name: Configure CMake Debug
+      run: |
+          mkdir build_debug && cd build_debug
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -GNinja -DUSE_GTEST=OFF -DDEBUG=ON
+          
+    - name: Build Debug
+      run: |
+          cd build_debug
+          ninja -j 4

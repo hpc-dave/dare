@@ -4,6 +4,7 @@ set(DaRe_HEADER_FILES
     "CartesianRepresentation.h"
     "Cartesian.inl"
     "CartesianRepresentation.inl"
+    "DefaultTypes.h"
 )
 
 target_sources(dare
@@ -19,6 +20,7 @@ if(USE_GTEST)
         PRIVATE ${DaRe_HEADER_FILES}
         PRIVATE ${DaRe_SOURCE_FILES}
     )
+    add_subdirectory(test)
 endif()
 
 install(FILES ${DaRe_HEADER_FILES} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PACKAGE_VERSION_DIR}/Grid")

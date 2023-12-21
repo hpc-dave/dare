@@ -126,12 +126,6 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
         }
         for (std::size_t n{0}; n < list_IDs_recv.size(); n++) {
             GO id_glob = list_filtered_IDs_remote[proc][n];
-            // // correct indices in the periodic case
-            // if (!map_periodic.empty()) {
-            //     const auto& entry = map_periodic.find(id_glob);
-            //     if (entry != map_periodic.end())
-            //         id_glob = entry->second;
-            // }
             LO id_loc = map_global_to_local(id_glob);
             list_IDs_recv[n] = id_loc;
         }

@@ -32,64 +32,190 @@
 #include <string>
 
 #include "../MPI/HaloBuffer.h"
+#include "../Utilities/InitializationTracker.h"
 namespace dare::Grid {
 
+// forward declaration for the grid
 template <std::size_t Dim, class LO, class GO, class SC>
 class Cartesian;
 
+/*!
+ * @brief Representation of Cartesian grid
+ * @tparam LO local ordinal type
+ * @tparam GO global ordinal type
+ * @tparam SC scalar type
+ * @tparam Dim dimension of grid
+ */
 template <std::size_t Dim, class LO, class GO, class SC>
-class CartesianRepresentation {
+class CartesianRepresentation : public dare::utils::InitializationTracker {
 public:
     using GridType = Cartesian<Dim, LO, GO, SC>;
     using VecLO = typename GridType::VecLO;
     using VecGO = typename GridType::VecGO;
     using VecSC = typename GridType::VecSC;
-    // make a dedicated object to deal with Halo information?
+    using Index = typename GridType::Index;
+    using IndexGlobal = typename GridType::IndexGlobal;
 
+    /*!
+     * @brief default construction without initialization
+     */
+    CartesianRepresentation();
+
+    /*!
+     * @brief constructor with initialization
+     * @param grid pointer to the grid
+     * @param opt options related to the grid
+     */
     explicit CartesianRepresentation(const GridType* grid, typename GridType::Options opt);
 
+    /*!
+     * @brief default copy constructor
+     * @param other instance to copy from
+     */
     CartesianRepresentation(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
 
+    /*!
+     * @brief default copy assignment operator
+     * @param other instance to copy from
+     */
     CartesianRepresentation<Dim, LO, GO, SC>&
     operator=(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
 
-    VecSC GetPositionCenter(const VecLO& ind) const;
+    /*!
+     * @brief provides spatial position of the specified cell
+     * @param ind local index
+     * @return vector of size Dim with coordinates
+     */
+    VecSC GetCoordinatesCenter(const Index& ind) const;
 
-    VecSC GetPositionFace(const VecLO& ind, std::size_t dir) const;
+    /*!
+     * @brief provides spatial position of specified face
+     * @param ind local index
+     * @param dir one of the dimensions in positive direction
+     * @return 
+     */
+    VecSC GetCoordinatesFace(const Index& ind, std::size_t dir) const;
 
+    /*!
+     * @brief number of cells in local subgrid including ghost/halo cells
+     */
     LO GetNumberLocalCells() const;
+
+    /*!
+     * @brief number of cells in local subgrid excluding ghost/halo cells
+     */
     LO GetNumberLocalCellsInternal() const;
 
+    /*!
+     * @brief number of cells in global grid including ghost/halo cells
+     */
+    GO GetNumberGlobalCells() const;
+
+    /*!
+     * @brief number of cells in global grid excluding ghost/halo cells
+     */
+    GO GetNumberGlobalCellsInternal() const;
+
+    /*!
+     * @brief adds ghost/halo cells to ordinal
+     * @param n_internal local ordinal without ghost/halo cells
+     */
     LO MapInternalToLocal(LO n_internal) const;
 
-    LO MapIndexToCellLocal(const VecLO& ind) const;
-    LO MapIndexToCellLocalInternal(const VecLO& ind) const;
-    GO MapIndexToCellGlobal(const VecGO& ind) const;
-    GO MapIndexToCellGlobalInternal(const VecGO& ind) const;
+    /*!
+     * @brief removes ghost/halo cells from local index
+     * @param ind_local local index
+     */
+    Index MapLocalToInternal(Index ind_local) const;
+
+    /*!
+     * @brief adds ghost/halo cells to local index
+     * @param ind_local local index
+     */
+    Index MapInternalToLocal(Index ind_internal) const;
+
+    /*!
+     * @brief removes ghost cells from global index
+     * @param ind_global global index
+     */
+    IndexGlobal MapGlobalToInternal(IndexGlobal ind_global) const;
+
+    /*!
+     * @brief adds ghost cells to global index
+     * @param ind_global global index
+     */
+    IndexGlobal MapInternalToGlobal(IndexGlobal ind_internal) const;
+
+    LO MapIndexToOrdinalLocal(const Index& ind) const;
+    LO MapIndexToOrdinalLocalInternal(const Index& ind) const;
+    GO MapIndexToOrdinalGlobal(const IndexGlobal& ind) const;
+    GO MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind) const;
 
     LO MapGlobalToLocal(GO id_glob) const;
-    VecLO MapGlobalToLocal(const VecGO& ind_glob) const;
+    Index MapGlobalToLocal(const IndexGlobal& ind_glob) const;
     LO MapGlobalToLocalInternal(GO id_glob) const;
+    GO MapLocalToGlobalInternal(LO id_glob) const;
 
-        bool IsLocal(GO id_glob) const;
-    bool IsLocal(const VecGO& ind_glob) const;
+    /*!
+     * @brief tests, if a global ordinals belongs to subgrid
+     * @param id_glob global ordinal
+     * \note assumes the grid including ghost cells
+     */
+    bool IsLocal(GO id_glob) const;
+
+    /*!
+     * @brief tests, if a global index belongs to subgrid
+     * @param ind_glob global index
+     * \note assumes the grid including ghost cells
+     */
+    bool IsLocal(const IndexGlobal& ind_glob) const;
+
+    /*!
+     * @brief tests, if the ordinal belongs to internal subgrid
+     * @param id_glob global internal ordinal
+     */
     bool IsLocalInternal(GO id_glob) const;
-    bool IsLocalInternal(const VecGO ind_glob) const;
 
-    bool IsInternal(const VecLO& ind_loc) const;
-    bool IsInternal(const VecGO& ind_glob) const;
-    bool IsInternal(LO) const;
+    /*!
+     * @brief tests, if index belongs to internal subgrid
+     * @param ind_glob global internal index
+     */
+    bool IsLocalInternal(IndexGlobal ind_glob) const;
 
-    VecLO MapCellToIndexLocal(const LO n_loc) const;
-    VecLO MapCellToIndexLocalInternal(const LO n_loc) const;
-    VecGO MapCellToIndexGlobal(GO n_loc) const;
-    VecGO MapCellToIndexGlobalInternal(GO n_loc) const;
+    bool IsInternal(const Index& ind_loc) const;
+    bool IsInternal(const IndexGlobal& ind_glob) const;
+    bool IsInternal(LO n) const;
 
-    VecGO MapLocalToGlobal(const VecLO& ind) const;
+    Index MapOrdinalToIndexLocal(const LO n_loc) const;
+    Index MapOrdinalToIndexLocalInternal(const LO n_loc) const;
+    IndexGlobal MapOrdinalToIndexGlobal(GO n_loc) const;
+    IndexGlobal MapOrdinalToIndexGlobalInternal(GO n_loc) const;
 
-    const VecLO& GetLocalResolution() const;
+    IndexGlobal MapLocalToGlobal(const Index& ind) const;
 
-    const VecGO& GetGlobalResolution() const;
+    /*!
+     * @brief provides resolution of local grid
+     * @return local index with number of cells in each direction
+     */
+    const Index& GetLocalResolution() const;
+
+    /*!
+     * @brief provides resolution of local grid
+     * @return local index with number of cells in each direction
+     */
+    const Index& GetLocalResolutionInternal() const;
+
+    /*!
+     * @brief provides resolution of global grid
+     * @return global index with number of cells in each direction
+     */
+    const IndexGlobal& GetGlobalResolution() const;
+
+    /*!
+     * @brief provides resolution of global grid
+     * @return global index with number of cells in each direction
+     */
+    const IndexGlobal& GetGlobalResolutionInternal() const;
 
     /*!
      * @brief prints distribution of domains without ghost cells to file as CSV
@@ -98,6 +224,12 @@ public:
     void PrintDistribution(std::string fname) const;
 
 private:
+    /*!
+     * @brief Tests if grid is initialized
+     * @param function name of function to show in error message
+     */
+    void TestIfInitialized(std::string function) const;
+
     const Cartesian<Dim, LO, GO, SC>* grid;  //!< pointer to grid
     typename GridType::Options options;      //!< grid specific options
     VecLO resolution_local;                  //!< resolution of the local grid

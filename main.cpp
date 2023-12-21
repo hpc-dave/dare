@@ -22,36 +22,32 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-#include "Utilities/Vector.h"
-#include "MPI/ExecutionManager.h"
-#include "Grid/Cartesian.h"
 #include "ScopeGuard/ScopeGuard.h"
 
 int main(int argc, char* argv[]) {
-    const std::size_t Dim = 3;
-    using LO = int32_t;
-    using GO = int64_t;
-    using SC = double;
-    int rank_stop = 1;
-
-    dare::ScopeGuard scope_guard(argc, argv);
-
-    dare::mpi::ExecutionManager exman;
-
-    // GO i_size{10}, j_size{10};
-    dare::utils::Vector<Dim, GO> res(30, 20, 10);
-    dare::utils::Vector<Dim, LO> res_i = res;
-    dare::utils::Vector<Dim, SC> size(1., 1., 1.);
-    res_i = size;
-    LO num_ghost = 2;
-    dare::Grid::Cartesian<Dim> grid(&exman, res, size, num_ghost, dare::utils::Vector<Dim, LO>(1, 0, 0));
-    int stop = 1;
-    if (exman.GetRank() == rank_stop)
-        while (stop == 1) {
+    dare::ScopeGuard scope_guard(&argc, &argv);
+    {
+        if (scope_guard.AmIRoot()) {
+            std::cout << "Hello, nice that you are here!" << std::endl
+                      << std::endl;
+            std::cout << "  _,-'`''-~`) \n"
+                      << "(`~_,=========\\ \n"
+                      << " |---,___.-.__,\\ \n"
+                      << " |        o     \\ ___  _,,,,_     _.--.\n"
+                      << "  \\      `^`    /`_.-'~      `~-;`     \\ \n"
+                      << "   \\_      _  .'                 `,     |\n"
+                      << "    |`-                           \\'__/\n"
+                      << "   /                      ,_       \\  `'-.\n"
+                      << "  /    .-''~~--.            `'-,   ;_    /\n"
+                      << " |              \\               \\  | `''`\n"
+                      << " \\__.--'`'-.   /_               |'\n"
+                      << "             `'`  `~~~---..,     |\n"
+                      << " jgs                         \\ _.-'`-.\n"
+                      << "                             \\       \\ \n"
+                      << "                              '.     /\n"
+                      << "                                `'~'`\n";
+            // copyright by Joan G. Stark, taken from https://www.asciiart.eu/animals/bears
         }
-    auto rep = grid.GetRepresentation(dare::utils::Vector<Dim, LO>());
-    rep.PrintDistribution("distribution.csv");
-
+    }
     return 0;
 }

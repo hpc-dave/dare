@@ -1,0 +1,46 @@
+name: Testing
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+    
+jobs:
+
+  GoogleTest:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:1.1
+
+    strategy:
+      matrix:
+        procs: [1, 2, 3, 4]
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake Test
+      run: |
+          mkdir build_test && cd build_test
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=ON -DDEBUG=ON
+
+    - name: Build Test
+      run: |
+          cd build_test
+          ninja -j 4
+
+    - name: Run Test
+      run: |
+          cd build_test
+          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_P${{matrix.procs}}.xml" --kokkos-num-threads=1
+          mv *xml ../
+
+    - name: Archive Testing Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: test_reports_${{matrix.procs}}
+        path: ./*.xml

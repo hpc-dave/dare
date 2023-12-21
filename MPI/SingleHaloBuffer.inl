@@ -107,7 +107,7 @@ void SingleHaloBuffer<LO, GO, SC>::Exchange(const Field& field,
     for (std::size_t n{0}; n < list_local_IDs_send.size(); n++) {
         LO id = list_local_IDs_send[n] * num_eq;
         for (std::size_t e{0}; e < num_eq; e++)
-            buffer_send[n * num_eq + e] = field.at(id + e);
+            buffer_send[n * num_eq + e] = field.At(id + e);
     }
 
     exec_man->Iexchange(buffer_send.data(), num_send, buffer_recv.data(), num_recv,
@@ -122,7 +122,7 @@ void SingleHaloBuffer<LO, GO, SC>::FillValues(Field* field) {
     for (std::size_t n{0}; n < list_local_IDs_recv.size(); n++) {
         LO id = list_local_IDs_recv[n] * num_eq;
         for (std::size_t e{0}; e < num_eq; e++)
-            field->at(id + e) = buffer_recv[n * num_eq + e];
+            field->At(id + e) = buffer_recv[n * num_eq + e];
     }
 }
 

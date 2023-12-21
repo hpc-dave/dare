@@ -116,6 +116,18 @@ inline MPI_Datatype GetMPIType<uint64_t>() {
     return MPI_UINT64_T;
 }
 
+/* \brief . */
+template<>
+inline MPI_Datatype GetMPIType<long long int>() {   //NOLINT
+    return MPI_LONG_LONG_INT;
+}
+
+/* \brief . */
+template <>
+inline MPI_Datatype GetMPIType<unsigned long long int>() { // NOLINT
+    return MPI_UNSIGNED_LONG_LONG;
+}
+
 }  // namespace dare::mpi
 
 #endif  // MPI_MPITYPECONVERTER_H_
