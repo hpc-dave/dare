@@ -26,6 +26,13 @@
 
 namespace dare {
 ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_argc), argv(_argv) {
+    /*
+     * setting a few default environment variables,
+     * they won't be overwritten if they already exist
+     */
+    setenv("OMP_PROC_BIND", "spread", 0);
+    setenv("OMP_PLACES", "threads", 0);
+
     int num_proc = 1;
     int my_rank = 0;
     std::string option;
@@ -52,6 +59,28 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
                           << "' to an integer_value, aborting now!" << std::endl;
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
+        // now subsitute the -T options with --kokkos_threads
+        // and remove the additional number argument
+        kokkos_num_threads += option;
+        int n{1};  // first argument is always the executable name
+        // substitution loop
+        for (; n < *argc; n++) {
+            std::string arg = (*argv)[n];
+            if (arg.size() == 2) {
+                if (boost::iequals(arg, "-T")) {
+                    (*argv)[n] = kokkos_num_threads.data();
+                    break;
+                }
+            }
+        }
+        // move all remaining arguments to one prior position
+        for (; n < (*argc - 1); n++) {
+            (*argv)[n] = (*argv)[n + 1];
+        }
+        // reduce the number of arguments
+        (*argc)--;
+
+        // set number of openmp threads
         omp_set_num_threads(specified_threads);
     }
 
@@ -61,7 +90,7 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
 
     if (AmIRoot() && !suppress_output)
         std::cout << "\nRunning with " << num_proc << " procs and "
-                  << omp_get_num_threads() << " thread" << (omp_get_num_threads() > 1 ? "s" : "") << "\n"
+                  << omp_get_max_threads() << " thread" << (omp_get_max_threads() > 1 ? "s" : "") << "\n"
                   << std::endl;
 
     // stop for debugger
