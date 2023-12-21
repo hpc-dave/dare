@@ -44,6 +44,13 @@ template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>::~GridVector() {}
 
 template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::Initialize(std::string identifier, GridRepresentation _grid) {
+    ident_string = identifier;
+    grid = _grid;
+    data = DualViewType(identifier, _grid.GetNumberLocalCells() * N);
+}
+
+template <typename Grid, typename T, std::size_t N>
 void GridVector<Grid, T, N>::Resize(LO n) {
     data.resize(n);
 }
@@ -123,6 +130,21 @@ typename GridVector<Grid, T, N>::DeviceViewType& GridVector<Grid, T, N>::GetDevi
 template <typename Grid, typename T, std::size_t N>
 const typename GridVector<Grid, T, N>::DeviceViewType& GridVector<Grid, T, N>::GetDeviceView() const {
     return data.h_view;
+}
+
+template <typename Grid, typename T, std::size_t N>
+const typename GridVector<Grid, T, N>::GridRepresentation& GridVector<Grid, T, N>::GetGridRepresentation() const {
+    return grid;
+}
+
+template <typename Grid, typename T, std::size_t N>
+typename GridVector<Grid, T, N>::GridRepresentation& GridVector<Grid, T, N>::GetGridRepresentation() {
+    return grid;
+}
+
+template <typename Grid, typename T, std::size_t N>
+std::string GridVector<Grid, T, N>::GetIdentifier() const {
+    return ident_string;
 }
 
 }  // namespace dare::Data

@@ -80,7 +80,6 @@ using IntegrationCartesianTrilinos2D = IntegrationCartesianTrilinos<2>;
 using IntegrationCartesianTrilinos3D = IntegrationCartesianTrilinos<3>;
 
 TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
-
     using CN = dare::Matrix::CartesianNeighbor;
     GridType::Options opt(0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);

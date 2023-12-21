@@ -190,4 +190,8 @@ void HaloBuffer<LO, GO, SC>::Exchange(Field* field) {
     }
 }
 
+template <typename LO, typename GO, typename SC>
+ExecutionManager* HaloBuffer<LO, GO, SC>::GetExecutionManager() {
+    return exec_man;
+}
 }  // namespace dare::mpi

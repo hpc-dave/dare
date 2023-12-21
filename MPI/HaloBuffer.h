@@ -87,6 +87,11 @@ public:
     template <typename Field>
     void Exchange(Field* field);
 
+    /*!
+     * @brief returns execution manager
+     */
+    ExecutionManager* GetExecutionManager();
+
 private:
     ExecutionManager* exec_man;                           //!< execution manager
     std::map<int, SingleHaloBuffer<LO, GO, SC>> buffers;  //!< list of buffers

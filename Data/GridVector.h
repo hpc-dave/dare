@@ -59,8 +59,8 @@ public:
 
     /*!
      * @brief initialization constructor
-     * @param identifier 
-     * @param grid 
+     * @param identifier string to identify the instance
+     * @param grid representation of grid
      */
     GridVector(std::string identifier, GridRepresentation grid);
 
@@ -68,6 +68,13 @@ public:
      * @brief default destructor
      */
     virtual ~GridVector();
+
+    /*!
+     * @brief Initialization
+     * @param identifier string to identify the instance
+     * @param grid representation of grid
+     */
+    void Initialize(std::string identifier, GridRepresentation grid);
 
     /*!
      * @brief resize to dedicated number
@@ -171,6 +178,14 @@ public:
      * @brief returns data on device
      */
     const DeviceViewType& GetDeviceView() const;
+
+    /*!
+     * @brief provides identificiation string
+     */
+    std::string GetIdentifier() const;
+
+    const GridRepresentation& GetGridRepresentation() const;
+    GridRepresentation& GetGridRepresentation();
 
 protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);

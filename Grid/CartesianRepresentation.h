@@ -223,6 +223,11 @@ public:
      */
     void PrintDistribution(std::string fname) const;
 
+    /*!
+     * @brief Provides Halobuffer for exchange of data across processes
+     */
+    mpi::HaloBuffer<LO, GO, SC>& GetHaloBuffer();
+
 private:
     /*!
      * @brief Tests if grid is initialized

@@ -1,4 +1,6 @@
 set(DaRe_HEADER_FILES
+    "Field.h"
+    "Field.inl"
     "GridVector.h"
     "GridVector.inl"
     "Stencil.h"

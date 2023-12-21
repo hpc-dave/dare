@@ -560,4 +560,9 @@ void CartesianRepresentation<Dim, LO, GO, SC>::TestIfInitialized(std::string fun
 #endif
 }
 
+template <std::size_t Dim, class LO, class GO, class SC>
+mpi::HaloBuffer<LO, GO, SC>& CartesianRepresentation<Dim, LO, GO, SC>::GetHaloBuffer() {
+    return halo_buffer;
+}
+
 }  // namespace dare::Grid
