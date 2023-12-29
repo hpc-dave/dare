@@ -36,7 +36,7 @@ jobs:
     - name: Run Test
       run: |
           cd build_test
-          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_P${{matrix.procs}}.xml" --kokkos-num-threads=1
+          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_P${{matrix.procs}}.xml" -T 1
           mv *xml ../
 
     - name: Archive Testing Reports
