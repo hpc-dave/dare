@@ -61,6 +61,11 @@ void GridVector<Grid, T, N>::ResizeByGrid(LO n) {
 }
 
 template <typename Grid, typename T, std::size_t N>
+T& GridVector<Grid, T, N>::At(std::size_t n) {
+    return operator[](n);
+}
+
+template <typename Grid, typename T, std::size_t N>
 T& GridVector<Grid, T, N>::At(LO n, std::size_t c) {
     return operator[](n * N + c);
 }
@@ -68,6 +73,11 @@ T& GridVector<Grid, T, N>::At(LO n, std::size_t c) {
 template <typename Grid, typename T, std::size_t N>
 T& GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) {
     return At(grid.MapIndexToOrdinalLocal(ind), c);
+}
+
+template <typename Grid, typename T, std::size_t N>
+T GridVector<Grid, T, N>::At(std::size_t n) const {
+    return operator[](n);
 }
 
 template <typename Grid, typename T, std::size_t N>

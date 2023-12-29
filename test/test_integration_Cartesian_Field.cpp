@@ -282,4 +282,465 @@ TEST_F(IntegrationCartesianField3D, CopyToOld) {
 }
 
 TEST_F(IntegrationCartesianField1D, Exchange) {
+    typename GridType::Options opt(0);  // not staggered
+    auto g_rep = grid->GetRepresentation(opt);
+    Field field("test_1D_exchange", g_rep, num_time_steps);
+    LO num_ghost = grid->GetNumGhost();
+    uint8_t b_id = grid->GetBoundaryID();
+
+    double rank = exec_man.GetRank();
+    Index res = g_rep.GetLocalResolution();
+    for (LO i{0}; i < res.i(); i++) {
+        Index ind(i);
+        for (std::size_t n{0}; n < N; n++)
+            field.GetDataVector().At(ind, n) = rank;
+    }
+
+    field.ExchangeHaloCells();
+
+    // WEST
+    for (LO i = 0; i < num_ghost; i++) {
+        Index ind(i);
+        for (LO n = 0; n < N; n++)
+            if (b_id & GridType::BOUNDARIES_WEST)
+                EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+            else
+                EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+    }
+
+    // EAST: no change if rank == (num_proc - 1), change if rank < (num_proc - 1)
+    for (LO i = res.i() - num_ghost; i < res.i(); i++) {
+        Index ind(i);
+        for (LO n = 0; n < N; n++)
+            if (b_id & GridType::BOUNDARIES_EAST)
+                EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+            else
+                EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+    }
+
+    // Test internal cells
+    for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+        Index ind(i);
+        for (LO n = 0; n < N; n++)
+            EXPECT_EQ(field.GetDataVector().At(ind, n), static_cast<double>(rank));
+    }
+
+    typename GridType::Options opt_s(1);  // staggered
+    auto g_rep_staggered = grid->GetRepresentation(opt_s);
+    Field field_s("test_1D_staggered_exchange", g_rep_staggered, num_time_steps);
+
+    res = g_rep_staggered.GetLocalResolution();
+    for (LO i{0}; i < res.i(); i++) {
+        Index ind(i);
+        for (std::size_t n{0}; n < N; n++)
+            field_s.GetDataVector().At(ind, n) = rank;
+    }
+
+    field_s.ExchangeHaloCells();
+
+    // WEST: no change if rank == 0, change if rank > 0
+    for (LO i = 0; i < num_ghost; i++) {
+        Index ind(i);
+        for (LO n = 0; n < N; n++)
+            if (b_id & GridType::BOUNDARIES_WEST)
+                EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+            else
+                EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+    }
+
+    // EAST: no change if rank == (num_proc - 1), change if rank < (num_proc - 1)
+    for (LO i = res.i() - num_ghost; i < res.i(); i++) {
+        Index ind(i);
+        for (LO n = 0; n < N; n++)
+            if (b_id & GridType::BOUNDARIES_EAST)
+                EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+            else
+                EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+    }
+
+    // Test internal cells
+    for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+        Index ind(i);
+        for (LO n = 0; n < N; n++)
+            EXPECT_EQ(field_s.GetDataVector().At(ind, n), static_cast<double>(rank));
+    }
+}
+
+TEST_F(IntegrationCartesianField2D, Exchange) {
+    typename GridType::Options opt(0, 0);  // not staggered
+    auto g_rep = grid->GetRepresentation(opt);
+    Field field("test_2D_exchange", g_rep, num_time_steps);
+    LO num_ghost = grid->GetNumGhost();
+    uint8_t b_id = grid->GetBoundaryID();
+
+    double rank = exec_man.GetRank();
+    Index res = g_rep.GetLocalResolution();
+    for (LO i{0}; i < res.i(); i++) {
+        for (LO j{0}; j < res.j(); j++) {
+            Index ind(i, j);
+            for (std::size_t n{0}; n < N; n++)
+                field.GetDataVector().At(ind, n) = rank;
+        }
+    }
+
+    field.ExchangeHaloCells();
+
+    // WEST
+    for (LO i = 0; i < num_ghost; i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                if (b_id & GridType::BOUNDARIES_WEST)
+                    EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                else
+                    EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+        }
+    }
+
+    // EAST
+    for (LO i = res.i() - num_ghost; i < res.i(); i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                if (b_id & GridType::BOUNDARIES_EAST)
+                    EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                else
+                    EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+        }
+    }
+
+    // SOUTH
+    for (LO j = 0; j < num_ghost; j++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                if (b_id & GridType::BOUNDARIES_SOUTH)
+                    EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                else
+                    EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+        }
+    }
+
+    // NORTH
+    for (LO j = res.j() - num_ghost; j < res.j(); j++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                if (b_id & GridType::BOUNDARIES_NORTH)
+                    EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                else
+                    EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+        }
+    }
+
+    // Test internal cells
+    for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                EXPECT_EQ(field.GetDataVector().At(ind, n), static_cast<double>(rank));
+        }
+    }
+
+    typename GridType::Options opt_s(1);  // staggered
+    auto g_rep_staggered = grid->GetRepresentation(opt_s);
+    Field field_s("test_1D_staggered_exchange", g_rep_staggered, num_time_steps);
+
+    res = g_rep_staggered.GetLocalResolution();
+
+    for (LO i{0}; i < res.i(); i++) {
+        for (LO j{0}; j < res.j(); j++) {
+            Index ind(i, j);
+            for (std::size_t n{0}; n < N; n++)
+                field_s.GetDataVector().At(ind, n) = rank;
+        }
+    }
+
+    field_s.ExchangeHaloCells();
+
+    // WEST
+    for (LO i = 0; i < num_ghost; i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                if (b_id & GridType::BOUNDARIES_WEST)
+                    EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                else
+                    EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+        }
+    }
+
+    // EAST
+    for (LO i = res.i() - num_ghost; i < res.i(); i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                if (b_id & GridType::BOUNDARIES_EAST)
+                    EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                else
+                    EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+        }
+    }
+
+    // SOUTH
+    for (LO j = 0; j < num_ghost; j++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                if (b_id & GridType::BOUNDARIES_SOUTH)
+                    EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                else
+                    EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+        }
+    }
+
+    // NORTH
+    for (LO j = res.j() - num_ghost; j < res.j(); j++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                if (b_id & GridType::BOUNDARIES_NORTH)
+                    EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                else
+                    EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+        }
+    }
+
+    // Test internal cells
+    for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            Index ind(i, j);
+            for (LO n = 0; n < N; n++)
+                EXPECT_EQ(field_s.GetDataVector().At(ind, n), static_cast<double>(rank));
+        }
+    }
+}
+
+TEST_F(IntegrationCartesianField3D, Exchange) {
+    typename GridType::Options opt(0, 0, 0);  // not staggered
+    auto g_rep = grid->GetRepresentation(opt);
+    Field field("test_3D_exchange", g_rep, num_time_steps);
+    LO num_ghost = grid->GetNumGhost();
+    uint8_t b_id = grid->GetBoundaryID();
+
+    double rank = exec_man.GetRank();
+    Index res = g_rep.GetLocalResolution();
+    for (LO i{0}; i < res.i(); i++) {
+        for (LO j{0}; j < res.j(); j++) {
+            for (LO k{0}; k < res.k(); k++) {
+                Index ind(i, j, k);
+                for (std::size_t n{0}; n < N; n++)
+                    field.GetDataVector().At(ind, n) = rank;
+            }
+        }
+    }
+
+    field.ExchangeHaloCells();
+
+    // WEST
+    for (LO i = 0; i < num_ghost; i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_WEST)
+                        EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // EAST
+    for (LO i = res.i() - num_ghost; i < res.i(); i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_EAST)
+                        EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // SOUTH
+    for (LO j = 0; j < num_ghost; j++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_SOUTH)
+                        EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // NORTH
+    for (LO j = res.j() - num_ghost; j < res.j(); j++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_NORTH)
+                        EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // BOTTOM
+    for (LO k = 0; k < num_ghost; k++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_BOTTOM)
+                        EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // TOP
+    for (LO k = res.k() - num_ghost; k < res.k(); k++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_TOP)
+                        EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // Test internal cells
+    for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    EXPECT_EQ(field.GetDataVector().At(ind, n), static_cast<double>(rank));
+            }
+        }
+    }
+
+    typename GridType::Options opt_s(0, 0, 1);  // staggered
+    auto g_rep_staggered = grid->GetRepresentation(opt_s);
+    Field field_s("test_3D_staggered_exchange", g_rep_staggered, num_time_steps);
+
+    res = g_rep_staggered.GetLocalResolution();
+
+    for (LO i{0}; i < res.i(); i++) {
+        for (LO j{0}; j < res.j(); j++) {
+            for (LO k{0}; k < res.k(); k++) {
+                Index ind(i, j, k);
+                for (std::size_t n{0}; n < N; n++)
+                    field_s.GetDataVector().At(ind, n) = rank;
+            }
+        }
+    }
+
+    field_s.ExchangeHaloCells();
+
+    // WEST
+    for (LO i = 0; i < num_ghost; i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_WEST)
+                        EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // EAST
+    for (LO i = res.i() - num_ghost; i < res.i(); i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_EAST)
+                        EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // SOUTH
+    for (LO j = 0; j < num_ghost; j++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_SOUTH)
+                        EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // NORTH
+    for (LO j = res.j() - num_ghost; j < res.j(); j++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_NORTH)
+                        EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // BOTTOM
+    for (LO k = 0; k < num_ghost; k++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_BOTTOM)
+                        EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+
+    // TOP
+    for (LO k = res.k() - num_ghost; k < res.k(); k++) {
+        for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+            for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    if (b_id & GridType::BOUNDARIES_TOP)
+                        EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
+                    else
+                        EXPECT_NE(field_s.GetDataVector().At(ind, n), rank);
+            }
+        }
+    }
+    // Test internal cells
+    for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
+        for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
+            for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
+                Index ind(i, j, k);
+                for (LO n = 0; n < N; n++)
+                    EXPECT_EQ(field_s.GetDataVector().At(ind, n), static_cast<double>(rank));
+            }
+        }
+    }
 }

@@ -92,6 +92,12 @@ public:
     void ResizeByGrid(LO n);
 
     /*!
+     * @brief returns element at position in vector
+     * @param n offset in vector
+     */
+    T& At(std::size_t n);
+
+    /*!
      * @brief access based on cell and component
      * @param n grid ordinal
      * @param c component number
@@ -106,6 +112,12 @@ public:
      * @return reference to specified value
      */
     T& At(const Index& ind, std::size_t c);
+
+    /*!
+     * @brief returns element at position n
+     * @param n offset
+     */
+    T At(std::size_t n) const;
 
     /*!
      * @brief const access based on cell and component

@@ -169,6 +169,7 @@ public:
      * @brief provides boundary identifier
      */
     uint8_t GetBoundaryID() const;
+
     /*!
      * @brief returns periodicity
      */
