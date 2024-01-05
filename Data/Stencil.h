@@ -33,7 +33,7 @@ namespace dare::Data {
  * @brief dummy class for SFINAE
  * @tparam Grid type of grid
  */
-template <typename Grid>
+template <typename Grid, std::size_t N>
 class CenterMatrixStencil {
     /*!
      * @brief dummy operator for compilation
@@ -48,7 +48,7 @@ class CenterMatrixStencil {
  * @brief dummy class for SFINAE
  * @tparam Grid type of grid
  */
-template <typename Grid>
+template <typename Grid, std::size_t N>
 class CenterValueStencil {
 };
 
@@ -56,7 +56,7 @@ class CenterValueStencil {
  * @brief dummy class for SFINAE
  * @tparam Grid type of grid
  */
-template <typename Grid>
+template <typename Grid, std::size_t N>
 class FaceMatrixStencil {
 };
 
@@ -64,7 +64,7 @@ class FaceMatrixStencil {
  * @brief dummy class for SFINAE
  * @tparam Grid type of grid
  */
-template <typename Grid>
+template <typename Grid, std::size_t N>
 class FaceValueStencil {
 };
 
@@ -77,8 +77,8 @@ class FaceValueStencil {
  * @param s 
  * @return 
  */
-template <typename Grid>
-CenterMatrixStencil<Grid> operator*(typename Grid::ScalarType v, const CenterMatrixStencil<Grid>& s) {
+template <typename Grid, std::size_t N>
+CenterMatrixStencil<Grid, N> operator*(typename Grid::ScalarType v, const CenterMatrixStencil<Grid, N>& s) {
     return s * v;
 }
 
@@ -89,8 +89,32 @@ CenterMatrixStencil<Grid> operator*(typename Grid::ScalarType v, const CenterMat
  * @param s
  * @return
  */
-template <typename Grid>
-CenterValueStencil<Grid> operator*(typename Grid::ScalarType v, const CenterValueStencil<Grid>& s) {
+template <typename Grid, std::size_t N>
+CenterValueStencil<Grid, N> operator*(typename Grid::ScalarType v, const CenterValueStencil<Grid, N>& s) {
+    return s * v;
+}
+
+/*!
+ * @brief multiplication operator with doubles
+ * @tparam Grid
+ * @param v
+ * @param s
+ * @return
+ */
+template <typename Grid, std::size_t N>
+FaceMatrixStencil<Grid, N> operator*(typename Grid::ScalarType v, const FaceMatrixStencil<Grid, N>& s) {
+    return s * v;
+}
+
+/*!
+ * @brief multiplication operator with doubles
+ * @tparam Grid
+ * @param v
+ * @param s
+ * @return
+ */
+template <typename Grid, std::size_t N>
+FaceValueStencil<Grid, N> operator*(typename Grid::ScalarType v, const FaceValueStencil<Grid, N>& s) {
     return s * v;
 }
 

@@ -24,25 +24,25 @@
 
 namespace dare::Data {
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::CenterMatrixStencil() {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::CenterMatrixStencil() {
     static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::~CenterMatrixStencil() {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::~CenterMatrixStencil() {
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::CenterMatrixStencil(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other)
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::CenterMatrixStencil(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other)
     : coefficients(other.coefficients) {
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator=(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
     if (this == &other)
         return *this;
 
@@ -50,148 +50,385 @@ CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator=(
     return *this;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator*=(SC v) {
-    coefficients *= v;
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*=(SC v) {
+    for (auto& c : coefficients)
+        c *= v;
     return *this;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator*(SC v) const {
-    CenterMatrixStencil<GridType> s(*this);
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*(SC v) const {
+    CenterMatrixStencil<GridType, N> s(*this);
     s *= v;
     return s;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator/=(SC v) {
-    coefficients /= v;
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/=(SC v) {
+    for (auto& c : coefficients)
+        c /= v;
     return *this;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator/(SC v) const {
-    CenterMatrixStencil<GridType> s(*this);
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/(SC v) const {
+    CenterMatrixStencil<GridType, N> s(*this);
     s /= v;
     return s;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator+=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator+=(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
     coefficients += other.coefficients;
     return *this;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator+(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) const {
-    CenterMatrixStencil<GridType> s(*this);
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator+(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    CenterMatrixStencil<GridType, N> s(*this);
     s += other;
     return s;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator-=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator-=(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
     coefficients -= other.coefficients;
     return *this;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator-(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) const {
-    CenterMatrixStencil<GridType> s(*this);
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator-(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    CenterMatrixStencil<GridType, N> s(*this);
     s -= other;
     return s;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator*=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*=(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
     coefficients *= other.coefficients;
     return *this;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator*(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) const {
-    CenterMatrixStencil<GridType> s(*this);
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    CenterMatrixStencil<GridType, N> s(*this);
     s *= other;
     return s;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator/=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/=(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
     coefficients /= other.coefficients;
     return *this;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator/(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>& other) const {
-    CenterMatrixStencil<GridType> s(*this);
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/(
+    const CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    CenterMatrixStencil<GridType, N> s(*this);
     s /= other;
     return s;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-void CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::SetValue(Positions pos, SC v) {
-    RangeCheck(__func__, pos);
-    coefficients[static_cast<char>(pos)] = v;
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::SetValue(Positions pos, std::size_t n, SC v) {
+    RangeCheck(__func__, pos, n);
+    coefficients[n][static_cast<char>(pos)] = v;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-void CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::SetAll(SC v) {
-    for (auto& e : coefficients)
-        e = v;
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::SetAll(SC v) {
+    for (auto& a : coefficients)
+        for (auto& e : a)
+            e = v;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-SC& CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::GetValue(Positions pos) {
-    RangeCheck(__func__, pos);
-    return coefficients[static_cast<char>(pos)];
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+SC& CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetValue(Positions pos, std::size_t n) {
+    RangeCheck(__func__, pos, n);
+    return coefficients[n][static_cast<char>(pos)];
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-SC CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::GetValue(Positions pos) const {
-    RangeCheck(__func__, pos);
-    return coefficients[static_cast<char>(pos)];
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+SC CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetValue(Positions pos, std::size_t n) const {
+    RangeCheck(__func__, pos, n);
+    return coefficients[n][static_cast<char>(pos)];
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-typename CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::DataArray&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::GetData() {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+typename CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::DataArray&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetData() {
     return coefficients;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-const typename CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::DataArray&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::GetData() const {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+const typename CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::DataArray&
+CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetData() const {
     return coefficients;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-void CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>>::RangeCheck(std::string func, Positions pos) const {
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::RangeCheck(
+    std::string func, Positions pos, std::size_t n) const {
 #ifndef DARE_NDEBUG
     if (static_cast<char>(pos) >= NUM_ENTRIES) {
         std::cerr << "In " << func << ": Provided position (" << std::to_string(static_cast<char>(pos)) << ") "
                   << "is out of range of " << std::to_string(NUM_ENTRIES) << "-point center based stencil\n";
     }
+    if (n >= NUM_COMPONENTS) {
+        std::cerr << "In " << func << ": Provided component ID (" << std::to_string(n) << ") "
+                  << "is out of range of " << std::to_string(NUM_COMPONENTS) << " components\n";
+    }
 #endif
 }
 
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::FaceMatrixStencil() {
+    static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::~FaceMatrixStencil() {
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::FaceMatrixStencil(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other)
+    : coefficients_nb(other.coefficients_nb), coefficients_c(other.coefficients_c) {
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator=(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    if (this == &other)
+        return *this;
+
+    coefficients_nb = other.coefficients_nb;
+    coefficients_c = other.coefficients_c;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*=(SC v) {
+    for (auto& c : coefficients_nb)
+        c *= v;
+    for (auto& c : coefficients_c)
+        c *= v;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*(SC v) const {
+    FaceMatrixStencil<GridType, N> s(*this);
+    s *= v;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/=(SC v) {
+    for (auto& c : coefficients_c)
+        c /= v;
+    for (auto& c : coefficients_nb)
+        c /= v;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/(SC v) const {
+    FaceMatrixStencil<GridType, N> s(*this);
+    s /= v;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator+=(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    coefficients_nb += other.coefficients_nb;
+    coefficients_c += other.coefficients_c;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator+(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    FaceMatrixStencil<GridType, N> s(*this);
+    s += other;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator-=(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    coefficients_c -= other.coefficients_c;
+    coefficients_nb -= other.coefficients_nb;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator-(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    FaceMatrixStencil<GridType, N> s(*this);
+    s -= other;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*=(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    coefficients_c *= other.coefficients_c;
+    coefficients_nb *= other.coefficients_nb;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    FaceMatrixStencil<GridType, N> s(*this);
+    s *= other;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/=(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    coefficients_c /= other.coefficients_c;
+    coefficients_nb /= other.coefficients_nb;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    FaceMatrixStencil<GridType, N> s(*this);
+    s /= other;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::SetValueNeighbor(
+    Positions pos, std::size_t n, SC v) {
+    RangeCheck(__func__, pos, n);
+    coefficients_nb[n][static_cast<char>(pos) - 1] = v;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::SetValueCenter(Positions pos, std::size_t n, SC v) {
+    RangeCheck(__func__, pos, n);
+    coefficients_c[n][static_cast<char>(pos) - 1] = v;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::SetValues(
+    Positions pos, std::size_t n, SC v_nb, SC v_c) {
+    SetValueNeighbor(pos, n, v_nb);
+    SetValueCenter(pos, n, v_c);
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::SetAll(SC v) {
+    for (auto& a : coefficients_c)
+        for (auto& e : a)
+            e = v;
+    for (auto& a : coefficients_nb)
+        for (auto& e : a)
+            e = v;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+SC& FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetValueCenter(Positions pos, std::size_t n) {
+    RangeCheck(__func__, pos, n);
+    return coefficients_c[n][static_cast<char>(pos) - 1];
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+SC& FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetValueNeighbor(Positions pos, std::size_t n) {
+    RangeCheck(__func__, pos, n);
+    return coefficients_nb[n][static_cast<char>(pos) - 1];
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+SC FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetValueCenter(Positions pos, std::size_t n) const {
+    RangeCheck(__func__, pos, n);
+    return coefficients_c[n][static_cast<char>(pos) - 1];
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+SC FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetValueNeighbor(Positions pos, std::size_t n) const {
+    RangeCheck(__func__, pos, n);
+    return coefficients_nb[n][static_cast<char>(pos) - 1];
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+typename FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::DataArray&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetDataNeighbor() {
+    return coefficients_nb;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+typename FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::DataArray&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetDataCenter() {
+    return coefficients_c;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+const typename FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::DataArray&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetDataNeighbor() const {
+    return coefficients_nb;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+const typename FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::DataArray&
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetDataCenter() const {
+    return coefficients_c;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::RangeCheck(
+    std::string func, Positions pos, std::size_t n) const {
+#ifndef DARE_NDEBUG
+    if (static_cast<char>(pos) > NUM_FACES) {
+        std::cerr << "In " << func << ": Provided position (" << std::to_string(static_cast<char>(pos)) << ") "
+                  << "is out of range of " << std::to_string(NUM_FACES+1) << "-point center based stencil\n";
+    } else if (static_cast<char>(pos) == 0) {
+        std::cerr << "In " << func << ": The face stencil cannot take CENTER as an argument!\n";
+    }
+    if (n >= NUM_COMPONENTS) {
+        std::cerr << "In " << func << ": Provided component ID (" << std::to_string(n) << ") "
+                  << "is out of range of " << std::to_string(NUM_COMPONENTS) << " components\n";
+    }
+#endif
+}
 }  // end namespace dare::Data
