@@ -206,8 +206,8 @@ template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
 class CenterValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
     : public CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N> {
 public:
-    using MatrixStencil = CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>;
-
+    using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;
+    using MatrixStencil = CenterMatrixStencil<GridType, N>;
     /*!
      * @brief default constructor
      */
@@ -235,7 +235,6 @@ public:
         return *this;
     }
 };
-
 
 template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
 class FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N> {
@@ -394,37 +393,164 @@ private:
  * @tparam N number of components
  */
 template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
-class FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
-    : public FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N> {
+class FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N> {
 public:
-    using MatrixStencil = FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>;
+    static const std::size_t NUM_FACES{Dim * 2};                            //!< stencil size
+    static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
+    using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;                //!< type of grid
+    using Positions = dare::Matrix::CartesianNeighbor;                      //!< convenient position definion
+    using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;            //!< stencil of each component
+    using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
 
     /*!
      * @brief default constructor
      */
-    FaceValueStencil() : MatrixStencil() {}
-
-    /*!
-     * @brief conversion constructor to avoid compilation issues
-     * @param source instance of parent class
-     */
-    FaceValueStencil(const MatrixStencil& source) : MatrixStencil(source) {}  // NOLINT
+    FaceValueStencil();
 
     /*!
      * @brief default destructor
      */
-    virtual ~FaceValueStencil() {}
+    ~FaceValueStencil();
 
     /*!
-     * @brief assignment operator in the case of a provided Matrix stencil
-     * @param source matrix stencil
+     * @brief copy assignment constructor
+     * @param other
      */
-    FaceValueStencil& operator=(const MatrixStencil& source) {
-        if (this == &source)
-            return *this;
-        MatrixStencil::operator=(source);
-        return *this;
-    }
+    FaceValueStencil(const FaceValueStencil<GridType, N>& other);
+
+    /*!
+     * @brief copy assignment operator
+     * @param other instance to copy from
+     */
+    FaceValueStencil<GridType, N>&
+    operator=(const FaceValueStencil<GridType, N>& other);
+
+    /*!
+     * @brief multiplication assignment operator for scalar
+     * @param v scalar value
+     */
+    FaceValueStencil<GridType, N>& operator*=(SC v);
+
+    /*!
+     * @brief mulitplication operator for scalars
+     * @param v scalar to multiply with
+     */
+    FaceValueStencil<GridType, N> operator*(SC v) const;
+
+    /*!
+     * @brief division assignment operator for scalars
+     * @param v scalar to divide by
+     */
+    FaceValueStencil<GridType, N>& operator/=(SC v);
+
+    /*!
+     * @brief division operator for scalars
+     * @param v scalar to divide by
+     */
+    FaceValueStencil<GridType, N> operator/(SC v) const;
+
+    /*!
+     * @brief addition assignment of other stencil
+     * @param other stencil to add from
+     */
+    FaceValueStencil<GridType, N>& operator+=(const FaceValueStencil<GridType, N>& other);
+
+    /*!
+     * @brief addition operator for another stencil
+     * @param other stencil to add from
+     */
+    FaceValueStencil<GridType, N> operator+(const FaceValueStencil<GridType, N>& other) const;
+
+    /*!
+     * @brief subtraction assignment of other stencil
+     * @param other stencil to subtract from this instance
+     */
+    FaceValueStencil<GridType, N>& operator-=(const FaceValueStencil<GridType, N>& other);
+
+    /*!
+     * @brief subtraction operator for another stencil
+     * @param other stencil to subtract from this instance
+     */
+    FaceValueStencil<GridType, N> operator-(const FaceValueStencil<GridType, N>& other) const;
+
+    /*!
+     * @brief multiplication of this instance with another stencil
+     * @param other stencil to mulitply with
+     */
+    FaceValueStencil<GridType, N>& operator*=(const FaceValueStencil<GridType, N>& other);
+
+    /*!
+     * @brief multiplication with another stencil
+     * @param other factors to mulitply with
+     */
+    FaceValueStencil<GridType, N> operator*(const FaceValueStencil<GridType, N>& other) const;
+
+    /*!
+     * @brief division of this instance by another stencil
+     * @param other stencil to divide by
+     */
+    FaceValueStencil<GridType, N>& operator/=(const FaceValueStencil<GridType, N>& other);
+
+    /*!
+     * @brief division of stencil by another stencil
+     * @param other stencil to divide by
+     */
+    FaceValueStencil<GridType, N> operator/(const FaceValueStencil<GridType, N>& other) const;
+
+    /*!
+     * @brief division operation with matrix stencil
+     * @param other stencil to divide by
+     */
+    FaceMatrixStencil<GridType, N> operator*(const FaceMatrixStencil<GridType, N>& other) const;
+
+    /*!
+     * @brief sets a specific value in the stencil
+     * @param pos position of the value (e.g. CENTER)
+     * @param n component ID
+     * @param v value
+     */
+    void SetValue(Positions pos, std::size_t n, SC v);
+
+    /*!
+     * @brief sets the whole stencil to a certain value
+     * @param v value
+     */
+    void SetAll(SC v);
+
+    /*!
+     * @brief returns reference to value
+     * @param pos position of value (e.g. CENTER)
+     * @param n component ID
+     */
+    SC& GetValue(Positions pos, std::size_t n);
+
+    /*!
+     * @brief returns value
+     * @param pos position of value (e.g. CENTER)
+     * @param n component ID
+     */
+    SC GetValue(Positions pos, std::size_t n) const;
+
+    /*!
+     * @brief returns raw data array
+     */
+    DataArray& GetData();
+
+    /*!
+     * @brief return copy of raw data
+     * @return
+     */
+    const DataArray& GetData() const;
+
+private:
+    /*!
+     * @brief internal range check, disabled with DARE_NDEBUG
+     * @param func function name
+     * @param pos position (e.g. center)
+     * @param n component ID
+     */
+    void RangeCheck(std::string func, Positions pos, std::size_t n) const;
+    DataArray coefficients;  //!< raw data array with stencil data
 };
 
 }  // end namespace dare::Data

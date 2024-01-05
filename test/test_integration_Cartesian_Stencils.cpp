@@ -421,6 +421,117 @@ TEST_F(IntegrationTestCartesianStencils1D, CenterValueInteroperability) {
     }
 }
 
+TEST_F(IntegrationTestCartesianStencils2D, CenterValueInteroperability) {
+    using Positions = CenterValueStencil::Positions;
+    CenterValueStencil stencil, stencil_compare;
+    double c_center = 1.;
+    double c_west = -1.;
+    double c_east = -2.;
+    double c_south = -3.;
+    double c_north = -4.;
+    auto Reset = [&]() {
+        for (std::size_t n{0}; n < N; n++) {
+            stencil.SetValue(Positions::CENTER, n, c_center + n);
+            stencil.SetValue(Positions::WEST, n, c_west + n);
+            stencil.SetValue(Positions::EAST, n, c_east + n);
+            stencil.SetValue(Positions::SOUTH, n, c_south + n);
+            stencil.SetValue(Positions::NORTH, n, c_north + n);
+        }
+    };
+    Reset();
+
+    CenterMatrixStencil matrix_stencil;
+    for (std::size_t n{0}; n < N; n++) {
+        matrix_stencil.SetValue(Positions::CENTER, n, 1.);
+        matrix_stencil.SetValue(Positions::WEST, n, 1.);
+        matrix_stencil.SetValue(Positions::EAST, n, 1.);
+        matrix_stencil.SetValue(Positions::SOUTH, n, 1.);
+        matrix_stencil.SetValue(Positions::NORTH, n, 1.);
+    }
+
+    stencil_compare = matrix_stencil + stencil;
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::SOUTH, n), (c_south + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::NORTH, n), (c_north + n) + 1.);
+    }
+    Reset();
+
+    stencil_compare = stencil - matrix_stencil;
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::SOUTH, n), (c_south + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::NORTH, n), (c_north + n) - 1.);
+    }
+}
+
+TEST_F(IntegrationTestCartesianStencils3D, CenterValueInteroperability) {
+    using Positions = CenterValueStencil::Positions;
+    CenterValueStencil stencil, stencil_compare;
+    double c_center = 1.;
+    double c_west = -1.;
+    double c_east = -2.;
+    double c_south = -3.;
+    double c_north = -4.;
+    double c_bottom = -5.;
+    double c_top = -6.;
+
+    auto Reset = [&]() {
+        for (std::size_t n{0}; n < N; n++) {
+            stencil.SetValue(Positions::CENTER, n, c_center + n);
+            stencil.SetValue(Positions::WEST, n, c_west + n);
+            stencil.SetValue(Positions::EAST, n, c_east + n);
+            stencil.SetValue(Positions::SOUTH, n, c_south + n);
+            stencil.SetValue(Positions::NORTH, n, c_north + n);
+            stencil.SetValue(Positions::BOTTOM, n, c_bottom + n);
+            stencil.SetValue(Positions::TOP, n, c_top + n);
+        }
+    };
+    Reset();
+
+    CenterMatrixStencil matrix_stencil;
+    for (std::size_t n{0}; n < N; n++) {
+        matrix_stencil.SetValue(Positions::CENTER, n, 1.);
+        matrix_stencil.SetValue(Positions::WEST, n, 1.);
+        matrix_stencil.SetValue(Positions::EAST, n, 1.);
+        matrix_stencil.SetValue(Positions::SOUTH, n, 1.);
+        matrix_stencil.SetValue(Positions::NORTH, n, 1.);
+        matrix_stencil.SetValue(Positions::BOTTOM, n, 1.);
+        matrix_stencil.SetValue(Positions::TOP, n, 1.);
+    }
+
+    stencil_compare = matrix_stencil + stencil;
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::SOUTH, n), (c_south + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::NORTH, n), (c_north + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::BOTTOM, n), (c_bottom + n) + 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::TOP, n), (c_top + n) + 1.);
+    }
+    Reset();
+
+    stencil_compare = stencil - matrix_stencil;
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::SOUTH, n), (c_south + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::NORTH, n), (c_north + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::BOTTOM, n), (c_bottom + n) - 1.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::TOP, n), (c_top + n) - 1.);
+    }
+}
+
 TEST_F(IntegrationTestCartesianStencils1D, FaceMatrixBasicOperations) {
     using Positions = FaceMatrixStencil::Positions;
     FaceMatrixStencil stencil, stencil_compare;
@@ -528,3 +639,111 @@ TEST_F(IntegrationTestCartesianStencils1D, FaceMatrixBasicOperations) {
     }
     Reset();
 }
+
+TEST_F(IntegrationTestCartesianStencils1D, FaceValueBasicOperations) {
+    using Positions = FaceValueStencil::Positions;
+    FaceValueStencil stencil, stencil_compare;
+    double c_west = -1.;
+    double c_east = -2.;
+    auto Reset = [&]() {
+        for (std::size_t n{0}; n < N; n++) {
+            stencil.SetValue(Positions::WEST, n, c_west + n);
+            stencil.SetValue(Positions::EAST, n, c_east + n);
+        }
+    };
+    Reset();
+
+    /*
+     *  Operations with scalars
+     */
+    // Multiplication with scalar
+    stencil_compare = 2. * stencil;
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) * 2.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) * 2.);
+    }
+    Reset();
+
+    // Division by scalar
+    stencil_compare = stencil / 2.;
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) / 2.);
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) / 2.);
+    }
+    Reset();
+
+    /*
+     *  Operations with stencils
+     */
+    FaceValueStencil stencil_op;
+    double op_west = 0.2;
+    double op_east = 0.3;
+    for (std::size_t n{0}; n < N; n++) {
+        stencil_op.SetValue(Positions::WEST, n, op_west + n);
+        stencil_op.SetValue(Positions::EAST, n, op_east + n);
+    }
+
+    // Addition of stencil
+    stencil_compare = stencil + stencil_op;
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) + (op_west + n));
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) + (op_east + n));
+    }
+    Reset();
+
+    // Subtraction of stencil
+    stencil_compare = stencil - stencil_op;
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) - (op_west + n));
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) - (op_east + n));
+    }
+    Reset();
+
+    // Multiplication with stencil
+    stencil_compare = stencil * stencil_op;
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) * (op_west + n));
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) * (op_east + n));
+    }
+    Reset();
+
+    // Division by stencil
+    stencil_compare = stencil / stencil_op;
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) / (op_west + n));
+        EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) / (op_east + n));
+    }
+    Reset();
+
+    // Set all values
+    stencil.SetAll(1.);
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil.GetValue(Positions::WEST, n), 1.);
+        EXPECT_EQ(stencil.GetValue(Positions::EAST, n), 1.);
+    }
+    Reset();
+
+    // Test operations with with FaceMatrixStencil
+    FaceMatrixStencil stencil_f, stencil_f_compare;
+    double cf_center = 1.;
+    double cf_west = -1.;
+    double cf_east = -2.;
+    for (std::size_t n{0}; n < N; n++) {
+        stencil_f.SetValues(Positions::WEST, n, cf_west + n, cf_center + cf_west + n);
+        stencil_f.SetValues(Positions::EAST, n, cf_east + n, cf_center + cf_east + n);
+    }
+
+    // Multiplication with FaceMatrixStencil
+    stencil_f_compare = stencil * stencil_f;
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(stencil_f_compare.GetValueNeighbor(Positions::WEST, n), (cf_west + n) * (c_west + n));
+        EXPECT_EQ(stencil_f_compare.GetValueCenter(Positions::WEST, n),
+                  (cf_center + cf_west + n) * (c_west + n));
+        EXPECT_EQ(stencil_f_compare.GetValueNeighbor(Positions::EAST, n), (cf_east + n) * (c_east + n));
+        EXPECT_EQ(stencil_f_compare.GetValueCenter(Positions::EAST, n),
+                  (cf_center + cf_east + n) * (c_east + n));
+    }
+    Reset();
+}
+
+// TODO(@Dave): implement remaining cases for 2D and 3D

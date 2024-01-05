@@ -431,4 +431,194 @@ void FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::RangeCheck(
     }
 #endif
 }
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::FaceValueStencil() {
+    static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::~FaceValueStencil() {
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::FaceValueStencil(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other)
+    : coefficients(other.coefficients) {
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator=(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    if (this == &other)
+        return *this;
+
+    coefficients = other.coefficients;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*=(SC v) {
+    for (auto& c : coefficients)
+        c *= v;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*(SC v) const {
+    FaceValueStencil<GridType, N> s(*this);
+    s *= v;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/=(SC v) {
+    for (auto& c : coefficients)
+        c /= v;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/(SC v) const {
+    FaceValueStencil<GridType, N> s(*this);
+    s /= v;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator+=(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    coefficients += other.coefficients;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator+(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    FaceValueStencil<GridType, N> s(*this);
+    s += other;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator-=(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    coefficients -= other.coefficients;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator-(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    FaceValueStencil<GridType, N> s(*this);
+    s -= other;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*=(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    coefficients *= other.coefficients;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    FaceValueStencil<GridType, N> s(*this);
+    s *= other;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/=(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) {
+    coefficients /= other.coefficients;
+    return *this;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator/(
+    const FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>& other) const {
+    FaceValueStencil<GridType, N> s(*this);
+    s /= other;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::operator*(
+    const FaceMatrixStencil<GridType, N>& other) const {
+    FaceMatrixStencil<GridType, N> s(other);
+    s.GetDataCenter() *= coefficients;
+    s.GetDataNeighbor() *= coefficients;
+    return s;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::SetValue(Positions pos, std::size_t n, SC v) {
+    RangeCheck(__func__, pos, n);
+    coefficients[n][static_cast<char>(pos) - 1] = v;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::SetAll(SC v) {
+    for (auto& a : coefficients)
+        for (auto& e : a)
+            e = v;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+SC& FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetValue(Positions pos, std::size_t n) {
+    RangeCheck(__func__, pos, n);
+    return coefficients[n][static_cast<char>(pos) - 1];
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+SC FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetValue(Positions pos, std::size_t n) const {
+    RangeCheck(__func__, pos, n);
+    return coefficients[n][static_cast<char>(pos) - 1];
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+typename FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::DataArray&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetData() {
+    return coefficients;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+const typename FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::DataArray&
+FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::GetData() const {
+    return coefficients;
+}
+
+template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
+void FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>::RangeCheck(
+    std::string func, Positions pos, std::size_t n) const {
+#ifndef DARE_NDEBUG
+    if (static_cast<char>(pos) > NUM_FACES) {
+        std::cerr << "In " << func << ": Provided position (" << std::to_string(static_cast<char>(pos)) << ") "
+                  << "is out of range of " << std::to_string(NUM_FACES + 1) << "-point center based stencil\n";
+    } else if (static_cast<char>(pos) == 0) {
+        std::cerr << "In " << func << ": The face stencil cannot take CENTER as an argument!\n";
+    }
+    if (n >= NUM_COMPONENTS) {
+        std::cerr << "In " << func << ": Provided component ID (" << std::to_string(n) << ") "
+                  << "is out of range of " << std::to_string(NUM_COMPONENTS) << " components\n";
+    }
+#endif
+}
 }  // end namespace dare::Data
