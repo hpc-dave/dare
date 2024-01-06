@@ -657,3 +657,57 @@ TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockIntegration) {
         EXPECT_EQ(mb.Get(n, Positions::CENTER), 2.* A[0] * dn_r[0]);
     }
 }
+
+TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockIntegration) {
+    GridType::Options opt{0, 0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    LO ordinal_internal = 0;
+    dare::utils::Vector<N, std::size_t> size_hint(5, 5, 5);
+    MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
+    Divergence div(grid_rep, ordinal_internal);
+    Gradient grad(grid_rep, ordinal_internal);
+
+    mb = -1. * div(grad(mb));
+
+    VecSC A = grid_rep.GetFaceArea();
+    VecSC dn_r;
+    for (auto& e : dn_r)
+        e = 1.;
+    dn_r /= grid_rep.GetDistances();
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(mb.Get(n, Positions::WEST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, Positions::EAST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, Positions::SOUTH), -A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, Positions::NORTH), -A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * A[0] * dn_r[0] + 2. * A[1] * dn_r[1]);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockIntegration) {
+    GridType::Options opt{0, 0, 0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    LO ordinal_internal = 0;
+    dare::utils::Vector<N, std::size_t> size_hint(7, 7, 7);
+    MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
+    Divergence div(grid_rep, ordinal_internal);
+    Gradient grad(grid_rep, ordinal_internal);
+
+    mb = -1. * div(grad(mb));
+
+    VecSC A = grid_rep.GetFaceArea();
+    VecSC dn_r;
+    for (auto& e : dn_r)
+        e = 1.;
+    dn_r /= grid_rep.GetDistances();
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(mb.Get(n, Positions::WEST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, Positions::EAST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, Positions::SOUTH), -A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, Positions::NORTH), -A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, Positions::BOTTOM), -A[2] * dn_r[2]);
+        EXPECT_EQ(mb.Get(n, Positions::TOP),    -A[2] * dn_r[2]);
+        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * A[0] * dn_r[0] + 2. * A[1] * dn_r[1]+ 2. * A[2] * dn_r[2]);
+    }
+}
