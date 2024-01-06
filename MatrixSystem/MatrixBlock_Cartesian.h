@@ -29,18 +29,12 @@
 
 #include "MatrixBlock_Default.h"
 #include "../Grid/Cartesian.h"
+#include "Stencils_Cartesian.h"
 
 namespace dare::Matrix {
 
-enum class CartesianNeighbor : char {
-    CENTER = 0,
-    WEST = 1,
-    EAST = 2,
-    SOUTH = 3,
-    NORTH = 4,
-    BOTTOM = 5,
-    TOP = 6
-};
+using CartesianNeighbor = dare::Data::CartesianNeighbor;
+
 enum class CartesianNeighborBitSet : char {
     CENTER = 1 << static_cast<char>(CartesianNeighbor::CENTER),
     WEST = 1 << static_cast<char>(CartesianNeighbor::WEST),
@@ -150,20 +144,66 @@ public:
      */
     bool IsStencilLocal() const;
 
+    /*!
+     * @brief access to value of neighbor
+     * @tparam CNB neighbor ID
+     * @param n component id
+     */
     template <CartesianNeighbor CNB>
     SC& Get(std::size_t n);
 
+    /*!
+     * @brief non-templated access to value of neighbor
+     * @tparam CNB neighbor ID
+     * @param n component id
+     */
     SC& Get(std::size_t n, CartesianNeighbor cnb);
 
+    /*!
+     * @brief const access to value of neighbor
+     * @tparam CNB neighbor ID
+     * @param n component id
+     */
     template <CartesianNeighbor CNB>
     SC Get(std::size_t n) const;
 
+    /*!
+     * @brief non-templated const access to value of neighbor
+     * @tparam CNB neighbor ID
+     * @param n component id
+     */
     SC Get(std::size_t n, CartesianNeighbor cnb) const;
 
+    /*!
+     * @brief Inquiry, if a value was set
+     * @tparam CNB neighbor ID
+     * @param n component ID
+     */
     template <CartesianNeighbor CNB>
     bool IsSet(std::size_t n) const;
 
+    /*!
+     * @brief moves intermediate values to final ordinal & coefficient array
+     */
     void Finalize();
+
+    /*!
+     * @brief assigns values from a stencil
+     * @param s center stencil with matrix values
+     */
+    SelfType& operator=(const dare::Data::CenterMatrixStencil<GridType, N>& s);
+
+    /*!
+     * @brief adds values from stencil
+     * @param s center stencil with matrix values
+     */
+    SelfType& operator+=(const dare::Data::CenterMatrixStencil<GridType, N>& s);
+
+    /*!
+     * @brief subtracts values of stencil
+     * @param s center stencil with matrix values
+     */
+    SelfType& operator-=(const dare::Data::CenterMatrixStencil<GridType, N>& s);
 
 private:
     template <typename Space>

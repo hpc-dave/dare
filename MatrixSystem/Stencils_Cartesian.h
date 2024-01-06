@@ -28,9 +28,18 @@
 #include "../Data/Stencil.h"
 #include "../Utilities/Vector.h"
 #include "../Grid/Cartesian.h"
-#include "MatrixBlock_Cartesian.h"
 
 namespace dare::Data {
+
+enum class CartesianNeighbor : char {
+    CENTER = 0,
+    WEST = 1,
+    EAST = 2,
+    SOUTH = 3,
+    NORTH = 4,
+    BOTTOM = 5,
+    TOP = 6
+};
 
 /*!
  * @brief stores stencil based on cell centers
@@ -45,7 +54,7 @@ public:
     static const std::size_t NUM_ENTRIES{Dim * 2 + 1};                      //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;                //!< type of grid
-    using Positions = dare::Matrix::CartesianNeighbor;                      //!< convenient position definion
+    using Positions = CartesianNeighbor;                                    //!< convenient position definion
     using ComponentArray = dare::utils::Vector<NUM_ENTRIES, SC>;            //!< stencil of each component
     using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
 
@@ -242,8 +251,8 @@ public:
     static const std::size_t NUM_FACES{Dim * 2};                            //!< faces in stencil
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;                //!< type of grid
-    using Positions = dare::Matrix::CartesianNeighbor;                      //!< convenient position definion
-    using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;            //!< stencil of each component
+    using Positions = CartesianNeighbor;                                    //!< convenient position definion
+    using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;              //!< stencil of each component
     using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
 
     FaceMatrixStencil();
@@ -398,8 +407,8 @@ public:
     static const std::size_t NUM_FACES{Dim * 2};                            //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;                //!< type of grid
-    using Positions = dare::Matrix::CartesianNeighbor;                      //!< convenient position definion
-    using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;            //!< stencil of each component
+    using Positions = CartesianNeighbor;                                    //!< convenient position definion
+    using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;              //!< stencil of each component
     using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
 
     /*!

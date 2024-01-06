@@ -37,15 +37,7 @@ public:
     using FaceValueStencil = dare::Data::FaceValueStencil<GridType, N>;
 
     void SetUp() {
-        // const LO num_ghost{2};
-        // grid = std::make_unique<GridType>(&exec_man,
-        //                                   dare::test::GetResolutionTestCartesianGrid<Dim, GO>(),
-        //                                   dare::test::GetSizeTestCartesianGrid<Dim, SC>(),
-        //                                   num_ghost);
     }
-
-    // std::unique_ptr<GridType> grid;
-    // dare::mpi::ExecutionManager exec_man;
 };
 
 using IntegrationTestCartesianStencils1D = IntegrationTestCartesianStencils<1>;

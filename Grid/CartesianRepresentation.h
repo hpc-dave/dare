@@ -97,6 +97,17 @@ public:
     VecSC GetCoordinatesFace(const Index& ind, std::size_t dir) const;
 
     /*!
+     * @brief returns the distances between two cell centers
+     * @return 
+     */
+    const VecSC& GetDistances() const;
+
+    /*!
+     * @brief returns the face areas in each dimension
+     */
+    const VecSC& GetFaceArea() const;
+
+    /*!
      * @brief number of cells in local subgrid including ghost/halo cells
      */
     LO GetNumberLocalCells() const;

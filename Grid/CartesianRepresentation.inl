@@ -200,6 +200,18 @@ CartesianRepresentation<Dim, LO, GO, SC>::GetCoordinatesFace(const Index& ind, s
 }
 
 template <std::size_t Dim, class LO, class GO, class SC>
+const typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC&
+CartesianRepresentation<Dim, LO, GO, SC>::GetDistances() const {
+    return grid->GetCellWidth();
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
+const typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC&
+CartesianRepresentation<Dim, LO, GO, SC>::GetFaceArea() const {
+    return grid->GetFaceArea();
+}
+
+template <std::size_t Dim, class LO, class GO, class SC>
 LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCellsInternal() const {
     TestIfInitialized(__func__);
     LO num_cells{1};
