@@ -40,7 +40,7 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
                                       Distributor dist)
     : resolution_global(res),
       size_global(size),
-      cell_volume(0.),
+      cell_volume(1.),
       num_ghost(_num_ghost),
       id_boundaries(BOUNDARIES_NONE),
       periodicity(periodic),

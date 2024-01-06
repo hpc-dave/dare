@@ -108,7 +108,7 @@ Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
         if constexpr(Dim > 1) {
             s_f.SetValue(Positions::SOUTH, n,
                          (s_c.GetValue(Positions::CENTER, n) - s_c.GetValue(Positions::SOUTH, n)) * dn_r[1]);
-            s_f.SetValue(Positions::EAST, n,
+            s_f.SetValue(Positions::NORTH, n,
                          (s_c.GetValue(Positions::NORTH, n) - s_c.GetValue(Positions::CENTER, n)) * dn_r[1]);
         }
         if constexpr (Dim > 2) {
@@ -132,27 +132,27 @@ Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator() (
 
     Index ind_nb(ind);
     ind_nb.i() = ind.i() - 1;
-    s_f.SetValue(Positions::WEST, 1,
+    s_f.SetValue(Positions::WEST, 0,
                  (field.At(ind, n) - field.At(ind_nb, n)) * dn_r[0]);
     ind_nb.i() = ind.i() + 1;
-    s_f.SetValue(Positions::EAST, 1,
+    s_f.SetValue(Positions::EAST, 0,
                  (field.At(ind_nb, n) - field.At(ind, n)) * dn_r[0]);
     if constexpr (Dim > 1) {
         ind_nb = ind;
         ind_nb.j() = ind.j() - 1;
-        s_f.SetValue(Positions::SOUTH, 1,
+        s_f.SetValue(Positions::SOUTH, 0,
                      (field.At(ind, n) - field.At(ind_nb, n)) * dn_r[1]);
         ind_nb.j() = ind.j() + 1;
-        s_f.SetValue(Positions::NORTH, 1,
+        s_f.SetValue(Positions::NORTH, 0,
                      (field.At(ind_nb, n) - field.At(ind, n)) * dn_r[1]);
     }
     if constexpr (Dim > 2) {
         ind_nb = ind;
         ind_nb.k() = ind.k() - 1;
-        s_f.SetValue(Positions::BOTTOM, 1,
+        s_f.SetValue(Positions::BOTTOM, 0,
                      (field.At(ind, n) - field.At(ind_nb, n)) * dn_r[2]);
         ind_nb.k() = ind.k() + 1;
-        s_f.SetValue(Positions::TOP, 1,
+        s_f.SetValue(Positions::TOP, 0,
                      (field.At(ind_nb, n) - field.At(ind, n)) * dn_r[2]);
     }
     return s_f;
@@ -165,20 +165,20 @@ Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
     const dare::Data::CenterValueStencil<GridType, N>& s_c, std::size_t n) const {
     dare::Data::FaceValueStencil<GridType, 1> s_f;
 
-    s_f.SetValue(Positions::WEST, 1,
+    s_f.SetValue(Positions::WEST, 0,
                  (s_c.GetValue(Positions::CENTER, n) - s_c.GetValue(Positions::WEST, n)) * dn_r[0]);
-    s_f.SetValue(Positions::EAST, 1,
+    s_f.SetValue(Positions::EAST, 0,
                  (s_c.GetValue(Positions::EAST, n) - s_c.GetValue(Positions::CENTER, n)) * dn_r[0]);
     if constexpr (Dim > 1) {
-        s_f.SetValue(Positions::SOUTH, 1,
+        s_f.SetValue(Positions::SOUTH, 0,
                      (s_c.GetValue(Positions::CENTER, n) - s_c.GetValue(Positions::SOUTH, n)) * dn_r[1]);
-        s_f.SetValue(Positions::EAST, 1,
+        s_f.SetValue(Positions::NORTH, 0,
                      (s_c.GetValue(Positions::NORTH, n) - s_c.GetValue(Positions::CENTER, n)) * dn_r[1]);
     }
     if constexpr (Dim > 2) {
-        s_f.SetValue(Positions::BOTTOM, 1,
+        s_f.SetValue(Positions::BOTTOM, 0,
                      (s_c.GetValue(Positions::CENTER, n) - s_c.GetValue(Positions::BOTTOM, n)) * dn_r[2]);
-        s_f.SetValue(Positions::TOP, 1,
+        s_f.SetValue(Positions::TOP, 0,
                      (s_c.GetValue(Positions::TOP, n) - s_c.GetValue(Positions::CENTER, n)) * dn_r[2]);
     }
     return s_f;
@@ -215,6 +215,7 @@ Divergence<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
             div_v[n] -= A[2] * s.GetValue(Positions::BOTTOM, n);
         }
     }
+    return div_v;
 }
 
 template <std::size_t Dim, typename LO, typename GO, typename SC>
@@ -249,7 +250,7 @@ Divergence<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
         }
 
         // Divergence in Z
-        if constexpr (Dim > 1) {
+        if constexpr (Dim > 2) {
             SC coef_c = s.GetValueCenter(Positions::TOP, n);
             SC coef_f = s.GetValueNeighbor(Positions::TOP, n);
             s_c.GetValue(Positions::TOP, n)     = A[2] * coef_f;
@@ -261,6 +262,7 @@ Divergence<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
             s_c.GetValue(Positions::CENTER, n) -=  A[2] * coef_c;
         }
     }
+    return s_c;
 }
 
 }  // end namespace dare::Matrix

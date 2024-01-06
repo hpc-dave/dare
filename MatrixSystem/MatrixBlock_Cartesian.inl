@@ -273,6 +273,9 @@ SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t n) {
     } else if constexpr (IsSame<CartesianNeighbor::TOP, CNB>() && (Dim > 2)) {
         GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::TOP);
         return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::TOP));
+    } else {
+        std::cerr << "In " << __func__ << ": The neighbor indicator is out of bounds!" << std::endl;
+        return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::CENTER));
     }
 }
 
@@ -280,20 +283,29 @@ template <std::size_t Dim, typename O, typename SC, std::size_t N>
 SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t n, CartesianNeighbor cnb) {
     switch (cnb) {
     case CartesianNeighbor::CENTER:
-        return Get<CartesianNeighbor::CENTER>();
+        return Get<CartesianNeighbor::CENTER>(n);
+        break;
     case CartesianNeighbor::WEST:
-        return Get<CartesianNeighbor::WEST>();
+        return Get<CartesianNeighbor::WEST>(n);
+        break;
     case CartesianNeighbor::EAST:
-        return Get<CartesianNeighbor::EAST>();
+        return Get<CartesianNeighbor::EAST>(n);
+        break;
     case CartesianNeighbor::SOUTH:
-        return Get<CartesianNeighbor::SOUTH>();
+        return Get<CartesianNeighbor::SOUTH>(n);
+        break;
     case CartesianNeighbor::NORTH:
-        return Get<CartesianNeighbor::NORTH>();
+        return Get<CartesianNeighbor::NORTH>(n);
+        break;
     case CartesianNeighbor::BOTTOM:
-        return Get<CartesianNeighbor::BOTTOM>();
+        return Get<CartesianNeighbor::BOTTOM>(n);
+        break;
     case CartesianNeighbor::TOP:
-        return Get<CartesianNeighbor::TOP>();
+        return Get<CartesianNeighbor::TOP>(n);
+        break;
     }
+    std::cerr << "something horrible happened here: " << __func__ << std::endl;
+    return Get<CartesianNeighbor::CENTER>(n);
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
@@ -313,6 +325,9 @@ SC MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t n) const {
         return neighbors(n, CartesianNeighbor::BOTTOM);
     } else if constexpr (IsSame<CartesianNeighbor::TOP, CNB>() && (Dim > 2)) {
         return neighbors(n, CartesianNeighbor::TOP);
+    } else {
+        std::cerr << "In " << __func__ << ": The neighbor indicator is out of bounds!" << std::endl;
+        return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::CENTER));
     }
 }
 
@@ -405,16 +420,16 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator=(
     const dare::Data::CenterMatrixStencil<GridType, N>& s) {
     for (std::size_t n{0}; n < N; n++) {
-        this->Get<CartesianNeighbor::CENTER>() = s.GetValue(CartesianNeighbor::CENTER, n);
-        this->Get<CartesianNeighbor::WEST>() = s.GetValue(CartesianNeighbor::WEST, n);
-        this->Get<CartesianNeighbor::EAST>() = s.GetValue(CartesianNeighbor::EAST, n);
+        Get<CartesianNeighbor::CENTER>(n) = s.GetValue(CartesianNeighbor::CENTER, n);
+        Get<CartesianNeighbor::WEST>(n) = s.GetValue(CartesianNeighbor::WEST, n);
+        Get<CartesianNeighbor::EAST>(n) = s.GetValue(CartesianNeighbor::EAST, n);
         if constexpr (Dim > 1) {
-            this->Get<CartesianNeighbor::SOUTH>() = s.GetValue(CartesianNeighbor::SOUTH, n);
-            this->Get<CartesianNeighbor::NORTH>() = s.GetValue(CartesianNeighbor::NORTH, n);
+            Get<CartesianNeighbor::SOUTH>(n) = s.GetValue(CartesianNeighbor::SOUTH, n);
+            Get<CartesianNeighbor::NORTH>(n) = s.GetValue(CartesianNeighbor::NORTH, n);
         }
         if constexpr (Dim > 2) {
-            this->Get<CartesianNeighbor::BOTTOM>() = s.GetValue(CartesianNeighbor::BOTTOM, n);
-            this->Get<CartesianNeighbor::TOP>() = s.GetValue(CartesianNeighbor::TOP, n);
+            Get<CartesianNeighbor::BOTTOM>(n) = s.GetValue(CartesianNeighbor::BOTTOM, n);
+            Get<CartesianNeighbor::TOP>(n) = s.GetValue(CartesianNeighbor::TOP, n);
         }
     }
     return *this;
@@ -425,16 +440,16 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator+=(
     const dare::Data::CenterMatrixStencil<GridType, N>& s) {
     for (std::size_t n{0}; n < N; n++) {
-        this->Get<CartesianNeighbor::CENTER>() += s.GetValue(CartesianNeighbor::CENTER, n);
-        this->Get<CartesianNeighbor::WEST>() += s.GetValue(CartesianNeighbor::WEST, n);
-        this->Get<CartesianNeighbor::EAST>() += s.GetValue(CartesianNeighbor::EAST, n);
+        Get<CartesianNeighbor::CENTER>(n) += s.GetValue(CartesianNeighbor::CENTER, n);
+        Get<CartesianNeighbor::WEST>(n) += s.GetValue(CartesianNeighbor::WEST, n);
+        Get<CartesianNeighbor::EAST>(n) += s.GetValue(CartesianNeighbor::EAST, n);
         if constexpr (Dim > 1) {
-            this->Get<CartesianNeighbor::SOUTH>() += s.GetValue(CartesianNeighbor::SOUTH, n);
-            this->Get<CartesianNeighbor::NORTH>() += s.GetValue(CartesianNeighbor::NORTH, n);
+            Get<CartesianNeighbor::SOUTH>(n) += s.GetValue(CartesianNeighbor::SOUTH, n);
+            Get<CartesianNeighbor::NORTH>(n) += s.GetValue(CartesianNeighbor::NORTH, n);
         }
         if constexpr (Dim > 2) {
-            this->Get<CartesianNeighbor::BOTTOM>() += s.GetValue(CartesianNeighbor::BOTTOM, n);
-            this->Get<CartesianNeighbor::TOP>() += s.GetValue(CartesianNeighbor::TOP, n);
+            Get<CartesianNeighbor::BOTTOM>(n) += s.GetValue(CartesianNeighbor::BOTTOM, n);
+            Get<CartesianNeighbor::TOP>(n) += s.GetValue(CartesianNeighbor::TOP, n);
         }
     }
     return *this;
