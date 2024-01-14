@@ -22,33 +22,26 @@
  * SOFTWARE.
  */
 
-#ifndef MATH_INTERPOLATION_H_
-#define MATH_INTERPOLATION_H_
+#include <gtest/gtest.h>
 
-#include "../Data/GridVector.h"
-#include "Pow.h"
+#include "../Interpolation_Cartesian.h"
+#include "../../Grid/DefaultTypes.h"
 
-namespace dare::math {
+namespace dare::test {
 
-/*!
- * @brief dummy for SFINAE
- * @tparam GridType type of grid
- * @tparam SC type of scalar
- * @tparam N number of components
- * @param target target grid
- * @param ind_target indices of the target cell
- * @param field field with values
- * @param n component ID
- * @return 
- */
-template<typename GridType, typename SC, std::size_t N>
-SC InterpolateToFace(const typename GridType::GridRepresentation& target,
-                     const typename GridType::Index& ind_target,
-                     const typename GridType::NeighborID face,
-                     const Data::GridVector<GridType, SC, N>& field,
-                     std::size_t n) {
+template <std::size_t Dim>
+dare::utils::Vector<Dim, defaults::GlobalOrdinalType> GetResolutionTestCartesianInterpolation() {
+    dare::utils::Vector < Dim, defaults::GlobalOrdinalType> res;
+    for (std::size_t n{0}; n < Dim; n++)
+        res[n] = 10 + n;
+    return res;
+}
+template <std::size_t Dim>
+dare::utils::Vector<Dim, defaults::ScalarType> GetSizeTestCartesianInterpolation() {
+    dare::utils::Vector<Dim, defaults::ScalarType> size;
+    for (std::size_t n{0}; n < Dim; n++)
+        size[n] = 1. + n;
+    return size;
 }
 
-}  // end namespace dare::math
-
-#endif  // MATH_INTERPOLATION_H_
+}  // namespace dare::test

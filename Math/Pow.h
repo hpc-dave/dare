@@ -28,7 +28,7 @@
 namespace dare::math {
 
 template <std::size_t BASE, std::size_t EXP>
-constexpr [[nodiscard]] std::size_t Pow() {
+[[nodiscard]] constexpr std::size_t Pow() {
     if constexpr (EXP == 0) {
         return 1;
     } else {
@@ -36,7 +36,7 @@ constexpr [[nodiscard]] std::size_t Pow() {
     }
 }
 template <int BASE, std::size_t EXP>
-constexpr [[nodiscard]] std::size_t Pow() {
+[[nodiscard]] constexpr std::size_t Pow() {
     if constexpr (EXP == 0) {
         return 1;
     } else {
@@ -45,7 +45,7 @@ constexpr [[nodiscard]] std::size_t Pow() {
 }
 
 template <typename BASE, std::size_t EXP>
-[[nodiscard]] std::size_t Pow(Base base) {
+[[nodiscard]] std::size_t Pow(BASE base) {
     if constexpr (EXP == 0) {
         return 1;
     } else if constexpr(EXP < 0) {
@@ -55,13 +55,16 @@ template <typename BASE, std::size_t EXP>
     }
 }
 
-template <typename T, typename TEnable = std::enable_if_t<std::is_integral_v<T>>>
-[[nodiscard]] std::size_t Pow(T base, T exp) {
-    T res{1};
-    if constexpr (std::is_signed_v<T>) {
-        assert(exp > 0);
+template <typename TBase, typename TExp, typename TEnable = std::enable_if_t<std::is_integral_v<TExp>>>
+[[nodiscard]] TBase Pow(TBase base, TExp exp) {
+    TBase res{1};
+    if constexpr (std::is_signed_v<TExp>) {
+        if (exp < 0) {
+            base = static_cast<TBase>(1) / base;
+            exp = -exp;
+        }
     }
-    for (T n{0}; n < exp; ++n) {
+    for (TExp n{0}; n < exp; ++n) {
         res *= base;
     }
     return res;
