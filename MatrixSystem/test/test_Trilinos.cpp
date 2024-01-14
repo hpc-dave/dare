@@ -39,9 +39,9 @@ public:
     using GridRepresentation = typename GridType::Representation;
     static const std::size_t N = dare::Matrix::test::N;
     using FieldType = dare::Data::GridVector<GridType, SC, N>;
-    using GOViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::GOViewType;
-    using LOViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::LOViewType;
-    using SViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::SViewType;
+    using GOViewType = typename dare::Matrix::Trilinos<SC>::GOViewType;
+    using LOViewType = typename dare::Matrix::Trilinos<SC>::LOViewType;
+    using SViewType = typename dare::Matrix::Trilinos<SC>::SViewType;
     GridType grid;
     FieldType field;
     dare::mpi::ExecutionManager exec_man;
@@ -53,7 +53,7 @@ public:
 };
 
 TEST_F(TrilinosTest, Initialize) {
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
     EXPECT_TRUE(trilinos.IsInitialized());
 }
 
@@ -91,7 +91,7 @@ TEST_F(TrilinosTest, Build) {
         }
     };
 
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
     trilinos.Build(g_rep, field, functor, false);
 
     LO num_rows = grid.local_size * N;
@@ -317,8 +317,8 @@ TEST_F(TrilinosTest, Build) {
 }
 
 // TEST_F(TrilinosTest, SolverBiCGStab2) {
-//     auto package = dare::Matrix::TrilinosSolver<SC, LO, GO>::SolverPackage::BumbleBee;
-//     // using dare::Matrix::TrilinosSolver<SC, LO, GO>::PreCondPackage;
+//     auto package = dare::Matrix::TrilinosSolver<SC>::SolverPackage::BumbleBee;
+//     // using dare::Matrix::TrilinosSolver<SC>::PreCondPackage;
 //     GridRepresentation g_rep{grid.GetRepresentation()};
 
 //     for (LO node = 0; node < grid.local_size; node++) {
@@ -358,10 +358,10 @@ TEST_F(TrilinosTest, Build) {
 //         }
 //     };
 
-//     dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
+//     dare::Matrix::Trilinos<SC> trilinos(&exec_man);
 //     trilinos.Build(g_rep, field, functor, false);
 
-//     dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+//     dare::Matrix::TrilinosSolver<SC> solver;
 
 //     Teuchos::RCP<Teuchos::ParameterList> param = Teuchos::rcp(new Teuchos::ParameterList());
 //     param->set("Convergence Tolerance", 1e-13);

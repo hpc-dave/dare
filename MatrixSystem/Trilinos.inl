@@ -23,31 +23,31 @@
  */
 
 namespace dare::Matrix {
-template <typename SC, typename LO, typename GO>
-Trilinos<SC, LO, GO>::Trilinos()
+template <typename SC>
+Trilinos<SC>::Trilinos()
     : exec_man(nullptr), g_stencil(0), l_stencil(0) {
 }
 
-template <typename SC, typename LO, typename GO>
-Trilinos<SC, LO, GO>::Trilinos(dare::mpi::ExecutionManager* exman)
+template <typename SC>
+Trilinos<SC>::Trilinos(dare::mpi::ExecutionManager* exman)
     : exec_man(exman), g_stencil(0), l_stencil(0) {
     dare::utils::InitializationTracker::Initialize();
     comm = Teuchos::rcp(new Teuchos::MpiComm<int>(exec_man->GetCommunicator()));
 }
 
-template <typename SC, typename LO, typename GO>
-Trilinos<SC, LO, GO>::~Trilinos() {}
+template <typename SC>
+Trilinos<SC>::~Trilinos() {}
 
-template <typename SC, typename LO, typename GO>
-void Trilinos<SC, LO, GO>::Initialize(dare::mpi::ExecutionManager* exman) {
+template <typename SC>
+void Trilinos<SC>::Initialize(dare::mpi::ExecutionManager* exman) {
     dare::utils::InitializationTracker::Initialize();
     exec_man = exman;
     comm = Teuchos::rcp(new Teuchos::MpiComm<int>(exec_man->GetCommunicator()));
 }
 
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
-void Trilinos<SC, LO, GO>::Build(const typename Grid::Representation& grid,
+void Trilinos<SC>::Build(const typename Grid::Representation& grid,
                                  const dare::Data::GridVector<Grid, SC, N>& field,
                                  Lambda functor,
                                  bool rebuild) {
@@ -59,9 +59,9 @@ void Trilinos<SC, LO, GO>::Build(const typename Grid::Representation& grid,
         BuildUpdate(grid, field, functor);
 }
 
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
-void Trilinos<SC, LO, GO>::SetB(const typename Grid::Representation& grid,
+void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
                                 const dare::Data::GridVector<Grid, SC, N>& field,
                                 Lambda functor) {
     const std::size_t num_cells = grid.GetNumberLocalCellsInternal();
@@ -108,64 +108,64 @@ void Trilinos<SC, LO, GO>::SetB(const typename Grid::Representation& grid,
     }
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<typename Trilinos<SC, LO, GO>::MatrixType>& Trilinos<SC, LO, GO>::GetA() {
+template <typename SC>
+Teuchos::RCP<typename Trilinos<SC>::MatrixType>& Trilinos<SC>::GetA() {
     return A;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<typename Trilinos<SC, LO, GO>::VecType>& Trilinos<SC, LO, GO>::GetB() {
+template <typename SC>
+Teuchos::RCP<typename Trilinos<SC>::VecType>& Trilinos<SC>::GetB() {
     return B;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<typename Trilinos<SC, LO, GO>::VecType>& Trilinos<SC, LO, GO>::GetX() {
+template <typename SC>
+Teuchos::RCP<typename Trilinos<SC>::VecType>& Trilinos<SC>::GetX() {
     return x;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<typename Trilinos<SC, LO, GO>::OpType>& Trilinos<SC, LO, GO>::GetM() {
+template <typename SC>
+Teuchos::RCP<typename Trilinos<SC>::OpType>& Trilinos<SC>::GetM() {
     return M;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<const typename Trilinos<SC, LO, GO>::MapType>& Trilinos<SC, LO, GO>::GetMap() {
+template <typename SC>
+Teuchos::RCP<const typename Trilinos<SC>::MapType>& Trilinos<SC>::GetMap() {
     return map;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<const typename Trilinos<SC, LO, GO>::MatrixType> Trilinos<SC, LO, GO>::GetA() const {
+template <typename SC>
+Teuchos::RCP<const typename Trilinos<SC>::MatrixType> Trilinos<SC>::GetA() const {
     return A;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<const typename Trilinos<SC, LO, GO>::VecType> Trilinos<SC, LO, GO>::GetB() const {
+template <typename SC>
+Teuchos::RCP<const typename Trilinos<SC>::VecType> Trilinos<SC>::GetB() const {
     return B;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<const typename Trilinos<SC, LO, GO>::VecType> Trilinos<SC, LO, GO>::GetX() const {
+template <typename SC>
+Teuchos::RCP<const typename Trilinos<SC>::VecType> Trilinos<SC>::GetX() const {
     return x;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<const typename Trilinos<SC, LO, GO>::OpType> Trilinos<SC, LO, GO>::GetM() const {
+template <typename SC>
+Teuchos::RCP<const typename Trilinos<SC>::OpType> Trilinos<SC>::GetM() const {
     return M;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<const typename Trilinos<SC, LO, GO>::MapType> Trilinos<SC, LO, GO>::GetMap() const {
+template <typename SC>
+Teuchos::RCP<const typename Trilinos<SC>::MapType> Trilinos<SC>::GetMap() const {
     return map;
 }
 
-template <typename SC, typename LO, typename GO>
-void Trilinos<SC, LO, GO>::SetInitialGuess(const SC value) {
+template <typename SC>
+void Trilinos<SC>::SetInitialGuess(const SC value) {
     x->putScalar(value);
 }
 
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
-void Trilinos<SC, LO, GO>::BuildNew(const typename Grid::Representation& grid,
+void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
                                     const dare::Data::GridVector<Grid, SC, N>& field,
                                     Lambda functor) {
     using MatrixBlockType = dare::Matrix::MatrixBlock<Grid, GO, SC, N>;
@@ -272,9 +272,9 @@ void Trilinos<SC, LO, GO>::BuildNew(const typename Grid::Representation& grid,
     A->fillComplete();
 }
 
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
-void Trilinos<SC, LO, GO>::BuildReplace(const typename Grid::Representation& grid,
+void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
                                         const dare::Data::GridVector<Grid, SC, N>& field,
                                         Lambda functor) {
     Teuchos::Ptr<MatrixType> ptr_A = A.ptr();
@@ -347,17 +347,17 @@ void Trilinos<SC, LO, GO>::BuildReplace(const typename Grid::Representation& gri
     A->fillComplete();
 }
 
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
-void Trilinos<SC, LO, GO>::BuildUpdate(const typename Grid::Representation& grid,
+void Trilinos<SC>::BuildUpdate(const typename Grid::Representation& grid,
                                        const dare::Data::GridVector<Grid, SC, N>& field,
                                        Lambda functor) {
     BuildNew(grid, field, functor);
 }
 
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 template <typename Grid, std::size_t N>
-void Trilinos<SC, LO, GO>::AllocateMap(const typename Grid::Representation& grid) {
+void Trilinos<SC>::AllocateMap(const typename Grid::Representation& grid) {
     using Teuchos::rcp;
 
     if (!dare::utils::InitializationTracker::IsInitialized()) {

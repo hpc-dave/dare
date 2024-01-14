@@ -31,10 +31,11 @@ class IntegrationTestCartesianStencils : public testing::Test {
 public:
     static const std::size_t N{3};
     using GridType = dare::Grid::Cartesian<Dim>;
-    using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, N>;
-    using CenterValueStencil = dare::Data::CenterValueStencil<GridType, N>;
-    using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, N>;
-    using FaceValueStencil = dare::Data::FaceValueStencil<GridType, N>;
+    using SC = double;
+    using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, SC, N>;
+    using CenterValueStencil = dare::Data::CenterValueStencil<GridType, SC, N>;
+    using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, SC, N>;
+    using FaceValueStencil = dare::Data::FaceValueStencil<GridType, SC, N>;
 
     void SetUp() {
     }

@@ -79,9 +79,9 @@ public:
     using GridRepresentation = typename GridType::Representation;
     static const std::size_t N = dare::Matrix::test::N;
     using FieldType = dare::Data::GridVector<GridType, SC, N>;
-    using GOViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::GOViewType;
-    using LOViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::LOViewType;
-    using SViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::SViewType;
+    using GOViewType = typename dare::Matrix::Trilinos<SC>::GOViewType;
+    using LOViewType = typename dare::Matrix::Trilinos<SC>::LOViewType;
+    using SViewType = typename dare::Matrix::Trilinos<SC>::SViewType;
     GridType grid;
     FieldType field;
     dare::mpi::ExecutionManager exec_man;
@@ -166,10 +166,10 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
         }
     };
 
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
     trilinos.Build(g_rep, field, functor, false);
 
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::TrilinosSolver<SC> solver;
 
     auto precond_param = dare::Matrix::test::GetPreconditionerParameters(test_param.package_pre, test_param.type_pre);
 
@@ -181,8 +181,8 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
     Belos::ReturnType ret = solver.Solve(test_param.package, test_param.type, trilinos.GetM(),
                                          trilinos.GetA(), trilinos.GetX(), trilinos.GetB(), solver_param);
     bool is_converged = ret == Belos::ReturnType::Converged;
-    Tpetra::Vector<SC, LO, GO> r(trilinos.GetMap());
-    Tpetra::Vector<SC, LO, GO> v(trilinos.GetMap());
+    Tpetra::Vector<SC> r(trilinos.GetMap());
+    Tpetra::Vector<SC> v(trilinos.GetMap());
     r.assign(*trilinos.GetB());
 
     trilinos.GetA()->apply(*trilinos.GetX(), v);

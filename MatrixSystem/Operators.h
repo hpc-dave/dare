@@ -93,6 +93,47 @@ template<typename Grid>
 class Divergence {
 };
 
+/*!
+ * \brief dummy class for TVD schemes and SFINAE
+ * @tparam Grid type of Grid
+ * @tparam FluxLimiter type of flux-limiter
+ *
+ * This class is intended to integrate with the above designed
+ * Divergence class, therefore there is a requirement to return
+ * either a FaceMatrixStencil or FaceValueStencil.
+ * Additionally, it should be able to take constant and variable
+ * velocities as input arguments, including self-convection.
+ *
+ * Here some code examples
+ * @code{.cpp}
+ * // assuming an instance 'grid' of the Grid and 'div' of Divergence exists
+ *
+ * // Initialization may deviate per specialization, however the maximum requirement
+ * // should be the one where you specify an Index of the relevant cell and the velocity
+ * // Here the flux-limiter is left unspecified.
+ * TVD<Grid, FluxLimiter> u(grid, const dare::utils::Vector<Dim, Field>& v, Index ind);
+ *
+ * // Get flux values at faces
+ * FaceValueStencil flux_v = u * values_at_faces;
+ *
+ * // For adding to a matrix, following interface must exist
+ * FaceMatrixValues matrix_entries_at_faces;
+ * FaceMatrixStencil<Grid, N> flux_m = u * matrix_entries_at_faces;
+ *
+ * // Finally, the whole thing should be able to look as follows with the gradient operator
+ * MatrixBlock mb;
+ * FaceMatrixStencil phi;
+ * mb += div(rho * u * phi);
+ *
+ * // or
+ * dare::utils::Vector<N, SC> defect;
+ * defect = -div(rho * u);
+ * @endcode
+ */
+template<typename Grid, typename SC, typename FluxLimiter>
+class TVD {
+};
+
 }  // end namespace dare::Matrix
 
 #endif  // MATRIXSYSTEM_OPERATORS_H_

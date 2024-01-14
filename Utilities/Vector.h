@@ -727,6 +727,16 @@ public:
      */
     std::size_t GetHash() const;
 
+    /*!
+     * @brief returns sum of all elements
+     */
+    T AllSum() const;
+
+    /*!
+     * @brief returns sum of all absolute values
+     */
+    T AllAbsSum() const;
+
 private:
     /*!
      * \brief iterates over the internal values and executes arbitrary manipulation

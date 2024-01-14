@@ -28,22 +28,24 @@
 #include "../SingleHaloBuffer.h"
 
 TEST(SingleHaloBufferTest, Initialize) {
-    using LO = int32_t;
-    using GO = int64_t;
     using SC = double;
+    using BufferType = dare::mpi::SingleHaloBuffer<SC>;
+    using LO = typename BufferType::LO;
+    using GO = typename BufferType::GO;
     int test_rank{0};
     dare::mpi::ExecutionManager exman;
-    dare::mpi::SingleHaloBuffer<LO, GO, SC> buffer;
+    dare::mpi::SingleHaloBuffer<SC> buffer;
     buffer.Initialize(&exman, 0);
     ASSERT_EQ(buffer.GetPartnerRank(), test_rank);
 }
 
 TEST(SingleHaloBufferTest, CommunicateAmountHaloCellIDs) {
-    using LO = int32_t;
-    using GO = int64_t;
     using SC = double;
+    using BufferType = dare::mpi::SingleHaloBuffer<SC>;
+    using LO = typename BufferType::LO;
+    using GO = typename BufferType::GO;
     dare::mpi::ExecutionManager exman;
-    using BufferType = dare::mpi::SingleHaloBuffer<LO, GO, SC>;
+    using BufferType = dare::mpi::SingleHaloBuffer<SC>;
     std::vector<BufferType> list_buffers(exman.GetNumberProcesses());
     for (int n{0}; n < list_buffers.size(); n++)
         list_buffers[n].Initialize(&exman, n);
@@ -61,10 +63,10 @@ TEST(SingleHaloBufferTest, CommunicateAmountHaloCellIDs) {
 }
 
 TEST(SingleHaloBufferTest, ExchangeAndFill) {
-    using LO = int32_t;
-    using GO = int64_t;
     using SC = double;
-    using BufferType = dare::mpi::SingleHaloBuffer<LO, GO, SC>;
+    using BufferType = dare::mpi::SingleHaloBuffer<SC>;
+    using LO = typename BufferType::LO;
+    using GO = typename BufferType::GO;
     std::size_t num_halo_IDs = 10;
     dare::mpi::ExecutionManager exman;
     dare::test::TestField field;

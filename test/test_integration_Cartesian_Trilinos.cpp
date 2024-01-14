@@ -84,8 +84,8 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
     GridType::Options opt(0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -157,8 +157,8 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
     GridType::Options opt(1);  // staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -226,8 +226,8 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -320,8 +320,8 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_south{0.};
     const double value_north{1.};
 
@@ -414,8 +414,8 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
     GridType::Options opt(1, 0);  // staggered in X direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -502,8 +502,8 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
     GridType::Options opt(0, 1);  // staggered in Y direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_south{0.};
     const double value_north{1.};
 
@@ -590,8 +590,8 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -704,8 +704,8 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveStaggeredZ) {
     GridType::Options opt(1, 0);  // staggered in X direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_bottom{0.};
     const double value_top{1.};
 

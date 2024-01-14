@@ -47,6 +47,7 @@
 
 #include <Amesos2.hpp>
 
+#include "../Grid/DefaultTypes.h"
 #include "BiCGStab2.h"
 namespace dare::Matrix {
 
@@ -61,12 +62,14 @@ enum class SolverPackage {
     BumbleBee
 };
 
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 class TrilinosSolver {
 public:
     using ScalarType = SC;
-    using LocalOrdinalType = LO;
-    using GlobalOrdinalType = GO;
+    using LocalOrdinalType = dare::Grid::details::LocalOrdinalType;
+    using GlobalOrdinalType = dare::Grid::details::GlobalOrdinalType;
+    using LO = LocalOrdinalType;
+    using GO = GlobalOrdinalType;
     using OperatorType = Tpetra::Operator<SC, LO, GO>;
     using MatrixType = Tpetra::CrsMatrix<SC, LO, GO>;
     using VectorType = Tpetra::Vector<SC, LO, GO>;

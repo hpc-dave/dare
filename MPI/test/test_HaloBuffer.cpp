@@ -31,11 +31,12 @@
 #include "TestField.h"
 
 TEST(HaloBufferTest, Exchange) {
-    using LO = int32_t;
-    using GO = int64_t;
     using SC = double;
+    using LO = typename dare::mpi::HaloBuffer<SC>::LO;
+    using GO = typename dare::mpi::HaloBuffer<SC>::GO;
+
     dare::mpi::ExecutionManager exman;
-    dare::mpi::HaloBuffer<LO, GO, SC> buffer;
+    dare::mpi::HaloBuffer<SC> buffer;
     dare::test::TestField field;
     std::size_t cell_per_domain = 2;
     LO num_ghost = 1;

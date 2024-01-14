@@ -24,17 +24,17 @@
 
 namespace dare::Grid {
 
-template <std::size_t Dim, class LO, class GO, class SC>
-Cartesian<Dim, LO, GO, SC>::Cartesian() : exec_man(nullptr) {
+template <std::size_t Dim>
+Cartesian<Dim>::Cartesian() : exec_man(nullptr) {
     static_assert(std::is_signed_v<LO> && std::is_integral_v<LO>, "The local ordinal needs to be a signed integer!");
     static_assert(std::is_signed_v<GO> && std::is_integral_v<GO>, "The global ordinal needs to be a signed integer!");
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
+template <std::size_t Dim>
 template <typename Distributor>
-Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
-                                      const utils::Vector<Dim, GO>& res,
-                                      const utils::Vector<Dim, SC>& size,
+Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
+                                      const typename Cartesian<Dim>::VecGO& res,
+                                      const typename Cartesian<Dim>::VecSC& size,
                                       const LO _num_ghost,
                                       const VecLO& periodic,
                                       Distributor dist)
@@ -102,10 +102,10 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
     this->dare::utils::InitializationTracker::Initialize();
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
-                                      const utils::Vector<Dim, GO>& res,
-                                      const utils::Vector<Dim, SC>& size,
+template <std::size_t Dim>
+Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
+                                      const typename Cartesian<Dim>::VecGO& res,
+                                      const typename Cartesian<Dim>::VecSC& size,
                                       const LO _num_ghost,
                                       const VecLO& periodic)
     : Cartesian(_exec_man,
@@ -114,17 +114,17 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
                 _num_ghost,
                 periodic,
                 [](mpi::ExecutionManager* a,
-                   const utils::Vector<Dim, GO>& b,
-                   utils::Vector<Dim, LO>* c,
-                   utils::Vector<Dim, GO>* d) {
+                   const typename Cartesian<Dim>::VecGO& b,
+                   typename Cartesian<Dim>::VecLO* c,
+                   typename Cartesian<Dim>::VecGO* d) {
                     dare::Grid::CartesianDistribution_MPI_Dims_create(a, b, c, d);
                 }) {
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
-                                      const utils::Vector<Dim, GO>& res,
-                                      const utils::Vector<Dim, SC>& size,
+template <std::size_t Dim>
+Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
+                                      const typename Cartesian<Dim>::VecGO& res,
+                                      const typename Cartesian<Dim>::VecSC& size,
                                       const LO _num_ghost)
     : Cartesian(_exec_man,
                 res,
@@ -133,11 +133,11 @@ Cartesian<Dim, LO, GO, SC>::Cartesian(mpi::ExecutionManager* _exec_man,
                 VecLO()) {
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-Cartesian<Dim, LO, GO, SC>::~Cartesian() {}
+template <std::size_t Dim>
+Cartesian<Dim>::~Cartesian() {}
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename Cartesian<Dim, LO, GO, SC>::Representation Cartesian<Dim, LO, GO, SC>::GetRepresentation(Options opt) {
+template <std::size_t Dim>
+typename Cartesian<Dim>::Representation Cartesian<Dim>::GetRepresentation(Options opt) {
     if (!this->dare::utils::InitializationTracker::IsInitialized()) {
         exec_man->Terminate(__func__, "Grid needs to be initialized before providing a Representation");
     }
@@ -147,76 +147,78 @@ typename Cartesian<Dim, LO, GO, SC>::Representation Cartesian<Dim, LO, GO, SC>::
     return map_representations[opt];
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, SC>& Cartesian<Dim, LO, GO, SC>::GetCellWidth() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecSC& Cartesian<Dim>::GetCellWidth() const {
     return cell_width;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, SC>& Cartesian<Dim, LO, GO, SC>::GetFaceArea() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecSC& Cartesian<Dim>::GetFaceArea() const {
     return face_area;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-SC Cartesian<Dim, LO, GO, SC>::GetCellVolume() const {
+template <std::size_t Dim>
+typename Cartesian<Dim>::SC
+Cartesian<Dim>::GetCellVolume() const {
     return cell_volume;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-LO Cartesian<Dim, LO, GO, SC>::GetNumGhost() const {
+template <std::size_t Dim>
+typename Cartesian<Dim>::LO
+Cartesian<Dim>::GetNumGhost() const {
     return num_ghost;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, GO>& Cartesian<Dim, LO, GO, SC>::GetOffsetCells() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecGO& Cartesian<Dim>::GetOffsetCells() const {
     return offset_cells;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, SC>& Cartesian<Dim, LO, GO, SC>::GetOffsetSize() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecSC& Cartesian<Dim>::GetOffsetSize() const {
     return offset_size;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, LO>& Cartesian<Dim, LO, GO, SC>::GetLocalResolution() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecLO& Cartesian<Dim>::GetLocalResolution() const {
     return resolution_local;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, GO>& Cartesian<Dim, LO, GO, SC>::GetGlobalResolution() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecGO& Cartesian<Dim>::GetGlobalResolution() const {
     return resolution_global;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, SC>& Cartesian<Dim, LO, GO, SC>::GetLocalSize() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecSC& Cartesian<Dim>::GetLocalSize() const {
     return size_local;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, SC>& Cartesian<Dim, LO, GO, SC>::GetGlobalSize() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecSC& Cartesian<Dim>::GetGlobalSize() const {
     return size_global;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-uint8_t Cartesian<Dim, LO, GO, SC>::GetBoundaryID() const {
+template <std::size_t Dim>
+uint8_t Cartesian<Dim>::GetBoundaryID() const {
     return id_boundaries;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const utils::Vector<Dim, LO>& Cartesian<Dim, LO, GO, SC>::GetPeriodicity() const {
+template <std::size_t Dim>
+const typename Cartesian<Dim>::VecLO& Cartesian<Dim>::GetPeriodicity() const {
     return periodicity;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-bool Cartesian<Dim, LO, GO, SC>::IsPeriodic() const {
+template <std::size_t Dim>
+bool Cartesian<Dim>::IsPeriodic() const {
     bool is_periodic{false};
     for (auto e : periodicity)
         is_periodic |= (e != 0);
     return is_periodic;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-mpi::ExecutionManager* Cartesian<Dim, LO, GO, SC>::GetExecutionManager() const {
+template <std::size_t Dim>
+mpi::ExecutionManager* Cartesian<Dim>::GetExecutionManager() const {
     return exec_man;
 }
 

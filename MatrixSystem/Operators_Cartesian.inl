@@ -24,20 +24,21 @@
 
 namespace dare::Matrix {
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::Gradient(const GridRepresentation& _grid, LO ordinal_int)
+template <std::size_t Dim>
+Gradient<dare::Grid::Cartesian<Dim>>::Gradient(const GridRepresentation& _grid, LO ordinal_int)
     : grid(&_grid), ordinal_internal(ordinal_int) {
+    using SC = typename GridType::ScalarType;
     for (auto& e : dn_r)
         e = static_cast<SC>(1.);
     dn_r /= grid->GetDistances();
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-template <typename O, std::size_t N>
-dare::Data::FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
-Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator() (
+template <std::size_t Dim>
+template <typename SC, typename O, std::size_t N>
+dare::Data::FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
+Gradient<dare::Grid::Cartesian<Dim>>::operator() (
     const MatrixBlock<GridType, O, SC, N>&) const {
-    dare::Data::FaceMatrixStencil<GridType, N> s;
+    dare::Data::FaceMatrixStencil<GridType, SC, N> s;
     s.SetValues(Positions::WEST, 0, -dn_r[0],  dn_r[0]);
     s.SetValues(Positions::EAST, 0,  dn_r[0], -dn_r[0]);
     if constexpr (Dim > 1) {
@@ -56,12 +57,12 @@ Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator() (
     return s;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-template <std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
-Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
+template <std::size_t Dim>
+template <typename SC, std::size_t N>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
+Gradient<dare::Grid::Cartesian<Dim>>::operator()(
     const dare::Data::GridVector<GridType, SC, N>& field) const {
-    dare::Data::FaceValueStencil<GridType, N> s_f;
+    dare::Data::FaceValueStencil<GridType, SC, N> s_f;
     const LO ordinal_local = grid->MapInternalToLocal(ordinal_internal);
     Index ind = grid->MapOrdinalToIndexLocal(ordinal_local);
     for (std::size_t n{0}; n < N; n++) {
@@ -94,12 +95,12 @@ Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
     return s_f;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-template <std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
-Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
-    const dare::Data::CenterValueStencil<GridType, N>& s_c) const {
-    dare::Data::FaceValueStencil<GridType, N> s_f;
+template <std::size_t Dim>
+template <typename SC, std::size_t N>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
+Gradient<dare::Grid::Cartesian<Dim>>::operator()(
+    const dare::Data::CenterValueStencil<GridType, SC, N>& s_c) const {
+    dare::Data::FaceValueStencil<GridType, SC, N> s_f;
     for (std::size_t n{0}; n < N; n++) {
         s_f.SetValue(Positions::WEST, n,
             (s_c.GetValue(Positions::CENTER, n) - s_c.GetValue(Positions::WEST, n)) * dn_r[0]);
@@ -121,12 +122,12 @@ Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
     return s_f;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-template <std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, 1>
-Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator() (
+template <std::size_t Dim>
+template <typename SC, std::size_t N>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>
+Gradient<dare::Grid::Cartesian<Dim>>::operator()(
     const dare::Data::GridVector<GridType, SC, N>& field, std::size_t n) const {
-    dare::Data::FaceValueStencil<GridType, 1> s_f;
+    dare::Data::FaceValueStencil<GridType, SC, 1> s_f;
     const LO ordinal_local = grid->MapInternalToLocal(ordinal_internal);
     Index ind = grid->MapOrdinalToIndexLocal(ordinal_local);
 
@@ -158,12 +159,12 @@ Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator() (
     return s_f;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-template <std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, 1>
-Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
-    const dare::Data::CenterValueStencil<GridType, N>& s_c, std::size_t n) const {
-    dare::Data::FaceValueStencil<GridType, 1> s_f;
+template <std::size_t Dim>
+template <typename SC, std::size_t N>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>
+Gradient<dare::Grid::Cartesian<Dim>>::operator()(
+    const dare::Data::CenterValueStencil<GridType, SC, N>& s_c, std::size_t n) const {
+    dare::Data::FaceValueStencil<GridType, SC, 1> s_f;
 
     s_f.SetValue(Positions::WEST, 0,
                  (s_c.GetValue(Positions::CENTER, n) - s_c.GetValue(Positions::WEST, n)) * dn_r[0]);
@@ -184,19 +185,19 @@ Gradient<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
     return s_f;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-Divergence<dare::Grid::Cartesian<Dim, LO, GO, SC>>::Divergence(
+template <std::size_t Dim>
+Divergence<dare::Grid::Cartesian<Dim>>::Divergence(
     const GridRepresentation& grid, LO ordinal_internal)
     : A(grid.GetFaceArea()) {
     // the ordinal is here for the standard interface, nothing more
     // it's not really required when using the Cartesian grid instance
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-template <std::size_t N>
+template <std::size_t Dim>
+template <typename SC, std::size_t N>
 dare::utils::Vector<N, SC>
-Divergence<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
-    const dare::Data::FaceValueStencil<GridType, N>& s) const {
+Divergence<dare::Grid::Cartesian<Dim>>::operator()(
+    const dare::Data::FaceValueStencil<GridType, SC, N>& s) const {
     dare::utils::Vector<N, SC> div_v;
     for (std::size_t n{0}; n < N; n++) {
         // Divergence in X
@@ -218,12 +219,12 @@ Divergence<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
     return div_v;
 }
 
-template <std::size_t Dim, typename LO, typename GO, typename SC>
-template <std::size_t N>
-dare::Data::CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
-Divergence<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
-    const dare::Data::FaceMatrixStencil<GridType, N>& s) const {
-    dare::Data::CenterMatrixStencil<GridType, N> s_c;
+template <std::size_t Dim>
+template <typename SC, std::size_t N>
+dare::Data::CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
+Divergence<dare::Grid::Cartesian<Dim>>::operator()(
+    const dare::Data::FaceMatrixStencil<GridType, SC, N>& s) const {
+    dare::Data::CenterMatrixStencil<GridType, SC, N> s_c;
     for (std::size_t n{0}; n < N; n++) {
         // Divergence in X
         SC coef_c = s.GetValueCenter(Positions::EAST, n);
@@ -263,6 +264,86 @@ Divergence<dare::Grid::Cartesian<Dim, LO, GO, SC>>::operator()(
         }
     }
     return s_c;
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::TVD(
+    const GridRepresentation& grid,
+    LO ordinal_internal,
+    dare::utils::Vector<Dim, const dare::Data::GridVector<GridType, SC, 1>&> v)
+    : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))) {
+    // for (std::size_t dim{0}; dim < Dim; dim++) {
+    //     self_convection[dim] = grid.GetOptions()[dim] != 0;
+    // }
+    // for (std::size_t dim{0}; dim < Dim; dim++) {
+    //     Index ind_nb{ind};
+    //     SC v_low, v_up;
+    //     if (self_convection[dim]) {
+    //         Index ind_nb_far{ind_nb};
+    //         ind_nb_far[dim] -= 1;
+    //         v_low = static_cast<SC>(0.5) * (v[dim].At(ind_nb, 0) + v[dim].At(ind_nb_far, 0));
+    //         ind_nb_far = ind_nb;
+    //         ind_nb[dim] += 1;
+    //         v_up = static_cast<SC>(0.5) * (v[dim].At(ind_nb, 0) + v[dim].At(ind_nb_far, 0));
+    //     } else {
+    //         ind_nb[dim] = ind[dim] + 1;
+    //         v_low = v[dim].At(ind);
+    //         v_up = v[dim].At(ind_nb);
+    //     }
+    //     upwind[dim * 2] = v >= static_cast<SC>(0.);
+    //     ind_nb[dim] = ind[dim] + 1;
+    //     upwind[dim * 2 + 1] = v[dim].At(ind_nb, 0) >= static_cast<SC>(0.);
+    // }
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::TVD(const GridRepresentation& grid,
+                                                              LO ordinal_internal,
+                                                              const dare::utils::Vector<Dim, SC>& v)
+    : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))) {
+// #ifndef DARE_NDEBUG
+//     for (auto& e : opt) {
+//         if (e != 0) {
+//             std::cerr << "In " << __func__
+//                 << ": staggered grids are reserved for momentum equations, no self-convection required!\n";
+//         }
+//     }
+// #endif
+//     // if the velocity is constant, self-convection is senseless
+//     for (std::size_t dim{0}; dim < Dim; dim++) {
+//         self_convection[dim] = false;
+//     }
+//     for (std::size_t dim{0}; dim < Dim; dim++) {
+//         Index ind_nb{ind};
+//         upwind[dim * 2] = upwind[dim * 2 + 1] = v[dim] >= static_cast<SC>(0.);
+//     }
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::~TVD() {
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+template <std::size_t N>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC,  N>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    const dare::Data::CenterValueStencil<GridType, SC, N>& s_close,
+    const dare::Data::CenterValueStencil<GridType, SC, N>& s_far,
+    Options opt) const {
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+template <std::size_t N>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC,  N>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    const dare::Data::GridVector<GridType, SC, N>& field) const {
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+template <std::size_t N>
+dare::Data::FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::operator()(
+    const dare::Data::GridVector<GridType, SC, N>& field) const {
 }
 
 }  // end namespace dare::Matrix

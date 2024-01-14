@@ -54,10 +54,10 @@ public:
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
     using Index = typename GridType::Index;
-    using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, N>;
-    using CenterValueStencil = dare::Data::CenterValueStencil<GridType, N>;
-    using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, N>;
-    using FaceValueStencil = dare::Data::FaceValueStencil<GridType, N>;
+    using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, SC, N>;
+    using CenterValueStencil = dare::Data::CenterValueStencil<GridType, SC, N>;
+    using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, SC, N>;
+    using FaceValueStencil = dare::Data::FaceValueStencil<GridType, SC, N>;
     using Gradient = dare::Matrix::Gradient<GridType>;
     using Divergence = dare::Matrix::Divergence<GridType>;
     using MatrixBlock = dare::Matrix::MatrixBlock<GridType, LO, SC, N>;
@@ -200,7 +200,7 @@ TEST_F(IntegrationTestCartesianOperators1D, GradientFaceValuesFromField) {
     }
 
     auto s1 = grad(field, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     double v_west = field.At(ind_w, 1);
     double v_center = field.At(ind, 1);
     double v_east = field.At(ind_e, 1);
@@ -247,7 +247,7 @@ TEST_F(IntegrationTestCartesianOperators2D, GradientFaceValuesFromField) {
     }
 
     auto s1 = grad(field, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     std::size_t n = 1;
     double v_south = field.At(ind_s, n);
     double v_center = field.At(ind, n);
@@ -301,7 +301,7 @@ TEST_F(IntegrationTestCartesianOperators3D, GradientFaceValuesFromField) {
     }
 
     auto s1 = grad(field, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     std::size_t n = 1;
 
     double v_bottom = field.At(ind_bot, n);
@@ -343,7 +343,7 @@ TEST_F(IntegrationTestCartesianOperators1D, GradientFaceValuesFromStencil) {
     }
 
     auto s1 = grad(s_c, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     EXPECT_EQ(s1.GetValue(Positions::WEST, 0), (v_center - v_west) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::EAST, 0), (v_east - v_center) * dn_r[0]);
 }
@@ -382,7 +382,7 @@ TEST_F(IntegrationTestCartesianOperators2D, GradientFaceValuesFromStencil) {
     }
 
     auto s1 = grad(s_c, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     EXPECT_EQ(s1.GetValue(Positions::WEST, 0), (v_center - v_west) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::EAST, 0), (v_east - v_center) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::SOUTH, 0), (v_center - v_south) * dn_r[1]);
@@ -429,7 +429,7 @@ TEST_F(IntegrationTestCartesianOperators3D, GradientFaceValuesFromStencil) {
     }
 
     auto s1 = grad(s_c, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     EXPECT_EQ(s1.GetValue(Positions::WEST, 0), (v_center - v_west) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::EAST, 0), (v_east - v_center) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::SOUTH, 0), (v_center - v_south) * dn_r[1]);
@@ -521,7 +521,7 @@ TEST_F(IntegrationTestCartesianOperators3D, DivergenceFaceValueStencil) {
 
     VecSC A = grid_rep.GetFaceArea();
     VecSC dn_r;
-    for(auto& e : dn_r)
+    for (auto& e : dn_r)
         e = 1.;
     dn_r /= grid_rep.GetDistances();
 

@@ -24,9 +24,9 @@
 
 namespace dare::Matrix {
 
-template <typename SC, typename LO, typename GO>
-typename TrilinosSolver<SC, LO, GO>::ReturnType
-TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
+template <typename SC>
+typename TrilinosSolver<SC>::ReturnType
+TrilinosSolver<SC>::Solve(SolverPackage solver_pack,
                                   const std::string& type,
                                   Teuchos::RCP<MatrixType> A,
                                   Teuchos::RCP<VectorType> x,
@@ -37,9 +37,9 @@ TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
     return Solve(solver_pack, type, M, A, x, B, param);
 }
 
-template <typename SC, typename LO, typename GO>
-typename TrilinosSolver<SC, LO, GO>::ReturnType
-TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
+template <typename SC>
+typename TrilinosSolver<SC>::ReturnType
+TrilinosSolver<SC>::Solve(SolverPackage solver_pack,
                                   const std::string& type,
                                   Teuchos::RCP<OperatorType> M,
                                   Teuchos::RCP<MatrixType> A,
@@ -53,9 +53,9 @@ TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
     return Solve(solver_pack, type, M, A, x_m, B_m, param);
 }
 
-template <typename SC, typename LO, typename GO>
-typename TrilinosSolver<SC, LO, GO>::ReturnType
-TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
+template <typename SC>
+typename TrilinosSolver<SC>::ReturnType
+TrilinosSolver<SC>::Solve(SolverPackage solver_pack,
                                   const std::string& type,
                                   Teuchos::RCP<MatrixType> A,
                                   Teuchos::RCP<MultiVectorType> x,
@@ -66,9 +66,9 @@ TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
     return Solve(solver_pack, type, M, A, x, B, param);
 }
 
-template <typename SC, typename LO, typename GO>
-typename TrilinosSolver<SC, LO, GO>::ReturnType
-TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
+template <typename SC>
+typename TrilinosSolver<SC>::ReturnType
+TrilinosSolver<SC>::Solve(SolverPackage solver_pack,
                                   const std::string& type,
                                   Teuchos::RCP<OperatorType> M,
                                   Teuchos::RCP<MatrixType> A,
@@ -91,9 +91,9 @@ TrilinosSolver<SC, LO, GO>::Solve(SolverPackage solver_pack,
     }
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<typename TrilinosSolver<SC, LO, GO>::OperatorType>
-TrilinosSolver<SC, LO, GO>::BuildPreconditioner(PreCondPackage precond_package,
+template <typename SC>
+Teuchos::RCP<typename TrilinosSolver<SC>::OperatorType>
+TrilinosSolver<SC>::BuildPreconditioner(PreCondPackage precond_package,
                                                 const std::string& type,
                                                 Teuchos::RCP<ParameterList> param,
                                                 Teuchos::RCP<MatrixType> A) {
@@ -122,9 +122,9 @@ TrilinosSolver<SC, LO, GO>::BuildPreconditioner(PreCondPackage precond_package,
     return M;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<typename TrilinosSolver<SC, LO, GO>::SolverManager>
-TrilinosSolver<SC, LO, GO>::CreateSolver(SolverPackage solver_pack,
+template <typename SC>
+Teuchos::RCP<typename TrilinosSolver<SC>::SolverManager>
+TrilinosSolver<SC>::CreateSolver(SolverPackage solver_pack,
                                          const std::string& type,
                                          Teuchos::RCP<ParameterList> param) {
     int rank{-1};
@@ -158,12 +158,12 @@ TrilinosSolver<SC, LO, GO>::CreateSolver(SolverPackage solver_pack,
     return sm;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<typename TrilinosSolver<SC, LO, GO>::OperatorType>
-TrilinosSolver<SC, LO, GO>::CreatePreconditionerIfPack2(const std::string& type,
+template <typename SC>
+Teuchos::RCP<typename TrilinosSolver<SC>::OperatorType>
+TrilinosSolver<SC>::CreatePreconditionerIfPack2(const std::string& type,
                                                         Teuchos::RCP<ParameterList> param,
                                                         Teuchos::RCP<const MatrixType> A) {
-    using PrecType = Ifpack2::Preconditioner<SC, LO, GO>;
+    using PrecType = Ifpack2::Preconditioner<SC>;
     Ifpack2::Factory factory;
     Teuchos::RCP<PrecType> prec = factory.create(type, A);
     prec->setParameters(*param);
@@ -172,9 +172,9 @@ TrilinosSolver<SC, LO, GO>::CreatePreconditionerIfPack2(const std::string& type,
     return prec;
 }
 
-template <typename SC, typename LO, typename GO>
-Teuchos::RCP<typename TrilinosSolver<SC, LO, GO>::OperatorType>
-TrilinosSolver<SC, LO, GO>::CreatePreconditionerMueLu(const std::string& type,
+template <typename SC>
+Teuchos::RCP<typename TrilinosSolver<SC>::OperatorType>
+TrilinosSolver<SC>::CreatePreconditionerMueLu(const std::string& type,
                                                       Teuchos::RCP<ParameterList> param,
                                                       Teuchos::RCP<MatrixType> A) {
     using Teuchos::RCP;
@@ -186,15 +186,15 @@ TrilinosSolver<SC, LO, GO>::CreatePreconditionerMueLu(const std::string& type,
      * Once the preconditioner is created, the Hierarchy is returned as a
      * Tpetra-operator
      */
-    using MueLuTpetraAdapater = MueLu::TpetraOperator<SC, LO, GO>;
-    using Hierarchy = MueLu::Hierarchy<SC, LO, GO>;
-    using HierarchyManager = MueLu::HierarchyManager<SC, LO, GO>;
+    using MueLuTpetraAdapater = MueLu::TpetraOperator<SC>;
+    using Hierarchy = MueLu::Hierarchy<SC>;
+    using HierarchyManager = MueLu::HierarchyManager<SC>;
     using XpetraMatrix = Xpetra::Matrix<SC, LO, GO>;
-    // typedef XpetraMultiVector = Xpetra::MultiVector<SC, LO, GO>;
-    // typedef XpetraTpetraMVecAdapter = Xpetra::TpetraMultiVector<SC, LO, GO>;
+    // typedef XpetraMultiVector = Xpetra::MultiVector<SC>;
+    // typedef XpetraTpetraMVecAdapter = Xpetra::TpetraMultiVector<SC>;
 
-    RCP<XpetraMatrix> A_xpetra = MueLu::TpetraCrs_To_XpetraMatrix<SC, LO, GO>(A);
-    RCP<HierarchyManager> factory = rcp(new MueLu::ParameterListInterpreter<SC, LO, GO>(*param));
+    RCP<XpetraMatrix> A_xpetra = MueLu::TpetraCrs_To_XpetraMatrix<SC>(A);
+    RCP<HierarchyManager> factory = rcp(new MueLu::ParameterListInterpreter<SC>(*param));
     RCP<Hierarchy> H = factory->CreateHierarchy();
 
     // // for now we just set it to one, later optimization may change this (then mulitvector is required)
@@ -242,9 +242,9 @@ TrilinosSolver<SC, LO, GO>::CreatePreconditionerMueLu(const std::string& type,
     return M;
 }
 
-template <typename SC, typename LO, typename GO>
-typename TrilinosSolver<SC, LO, GO>::ReturnType
-TrilinosSolver<SC, LO, GO>::SolveWithAmesos2(const std::string& type,
+template <typename SC>
+typename TrilinosSolver<SC>::ReturnType
+TrilinosSolver<SC>::SolveWithAmesos2(const std::string& type,
                                              Teuchos::RCP<MatrixType> A,
                                              Teuchos::RCP<MultiVectorType> x,
                                              Teuchos::RCP<MultiVectorType> B,

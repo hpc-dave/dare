@@ -91,6 +91,21 @@ T GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) const {
 }
 
 template <typename Grid, typename T, std::size_t N>
+dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const LO n) const {
+    dare::utils::Vector<N, T> values;
+    LO n_start{n * N};
+    for (std::size_t c{0}; c < N; c++) {
+        values[c] = operator[](n_start + c);
+    }
+    return values;
+}
+
+template <typename Grid, typename T, std::size_t N>
+dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const Index& ind) const {
+    return GetValues(grid.MapIndexToOrdinalLocal(ind));
+}
+
+template <typename Grid, typename T, std::size_t N>
 T& GridVector<Grid, T, N>::operator[](LO n) {
     return data.h_view[n];
 }

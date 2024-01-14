@@ -34,6 +34,7 @@
 #include <Tpetra_CrsMatrix.hpp>
 #include <Tpetra_Version.hpp>
 
+#include "../Grid/DefaultTypes.h"
 #include "../Data/GridVector.h"
 #include "../MPI/ExecutionManager.h"
 #include "../Utilities/InitializationTracker.h"
@@ -47,12 +48,14 @@ namespace dare::Matrix {
  * @tparam LO local ordinal type
  * @tparam GO global ordinal type
  */
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 class Trilinos : public dare::utils::InitializationTracker {
 public:
     using ScalarType = SC;
-    using LocalOrdinalType = LO;
-    using GlobalOrdinalType = GO;
+    using LocalOrdinalType = dare::Grid::details::LocalOrdinalType;
+    using GlobalOrdinalType = dare::Grid::details::GlobalOrdinalType;
+    using GO = GlobalOrdinalType;
+    using LO = LocalOrdinalType;
     using MatrixType = Tpetra::CrsMatrix<ScalarType, LocalOrdinalType, GlobalOrdinalType>;
     using OpType = Tpetra::Operator<ScalarType, LocalOrdinalType, GlobalOrdinalType>;
     using VecType = Tpetra::Vector<ScalarType, LocalOrdinalType, GlobalOrdinalType>;

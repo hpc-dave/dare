@@ -418,7 +418,7 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet() const {
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator=(
-    const dare::Data::CenterMatrixStencil<GridType, N>& s) {
+    const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
     for (std::size_t n{0}; n < N; n++) {
         Get<CartesianNeighbor::CENTER>(n) = s.GetValue(CartesianNeighbor::CENTER, n);
         Get<CartesianNeighbor::WEST>(n) = s.GetValue(CartesianNeighbor::WEST, n);
@@ -438,7 +438,7 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator=(
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator+=(
-    const dare::Data::CenterMatrixStencil<GridType, N>& s) {
+    const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
     for (std::size_t n{0}; n < N; n++) {
         Get<CartesianNeighbor::CENTER>(n) += s.GetValue(CartesianNeighbor::CENTER, n);
         Get<CartesianNeighbor::WEST>(n) += s.GetValue(CartesianNeighbor::WEST, n);
@@ -458,7 +458,7 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator+=(
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator-=(
-    const dare::Data::CenterMatrixStencil<GridType, N>& s) {
+    const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
     return (*this) += (-1. * s);
 }
 

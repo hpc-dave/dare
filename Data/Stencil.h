@@ -33,13 +33,13 @@ namespace dare::Data {
  * @brief dummy class for SFINAE
  * @tparam Grid type of grid
  */
-template <typename Grid, std::size_t N>
+template <typename Grid, typename SC, std::size_t N>
 class CenterMatrixStencil {
     /*!
      * @brief dummy operator for compilation
      * @param v 
      */
-    CenterMatrixStencil operator*(typename Grid::ScalarType v) const {
+    CenterMatrixStencil operator*(SC v) const {
         return *this;
     }
 };
@@ -48,7 +48,7 @@ class CenterMatrixStencil {
  * @brief dummy class for SFINAE
  * @tparam Grid type of grid
  */
-template <typename Grid, std::size_t N>
+template <typename Grid, typename SC, std::size_t N>
 class CenterValueStencil {
 };
 
@@ -56,7 +56,7 @@ class CenterValueStencil {
  * @brief dummy class for SFINAE
  * @tparam Grid type of grid
  */
-template <typename Grid, std::size_t N>
+template <typename Grid, typename SC, std::size_t N>
 class FaceMatrixStencil {
 };
 
@@ -64,7 +64,7 @@ class FaceMatrixStencil {
  * @brief dummy class for SFINAE
  * @tparam Grid type of grid
  */
-template <typename Grid, std::size_t N>
+template <typename Grid, typename SC, std::size_t N>
 class FaceValueStencil {
 };
 
@@ -77,8 +77,8 @@ class FaceValueStencil {
  * @param s 
  * @return 
  */
-template <typename Grid, std::size_t N>
-CenterMatrixStencil<Grid, N> operator*(typename Grid::ScalarType v, const CenterMatrixStencil<Grid, N>& s) {
+template <typename Grid, typename SC, std::size_t N>
+CenterMatrixStencil<Grid, SC, N> operator*(SC v, const CenterMatrixStencil<Grid, SC, N>& s) {
     return s * v;
 }
 
@@ -89,8 +89,8 @@ CenterMatrixStencil<Grid, N> operator*(typename Grid::ScalarType v, const Center
  * @param s
  * @return
  */
-template <typename Grid, std::size_t N>
-CenterValueStencil<Grid, N> operator*(typename Grid::ScalarType v, const CenterValueStencil<Grid, N>& s) {
+template <typename Grid, typename SC, std::size_t N>
+CenterValueStencil<Grid, SC, N> operator*(SC v, const CenterValueStencil<Grid, SC, N>& s) {
     return s * v;
 }
 
@@ -101,8 +101,8 @@ CenterValueStencil<Grid, N> operator*(typename Grid::ScalarType v, const CenterV
  * @param s
  * @return
  */
-template <typename Grid, std::size_t N>
-FaceMatrixStencil<Grid, N> operator*(typename Grid::ScalarType v, const FaceMatrixStencil<Grid, N>& s) {
+template <typename Grid, typename SC, std::size_t N>
+FaceMatrixStencil<Grid, SC, N> operator*(SC v, const FaceMatrixStencil<Grid, SC, N>& s) {
     return s * v;
 }
 
@@ -113,8 +113,8 @@ FaceMatrixStencil<Grid, N> operator*(typename Grid::ScalarType v, const FaceMatr
  * @param s
  * @return
  */
-template <typename Grid, std::size_t N>
-FaceValueStencil<Grid, N> operator*(typename Grid::ScalarType v, const FaceValueStencil<Grid, N>& s) {
+template <typename Grid, typename SC, std::size_t N>
+FaceValueStencil<Grid, SC, N> operator*(SC v, const FaceValueStencil<Grid, SC, N>& s) {
     return s * v;
 }
 

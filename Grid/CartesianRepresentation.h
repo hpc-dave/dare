@@ -36,7 +36,7 @@
 namespace dare::Grid {
 
 // forward declaration for the grid
-template <std::size_t Dim, class LO, class GO, class SC>
+template <std::size_t Dim>
 class Cartesian;
 
 /*!
@@ -46,15 +46,22 @@ class Cartesian;
  * @tparam SC scalar type
  * @tparam Dim dimension of grid
  */
-template <std::size_t Dim, class LO, class GO, class SC>
+template <std::size_t Dim>
 class CartesianRepresentation : public dare::utils::InitializationTracker {
 public:
-    using GridType = Cartesian<Dim, LO, GO, SC>;
+    using GridType = Cartesian<Dim>;
+    using LocalOrdinalType = typename GridType::LocalOrdinalType;
+    using GlobalOrdinalType = typename GridType::GlobalOrdinalType;
+    using ScalarType = typename GridType::ScalarType;
+    using LO = LocalOrdinalType;
+    using GO = GlobalOrdinalType;
+    using SC = ScalarType;
     using VecLO = typename GridType::VecLO;
     using VecGO = typename GridType::VecGO;
     using VecSC = typename GridType::VecSC;
     using Index = typename GridType::Index;
     using IndexGlobal = typename GridType::IndexGlobal;
+    using Options = typename GridType::Options;
 
     /*!
      * @brief default construction without initialization
@@ -72,14 +79,14 @@ public:
      * @brief default copy constructor
      * @param other instance to copy from
      */
-    CartesianRepresentation(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
+    CartesianRepresentation(const CartesianRepresentation<Dim>& other) = default;
 
     /*!
      * @brief default copy assignment operator
      * @param other instance to copy from
      */
-    CartesianRepresentation<Dim, LO, GO, SC>&
-    operator=(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
+    CartesianRepresentation<Dim>&
+    operator=(const CartesianRepresentation<Dim>& other) = default;
 
     /*!
      * @brief provides spatial position of the specified cell
@@ -126,6 +133,11 @@ public:
      * @brief number of cells in global grid excluding ghost/halo cells
      */
     GO GetNumberGlobalCellsInternal() const;
+
+    /*!
+     * @brief returns the struct with provided options
+     */
+    const Options& GetOptions() const;
 
     /*!
      * @brief adds ghost/halo cells to ordinal
@@ -237,7 +249,7 @@ public:
     /*!
      * @brief Provides Halobuffer for exchange of data across processes
      */
-    mpi::HaloBuffer<LO, GO, SC>& GetHaloBuffer();
+    mpi::HaloBuffer<SC>& GetHaloBuffer();
 
 private:
     /*!
@@ -246,8 +258,8 @@ private:
      */
     void TestIfInitialized(std::string function) const;
 
-    const Cartesian<Dim, LO, GO, SC>* grid;  //!< pointer to grid
-    typename GridType::Options options;      //!< grid specific options
+    const Cartesian<Dim>* grid;              //!< pointer to grid
+    Options options;                         //!< grid specific options
     VecLO resolution_local;                  //!< resolution of the local grid
     VecLO resolution_local_internal;         //!< resolution of the local grid without halo/ghost cells
     VecGO resolution_global;                 //!< resolution of the global grid
@@ -260,7 +272,7 @@ private:
     VecLO hierarchic_sum_loc;                 //!< precomputed values to account for ordering
     VecLO hierarchic_sum_loc_internal;        //!< same as above, just for the internal cells
 
-    mpi::HaloBuffer<LO, GO, SC> halo_buffer;  //!< maps with Halo Buffers
+    mpi::HaloBuffer<SC> halo_buffer;          //!< maps with Halo Buffers
 };
 
 }  // namespace dare::Grid

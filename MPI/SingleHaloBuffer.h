@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "../Utilities/InitializationTracker.h"
+#include "../Grid/DefaultTypes.h"
 #include "ExecutionManager.h"
 
 namespace dare::mpi {
@@ -43,9 +44,12 @@ namespace dare::mpi {
  * halo cell region. It stores the rank of a partner process and an array of local
  * grid cell IDs, which it will exchange and subsequently store in the field
  */
-template<typename LO, typename GO, typename SC>
+template<typename SC>
 class SingleHaloBuffer : public dare::utils::InitializationTracker{
 public:
+    using LO = dare::Grid::details::LocalOrdinalType;
+    using GO = dare::Grid::details::GlobalOrdinalType;
+
     /*!
      * @brief constructor
      * @param execution_manager pointer to execution manager

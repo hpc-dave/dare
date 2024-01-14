@@ -33,7 +33,7 @@
 
 namespace dare::Matrix {
 
-using CartesianNeighbor = dare::Data::CartesianNeighbor;
+using CartesianNeighbor = dare::Grid::CartesianNeighbor;
 
 enum class CartesianNeighborBitSet : char {
     CENTER = 1 << static_cast<char>(CartesianNeighbor::CENTER),
@@ -191,19 +191,19 @@ public:
      * @brief assigns values from a stencil
      * @param s center stencil with matrix values
      */
-    SelfType& operator=(const dare::Data::CenterMatrixStencil<GridType, N>& s);
+    SelfType& operator=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief adds values from stencil
      * @param s center stencil with matrix values
      */
-    SelfType& operator+=(const dare::Data::CenterMatrixStencil<GridType, N>& s);
+    SelfType& operator+=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief subtracts values of stencil
      * @param s center stencil with matrix values
      */
-    SelfType& operator-=(const dare::Data::CenterMatrixStencil<GridType, N>& s);
+    SelfType& operator-=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
 
 private:
     template <typename Space>

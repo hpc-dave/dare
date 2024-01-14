@@ -303,6 +303,22 @@ typename Vector<N, T>::ConstReverseIterator Vector<N, T>::crend() const {
 }
 
 template <std::size_t N, typename T>
+T Vector<N, T>::AllSum() const {
+    T res{0};
+    for (auto& e : *this)
+        res += e;
+    return res;
+}
+
+template <std::size_t N, typename T>
+T Vector<N, T>::AllAbsSum() const {
+    T res{0};
+    for (auto& e : *this)
+            res += std::abs(e);
+    return res;
+}
+
+template <std::size_t N, typename T>
 T Vector<N, T>::dot(const Vector<N, T>& other) const {
     T res{static_cast<T>(0)};
     for (std::size_t n{0}; n < N; ++n)

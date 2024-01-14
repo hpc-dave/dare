@@ -24,12 +24,12 @@
 
 namespace dare::Grid {
 
-template <std::size_t Dim, class LO, class GO, class SC>
-CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation()
+template <std::size_t Dim>
+CartesianRepresentation<Dim>::CartesianRepresentation()
     : grid(nullptr) {}
 
-template <std::size_t Dim, class LO, class GO, class SC>
-CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType* grid,
+template <std::size_t Dim>
+CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
                                                                   typename GridType::Options opt)
             : grid(grid),
               options(opt) {
@@ -176,9 +176,9 @@ CartesianRepresentation<Dim, LO, GO, SC>::CartesianRepresentation(const GridType
                            is_local, map_global_to_local);
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC
-CartesianRepresentation<Dim, LO, GO, SC>::GetCoordinatesCenter(const Index& ind) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::VecSC
+CartesianRepresentation<Dim>::GetCoordinatesCenter(const Index& ind) const {
     TestIfInitialized(__func__);
     VecSC pos;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -187,9 +187,9 @@ CartesianRepresentation<Dim, LO, GO, SC>::GetCoordinatesCenter(const Index& ind)
     return pos;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC
-CartesianRepresentation<Dim, LO, GO, SC>::GetCoordinatesFace(const Index& ind, std::size_t dir) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::VecSC
+CartesianRepresentation<Dim>::GetCoordinatesFace(const Index& ind, std::size_t dir) const {
     TestIfInitialized(__func__);
     VecSC pos;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -199,20 +199,21 @@ CartesianRepresentation<Dim, LO, GO, SC>::GetCoordinatesFace(const Index& ind, s
     return pos;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC&
-CartesianRepresentation<Dim, LO, GO, SC>::GetDistances() const {
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::VecSC&
+CartesianRepresentation<Dim>::GetDistances() const {
     return grid->GetCellWidth();
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const typename CartesianRepresentation<Dim, LO, GO, SC>::VecSC&
-CartesianRepresentation<Dim, LO, GO, SC>::GetFaceArea() const {
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::VecSC&
+CartesianRepresentation<Dim>::GetFaceArea() const {
     return grid->GetFaceArea();
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCellsInternal() const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::LO
+CartesianRepresentation<Dim>::GetNumberLocalCellsInternal() const {
     TestIfInitialized(__func__);
     LO num_cells{1};
     for (LO dim : resolution_local)
@@ -220,8 +221,9 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCellsInternal() const
     return num_cells;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCells() const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::LO
+CartesianRepresentation<Dim>::GetNumberLocalCells() const {
     TestIfInitialized(__func__);
     LO num_cells{1};
     for (LO dim : resolution_local)
@@ -229,8 +231,9 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberLocalCells() const {
     return num_cells;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-GO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberGlobalCells() const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::GO
+CartesianRepresentation<Dim>::GetNumberGlobalCells() const {
     TestIfInitialized(__func__);
     GO num_cells{1};
     for (GO dim : resolution_global)
@@ -238,8 +241,9 @@ GO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberGlobalCells() const {
     return num_cells;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-GO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberGlobalCellsInternal() const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::GO
+CartesianRepresentation<Dim>::GetNumberGlobalCellsInternal() const {
     TestIfInitialized(__func__);
     GO num_cells{1};
     for (GO dim : resolution_global)
@@ -247,8 +251,15 @@ GO CartesianRepresentation<Dim, LO, GO, SC>::GetNumberGlobalCellsInternal() cons
     return num_cells;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-LO CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToLocal(LO n_internal) const {
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::Options&
+CartesianRepresentation<Dim>::GetOptions() const {
+    return options;
+}
+
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::LO
+CartesianRepresentation<Dim>::MapInternalToLocal(LO n_internal) const {
     TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return n_internal + grid->GetNumGhost();
@@ -267,44 +278,45 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToLocal(LO n_internal) c
     }
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::Index
-CartesianRepresentation<Dim, LO, GO, SC>::MapLocalToInternal(Index ind_local) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::Index
+CartesianRepresentation<Dim>::MapLocalToInternal(Index ind_local) const {
     for (auto& e : ind_local) {
         e -= grid->GetNumGhost();
     }
     return ind_local;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::Index
-CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToLocal(Index ind_local) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::Index
+CartesianRepresentation<Dim>::MapInternalToLocal(Index ind_local) const {
     for (auto& e : ind_local) {
         e += grid->GetNumGhost();
     }
     return ind_local;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal
-CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToInternal(IndexGlobal ind_global) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::IndexGlobal
+CartesianRepresentation<Dim>::MapGlobalToInternal(IndexGlobal ind_global) const {
     for (auto& e : ind_global) {
         e -= grid->GetNumGhost();
     }
     return ind_global;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal
-CartesianRepresentation<Dim, LO, GO, SC>::MapInternalToGlobal(IndexGlobal ind_global) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::IndexGlobal
+CartesianRepresentation<Dim>::MapInternalToGlobal(IndexGlobal ind_global) const {
     for (auto& e : ind_global) {
         e += grid->GetNumGhost();
     }
     return ind_global;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-LO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToOrdinalLocal(const Index& ind) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::LO
+CartesianRepresentation<Dim>::MapIndexToOrdinalLocal(const Index& ind) const {
     TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return ind[0];
@@ -317,8 +329,9 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToOrdinalLocal(const Index&
     }
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-LO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToOrdinalLocalInternal(const Index& ind) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::LO
+CartesianRepresentation<Dim>::MapIndexToOrdinalLocalInternal(const Index& ind) const {
     TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return ind[0];
@@ -331,8 +344,9 @@ LO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToOrdinalLocalInternal(cons
     }
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-GO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToOrdinalGlobal(const IndexGlobal& ind) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::GO
+CartesianRepresentation<Dim>::MapIndexToOrdinalGlobal(const IndexGlobal& ind) const {
     TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return ind[0];
@@ -345,8 +359,9 @@ GO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToOrdinalGlobal(const Index
     }
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-GO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::GO
+CartesianRepresentation<Dim>::MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind) const {
     TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
         return ind[0];
@@ -359,9 +374,9 @@ GO CartesianRepresentation<Dim, LO, GO, SC>::MapIndexToOrdinalGlobalInternal(con
     }
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal
-CartesianRepresentation<Dim, LO, GO, SC>::MapOrdinalToIndexGlobal(GO n_glob) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::IndexGlobal
+CartesianRepresentation<Dim>::MapOrdinalToIndexGlobal(GO n_glob) const {
     TestIfInitialized(__func__);
     IndexGlobal ind;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -371,9 +386,9 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapOrdinalToIndexGlobal(GO n_glob) con
     return ind;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal
-CartesianRepresentation<Dim, LO, GO, SC>::MapOrdinalToIndexGlobalInternal(GO n_glob) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::IndexGlobal
+CartesianRepresentation<Dim>::MapOrdinalToIndexGlobalInternal(GO n_glob) const {
     TestIfInitialized(__func__);
     IndexGlobal ind;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -383,9 +398,9 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapOrdinalToIndexGlobalInternal(GO n_g
     return ind;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::Index
-CartesianRepresentation<Dim, LO, GO, SC>::MapOrdinalToIndexLocal(LO n_loc) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::Index
+CartesianRepresentation<Dim>::MapOrdinalToIndexLocal(LO n_loc) const {
     TestIfInitialized(__func__);
     Index ind;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -395,9 +410,9 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapOrdinalToIndexLocal(LO n_loc) const
     return ind;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::Index
-CartesianRepresentation<Dim, LO, GO, SC>::MapOrdinalToIndexLocalInternal(LO n_loc) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::Index
+CartesianRepresentation<Dim>::MapOrdinalToIndexLocalInternal(LO n_loc) const {
     TestIfInitialized(__func__);
     Index ind;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -407,17 +422,18 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapOrdinalToIndexLocalInternal(LO n_lo
     return ind;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-LO CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToLocal(GO id_glob) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::LO
+CartesianRepresentation<Dim>::MapGlobalToLocal(GO id_glob) const {
     TestIfInitialized(__func__);
     IndexGlobal ind_glob = MapOrdinalToIndexGlobal(id_glob);
     Index ind_loc = MapGlobalToLocal(ind_glob);
     return MapIndexToOrdinalLocal(ind_loc);
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::Index
-CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToLocal(const IndexGlobal& ind_glob) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::Index
+CartesianRepresentation<Dim>::MapGlobalToLocal(const IndexGlobal& ind_glob) const {
     TestIfInitialized(__func__);
     Index ind_loc;
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -426,34 +442,36 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToLocal(const IndexGlobal& in
     return ind_loc;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-LO CartesianRepresentation<Dim, LO, GO, SC>::MapGlobalToLocalInternal(GO id_glob) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::LO
+CartesianRepresentation<Dim>::MapGlobalToLocalInternal(GO id_glob) const {
     IndexGlobal ind_glob = MapOrdinalToIndexGlobalInternal(id_glob);
     Index ind_loc = MapGlobalToLocal(ind_glob);
     return MapIndexToOrdinalLocalInternal(ind_loc);
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-GO CartesianRepresentation<Dim, LO, GO, SC>::MapLocalToGlobalInternal(LO id_loc) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::GO
+CartesianRepresentation<Dim>::MapLocalToGlobalInternal(LO id_loc) const {
     Index ind_loc = MapOrdinalToIndexLocalInternal(id_loc);
     IndexGlobal ind_glob = MapLocalToGlobal(ind_loc);
     return MapIndexToOrdinalGlobalInternal(ind_glob);
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocal(GO id_glob) const {
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsLocal(GO id_glob) const {
     IndexGlobal ind_glob = MapOrdinalToIndexGlobal(id_glob);
     return IsLocal(ind_glob);
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocalInternal(GO id_glob) const {
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsLocalInternal(GO id_glob) const {
     IndexGlobal ind_glob = MapOrdinalToIndexGlobalInternal(id_glob);
     return IsLocalInternal(ind_glob);
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocal(const IndexGlobal& ind_glob) const {
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsLocal(const IndexGlobal& ind_glob) const {
     TestIfInitialized(__func__);
     bool is_local{true};
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -463,8 +481,8 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocal(const IndexGlobal& ind_gl
     return is_local;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocalInternal(IndexGlobal ind_glob) const {
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsLocalInternal(IndexGlobal ind_glob) const {
     TestIfInitialized(__func__);
     for (std::size_t dim{0}; dim < Dim; dim++) {
         ind_glob[dim] += 2 * grid->GetNumGhost();
@@ -472,8 +490,8 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsLocalInternal(IndexGlobal ind_g
     return IsLocal(ind_glob);
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(const Index& ind_loc) const {
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsInternal(const Index& ind_loc) const {
     TestIfInitialized(__func__);
     bool is_internal{true};
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -483,14 +501,14 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(const Index& ind_loc) 
     return is_internal;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(LO id) const {
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsInternal(LO id) const {
     Index ind = MapOrdinalToIndexLocal(id);
     return IsInternal(ind);
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(const IndexGlobal& ind_glob) const {
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsInternal(const IndexGlobal& ind_glob) const {
     TestIfInitialized(__func__);
     bool is_internal{true};
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -500,9 +518,9 @@ bool CartesianRepresentation<Dim, LO, GO, SC>::IsInternal(const IndexGlobal& ind
     return is_internal;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal
-CartesianRepresentation<Dim, LO, GO, SC>::MapLocalToGlobal(const Index& ind) const {
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::IndexGlobal
+CartesianRepresentation<Dim>::MapLocalToGlobal(const Index& ind) const {
     TestIfInitialized(__func__);
     IndexGlobal ind_g;
     for (std::size_t dim{0}; dim < Dim; dim++)
@@ -510,32 +528,32 @@ CartesianRepresentation<Dim, LO, GO, SC>::MapLocalToGlobal(const Index& ind) con
     return ind_g;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const typename CartesianRepresentation<Dim, LO, GO, SC>::Index&
-CartesianRepresentation<Dim, LO, GO, SC>::GetLocalResolution() const {
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::Index&
+CartesianRepresentation<Dim>::GetLocalResolution() const {
     return resolution_local;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const typename CartesianRepresentation<Dim, LO, GO, SC>::Index&
-CartesianRepresentation<Dim, LO, GO, SC>::GetLocalResolutionInternal() const {
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::Index&
+CartesianRepresentation<Dim>::GetLocalResolutionInternal() const {
     return resolution_local_internal;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal&
-CartesianRepresentation<Dim, LO, GO, SC>::GetGlobalResolution() const {
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::IndexGlobal&
+CartesianRepresentation<Dim>::GetGlobalResolution() const {
     return resolution_global;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-const typename CartesianRepresentation<Dim, LO, GO, SC>::IndexGlobal&
-CartesianRepresentation<Dim, LO, GO, SC>::GetGlobalResolutionInternal() const {
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::IndexGlobal&
+CartesianRepresentation<Dim>::GetGlobalResolutionInternal() const {
     return resolution_global_internal;
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-void CartesianRepresentation<Dim, LO, GO, SC>::PrintDistribution(std::string fname) const {
+template <std::size_t Dim>
+void CartesianRepresentation<Dim>::PrintDistribution(std::string fname) const {
     for (int n{0}; n < grid->GetExecutionManager()->GetNumberProcesses(); n++) {
         if (n == grid->GetExecutionManager()->GetRank()) {
             std::ofstream ofs;
@@ -563,8 +581,8 @@ void CartesianRepresentation<Dim, LO, GO, SC>::PrintDistribution(std::string fna
     }
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-void CartesianRepresentation<Dim, LO, GO, SC>::TestIfInitialized(std::string func) const {
+template <std::size_t Dim>
+void CartesianRepresentation<Dim>::TestIfInitialized(std::string func) const {
 #ifndef DARE_NDEBUG
     if (!dare::utils::InitializationTracker::IsInitialized()) {
         grid->GetExecutionManager()->Terminate(func, "Cannot continue without initialization");
@@ -572,8 +590,9 @@ void CartesianRepresentation<Dim, LO, GO, SC>::TestIfInitialized(std::string fun
 #endif
 }
 
-template <std::size_t Dim, class LO, class GO, class SC>
-mpi::HaloBuffer<LO, GO, SC>& CartesianRepresentation<Dim, LO, GO, SC>::GetHaloBuffer() {
+template <std::size_t Dim>
+mpi::HaloBuffer<typename CartesianRepresentation<Dim>::SC>&
+CartesianRepresentation<Dim>::GetHaloBuffer() {
     return halo_buffer;
 }
 

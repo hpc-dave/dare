@@ -31,16 +31,6 @@
 
 namespace dare::Data {
 
-enum class CartesianNeighbor : char {
-    CENTER = 0,
-    WEST = 1,
-    EAST = 2,
-    SOUTH = 3,
-    NORTH = 4,
-    BOTTOM = 5,
-    TOP = 6
-};
-
 /*!
  * @brief stores stencil based on cell centers
  * @tparam Dim dimension of grid
@@ -48,13 +38,13 @@ enum class CartesianNeighbor : char {
  * @tparam GO global ordinal type
  * @tparam SC type of scalar
  */
-template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
-class CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N> {
+template <std::size_t Dim, typename SC, std::size_t N>
+class CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
-    static const std::size_t NUM_ENTRIES{Dim * 2 + 1};                      //!< stencil size
+    using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
+    static const std::size_t NUM_ENTRIES{GridType::STENCIL_SIZE};           //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
-    using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;                //!< type of grid
-    using Positions = CartesianNeighbor;                                    //!< convenient position definion
+    using Positions = typename GridType::NeighborID;                        //!< convenient position definion
     using ComponentArray = dare::utils::Vector<NUM_ENTRIES, SC>;            //!< stencil of each component
     using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
 
@@ -72,86 +62,86 @@ public:
      * @brief copy assignment constructor
      * @param other 
      */
-    CenterMatrixStencil(const CenterMatrixStencil<GridType, N>& other);
+    CenterMatrixStencil(const CenterMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief copy assignment operator
      * @param other instance to copy from
      */
-    CenterMatrixStencil<GridType, N>&
-    operator=(const CenterMatrixStencil<GridType, N>& other);
+    CenterMatrixStencil<GridType, SC, N>&
+    operator=(const CenterMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief multiplication assignment operator for scalar
      * @param v scalar value
      */
-    CenterMatrixStencil<GridType, N>& operator*=(SC v);
+    CenterMatrixStencil<GridType, SC, N>& operator*=(SC v);
 
     /*!
      * @brief mulitplication operator for scalars
      * @param v scalar to multiply with
      */
-    CenterMatrixStencil<GridType, N> operator*(SC v) const;
+    CenterMatrixStencil<GridType, SC, N> operator*(SC v) const;
 
     /*!
      * @brief division assignment operator for scalars
      * @param v scalar to divide by
      */
-    CenterMatrixStencil<GridType, N>& operator/=(SC v);
+    CenterMatrixStencil<GridType, SC, N>& operator/=(SC v);
 
     /*!
      * @brief division operator for scalars
      * @param v scalar to divide by
      */
-    CenterMatrixStencil<GridType, N> operator/(SC v) const;
+    CenterMatrixStencil<GridType, SC, N> operator/(SC v) const;
 
     /*!
      * @brief addition assignment of other stencil
      * @param other stencil to add from
      */
-    CenterMatrixStencil<GridType, N>& operator+=(const CenterMatrixStencil<GridType, N>& other);
+    CenterMatrixStencil<GridType, SC, N>& operator+=(const CenterMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief addition operator for another stencil
      * @param other stencil to add from
      */
-    CenterMatrixStencil<GridType, N> operator+(const CenterMatrixStencil<GridType, N>& other) const;
+    CenterMatrixStencil<GridType, SC, N> operator+(const CenterMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief subtraction assignment of other stencil
      * @param other stencil to subtract from this instance
      */
-    CenterMatrixStencil<GridType, N>& operator-=(const CenterMatrixStencil<GridType, N>& other);
+    CenterMatrixStencil<GridType, SC, N>& operator-=(const CenterMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief subtraction operator for another stencil
      * @param other stencil to subtract from this instance
      */
-    CenterMatrixStencil<GridType, N> operator-(const CenterMatrixStencil<GridType, N>& other) const;
+    CenterMatrixStencil<GridType, SC, N> operator-(const CenterMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief multiplication of this instance with another stencil
      * @param other stencil to mulitply with
      */
-    CenterMatrixStencil<GridType, N>& operator*=(const CenterMatrixStencil<GridType, N>& other);
+    CenterMatrixStencil<GridType, SC, N>& operator*=(const CenterMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief multiplication with another stencil
      * @param other factors to mulitply with
      */
-    CenterMatrixStencil<GridType, N> operator*(const CenterMatrixStencil<GridType, N>& other) const;
+    CenterMatrixStencil<GridType, SC, N> operator*(const CenterMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief division of this instance by another stencil
      * @param other stencil to divide by
      */
-    CenterMatrixStencil<GridType, N>& operator/=(const CenterMatrixStencil<GridType, N>& other);
+    CenterMatrixStencil<GridType, SC, N>& operator/=(const CenterMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief division of stencil by another stencil
      * @param other stencil to divide by
      */
-    CenterMatrixStencil<GridType, N> operator/(const CenterMatrixStencil<GridType, N>& other) const;
+    CenterMatrixStencil<GridType, SC, N> operator/(const CenterMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief sets a specific value in the stencil
@@ -211,12 +201,12 @@ private:
  * @tparam Dim dimension
  * @tparam N number of components
  */
-template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
-class CenterValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N>
-    : public CenterMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N> {
+template <std::size_t Dim, typename SC, std::size_t N>
+class CenterValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
+    : public CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;
-    using MatrixStencil = CenterMatrixStencil<GridType, N>;
+    using GridType = dare::Grid::Cartesian<Dim>;
+    using MatrixStencil = CenterMatrixStencil<GridType, SC, N>;
     /*!
      * @brief default constructor
      */
@@ -245,95 +235,95 @@ public:
     }
 };
 
-template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
-class FaceMatrixStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N> {
+template <std::size_t Dim, typename SC, std::size_t N>
+class FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
-    static const std::size_t NUM_FACES{Dim * 2};                            //!< faces in stencil
+    using GridType = dare::Grid::Cartesian<Dim>;                //!< type of grid
+    static const std::size_t NUM_FACES{GridType::NUM_FACES};                //!< faces in stencil
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
-    using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;                //!< type of grid
-    using Positions = CartesianNeighbor;                                    //!< convenient position definion
+    using Positions = typename GridType::NeighborID;                        //!< convenient position definion
     using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;              //!< stencil of each component
     using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
 
     FaceMatrixStencil();
     ~FaceMatrixStencil();
 
-    FaceMatrixStencil(const FaceMatrixStencil<GridType, N>& other);
+    FaceMatrixStencil(const FaceMatrixStencil<GridType, SC, N>& other);
 
-    FaceMatrixStencil<GridType, N>&
-    operator=(const FaceMatrixStencil<GridType, N>& other);
+    FaceMatrixStencil<GridType, SC, N>&
+    operator=(const FaceMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief multiplication assignment operator for scalar
      * @param v scalar value
      */
-    FaceMatrixStencil<GridType, N>& operator*=(SC v);
+    FaceMatrixStencil<GridType, SC, N>& operator*=(SC v);
 
     /*!
      * @brief mulitplication operator for scalars
      * @param v scalar to multiply with
      */
-    FaceMatrixStencil<GridType, N> operator*(SC v) const;
+    FaceMatrixStencil<GridType, SC, N> operator*(SC v) const;
 
     /*!
      * @brief division assignment operator for scalars
      * @param v scalar to divide by
      */
-    FaceMatrixStencil<GridType, N>& operator/=(SC v);
+    FaceMatrixStencil<GridType, SC, N>& operator/=(SC v);
 
     /*!
      * @brief division operator for scalars
      * @param v scalar to divide by
      */
-    FaceMatrixStencil<GridType, N> operator/(SC v) const;
+    FaceMatrixStencil<GridType, SC, N> operator/(SC v) const;
 
     /*!
      * @brief addition assignment of other stencil
      * @param other stencil to add from
      */
-    FaceMatrixStencil<GridType, N>& operator+=(const FaceMatrixStencil<GridType, N>& other);
+    FaceMatrixStencil<GridType, SC, N>& operator+=(const FaceMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief addition operator for another stencil
      * @param other stencil to add from
      */
-    FaceMatrixStencil<GridType, N> operator+(const FaceMatrixStencil<GridType, N>& other) const;
+    FaceMatrixStencil<GridType, SC, N> operator+(const FaceMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief subtraction assignment of other stencil
      * @param other stencil to subtract from this instance
      */
-    FaceMatrixStencil<GridType, N>& operator-=(const FaceMatrixStencil<GridType, N>& other);
+    FaceMatrixStencil<GridType, SC, N>& operator-=(const FaceMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief subtraction operator for another stencil
      * @param other stencil to subtract from this instance
      */
-    FaceMatrixStencil<GridType, N> operator-(const FaceMatrixStencil<GridType, N>& other) const;
+    FaceMatrixStencil<GridType, SC, N> operator-(const FaceMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief multiplication of this instance with another stencil
      * @param other stencil to mulitply with
      */
-    FaceMatrixStencil<GridType, N>& operator*=(const FaceMatrixStencil<GridType, N>& other);
+    FaceMatrixStencil<GridType, SC, N>& operator*=(const FaceMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief multiplication with another stencil
      * @param other factors to mulitply with
      */
-    FaceMatrixStencil<GridType, N> operator*(const FaceMatrixStencil<GridType, N>& other) const;
+    FaceMatrixStencil<GridType, SC, N> operator*(const FaceMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief division of this instance by another stencil
      * @param other stencil to divide by
      */
-    FaceMatrixStencil<GridType, N>& operator/=(const FaceMatrixStencil<GridType, N>& other);
+    FaceMatrixStencil<GridType, SC, N>& operator/=(const FaceMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief division of stencil by another stencil
      * @param other stencil to divide by
      */
-    FaceMatrixStencil<GridType, N> operator/(const FaceMatrixStencil<GridType, N>& other) const;
+    FaceMatrixStencil<GridType, SC, N> operator/(const FaceMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief sets a specific value in the stencil
@@ -401,13 +391,13 @@ private:
  * @tparam Dim dimension
  * @tparam N number of components
  */
-template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N>
-class FaceValueStencil<dare::Grid::Cartesian<Dim, LO, GO, SC>, N> {
+template <std::size_t Dim, typename SC, std::size_t N>
+class FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
-    static const std::size_t NUM_FACES{Dim * 2};                            //!< stencil size
+    using GridType = dare::Grid::Cartesian<Dim>;                //!< type of grid
+    static const std::size_t NUM_FACES{GridType::NUM_FACES};                //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
-    using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;                //!< type of grid
-    using Positions = CartesianNeighbor;                                    //!< convenient position definion
+    using Positions = typename GridType::NeighborID;                        //!< convenient position definion
     using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;              //!< stencil of each component
     using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
 
@@ -425,92 +415,92 @@ public:
      * @brief copy assignment constructor
      * @param other
      */
-    FaceValueStencil(const FaceValueStencil<GridType, N>& other);
+    FaceValueStencil(const FaceValueStencil<GridType, SC, N>& other);
 
     /*!
      * @brief copy assignment operator
      * @param other instance to copy from
      */
-    FaceValueStencil<GridType, N>&
-    operator=(const FaceValueStencil<GridType, N>& other);
+    FaceValueStencil<GridType, SC, N>&
+    operator=(const FaceValueStencil<GridType, SC, N>& other);
 
     /*!
      * @brief multiplication assignment operator for scalar
      * @param v scalar value
      */
-    FaceValueStencil<GridType, N>& operator*=(SC v);
+    FaceValueStencil<GridType, SC, N>& operator*=(SC v);
 
     /*!
      * @brief mulitplication operator for scalars
      * @param v scalar to multiply with
      */
-    FaceValueStencil<GridType, N> operator*(SC v) const;
+    FaceValueStencil<GridType, SC, N> operator*(SC v) const;
 
     /*!
      * @brief division assignment operator for scalars
      * @param v scalar to divide by
      */
-    FaceValueStencil<GridType, N>& operator/=(SC v);
+    FaceValueStencil<GridType, SC, N>& operator/=(SC v);
 
     /*!
      * @brief division operator for scalars
      * @param v scalar to divide by
      */
-    FaceValueStencil<GridType, N> operator/(SC v) const;
+    FaceValueStencil<GridType, SC, N> operator/(SC v) const;
 
     /*!
      * @brief addition assignment of other stencil
      * @param other stencil to add from
      */
-    FaceValueStencil<GridType, N>& operator+=(const FaceValueStencil<GridType, N>& other);
+    FaceValueStencil<GridType, SC, N>& operator+=(const FaceValueStencil<GridType, SC, N>& other);
 
     /*!
      * @brief addition operator for another stencil
      * @param other stencil to add from
      */
-    FaceValueStencil<GridType, N> operator+(const FaceValueStencil<GridType, N>& other) const;
+    FaceValueStencil<GridType, SC, N> operator+(const FaceValueStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief subtraction assignment of other stencil
      * @param other stencil to subtract from this instance
      */
-    FaceValueStencil<GridType, N>& operator-=(const FaceValueStencil<GridType, N>& other);
+    FaceValueStencil<GridType, SC, N>& operator-=(const FaceValueStencil<GridType, SC, N>& other);
 
     /*!
      * @brief subtraction operator for another stencil
      * @param other stencil to subtract from this instance
      */
-    FaceValueStencil<GridType, N> operator-(const FaceValueStencil<GridType, N>& other) const;
+    FaceValueStencil<GridType, SC, N> operator-(const FaceValueStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief multiplication of this instance with another stencil
      * @param other stencil to mulitply with
      */
-    FaceValueStencil<GridType, N>& operator*=(const FaceValueStencil<GridType, N>& other);
+    FaceValueStencil<GridType, SC, N>& operator*=(const FaceValueStencil<GridType, SC, N>& other);
 
     /*!
      * @brief multiplication with another stencil
      * @param other factors to mulitply with
      */
-    FaceValueStencil<GridType, N> operator*(const FaceValueStencil<GridType, N>& other) const;
+    FaceValueStencil<GridType, SC, N> operator*(const FaceValueStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief division of this instance by another stencil
      * @param other stencil to divide by
      */
-    FaceValueStencil<GridType, N>& operator/=(const FaceValueStencil<GridType, N>& other);
+    FaceValueStencil<GridType, SC, N>& operator/=(const FaceValueStencil<GridType, SC, N>& other);
 
     /*!
      * @brief division of stencil by another stencil
      * @param other stencil to divide by
      */
-    FaceValueStencil<GridType, N> operator/(const FaceValueStencil<GridType, N>& other) const;
+    FaceValueStencil<GridType, SC, N> operator/(const FaceValueStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief division operation with matrix stencil
      * @param other stencil to divide by
      */
-    FaceMatrixStencil<GridType, N> operator*(const FaceMatrixStencil<GridType, N>& other) const;
+    FaceMatrixStencil<GridType, SC, N> operator*(const FaceMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief sets a specific value in the stencil

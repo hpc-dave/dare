@@ -24,19 +24,19 @@
 
 namespace dare::mpi {
 
-template <typename LO, typename GO, typename SC>
-HaloBuffer<LO, GO, SC>::HaloBuffer() : exec_man(nullptr) {}
+template <typename SC>
+HaloBuffer<SC>::HaloBuffer() : exec_man(nullptr) {}
 
-template <typename LO, typename GO, typename SC>
+template <typename SC>
 template <typename Lambda1, typename Lambda2>
-void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
+void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
                                         const std::vector<GO>& list_required_IDs,
                                         const std::unordered_map<GO, GO> map_periodic,
                                         Lambda1 is_local,
                                         Lambda2 map_global_to_local) {
     exec_man = execution_manager;
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
-        buffers[n] = SingleHaloBuffer<LO, GO, SC>(exec_man, n);
+        buffers[n] = SingleHaloBuffer<SC>(exec_man, n);
     }
 
     std::vector<MPI_Request> requests(exec_man->GetNumberProcesses() * 2);
@@ -174,9 +174,9 @@ void HaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
     this->utils::InitializationTracker::Initialize();
 }
 
-template <typename LO, typename GO, typename SC>
+template <typename SC>
 template <typename Field>
-void HaloBuffer<LO, GO, SC>::Exchange(Field* field) {
+void HaloBuffer<SC>::Exchange(Field* field) {
     std::vector<MPI_Request> requests(buffers.size() * 2);
     std::size_t count{0};
     for (auto& entry : buffers) {
@@ -190,8 +190,8 @@ void HaloBuffer<LO, GO, SC>::Exchange(Field* field) {
     }
 }
 
-template <typename LO, typename GO, typename SC>
-ExecutionManager* HaloBuffer<LO, GO, SC>::GetExecutionManager() {
+template <typename SC>
+ExecutionManager* HaloBuffer<SC>::GetExecutionManager() {
     return exec_man;
 }
 }  // namespace dare::mpi

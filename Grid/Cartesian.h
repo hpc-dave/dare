@@ -36,10 +36,36 @@
 
 namespace dare::Grid {
 
-template <std::size_t Dim,
-          class LO = dare::Grid::details::LocalOrdinalType,
-          class GO = dare::Grid::details::GlobalOrdinalType,
-          class SC = double>
+enum class CartesianNeighbor : char {
+    CENTER = 0,
+    WEST = 1,
+    EAST = 2,
+    SOUTH = 3,
+    NORTH = 4,
+    BOTTOM = 5,
+    TOP = 6,
+    FOURD_LOW = 7,
+    FOURD_UP = 8
+};
+
+[[nodiscard]] inline char ToNum(CartesianNeighbor pos) {
+    return static_cast<char>(pos);
+}
+[[nodiscard]] inline char ToFace(CartesianNeighbor face) {
+#ifndef DARE_NDEBUG
+    if (face == CartesianNeighbor::CENTER) {
+        std::cerr << "In " << __func__ << ": Center is not a face!\n";
+    }
+#endif
+    return ToNum(face) - 1;
+}
+
+[[nodiscard]] inline char ToNormal(CartesianNeighbor nb) {
+    char n = (ToNum(nb) % 2 == 0) - (ToNum(nb) % 2) > 0 - (nb == CartesianNeighbor::CENTER);
+    return n;
+}
+
+template <std::size_t Dim>
 class Cartesian : public dare::utils::InitializationTracker {
 public:
     enum {
@@ -59,17 +85,23 @@ public:
         PERIODIC_Z = 0b00000100
     };
 
+    using LO = dare::Grid::details::LocalOrdinalType;
+    using GO = dare::Grid::details::GlobalOrdinalType;
+    using SC = double;
     using GlobalOrdinalType = GO;
     using LocalOrdinalType = LO;
-    const std::size_t Dimension = Dim;
+    static const std::size_t Dimension = Dim;
+    static const std::size_t STENCIL_SIZE = Dim * 2 + 1;
+    static const std::size_t NUM_FACES = Dim * 2;
     using ScalarType = SC;
     using VecGO = utils::Vector<Dim, GO>;
     using VecLO = utils::Vector<Dim, LO>;
     using VecSC = utils::Vector<Dim, SC>;
-    using Representation = CartesianRepresentation<Dim, LO, GO, SC>;
+    using Representation = CartesianRepresentation<Dim>;
     using Options = VecLO;
     using Index = VecLO;
     using IndexGlobal = VecGO;
+    using NeighborID = CartesianNeighbor;
 
     template < typename O>
     struct GetIndexType {
@@ -103,8 +135,8 @@ public:
         const VecSC& size,
         const LO num_ghost);
 
-    Cartesian(const Cartesian<Dim, LO, GO, SC>& other) = delete;
-    void operator=(const Cartesian<Dim, LO, GO, SC>& other) = delete;
+    Cartesian(const Cartesian<Dim>& other) = delete;
+    void operator=(const Cartesian<Dim>& other) = delete;
 
     /*!
      * \brief destructor
@@ -115,74 +147,74 @@ public:
      * \brief returns Representation object
      * \brief opt Options for the target grid
      */
-    Representation GetRepresentation(Options opt);
+    [[nodiscard]] Representation GetRepresentation(Options opt);
 
     /*!
      * \brief returns cell width
      */
-    const VecSC& GetCellWidth() const;
+    [[nodiscard]] const VecSC& GetCellWidth() const;
 
     /*!
      * \brief returns face area
      */
-    const VecSC& GetFaceArea() const;
+    [[nodiscard]] const VecSC& GetFaceArea() const;
 
     /*!
      * \brief returns cell volume
      */
-    SC GetCellVolume() const;
+    [[nodiscard]] SC GetCellVolume() const;
 
     /*!
      * \brief return number of ghost cells
      */
-    LO GetNumGhost() const;
+    [[nodiscard]] LO GetNumGhost() const;
 
     /*!
      * \brief return offset of subgrid in cells
      */
-    const VecGO& GetOffsetCells() const;
+    [[nodiscard]] const VecGO& GetOffsetCells() const;
 
     /*!
      * \brief return offset of subgrid in distance
      */
-    const VecSC& GetOffsetSize() const;
+    [[nodiscard]] const VecSC& GetOffsetSize() const;
 
     /*!
      * @brief returns the local resolution
      */
-    const VecLO& GetLocalResolution() const;
+    [[nodiscard]] const VecLO& GetLocalResolution() const;
     /*!
      * @brief returns global resolution
      */
-    const VecGO& GetGlobalResolution() const;
+    [[nodiscard]] const VecGO& GetGlobalResolution() const;
 
     /*!
      * @brief returns local size
      */
-    const VecSC& GetLocalSize() const;
+    [[nodiscard]] const VecSC& GetLocalSize() const;
     /*!
      * @brief returns global size
      */
-    const VecSC& GetGlobalSize() const;
+    [[nodiscard]] const VecSC& GetGlobalSize() const;
 
     /*!
      * @brief provides boundary identifier
      */
-    uint8_t GetBoundaryID() const;
+    [[nodiscard]] uint8_t GetBoundaryID() const;
 
     /*!
      * @brief returns periodicity
      */
-    const VecLO& GetPeriodicity() const;
+    [[nodiscard]] const VecLO& GetPeriodicity() const;
     /*!
      * @brief quick inquiriy, if the grid is periodic
      */
-    bool IsPeriodic() const;
+    [[nodiscard]] bool IsPeriodic() const;
 
     /*!
      * @brief returns pointer to execution manager
      */
-    mpi::ExecutionManager* GetExecutionManager() const;
+    [[nodiscard]] mpi::ExecutionManager* GetExecutionManager() const;
 
 private:
     VecLO resolution_local;     //!< resolution of local internal grid

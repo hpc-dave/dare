@@ -28,6 +28,7 @@
 #include <string>
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>
+#include "../Utilities/Vector.h"
 
 namespace dare::Data {
 
@@ -134,6 +135,19 @@ public:
      * @return specified value
      */
     T At(const Index& ind, std::size_t c) const;
+
+    /*!
+     * @brief returns vector with all components
+     * @param n local ordinal
+     */
+    dare::utils::Vector<N, T> GetValues(const LO n) const;
+
+    /*!
+     * @brief returns vector with all components
+     * @param ind index
+     */
+    dare::utils::Vector<N, T> GetValues(const Index& ind) const;
+
 
     /*!
      * @brief access to element in the data
