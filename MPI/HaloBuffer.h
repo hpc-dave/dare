@@ -43,8 +43,8 @@ namespace dare::mpi {
 template <typename SC>
 class HaloBuffer : public utils::InitializationTracker {
 public:
-    using LO = dare::Grid::details::LocalOrdinalType;
-    using GO = dare::Grid::details::GlobalOrdinalType;
+    using LO = dare::defaults::LocalOrdinalType;
+    using GO = dare::defaults::GlobalOrdinalType;
 
     /*!
      * @brief default constructor

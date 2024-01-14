@@ -32,9 +32,9 @@
 namespace dare::Matrix::test {
 class TrilinosTestGrid {
 public:
-    using GlobalOrdinalType = dare::Grid::details::GlobalOrdinalType;
-    using LocalOrdinalType = dare::Grid::details::LocalOrdinalType;
-    using ScalarType = double;
+    using GlobalOrdinalType = dare::defaults::GlobalOrdinalType;
+    using LocalOrdinalType = dare::defaults::LocalOrdinalType;
+    using ScalarType = dare::defaults::ScalarType;
     using Index = dare::utils::Vector<1, LocalOrdinalType>;
     using IndexGlobal = dare::utils::Vector<1, GlobalOrdinalType>;
     class TestRepresentation {

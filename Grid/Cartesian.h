@@ -85,9 +85,9 @@ public:
         PERIODIC_Z = 0b00000100
     };
 
-    using LO = dare::Grid::details::LocalOrdinalType;
-    using GO = dare::Grid::details::GlobalOrdinalType;
-    using SC = double;
+    using LO = dare::defaults::LocalOrdinalType;
+    using GO = dare::defaults::GlobalOrdinalType;
+    using SC = dare::defaults::ScalarType;
     using GlobalOrdinalType = GO;
     using LocalOrdinalType = LO;
     static const std::size_t Dimension = Dim;

@@ -66,8 +66,8 @@ template <typename SC>
 class TrilinosSolver {
 public:
     using ScalarType = SC;
-    using LocalOrdinalType = dare::Grid::details::LocalOrdinalType;
-    using GlobalOrdinalType = dare::Grid::details::GlobalOrdinalType;
+    using LocalOrdinalType = dare::defaults::LocalOrdinalType;
+    using GlobalOrdinalType = dare::defaults::GlobalOrdinalType;
     using LO = LocalOrdinalType;
     using GO = GlobalOrdinalType;
     using OperatorType = Tpetra::Operator<SC, LO, GO>;

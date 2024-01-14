@@ -41,15 +41,15 @@ namespace details::Cartesian {
  * @tparam Dim dimension of grid
  * @tparam DimProj dimension of the projection for the interpolation
  */
-template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t DimProj>
+template <std::size_t Dim, std::size_t DimProj>
 struct THelper {
     static const NUM_VALUES{math::Pow<2, DimProj>()};
-    using GridType = dare::Grid::Cartesian<Dim, LO, GO, SC>;
+    using GridType = dare::Grid::Cartesian<Dim>;
     using Index = typename GridType::Index;
     using IndexList = dare::utils::Vector<NUM_VALUES, Index>;
     using Options = typename GridType::Options;
-    template <std::size_t N>
-    using GridVector = dare::data::GridVector<GridType, N>;
+    template <typename SC, std::size_t N>
+    using GridVector = dare::data::GridVector<GridType, SC, N>;
 };
 
 /*!
@@ -97,7 +97,7 @@ template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t Di
 GetInterpolationIndices(const typename THelper<Dim, LO, GO SC>::Index& ind,
                         const typename THelper<Dim, LO, GO SC>::Options& off_rel,
                         const typename dare::utils::Vector<DimProj, std::size_t>& dim_aff) {
-    using IndexList = THelper<Dim, LO, GO, SC>::IndexList;
+    using IndexList = THelper<Dim, DimProj>::IndexList;
     IndexList indices;
     indices.SetAllValues(ind);
     if constexpr (DimProj != 0) {
@@ -135,8 +135,8 @@ template <std::size_t Dim, typename LO, typename GO, typename SC, std::size_t N,
     const typename THelper<Dim, LO, GO SC>::Options& off_rel,
     const typename dare::utils::Vector<DimProj, std::size_t>& dim_aff,
     std::size_t n) {
-    using IndexList = typename THelper<Dim, LO, GO, SC>::IndexList;
-    const std::size_t NUM_VALUES{THelper<Dim, LO, GO, SC>::NUM_VALUES};
+    using IndexList = typename THelper<Dim, DimProj>::IndexList;
+    const std::size_t NUM_VALUES{THelper<Dim, DimProj>::NUM_VALUES};
 
     IndexList indices{GetInterpolationIndices(ind, off_rel, dim_aff)};
     SC value{field.At(indices[0], n)};
@@ -170,8 +170,8 @@ InterpolateCartesianLinear(
     const typename THelper<Dim, LO, GO SC>::GridVector<N>& field,
     const typename THelper<Dim, LO, GO SC>::Options& off_rel,
     const typename dare::utils::Vector<DimProj, std::size_t>& dim_aff) {
-    using IndexList = typename THelper<Dim, LO, GO, SC>::IndexList;
-    const std::size_t NUM_VALUES{THelper<Dim, LO, GO, SC>::NUM_VALUES};
+    using IndexList = typename THelper<Dim, DimProj>::IndexList;
+    const std::size_t NUM_VALUES{THelper<Dim, DimProj>::NUM_VALUES};
 
     IndexList indices{GetInterpolationIndices(ind, off_rel, dim_aff)};
     dare::utils::Vector<N, SC> values;

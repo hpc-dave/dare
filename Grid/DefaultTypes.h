@@ -34,4 +34,10 @@ using MemorySpace = Tpetra::Map<>::memory_space;
 using NodeType = Tpetra::Map<>::node_type;
 }  // namespace dare::Grid::details
 
+namespace dare::defaults {
+using LocalOrdinalType = Grid::details::LocalOrdinalType;
+using GlobalOrdinalType = Grid::details::GlobalOrdinalType;
+using ScalarType = double;
+}  // end namespace dare::defaults
+
 #endif  // GRID_DEFAULTTYPES_H_

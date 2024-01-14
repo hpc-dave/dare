@@ -52,8 +52,8 @@ template <typename SC>
 class Trilinos : public dare::utils::InitializationTracker {
 public:
     using ScalarType = SC;
-    using LocalOrdinalType = dare::Grid::details::LocalOrdinalType;
-    using GlobalOrdinalType = dare::Grid::details::GlobalOrdinalType;
+    using LocalOrdinalType = dare::defaults::LocalOrdinalType;
+    using GlobalOrdinalType = dare::defaults::GlobalOrdinalType;
     using GO = GlobalOrdinalType;
     using LO = LocalOrdinalType;
     using MatrixType = Tpetra::CrsMatrix<ScalarType, LocalOrdinalType, GlobalOrdinalType>;

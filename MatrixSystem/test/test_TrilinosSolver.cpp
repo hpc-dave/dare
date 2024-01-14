@@ -32,9 +32,9 @@
 
 namespace dare::Matrix::test {
 struct _solverTestParam {
-    using SC = double;
-    using LO = dare::Grid::details::LocalOrdinalType;
-    using GO = dare::Grid::details::GlobalOrdinalType;
+    using SC = dare::defaults::ScalarType;
+    using LO = dare::defaults::LocalOrdinalType;
+    using GO = dare::defaults::GlobalOrdinalType;
     using PT = dare::Matrix::SolverPackage;
     using PTM = dare::Matrix::PreCondPackage;
     PT package;
