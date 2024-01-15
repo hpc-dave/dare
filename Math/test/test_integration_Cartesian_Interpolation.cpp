@@ -237,11 +237,11 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     vlist_ex[1].j() -= 1;
     vlist_ex[2].j() -= 1;
     found_ind.SetAllValues(false);
-    for (std::size_t n{0}; n < 2; n++) {
+    for (std::size_t n{0}; n < 4; n++) {
         for (const auto v : vlist)
             found_ind[n] |= (v == vlist_ex[n]);
     }
-    for (std::size_t n{0}; n < 2; n++) {
+    for (std::size_t n{0}; n < 4; n++) {
         EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
     }
 
@@ -261,11 +261,270 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     vlist_ex[1].j() += 1;
     vlist_ex[2].j() += 1;
     found_ind.SetAllValues(false);
-    for (std::size_t n{0}; n < 2; n++) {
+    for (std::size_t n{0}; n < 4; n++) {
         for (const auto v : vlist)
             found_ind[n] |= (v == vlist_ex[n]);
     }
-    for (std::size_t n{0}; n < 2; n++) {
+    for (std::size_t n{0}; n < 4; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+
+    // NORTH-EAST
+    off_rel.SetAllValues(0);
+    off_rel[0] = 1;
+    off_rel[1] = 1;
+    dim_aff[0] = 1;  // just some wild mixing
+    dim_aff[1] = 0;
+    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                    off_rel,
+                                                                    dim_aff);
+
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].i() += 1;
+    vlist_ex[1].i() += 1;
+    vlist_ex[1].j() += 1;
+    vlist_ex[2].j() += 1;
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 4; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 4; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+
+    // SOUTH-EAST
+    off_rel.SetAllValues(0);
+    off_rel[0] = 1;
+    off_rel[1] = -1;
+    dim_aff[0] = 1;  // just some wild mixing
+    dim_aff[1] = 0;
+    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                    off_rel,
+                                                                    dim_aff);
+
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].i() += 1;
+    vlist_ex[1].i() += 1;
+    vlist_ex[1].j() -= 1;
+    vlist_ex[2].j() -= 1;
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 4; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 4; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+
+    // BOTTOM-WEST
+    off_rel.SetAllValues(0);
+    off_rel[0] = -1;
+    off_rel[2] = -1;
+    dim_aff[0] = 0;
+    dim_aff[1] = 2;
+    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                    off_rel,
+                                                                    dim_aff);
+
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].i() -= 1;
+    vlist_ex[1].i() -= 1;
+    vlist_ex[1].k() -= 1;
+    vlist_ex[2].k() -= 1;
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 4; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 4; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+
+    // TOP-EAST
+    off_rel.SetAllValues(0);
+    off_rel[0] = 1;
+    off_rel[2] = 1;
+    dim_aff[0] = 0;
+    dim_aff[1] = 2;
+    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                    off_rel,
+                                                                    dim_aff);
+
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].i() += 1;
+    vlist_ex[1].i() += 1;
+    vlist_ex[1].k() += 1;
+    vlist_ex[2].k() += 1;
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 4; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 4; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+
+    // BOTTOM-SOUTH
+    off_rel.SetAllValues(0);
+    off_rel[1] = -1;
+    off_rel[2] = -1;
+    dim_aff[0] = 1;
+    dim_aff[1] = 2;
+    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                    off_rel,
+                                                                    dim_aff);
+
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].j() -= 1;
+    vlist_ex[1].j() -= 1;
+    vlist_ex[1].k() -= 1;
+    vlist_ex[2].k() -= 1;
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 4; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 4; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+
+    // TOP-NORTH
+    off_rel.SetAllValues(0);
+    off_rel[1] = 1;
+    off_rel[2] = 1;
+    dim_aff[0] = 1;
+    dim_aff[1] = 2;
+    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                    off_rel,
+                                                                    dim_aff);
+
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].j() += 1;
+    vlist_ex[1].j() += 1;
+    vlist_ex[1].k() += 1;
+    vlist_ex[2].k() += 1;
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 4; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 4; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+}
+
+TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
+    Index ind{2, 3, 4};
+    Options off_rel{0, 0, 0};
+
+    // vectors with affected dimensions
+    dare::utils::Vector<3, std::size_t> dim_aff;
+
+    // for testing indices
+    dare::utils::Vector<8, bool> found_ind;
+
+    // BOTTOM-SOUTH-WEST
+    off_rel.SetAllValues(0);
+    off_rel[0] = -1;
+    off_rel[1] = -1;
+    off_rel[2] = -1;
+    dim_aff[0] = 0;
+    dim_aff[1] = 1;
+    dim_aff[2] = 2;
+    auto vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                         off_rel,
+                                                                         dim_aff);
+    static_assert(std::is_same_v<decltype(vlist), dare::utils::Vector<8, Index> >);
+    dare::utils::Vector<8, Index> vlist_ex;  // expected values
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].i() -= 1;
+    vlist_ex[1].i() -= 1;
+    vlist_ex[1].j() -= 1;
+    vlist_ex[2].j() -= 1;
+    vlist_ex[3].i() -= 1;
+    vlist_ex[3].k() -= 1;
+    vlist_ex[4].i() -= 1;
+    vlist_ex[4].j() -= 1;
+    vlist_ex[4].k() -= 1;
+    vlist_ex[5].j() -= 1;
+    vlist_ex[5].k() -= 1;
+    vlist_ex[6].k() -= 1;
+
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 8; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 8; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+
+    // TOP-NORTH-EAST
+    off_rel.SetAllValues(0);
+    off_rel[0] = 1;
+    off_rel[1] = 1;
+    off_rel[2] = 1;
+    dim_aff[0] = 0;
+    dim_aff[1] = 1;
+    dim_aff[2] = 2;
+    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                    off_rel,
+                                                                    dim_aff);
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].i() += 1;
+    vlist_ex[1].i() += 1;
+    vlist_ex[1].j() += 1;
+    vlist_ex[2].j() += 1;
+    vlist_ex[3].i() += 1;
+    vlist_ex[3].k() += 1;
+    vlist_ex[4].i() += 1;
+    vlist_ex[4].j() += 1;
+    vlist_ex[4].k() += 1;
+    vlist_ex[5].j() += 1;
+    vlist_ex[5].k() += 1;
+    vlist_ex[6].k() += 1;
+
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 8; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 8; n++) {
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+    }
+
+    // BOTTOM-NORTH-EAST
+    off_rel.SetAllValues(0);
+    off_rel[0] = 1;
+    off_rel[1] = 1;
+    off_rel[2] = -1;
+    dim_aff[0] = 0;
+    dim_aff[1] = 1;
+    dim_aff[2] = 2;
+    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+                                                                    off_rel,
+                                                                    dim_aff);
+    vlist_ex.SetAllValues(ind);
+    vlist_ex[0].i() += 1;
+    vlist_ex[1].i() += 1;
+    vlist_ex[1].j() += 1;
+    vlist_ex[2].j() += 1;
+    vlist_ex[3].i() += 1;
+    vlist_ex[3].k() -= 1;
+    vlist_ex[4].i() += 1;
+    vlist_ex[4].j() += 1;
+    vlist_ex[4].k() -= 1;
+    vlist_ex[5].j() += 1;
+    vlist_ex[5].k() -= 1;
+    vlist_ex[6].k() -= 1;
+
+    found_ind.SetAllValues(false);
+    for (std::size_t n{0}; n < 8; n++) {
+        for (const auto v : vlist)
+            found_ind[n] |= (v == vlist_ex[n]);
+    }
+    for (std::size_t n{0}; n < 8; n++) {
         EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
     }
 }
