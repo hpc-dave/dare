@@ -200,6 +200,13 @@ target_include_directories(exec PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
 
+if(USE_GTEST)
+    target_include_directories(unit_test PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+    )
+endif()
+
 # link libraries
 target_link_libraries(dare
     PUBLIC OpenMP::OpenMP_CXX

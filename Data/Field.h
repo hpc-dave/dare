@@ -29,7 +29,7 @@
 #include <string>
 
 #include "GridVector.h"
-#include "../MPI/HaloBuffer.h"
+#include "MPI/HaloBuffer.h"
 
 namespace dare::Data {
 

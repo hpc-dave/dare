@@ -26,8 +26,8 @@
 
 #include <memory>
 
-#include "../Grid/Cartesian.h"
-#include "../Data/GridVector.h"
+#include "Grid/Cartesian.h"
+#include "Data/GridVector.h"
 
 namespace dare::test {
 

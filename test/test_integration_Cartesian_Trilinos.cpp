@@ -24,11 +24,11 @@
 
 #include <gtest/gtest.h>
 
-#include "../Grid/Cartesian.h"
-#include "../Grid/DefaultTypes.h"
-#include "../MatrixSystem/Trilinos.h"
-#include "../MatrixSystem/TrilinosSolver.h"
-#include "../Utilities/Vector.h"
+#include "Grid/Cartesian.h"
+#include "Grid/DefaultTypes.h"
+#include "MatrixSystem/Trilinos.h"
+#include "MatrixSystem/TrilinosSolver.h"
+#include "Utilities/Vector.h"
 
 namespace dare::test {
 

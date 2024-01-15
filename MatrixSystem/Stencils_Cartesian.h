@@ -25,9 +25,9 @@
 #define MATRIXSYSTEM_STENCILS_CARTESIAN_H_
 
 #include <string>
-#include "../Data/Stencil.h"
-#include "../Utilities/Vector.h"
-#include "../Grid/Cartesian.h"
+#include "Data/Stencil.h"
+#include "Utilities/Vector.h"
+#include "Grid/Cartesian.h"
 
 namespace dare::Data {
 

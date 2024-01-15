@@ -26,8 +26,8 @@
 
 #include <memory>
 
-#include "../Data/Field.h"
-#include "../Grid/Cartesian.h"
+#include "Data/Field.h"
+#include "Grid/Cartesian.h"
 
 namespace dare::test {
 

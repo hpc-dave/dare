@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "MatrixBlock_Default.h"
-#include "../Grid/Cartesian.h"
+#include "Grid/Cartesian.h"
 #include "Stencils_Cartesian.h"
 
 namespace dare::Matrix {

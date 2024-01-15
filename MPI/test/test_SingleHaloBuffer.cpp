@@ -25,7 +25,7 @@
 #include <float.h>
 #include <gtest/gtest.h>
 #include "TestField.h"
-#include "../SingleHaloBuffer.h"
+#include "MPI/SingleHaloBuffer.h"
 
 TEST(SingleHaloBufferTest, Initialize) {
     using SC = double;

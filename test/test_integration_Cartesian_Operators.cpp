@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../MatrixSystem/Operators_Cartesian.h"
+#include "MatrixSystem/Operators_Cartesian.h"
 
 namespace dare::test {
 

@@ -28,7 +28,7 @@
 #include <type_traits>
 
 #include "MatrixBlockBase.h"
-#include "../Utilities/Vector.h"
+#include "Utilities/Vector.h"
 
 namespace dare::Matrix {
 

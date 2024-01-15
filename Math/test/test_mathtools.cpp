@@ -24,8 +24,9 @@
 
 #include <gtest/gtest.h>
 
-#include "../../Grid/DefaultTypes.h"
-#include "../Pow.h"
+#include "Grid/DefaultTypes.h"
+#include "Pow.h"
+#include "Divisors.h"
 
 TEST(MathTools, PowTest) {
     static_assert(dare::math::Pow<0, 2>() == 0);
@@ -54,4 +55,32 @@ TEST(MathTools, PowTest) {
     EXPECT_EQ(dare::math::Pow(v, 2), v * v);
     EXPECT_EQ(dare::math::Pow(v, -1), ONE / v);
     EXPECT_EQ(dare::math::Pow(v, -2), ONE / v / v);
+}
+
+TEST(MathTools, IsRootOfTest) {
+    static_assert(!dare::math::IsRootOf<0, 1>());
+    static_assert(dare::math::IsRootOf<1, 1>());
+    static_assert(dare::math::IsRootOf<2, 2>());
+    static_assert(dare::math::IsRootOf<2, 1>());
+    static_assert(!dare::math::IsRootOf<3, 2>());
+    static_assert(dare::math::IsRootOf<4, 2>());
+    static_assert(!dare::math::IsRootOf<5, 2>());
+    static_assert(!dare::math::IsRootOf<6, 2>());
+    static_assert(dare::math::IsRootOf<8, 2>());
+}
+
+TEST(MathTools, DivisionTest) {
+    constexpr double ONE{1.}, HALF{0.5};
+    static_assert(dare::math::Divisor<double, 1>() == ONE);
+    static_assert(dare::math::Divisor<double, 2>() == HALF);
+    static_assert(dare::math::Divisor<double, 4>() == HALF * HALF);
+    static_assert(dare::math::Divisor<double, 8>() == HALF * HALF * HALF);
+}
+
+TEST(MathTools, DivideTest) {
+    const double v{1.5}, HALF{0.5};
+    EXPECT_EQ(dare::math::Divide<1>(v), v);
+    EXPECT_EQ(dare::math::Divide<2>(v), v * HALF);
+    EXPECT_EQ(dare::math::Divide<4>(v), v * HALF * HALF);
+    EXPECT_EQ(dare::math::Divide<8>(v), v * HALF * HALF * HALF);
 }

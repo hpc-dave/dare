@@ -23,8 +23,8 @@
  */
 
 #include <gtest/gtest.h>
-#include "../Grid/Cartesian.h"
-#include "../MatrixSystem/MatrixBlock.h"
+#include "Grid/Cartesian.h"
+#include "MatrixSystem/MatrixBlock.h"
 
 template <std::size_t Dim, typename GO>
 dare::utils::Vector<Dim, GO> GetResolutionTestCartesianGrid() {

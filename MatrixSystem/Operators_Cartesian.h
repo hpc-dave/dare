@@ -27,7 +27,7 @@
 #include "Operators.h"
 #include "MatrixBlock_Cartesian.h"
 #include "Stencils_Cartesian.h"
-#include "../Data/GridVector.h"
+#include "Data/GridVector.h"
 
 namespace dare::Matrix {
 

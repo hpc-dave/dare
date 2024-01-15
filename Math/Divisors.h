@@ -28,6 +28,25 @@
 namespace dare::math {
 
 /*!
+ * \brief tests if an integral number is a integral root of another
+ * @tparam NUM number which is tested
+ * @tparam ROOT potential root of the number
+ */
+template<std::size_t NUM, std::size_t ROOT>
+constexpr bool IsRootOf() {
+    if constexpr (NUM == 0)
+        return false;
+    else if constexpr (ROOT == 1)
+        return true;
+    else if constexpr (NUM % ROOT > 0)
+        return false;
+    else if constexpr (NUM == ROOT)
+        return true;
+    else
+        return IsRootOf<NUM / ROOT, ROOT>();
+}
+
+/*!
  * \brief computes divisor at compile time
  * @tparam DIV integral value by which is divided
  * @tparam T type of variable
@@ -35,7 +54,7 @@ namespace dare::math {
  */
 template <typename T,
           std::size_t DIV,
-          typename TEnable = std::enable_if_t<!std::is_integral_v<T> && (DIV % 2 == 0 || DIV == 1)>>
+          typename TEnable = std::enable_if_t<!std::is_integral_v<T> && (IsRootOf<DIV, 2>() || DIV == 1)>>
 constexpr T Divisor() {
     if constexpr (DIV == 1) {
         return static_cast<T>(1.);
@@ -48,11 +67,11 @@ constexpr T Divisor() {
  * \brief Divides the provided floating point value by an integral value which is pow(2)
  * @tparam DIV integral value by which is divided
  * @tparam T type of variable
- * @tparam TEnable make sure the divisor is a multiple of 2
+ * @tparam TEnable make sure the divisor has the root 2
  */
 template <std::size_t DIV,
           typename T,
-          typename TEnable = std::enable_if_t<(DIV % 2 == 0) || DIV == 1>>
+          typename TEnable = std::enable_if_t<IsRootOf<DIV, 2>() || DIV == 1>>
 [[nodiscard]] T Divide(T value) {
     if constexpr (std::is_integral_v<T>) {
         return value / DIV;

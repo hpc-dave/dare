@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../MatrixSystem/Stencils_Cartesian.h"
+#include "MatrixSystem/Stencils_Cartesian.h"
 
 template <std::size_t Dim>
 class IntegrationTestCartesianStencils : public testing::Test {

@@ -27,7 +27,7 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-#include "../ScopeGuard/ScopeGuard.h"
+#include "ScopeGuard/ScopeGuard.h"
 
 static std::string xml_report_arg = "";  // NOLINT
 

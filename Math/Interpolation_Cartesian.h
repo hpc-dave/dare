@@ -27,7 +27,7 @@
 
 #include "Interpolation.h"
 #include "Divisors.h"
-#include "../Grid/Cartesian.h"
+#include "Grid/Cartesian.h"
 
 namespace dare::math {
 
@@ -92,22 +92,23 @@ struct THelper {
  *    2           4         interpolation plane and therefore 4 points are required
  *    3           8         interpolation in a 3D box with 8 required points
  */
-template <std::size_t Dim, typename SC, std::size_t DimProj>
+template <std::size_t Dim, std::size_t DimProj>
 [[nodiscard]] typename THelper<Dim, DimProj>::IndexList
-GetInterpolationIndices(const typename THelper<Dim, DimProj>::Index& ind,
+GetInterpolationIndices(const dare::utils::Vector<Dim, dare::defaults::LocalOrdinalType>& ind,
                         const typename THelper<Dim, DimProj>::Options& off_rel,
                         const typename dare::utils::Vector<DimProj, std::size_t>& dim_aff) {
     using IndexList = typename THelper<Dim, DimProj>::IndexList;
     static const std::size_t NUM_V{THelper<Dim, DimProj>::NUM_VALUES};
+    const std::size_t TWO{2};   // To avoid narrowing conversion to int further down
     IndexList indices;
     indices.SetAllValues(ind);
     if constexpr (DimProj != 0) {
         for (std::size_t n_aff{0}; n_aff < DimProj; n_aff++) {
             std::size_t dim_aff_v{dim_aff[n_aff]};
-            std::size_t n_step{math::Pow(2, n_aff)};
-            std::size_t n_range{n_step * 2};
+            std::size_t n_step{math::Pow(TWO, n_aff)};
+            std::size_t n_range{n_step * TWO};
             for (std::size_t n_v{0}; n_v < NUM_V; n_v += n_range)
-                for (std::size_t pos{n_v}; pos < (pos + n_step); pos++)
+                for (std::size_t pos{n_v}; pos < (n_v + n_step); pos++)
                     indices[pos][dim_aff_v] += off_rel[dim_aff_v];
         }
     }

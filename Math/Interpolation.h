@@ -25,7 +25,7 @@
 #ifndef MATH_INTERPOLATION_H_
 #define MATH_INTERPOLATION_H_
 
-#include "../Data/GridVector.h"
+#include "Data/GridVector.h"
 #include "Pow.h"
 
 namespace dare::math {
