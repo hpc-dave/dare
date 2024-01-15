@@ -28,8 +28,8 @@
 #include <cmath>
 #include <vector>
 
-#include "../MPI/ExecutionManager.h"
-#include "../Utilities/Vector.h"
+#include "MPI/ExecutionManager.h"
+#include "Utilities/Vector.h"
 
 namespace dare::Grid {
 

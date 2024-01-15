@@ -26,7 +26,7 @@
 #define GRID_TEST_TEST_DISTRIBUTIONFUNCTIONS_H_
 
 #include <vector>
-#include "../../Utilities/Vector.h"
+#include "Utilities/Vector.h"
 
 namespace dare::Grid::test {
 template <std::size_t Dim, typename T>

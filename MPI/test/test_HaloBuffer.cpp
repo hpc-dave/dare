@@ -26,8 +26,8 @@
 #include <float.h>
 #include <unordered_map>
 
-#include "../ExecutionManager.h"
-#include "../HaloBuffer.h"
+#include "MPI/ExecutionManager.h"
+#include "MPI/HaloBuffer.h"
 #include "TestField.h"
 
 TEST(HaloBufferTest, Exchange) {

@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Interpolation_Cartesian.h"
+#include "Math/Interpolation_Cartesian.h"
 #include "Grid/DefaultTypes.h"
 
 namespace dare::test {

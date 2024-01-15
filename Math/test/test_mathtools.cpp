@@ -25,8 +25,8 @@
 #include <gtest/gtest.h>
 
 #include "Grid/DefaultTypes.h"
-#include "Pow.h"
-#include "Divisors.h"
+#include "Math/Pow.h"
+#include "Math/Divisors.h"
 
 TEST(MathTools, PowTest) {
     static_assert(dare::math::Pow<0, 2>() == 0);

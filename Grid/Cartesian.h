@@ -27,12 +27,12 @@
 
 #include <unordered_map>
 
-#include "../MPI/ExecutionManager.h"
-#include "../Utilities/Vector.h"
-#include "../Utilities/InitializationTracker.h"
-#include "DefaultTypes.h"
-#include "CartesianDistribution.h"
-#include "CartesianRepresentation.h"
+#include "MPI/ExecutionManager.h"
+#include "Utilities/Vector.h"
+#include "Utilities/InitializationTracker.h"
+#include "Grid/DefaultTypes.h"
+#include "Grid/CartesianDistribution.h"
+#include "Grid/CartesianRepresentation.h"
 
 namespace dare::Grid {
 

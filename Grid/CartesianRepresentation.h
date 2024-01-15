@@ -31,8 +31,8 @@
 #include <fstream>
 #include <string>
 
-#include "../MPI/HaloBuffer.h"
-#include "../Utilities/InitializationTracker.h"
+#include "MPI/HaloBuffer.h"
+#include "Utilities/InitializationTracker.h"
 namespace dare::Grid {
 
 // forward declaration for the grid

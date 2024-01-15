@@ -32,8 +32,8 @@
 #include <string>
 #include <vector>
 
-#include "../Utilities/InitializationTracker.h"
-#include "../Grid/DefaultTypes.h"
+#include "Utilities/InitializationTracker.h"
+#include "Grid/DefaultTypes.h"
 #include "ExecutionManager.h"
 
 namespace dare::mpi {
