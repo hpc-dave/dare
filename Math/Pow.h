@@ -27,14 +27,14 @@
 
 namespace dare::math {
 
-template <std::size_t BASE, std::size_t EXP>
-[[nodiscard]] constexpr std::size_t Pow() {
-    if constexpr (EXP == 0) {
-        return 1;
-    } else {
-        return BASE * Pow<BASE, EXP - 1>();
-    }
-}
+// template <std::size_t BASE, std::size_t EXP, typename TEnable = std::enable_if_t<std::is_integral_v<BASE>>>
+// [[nodiscard]] constexpr std::size_t Pow() {
+//     if constexpr (EXP == 0) {
+//         return 1;
+//     } else {
+//         return BASE * Pow<BASE, EXP - 1>();
+//     }
+// }
 template <int BASE, std::size_t EXP>
 [[nodiscard]] constexpr std::size_t Pow() {
     if constexpr (EXP == 0) {
@@ -44,12 +44,12 @@ template <int BASE, std::size_t EXP>
     }
 }
 
-template <typename BASE, std::size_t EXP>
-[[nodiscard]] std::size_t Pow(BASE base) {
+template <int EXP, typename BASE>
+[[nodiscard]] BASE Pow(BASE base) {
     if constexpr (EXP == 0) {
         return 1;
     } else if constexpr(EXP < 0) {
-        return Pow<-(EXP+1)>(1. / base);
+        return Pow<-EXP>(1. / base);
     } else {
         return base * Pow<EXP - 1>(base);
     }
