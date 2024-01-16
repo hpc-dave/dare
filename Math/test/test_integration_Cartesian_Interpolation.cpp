@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-#include <random>
-
 #include <gtest/gtest.h>
 
-#include "Math/Interpolation_Cartesian.h"
+#include <random>
+
 #include "Grid/DefaultTypes.h"
+#include "Math/Interpolation_Cartesian.h"
 
 namespace dare::test {
 
