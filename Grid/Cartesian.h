@@ -61,7 +61,7 @@ enum class CartesianNeighbor : char {
 }
 
 [[nodiscard]] inline char ToNormal(CartesianNeighbor nb) {
-    char n = (ToNum(nb) % 2 == 0) - (ToNum(nb) % 2) > 0 - (nb == CartesianNeighbor::CENTER);
+    char n = (ToNum(nb) % 2 == 0) - (ToNum(nb) % 2 > 0) - (nb == CartesianNeighbor::CENTER);
     return n;
 }
 

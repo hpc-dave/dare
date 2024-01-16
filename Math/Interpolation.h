@@ -25,6 +25,8 @@
 #ifndef MATH_INTERPOLATION_H_
 #define MATH_INTERPOLATION_H_
 
+#include <limits>
+
 #include "Data/GridVector.h"
 #include "Pow.h"
 
@@ -42,11 +44,20 @@ namespace dare::math {
  * @return 
  */
 template<typename GridType, typename SC, std::size_t N>
-SC InterpolateToFace(const typename GridType::GridRepresentation& target,
+SC InterpolateToFace(const typename GridType::Representation& target,
                      const typename GridType::Index& ind_target,
                      const typename GridType::NeighborID face,
                      const Data::GridVector<GridType, SC, N>& field,
                      std::size_t n) {
+    return std::numeric_limits<SC>::signaling_NaN();
+}
+
+template <typename GridType, typename SC, std::size_t N>
+dare::utils::Vector<N, SC> InterpolateToFace(const typename GridType::Representation& target,
+                     const typename GridType::Index& ind_target,
+                     const typename GridType::NeighborID face,
+                     const Data::GridVector<GridType, SC, N>& field) {
+    return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
 
 }  // end namespace dare::math
