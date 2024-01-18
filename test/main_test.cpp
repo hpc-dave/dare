@@ -53,7 +53,6 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
-        int rank_results{0};
 
         int ret = -1;
         {

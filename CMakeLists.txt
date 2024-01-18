@@ -70,6 +70,27 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 		PRIVATE -faligned-new
 		PRIVATE -fmessage-length=0
 	)
+    if(USE_GTEST)
+        target_compile_options(unit_test
+		PRIVATE -march=native
+		PRIVATE -Wall
+		PRIVATE -faligned-new
+		PRIVATE -fmessage-length=0
+	    )
+    endif()
+    if(DEBUG)
+        target_compile_options(dare
+        PRIVATE -Werror
+        )
+        target_compile_options(exec
+        PRIVATE -Werror
+        )
+        if(USE_GTEST)
+            target_compile_options(unit_test
+            PRIVATE -Werror
+            )
+        endif()
+    endif()
 else()
 	message(WARNING "DaRe: Flags have not been implemented for the current compiler! (${CMAKE_CXX_COMPILER_ID})")
 endif()

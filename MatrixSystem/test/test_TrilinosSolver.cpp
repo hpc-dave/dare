@@ -24,11 +24,12 @@
 
 #include <gtest/gtest.h>
 
-#include "../../Data/GridVector.h"
-#include "../../Grid/DefaultTypes.h"
-#include "../Trilinos.h"
-#include "../TrilinosSolver.h"
+#include "Data/GridVector.h"
+#include "Grid/DefaultTypes.h"
+#include "MatrixSystem/Trilinos.h"
+#include "MatrixSystem/TrilinosSolver.h"
 #include "test_TrilinosTestGrid.h"
+#include "Utilities/Errors.h"
 
 namespace dare::Matrix::test {
 struct _solverTestParam {
@@ -59,8 +60,9 @@ Teuchos::RCP<Teuchos::ParameterList> GetPreconditionerParameters(_solverTestPara
         parameters->set("problem: type", "MHD");  // works best in our cases
         parameters->set("verbosity", "none");
         break;
-    otherwise:
-        {}
+    case _solverTestParam::PTM::None:
+        // No parameters are set
+        break;
     }
     return parameters;
 }
@@ -112,8 +114,7 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
     GridRepresentation g_rep{grid.GetRepresentation()};
 
     for (LO node = 0; node < grid.local_size; node++) {
-        LO row = node * N;
-        for (LO i{0}; i < N; i++) {
+        for (std::size_t i{0}; i < N; i++) {
             field.At(node, i) = 0.5;
         }
     }
@@ -121,9 +122,7 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
     // assembles a pseudo-2D problem, since the preconditioners of Ifpack and MueLu seem
     // to have issues with fully 1D problems
     auto functor = [&](auto mblock) {
-        const std::size_t num_rows = grid.size_global * N;
         GO node_g = mblock->GetNode();
-        LO node_l = g_rep.MapInternalToLocal(g_rep.MapGlobalToLocalInternal(node_g));
         bool is_left_edge = node_g == 0;
         bool is_right_edge = node_g == (g_rep.GetNumberGlobalCellsInternal()-1);
         for (std::size_t n{0}; n < N; n++) {

@@ -107,16 +107,18 @@ TrilinosSolver<SC>::BuildPreconditioner(PreCondPackage precond_package,
         break;
     case PreCondPackage::MueLu:
         M = CreatePreconditionerMueLu(type, param, A);
-    otherwise:
-        {}
+        break;
+    case PreCondPackage::None:
+        break;
     }
 
     if (M.is_null()) {
         int rank{-1};
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         bool am_i_root{rank == 0};
-        std::cerr << "Preconditioner of type " << type
-                  << "is unknown or provided with wrong parameters!" << std::endl;
+        if(am_i_root)
+        ERROR << "Preconditioner of type " << type
+                  << "is unknown or provided with wrong parameters!" << ERROR_CLOSE;
         MPI_Abort(MPI_COMM_WORLD, -5);
     }
     return M;

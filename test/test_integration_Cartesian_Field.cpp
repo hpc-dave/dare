@@ -150,7 +150,7 @@ TEST_F(IntegrationCartesianField1D, CopyToOld) {
     GridVector* data = nullptr;
     for (std::size_t tstep{1}; tstep < num_time_steps; tstep++) {
         data = &field.GetDataVector(tstep);
-        for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+        for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
             Index ind = g_rep.MapOrdinalToIndexLocal(node);
             for (std::size_t n{0}; n < N; n++) {
                 data->At(ind, n) = 0.;
@@ -158,7 +158,7 @@ TEST_F(IntegrationCartesianField1D, CopyToOld) {
         }
     }
     data = &field.GetDataVector();
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             data->At(ind, n) = node * N + n;
@@ -166,22 +166,21 @@ TEST_F(IntegrationCartesianField1D, CopyToOld) {
     }
     field.CopyDataVectorsToOldTimeStep();
     data = &field.GetDataVector(1);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(ind, n), node * N + n);
         }
     }
     data = &field.GetDataVector(2);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
-        Index ind = g_rep.MapOrdinalToIndexLocal(node);
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(node, n), 0.);
         }
     }
     field.CopyDataVectorsToOldTimeStep();
     data = &field.GetDataVector(2);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(ind, n), node * N + n);
@@ -196,7 +195,7 @@ TEST_F(IntegrationCartesianField2D, CopyToOld) {
     GridVector* data = nullptr;
     for (std::size_t tstep{1}; tstep < num_time_steps; tstep++) {
         data = &field.GetDataVector(tstep);
-        for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+        for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
             Index ind = g_rep.MapOrdinalToIndexLocal(node);
             for (std::size_t n{0}; n < N; n++) {
                 data->At(ind, n) = 0.;
@@ -204,7 +203,7 @@ TEST_F(IntegrationCartesianField2D, CopyToOld) {
         }
     }
     data = &field.GetDataVector();
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             data->At(ind, n) = node * N + n;
@@ -212,22 +211,21 @@ TEST_F(IntegrationCartesianField2D, CopyToOld) {
     }
     field.CopyDataVectorsToOldTimeStep();
     data = &field.GetDataVector(1);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(ind, n), node * N + n);
         }
     }
     data = &field.GetDataVector(2);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
-        Index ind = g_rep.MapOrdinalToIndexLocal(node);
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(node, n), 0.);
         }
     }
     field.CopyDataVectorsToOldTimeStep();
     data = &field.GetDataVector(2);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(ind, n), node * N + n);
@@ -242,7 +240,7 @@ TEST_F(IntegrationCartesianField3D, CopyToOld) {
     GridVector* data = nullptr;
     for (std::size_t tstep{1}; tstep < num_time_steps; tstep++) {
         data = &field.GetDataVector(tstep);
-        for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+        for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
             Index ind = g_rep.MapOrdinalToIndexLocal(node);
             for (std::size_t n{0}; n < N; n++) {
                 data->At(ind, n) = 0.;
@@ -250,7 +248,7 @@ TEST_F(IntegrationCartesianField3D, CopyToOld) {
         }
     }
     data = &field.GetDataVector();
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             data->At(ind, n) = node * N + n;
@@ -258,22 +256,21 @@ TEST_F(IntegrationCartesianField3D, CopyToOld) {
     }
     field.CopyDataVectorsToOldTimeStep();
     data = &field.GetDataVector(1);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(ind, n), node * N + n);
         }
     }
     data = &field.GetDataVector(2);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
-        Index ind = g_rep.MapOrdinalToIndexLocal(node);
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(node, n), 0.);
         }
     }
     field.CopyDataVectorsToOldTimeStep();
     data = &field.GetDataVector(2);
-    for (std::size_t node{0}; node < g_rep.GetNumberLocalCells(); node++) {
+    for (LO node{0}; node < g_rep.GetNumberLocalCells(); node++) {
         Index ind = g_rep.MapOrdinalToIndexLocal(node);
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(data->At(ind, n), node * N + n);
@@ -301,7 +298,7 @@ TEST_F(IntegrationCartesianField1D, Exchange) {
     // WEST
     for (LO i = 0; i < num_ghost; i++) {
         Index ind(i);
-        for (LO n = 0; n < N; n++)
+        for (std::size_t n = 0; n < N; n++)
             if (b_id & GridType::BOUNDARIES_WEST)
                 EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
             else
@@ -311,7 +308,7 @@ TEST_F(IntegrationCartesianField1D, Exchange) {
     // EAST: no change if rank == (num_proc - 1), change if rank < (num_proc - 1)
     for (LO i = res.i() - num_ghost; i < res.i(); i++) {
         Index ind(i);
-        for (LO n = 0; n < N; n++)
+        for (std::size_t n = 0; n < N; n++)
             if (b_id & GridType::BOUNDARIES_EAST)
                 EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
             else
@@ -321,7 +318,7 @@ TEST_F(IntegrationCartesianField1D, Exchange) {
     // Test internal cells
     for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
         Index ind(i);
-        for (LO n = 0; n < N; n++)
+        for (std::size_t n = 0; n < N; n++)
             EXPECT_EQ(field.GetDataVector().At(ind, n), static_cast<double>(rank));
     }
 
@@ -341,7 +338,7 @@ TEST_F(IntegrationCartesianField1D, Exchange) {
     // WEST: no change if rank == 0, change if rank > 0
     for (LO i = 0; i < num_ghost; i++) {
         Index ind(i);
-        for (LO n = 0; n < N; n++)
+        for (std::size_t n = 0; n < N; n++)
             if (b_id & GridType::BOUNDARIES_WEST)
                 EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
             else
@@ -351,7 +348,7 @@ TEST_F(IntegrationCartesianField1D, Exchange) {
     // EAST: no change if rank == (num_proc - 1), change if rank < (num_proc - 1)
     for (LO i = res.i() - num_ghost; i < res.i(); i++) {
         Index ind(i);
-        for (LO n = 0; n < N; n++)
+        for (std::size_t n = 0; n < N; n++)
             if (b_id & GridType::BOUNDARIES_EAST)
                 EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
             else
@@ -361,7 +358,7 @@ TEST_F(IntegrationCartesianField1D, Exchange) {
     // Test internal cells
     for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
         Index ind(i);
-        for (LO n = 0; n < N; n++)
+        for (std::size_t n = 0; n < N; n++)
             EXPECT_EQ(field_s.GetDataVector().At(ind, n), static_cast<double>(rank));
     }
 }
@@ -389,7 +386,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO i = 0; i < num_ghost; i++) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 if (b_id & GridType::BOUNDARIES_WEST)
                     EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                 else
@@ -401,7 +398,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO i = res.i() - num_ghost; i < res.i(); i++) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 if (b_id & GridType::BOUNDARIES_EAST)
                     EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                 else
@@ -413,7 +410,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO j = 0; j < num_ghost; j++) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 if (b_id & GridType::BOUNDARIES_SOUTH)
                     EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                 else
@@ -425,7 +422,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO j = res.j() - num_ghost; j < res.j(); j++) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 if (b_id & GridType::BOUNDARIES_NORTH)
                     EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                 else
@@ -437,7 +434,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 EXPECT_EQ(field.GetDataVector().At(ind, n), static_cast<double>(rank));
         }
     }
@@ -462,7 +459,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO i = 0; i < num_ghost; i++) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 if (b_id & GridType::BOUNDARIES_WEST)
                     EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                 else
@@ -474,7 +471,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO i = res.i() - num_ghost; i < res.i(); i++) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 if (b_id & GridType::BOUNDARIES_EAST)
                     EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                 else
@@ -486,7 +483,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO j = 0; j < num_ghost; j++) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 if (b_id & GridType::BOUNDARIES_SOUTH)
                     EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                 else
@@ -498,7 +495,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO j = res.j() - num_ghost; j < res.j(); j++) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 if (b_id & GridType::BOUNDARIES_NORTH)
                     EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                 else
@@ -510,7 +507,7 @@ TEST_F(IntegrationCartesianField2D, Exchange) {
     for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             Index ind(i, j);
-            for (LO n = 0; n < N; n++)
+            for (std::size_t n = 0; n < N; n++)
                 EXPECT_EQ(field_s.GetDataVector().At(ind, n), static_cast<double>(rank));
         }
     }
@@ -542,7 +539,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_WEST)
                         EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                     else
@@ -556,7 +553,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_EAST)
                         EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                     else
@@ -570,7 +567,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_SOUTH)
                         EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                     else
@@ -584,7 +581,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_NORTH)
                         EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                     else
@@ -598,7 +595,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_BOTTOM)
                         EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                     else
@@ -612,7 +609,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_TOP)
                         EXPECT_EQ(field.GetDataVector().At(ind, n), rank);
                     else
@@ -626,7 +623,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     EXPECT_EQ(field.GetDataVector().At(ind, n), static_cast<double>(rank));
             }
         }
@@ -655,7 +652,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_WEST)
                         EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                     else
@@ -669,7 +666,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_EAST)
                         EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                     else
@@ -683,7 +680,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_SOUTH)
                         EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                     else
@@ -697,7 +694,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_NORTH)
                         EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                     else
@@ -711,7 +708,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_BOTTOM)
                         EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                     else
@@ -725,7 +722,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO i = num_ghost; i < (res.i() - num_ghost); i++) {
             for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     if (b_id & GridType::BOUNDARIES_TOP)
                         EXPECT_EQ(field_s.GetDataVector().At(ind, n), rank);
                     else
@@ -738,7 +735,7 @@ TEST_F(IntegrationCartesianField3D, Exchange) {
         for (LO j = num_ghost; j < (res.j() - num_ghost); j++) {
             for (LO k = num_ghost; k < (res.k() - num_ghost); k++) {
                 Index ind(i, j, k);
-                for (LO n = 0; n < N; n++)
+                for (std::size_t n = 0; n < N; n++)
                     EXPECT_EQ(field_s.GetDataVector().At(ind, n), static_cast<double>(rank));
             }
         }

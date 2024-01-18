@@ -216,7 +216,7 @@ void CartesianDistribution_Cubical(int num_proc,
             // Once we have done that with all the elements in the slice
             // we start again, until we have reached the number of
             // desired processes
-            if (n_pre_last_slice + counter >= vec_res_local->size()) {
+            if (static_cast<std::size_t>(n_pre_last_slice + counter) >= vec_res_local->size()) {
                 failed = true;
                 break;
             }
@@ -308,7 +308,7 @@ void CartesianDistribution_Cubical(int num_proc,
         num_cells_total = 1;
         for (auto e : resolution_global)
             num_cells_total *= e;
-        GO sum_cells{0};
+        std::size_t sum_cells{0};
         for (const auto& r_sub : *vec_res_local) {
             LO n_sub{1};
             for (LO dim : r_sub)

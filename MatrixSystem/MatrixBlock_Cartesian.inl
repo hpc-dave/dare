@@ -130,15 +130,7 @@ bool MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::IsSet(std::size_t n) con
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
     using CN = CartesianNeighbor;
-    O node = this->GetNode();
     Index ind = ind_internal;
-    // if constexpr (this->IsGlobal()) {
-    //     ind = g_rep->MapOrdinalToIndexGlobal(node);
-    //     ind = g_rep->MapGlobalToInternal(ind);
-    // } else {
-    //     ind = g_rep->MapOrdinalToIndexLocal(node);
-    //     ind = g_rep->MapLocalToInternal(ind);
-    // }
     for (std::size_t n{0}; n < N; n++) {
         char num_entries{0};
         for (std::size_t p{0}; p < 8; p++) {
@@ -273,6 +265,12 @@ SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t n) {
     } else if constexpr (IsSame<CartesianNeighbor::TOP, CNB>() && (Dim > 2)) {
         GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::TOP);
         return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::TOP));
+    } else if constexpr (IsSame<CartesianNeighbor::FOURD_LOW, CNB>() && (Dim > 3)) {
+        GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::FOURD_LOW);
+        return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::FOURD_LOW));
+    } else if constexpr (IsSame<CartesianNeighbor::FOURD_UP, CNB>() && (Dim > 3)) {
+        GetNeighborBitSet<HostSpace>()[n] |= static_cast<char>(CartesianNeighborBitSet::FOURD_UP);
+        return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::FOURD_UP));
     } else {
         std::cerr << "In " << __func__ << ": The neighbor indicator is out of bounds!" << std::endl;
         return GetNeighbors<HostSpace>()(n, static_cast<char>(CartesianNeighbor::CENTER));
@@ -302,6 +300,12 @@ SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t n, Cartes
         break;
     case CartesianNeighbor::TOP:
         return Get<CartesianNeighbor::TOP>(n);
+        break;
+    case CartesianNeighbor::FOURD_LOW:
+        return Get<CartesianNeighbor::FOURD_LOW>(n);
+        break;
+    case CartesianNeighbor::FOURD_UP:
+        return Get<CartesianNeighbor::FOURD_UP>(n);
         break;
     }
     std::cerr << "something horrible happened here: " << __func__ << std::endl;

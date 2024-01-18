@@ -64,19 +64,20 @@ TEST_F(TrilinosTest, Build) {
     GridRepresentation g_rep{grid.GetRepresentation()};
     for (LO node = 0; node < grid.local_size; node++) {
         LO row = node * N;
-        for (LO i{0}; i < N; i++) {
+        for (LO i{0}; i < static_cast<LO>(N); i++) {
             field.At(node, i) = row + i;
         }
     }
 
     auto functor = [&](auto mblock) {
+        GO ZERO{0};
         const std::size_t num_rows = grid.size_global * N;
         GO node_g = mblock->GetNode();
         LO node_l = g_rep.MapInternalToLocal(g_rep.MapGlobalToLocalInternal(node_g));
         for (std::size_t n{0}; n < N; n++) {
             EXPECT_EQ(mblock->GetInitialGuess(n), field.At(node_l, n));
             EXPECT_TRUE(mblock->IsGlobal());
-            if (mblock->GetRow(n) == 0 || mblock->GetRow(n) == (num_rows - 1)) {
+            if (mblock->GetRow(n) == ZERO || mblock->GetRow(n) == static_cast<GO>(num_rows - 1)) {
                 mblock->Resize(n, 2);
             } else {
                 mblock->Resize(n, 3);
@@ -84,7 +85,7 @@ TEST_F(TrilinosTest, Build) {
             if (mblock->GetRow(n) > 0)
                 mblock->SetCoefficient(n, mblock->GetRow(n) - 1, mblock->GetInitialGuess(n));
             mblock->SetCoefficient(n, mblock->GetRow(n), mblock->GetInitialGuess(n) + offset_coef);
-            if (mblock->GetRow(n) < (num_rows - 1))
+            if (mblock->GetRow(n) < static_cast<GO>(num_rows - 1))
                 mblock->SetCoefficient(n, mblock->GetRow(n) + 1, mblock->GetInitialGuess(n) + 2. * offset_coef);
             mblock->SetRhs(n, mblock->GetRow(n) + offset_rhs);
             mblock->SetInitialGuess(n, mblock->GetRow(n) + offset_init);
@@ -102,12 +103,12 @@ TEST_F(TrilinosTest, Build) {
 
     for (LO node{0}; node < grid.local_size; node++) {
         GO node_g = g_rep.MapLocalToGlobalInternal(node);
-        for (LO i{0}; i < N; i++) {
+        for (LO i{0}; i < static_cast<LO>(N); i++) {
             LO row = node * N + i;
             GO row_g = node_g * N + i;
             EXPECT_EQ(trilinos.GetX()->getData()[row], row_g + offset_init);
             EXPECT_EQ(trilinos.GetB()->getData()[row], row_g + offset_rhs);
-            if (row == 0 || row == (grid.local_size * N - 1)) {
+            if (row == 0 || row == static_cast<LO>(grid.local_size * N - 1)) {
                 std::size_t num_entries = trilinos.GetA()->getNumEntriesInGlobalRow(row_g);
                 GOViewType indices("ind", num_entries);
                 SViewType values("coef", num_entries);
@@ -207,7 +208,7 @@ TEST_F(TrilinosTest, Build) {
         }
 
         for (std::size_t n{0}; n < N; n++) {
-            if (mblock->GetRow(n) == 0 || mblock->GetRow(n) == (num_rows - 1)) {
+            if (mblock->GetRow(n) == 0 || mblock->GetRow(n) == static_cast<GO>(num_rows - 1)) {
                 mblock->Resize(n, 2);
             } else {
                 mblock->Resize(n, 3);
@@ -215,7 +216,7 @@ TEST_F(TrilinosTest, Build) {
             if (mblock->GetRow(n) > 0)
                 mblock->SetCoefficient(n, mblock->GetRow(n) - 1, field.At(node_l, n) - 2. * offset_coef);
             mblock->SetCoefficient(n, mblock->GetRow(n), field.At(node_l, n) - offset_coef);
-            if (mblock->GetRow(n) < (num_rows - 1))
+            if (mblock->GetRow(n) < static_cast<GO>(num_rows - 1))
                 mblock->SetCoefficient(n, mblock->GetRow(n) + 1, field.At(node_l, n));
             mblock->SetRhs(n, mblock->GetRow(n) - offset_rhs);
             mblock->SetInitialGuess(n, mblock->GetRow(n) - offset_init);
@@ -226,12 +227,12 @@ TEST_F(TrilinosTest, Build) {
 
     for (LO node{0}; node < grid.local_size; node++) {
         GO node_g = g_rep.MapLocalToGlobalInternal(node);
-        for (LO i{0}; i < N; i++) {
+        for (LO i{0}; i < static_cast<LO>(N); i++) {
             LO row = node * N + i;
             GO row_g = node_g * N + i;
             EXPECT_EQ(trilinos.GetX()->getData()[row], row_g - offset_init);
             EXPECT_EQ(trilinos.GetB()->getData()[row], row_g - offset_rhs);
-            if (row == 0 || row == (grid.local_size * N - 1)) {
+            if (row == 0 || row == static_cast<LO>(grid.local_size * N - 1)) {
                 std::size_t num_entries = trilinos.GetA()->getNumEntriesInGlobalRow(row_g);
                 GOViewType indices("ind", num_entries);
                 SViewType values("coef", num_entries);

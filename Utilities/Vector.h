@@ -771,10 +771,24 @@ public:
     /*
      * \brief returns the hash for a Vector
      */
-    std::size_t operator()(const dare::utils::Vector<N, T>& v) const {
+    [[nodiscard]] std::size_t operator()(const dare::utils::Vector<N, T>& v) const {
         return v.GetHash();
     }
 };
+
+/*!
+ * \brief specialization for dare::utils::Vector: computes the absolute value
+ * @tparam N number of elements in vector
+ * @tparam T type of variable
+ * @param v input vector
+ * @return vector with all values absolute
+ */
+template<std::size_t N, typename T>
+[[nodiscard]] dare::utils::Vector<N, T> abs(dare::utils::Vector<N, T> v) {
+    for (auto& e : v)
+        e = std::abs(e);
+    return v;
+}
 
 }  // namespace std
 

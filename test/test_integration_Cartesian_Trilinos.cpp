@@ -241,7 +241,6 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -335,7 +334,6 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -429,7 +427,6 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -517,7 +514,6 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -605,7 +601,6 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -719,7 +714,6 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveStaggeredZ) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};

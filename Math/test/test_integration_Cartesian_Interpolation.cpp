@@ -644,7 +644,6 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    v_m_ex;
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
@@ -659,7 +658,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    v_m_ex;
+    
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
@@ -673,7 +672,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    v_m_ex;
+    
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
@@ -687,7 +686,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    v_m_ex;
+    
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
@@ -701,7 +700,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    v_m_ex;
+    
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }

@@ -43,21 +43,60 @@ namespace dare::math {
  * @param n component ID
  * @return 
  */
-template<typename GridType, typename SC, std::size_t N>
-SC InterpolateToFace(const typename GridType::Representation& target,
-                     const typename GridType::Index& ind_target,
-                     const typename GridType::NeighborID face,
-                     const Data::GridVector<GridType, SC, N>& field,
-                     std::size_t n) {
+template <typename GridType, typename SC, std::size_t N>
+[[nodiscard]] SC InterpolateToFace(const typename GridType::Representation& target,
+                                   const typename GridType::Index& ind_target,
+                                   const typename GridType::NeighborID face,
+                                   const Data::GridVector<GridType, SC, N>& field,
+                                   std::size_t n) {
     return std::numeric_limits<SC>::signaling_NaN();
 }
 
 template <typename GridType, typename SC, std::size_t N>
-dare::utils::Vector<N, SC> InterpolateToFace(const typename GridType::Representation& target,
-                     const typename GridType::Index& ind_target,
-                     const typename GridType::NeighborID face,
-                     const Data::GridVector<GridType, SC, N>& field) {
+[[nodiscard]] dare::utils::Vector<N, SC> InterpolateToFace(const typename GridType::Representation& target,
+                                                           const typename GridType::Index& ind_target,
+                                                           const typename GridType::NeighborID face,
+                                                           const Data::GridVector<GridType, SC, N>& field) {
     return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
+}
+
+template <typename GridType, typename SC, std::size_t N>
+[[nodiscard]] SC InterpolateToPoint(const typename GridType::VecSC& point,
+                      const Data::GridVector<GridType, SC, N>& field,
+                      std::size_t n) {
+    return std::numeric_limits<SC>::signaling_NaN();
+}
+
+template <typename GridType, typename SC, std::size_t N>
+[[nodiscard]] dare::utils::Vector<N, SC> InterpolateToPoint(const typename GridType::VecSC& point,
+                                                            const Data::GridVector<GridType, SC, N>& field) {
+    return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
+}
+
+template<typename GridType, typename T, std::size_t N, std::size_t NUM_VALUES>
+[[nodiscard]] T Interpolate(const dare::Data::GridVector<GridType, T, N>& field,
+               const dare::utils::Vector<NUM_VALUES, typename GridType::Index>& indices,
+               const dare::utils::Vector<NUM_VALUES, T>& weights,
+               std::size_t n_component) {
+    T v{0};
+    for (std::size_t n{0}; n < NUM_VALUES; n++) {
+        v = std::fma(weights[n], field.At(indices[n], n_component), v);
+    }
+    return v;
+}
+
+template <typename GridType, typename T, std::size_t N, std::size_t NUM_VALUES>
+[[nodiscard]] dare::utils::Vector<N, T> Interpolate(const dare::Data::GridVector<GridType, T, N>& field,
+                                      const dare::utils::Vector<NUM_VALUES, typename GridType::Index>& indices,
+                                      const dare::utils::Vector<NUM_VALUES, T>& weights) {
+    dare::utils::Vector<N, T> v;
+    v.SetAllValues(0);
+    for (std::size_t n{0}; n < NUM_VALUES; n++) {
+        auto v_field = field.GetValues(indices[n]);
+        for (std::size_t n_c{0}; n < N; n++)
+            v[n] = std::fma(weights[n], v_field[n_c], v[n]);
+    }
+    return v;
 }
 
 }  // end namespace dare::math

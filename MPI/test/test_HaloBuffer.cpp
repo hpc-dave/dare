@@ -40,11 +40,11 @@ TEST(HaloBufferTest, Exchange) {
     dare::test::TestField field;
     std::size_t cell_per_domain = 2;
     LO num_ghost = 1;
-    std::size_t global_field_size = exman.GetNumberProcesses() * cell_per_domain + 2 * num_ghost;
+    // std::size_t global_field_size = exman.GetNumberProcesses() * cell_per_domain + 2 * num_ghost;
     field.ResizeByGridSize(cell_per_domain + 2*num_ghost);
     std::vector<GO> list_required_IDs(2 * num_ghost);
     std::unordered_map<GO, GO> map_periodic;
-    for (std::size_t n{0}; n < num_ghost; n++) {
+    for (int n{0}; n < num_ghost; n++) {
         // cells on lower end
         list_required_IDs[n] = exman.GetRank() * cell_per_domain + n;
         // cells on upper end
@@ -68,15 +68,15 @@ TEST(HaloBufferTest, Exchange) {
     buffer.Initialize(&exman, list_required_IDs, map_periodic, is_local, map_global_local);
 
     // Initializing field with default value
-    for (LO n{0}; n < (cell_per_domain + 2 * num_ghost); n++) {
-        for (LO e{0}; e < field.GetNumEquations(); e++) {
+    for (std::size_t n{0}; n < (cell_per_domain + 2 * num_ghost); n++) {
+        for (std::size_t e{0}; e < field.GetNumEquations(); e++) {
             field.At(n * field.GetNumEquations() + e) = -1.;
         }
     }
     // Filling internal field with values;
-    for (LO n{num_ghost}; n < (num_ghost + cell_per_domain); n++) {
-        GO v_start = (exman.GetRank() * cell_per_domain + n) * field.GetNumEquations();
-        for (LO e{0}; e < field.GetNumEquations(); e++)
+    for (std::size_t n{static_cast<std::size_t>(num_ghost)}; n < (num_ghost + cell_per_domain); n++) {
+        GO v_start = static_cast<GO>((exman.GetRank() * cell_per_domain + n) * field.GetNumEquations());
+        for (std::size_t e{0}; e < field.GetNumEquations(); e++)
             field.At(n * field.GetNumEquations() + e) = v_start + e;
     }
 
@@ -94,7 +94,7 @@ TEST(HaloBufferTest, Exchange) {
         if (exman.GetRank() == (exman.GetNumberProcesses() - 1)) {
             v_start_high = num_ghost * field.GetNumEquations();
         }
-        for (LO e{0}; e < field.GetNumEquations(); e++) {
+        for (std::size_t e{0}; e < field.GetNumEquations(); e++) {
             double value_low_f = field.At(id_low + e);
             double value_high_f = field.At(id_high + e);
             double value_low_e = v_start_low + e;

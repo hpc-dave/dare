@@ -36,8 +36,6 @@ TEST_P(ConsistencyTest, CubicalOneDim) {
     int num_proc = GetParam();
     const std::size_t Dim{1};
     using Grid = dare::Grid::Cartesian<Dim>;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc*5);
@@ -59,8 +57,6 @@ TEST_P(ConsistencyTest, CubicalTwoDim) {
     int num_proc = GetParam();
     const std::size_t Dim{2};
     using Grid = dare::Grid::Cartesian<Dim>;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc * 5, num_proc * 5);
@@ -82,8 +78,6 @@ TEST_P(ConsistencyTest, CubicalThreeDim) {
     int num_proc = GetParam();
     const std::size_t Dim{3};
     using Grid = dare::Grid::Cartesian<Dim>;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc * 5, num_proc * 5, num_proc * 5);

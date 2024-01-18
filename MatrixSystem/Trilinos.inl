@@ -169,12 +169,6 @@ void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
                                     const dare::Data::GridVector<Grid, SC, N>& field,
                                     Lambda functor) {
     using MatrixBlockType = dare::Matrix::MatrixBlock<Grid, GO, SC, N>;
-    using DViewLO = Kokkos::DualView<LO*>;
-    using DViewGO = Kokkos::DualView<GO*>;
-    using DViewSC = Kokkos::DualView<SC*>;
-    using DViewSizet = Kokkos::DualView<std::size_t*>;
-    using HostSpace = typename DViewGO::host_mirror_space;
-    using ExecutionSpace = typename DViewGO::execution_space;
 
     AllocateMap<Grid, N>(grid);
 
@@ -188,7 +182,6 @@ void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
     Teuchos::Ptr<VecType> ptr_x = x.ptr();
 
     const LO num_cells{grid.GetNumberLocalCellsInternal()};
-    const std::size_t num_local_rows{num_cells * N};
 
     // Allocate memory for stencils
     std::vector<MatrixBlockType> list_matrix_blocks(num_cells);
@@ -287,7 +280,7 @@ void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
 
 #pragma omp parallel for
     for (LO node = 0; node < num_cells; node++) {
-        if (node < l_stencil.size()) {
+        if (static_cast<std::size_t>(node) < l_stencil.size()) {
             // initialize matrix block
             const LO local_internal = l_stencil[node];
             const LO local_full = grid.MapInternalToLocal(local_internal);
@@ -303,10 +296,6 @@ void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
             functor(&matrix_block);
             // replace matrix values
             for (std::size_t n{0}; n < N; n++) {
-                LO col_ptr[2];
-                SC data_ptr[2];
-                LO row = 1;
-                LO n_e = 1;
                 ptr_A->replaceLocalValues(matrix_block.GetRow(n),
                                           matrix_block.GetColumnOrdinals(n),
                                           matrix_block.GetColumnValues(n));
@@ -320,7 +309,6 @@ void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
             const LO local_internal = g_stencil[node - l_stencil.size()];
             const LO local_full = grid.MapInternalToLocal(local_internal);
             const GO global_internal = grid.MapLocalToGlobalInternal(local_internal);
-            const GO global_full = grid.MapInternalToLocal(global_internal);
             MatrixBlock<Grid, GO, SC, N> matrix_block(&grid, global_internal);
             dare::utils::Vector<N, std::size_t> size_hint;
             for (std::size_t n{0}; n < N; n++)

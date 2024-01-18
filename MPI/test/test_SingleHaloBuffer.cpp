@@ -30,11 +30,9 @@
 TEST(SingleHaloBufferTest, Initialize) {
     using SC = double;
     using BufferType = dare::mpi::SingleHaloBuffer<SC>;
-    using LO = typename BufferType::LO;
-    using GO = typename BufferType::GO;
     int test_rank{0};
     dare::mpi::ExecutionManager exman;
-    dare::mpi::SingleHaloBuffer<SC> buffer;
+    BufferType buffer;
     buffer.Initialize(&exman, 0);
     ASSERT_EQ(buffer.GetPartnerRank(), test_rank);
 }
@@ -42,18 +40,16 @@ TEST(SingleHaloBufferTest, Initialize) {
 TEST(SingleHaloBufferTest, CommunicateAmountHaloCellIDs) {
     using SC = double;
     using BufferType = dare::mpi::SingleHaloBuffer<SC>;
-    using LO = typename BufferType::LO;
-    using GO = typename BufferType::GO;
     dare::mpi::ExecutionManager exman;
     using BufferType = dare::mpi::SingleHaloBuffer<SC>;
     std::vector<BufferType> list_buffers(exman.GetNumberProcesses());
-    for (int n{0}; n < list_buffers.size(); n++)
+    for (std::size_t n{0}; n < list_buffers.size(); n++)
         list_buffers[n].Initialize(&exman, n);
 
     std::size_t send_buffer = exman.GetRank();
     std::vector<std::size_t> recv_buffer(exman.GetNumberProcesses());
     std::vector<MPI_Request> request(exman.GetNumberProcesses()*2);
-    for (int n{0}; n < list_buffers.size(); n++)
+    for (std::size_t n{0}; n < list_buffers.size(); n++)
         list_buffers[n].CommunicateNumCellIDs(send_buffer, &recv_buffer[n],
                                               &request[2 * n], &request[2 * n + 1]);
     MPI_Waitall(request.size(), request.data(), MPI_STATUSES_IGNORE);
@@ -66,7 +62,6 @@ TEST(SingleHaloBufferTest, ExchangeAndFill) {
     using SC = double;
     using BufferType = dare::mpi::SingleHaloBuffer<SC>;
     using LO = typename BufferType::LO;
-    using GO = typename BufferType::GO;
     std::size_t num_halo_IDs = 10;
     dare::mpi::ExecutionManager exman;
     dare::test::TestField field;
@@ -75,7 +70,7 @@ TEST(SingleHaloBufferTest, ExchangeAndFill) {
     std::size_t buffer_size = num_halo_IDs;
 
     std::vector<BufferType> list_buffers(exman.GetNumberProcesses());
-    for (int n{0}; n < list_buffers.size(); n++)
+    for (std::size_t n{0}; n < list_buffers.size(); n++)
         list_buffers[n].Initialize(&exman, n);
 
     // we send the last block of IDs in the field to the other processes
@@ -83,7 +78,7 @@ TEST(SingleHaloBufferTest, ExchangeAndFill) {
     for (std::size_t n{0}; n < buffer_size; n++) {
         send_IDs[n] = exman.GetNumberProcesses() * num_halo_IDs + n;
     }
-    for (int m{0}; m < list_buffers.size(); m++) {
+    for (std::size_t m{0}; m < list_buffers.size(); m++) {
         std::vector<LO> recv_IDs(buffer_size);
         for (std::size_t n{0}; n < buffer_size; n++) {
             recv_IDs[n] = m * num_halo_IDs + n;
@@ -99,14 +94,14 @@ TEST(SingleHaloBufferTest, ExchangeAndFill) {
         field.At(n) = exman.GetRank() + n - size_send;
 
     std::vector<MPI_Request> requests(exman.GetNumberProcesses() * 2);
-    for (int m{0}; m < list_buffers.size(); m++) {
+    for (std::size_t m{0}; m < list_buffers.size(); m++) {
         list_buffers[m].Exchange(field, &requests[m * 2], &requests[m * 2 + 1]);
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
-    for (int m{0}; m < list_buffers.size(); m++) {
+    for (std::size_t m{0}; m < list_buffers.size(); m++) {
         list_buffers[m].FillValues(&field);
     }
-    for (int n{0}; n < list_buffers.size(); n++) {
+    for (std::size_t n{0}; n < list_buffers.size(); n++) {
         for (std::size_t m{0}; m < buffer_size * field.GetNumEquations(); m++) {
             double value_field = field.At(n * buffer_size * field.GetNumEquations() + m);
             double value_expec = n + m;

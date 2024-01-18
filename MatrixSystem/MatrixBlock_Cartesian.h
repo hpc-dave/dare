@@ -35,14 +35,16 @@ namespace dare::Matrix {
 
 using CartesianNeighbor = dare::Grid::CartesianNeighbor;
 
-enum class CartesianNeighborBitSet : char {
+enum class CartesianNeighborBitSet : int16_t {
     CENTER = 1 << static_cast<char>(CartesianNeighbor::CENTER),
     WEST = 1 << static_cast<char>(CartesianNeighbor::WEST),
     EAST = 1 << static_cast<char>(CartesianNeighbor::EAST),
     SOUTH = 1 << static_cast<char>(CartesianNeighbor::SOUTH),
     NORTH = 1 << static_cast<char>(CartesianNeighbor::NORTH),
     BOTTOM = 1 << static_cast<char>(CartesianNeighbor::BOTTOM),
-    TOP = 1 << static_cast<char>(CartesianNeighbor::TOP)
+    TOP = 1 << static_cast<char>(CartesianNeighbor::TOP),
+    FOURD_LOW = 1 << static_cast<char>(CartesianNeighbor::FOURD_LOW),
+    FOURD_UP = 1 << static_cast<char>(CartesianNeighbor::FOURD_UP)
 };
 
 template <CartesianNeighbor A, CartesianNeighbor B>
@@ -55,6 +57,7 @@ public:
     using GridRepresentation = typename GridType::Representation;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
     using GlobalOrdinalType = typename GridType::GlobalOrdinalType;
+    using OrdinalType = O;
     using SelfType = MatrixBlock<GridType, O, SC, N>;
     using HostSpace = typename MatrixBlockBase<O, SC, N>::HostSpace;
     using ExecutionSpace = typename MatrixBlockBase<O, SC, N>::ExecutionSpace;

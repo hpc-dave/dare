@@ -96,8 +96,8 @@ void SingleHaloBuffer<SC>::Exchange(const Field& field,
                                            MPI_Request* request_send, MPI_Request* request_recv) {
     std::size_t num_eq = field.GetNumEquations();
     const int tag_exchange{2100};
-    int num_send = list_local_IDs_send.size() * num_eq;
-    int num_recv = list_local_IDs_recv.size() * num_eq;
+    std::size_t num_send = list_local_IDs_send.size() * num_eq;
+    std::size_t num_recv = list_local_IDs_recv.size() * num_eq;
 
     if (num_send > buffer_send.size())
         buffer_send.resize(num_send);

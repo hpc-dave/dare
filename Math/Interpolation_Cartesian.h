@@ -30,6 +30,7 @@
 #include "Interpolation.h"
 #include "Divisors.h"
 #include "Grid/Cartesian.h"
+#include "Utilities/Errors.h"
 
 namespace dare::math {
 
@@ -64,7 +65,7 @@ struct THelper {
  * @param ind triplet of indices at the center of the relevant cell
  * @param off_rel relative offset to center in integral values
  * @param dim_aff array with the relevant dimensions
- * @return List of indices for interpolation
+ * @return List of indices for interpolation, where the first index is the one furthest removed
  *
  * This is a special function to determine the indices required for the interpolation on a
  * Cartesian grid. It is assumed, that the relative offset is given as integral steps, e.g.
@@ -202,7 +203,6 @@ void GetRelativeOffset(typename utils::Vector<Dim, LO> opt_source,
                        typename Grid::Cartesian<Dim>::NeighborID face,
                        typename Grid::Cartesian<Dim>::Index* ind,
                        typename Grid::Cartesian<Dim>::Options* off_rel) {
-    using Options = typename dare::Grid::Cartesian<Dim>::Options;
 
     opt_source[ToFace(face) / 2] += ToNormal(face);  // accounting for the position of the face
 
@@ -215,6 +215,51 @@ void GetRelativeOffset(typename utils::Vector<Dim, LO> opt_source,
         (*off_rel)[dim] = (*off_rel)[dim] % 2;
     }
 }
+
+template <std::size_t Dim, typename SC>
+dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWeights(
+    const typename dare::Grid::Cartesian<Dim>::Representation& grid,
+    const dare::utils::Vector<Dim, SC>& poi,
+    const dare::utils::Vector<Dim, SC>& point_center,
+    const dare::utils::Vector<Dim, SC>& point_far,
+    const dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, typename dare::Grid::Cartesian<Dim>::Index>& indices) {
+    const std::size_t NUM_VALUES{details::Cartesian::THelper<Dim, Dim>::NUM_VALUES};
+    using GridType = dare::Grid::Cartesian<Dim>;
+    using WList = dare::utils::Vector<NUM_VALUES, SC>;
+#ifndef DARE_NDEBUG
+    using Index = typename GridType::Index;
+    // check for requirements on the indices
+    Index ind_center = grid.GetCell(point_center);
+    Index ind_far = grid.GetCell(point_far);
+    if (indices[0] != ind_far) {
+        ERROR << "Indices are not sorted as expected! "
+              << "The first index needs to correspond to the one furthest away from the cell"
+              << ERROR_CLOSE;
+    }
+    if (indices[NUM_VALUES - 1] != ind_center) {
+        ERROR << "Indices are not sorted as expected! "
+              << "The last index needs to correspond to the one of the center cell"
+              << ERROR_CLOSE;
+    }
+#endif
+
+    WList weights;
+    weights.setAllValues(1);
+    dare::utils::Vector<Dim, SC> delta_close{std::abs(point_center - poi)};
+    dare::utils::Vector<Dim, SC> delta_far{std::abs(point_far - poi)};
+    const Index& ind{indices[NUM_VALUES - 1]};
+
+    for (std::size_t n{0}; n < NUM_VALUES; n++) {
+        for (std::size_t d{0}; d < Dim; d++) {
+            SC w = (indices[n][d] == ind[d]) * delta_far[d];
+            w += (indices[n][d] != ind[d]) * delta_close[d];
+            weights[n] *= w;
+        }
+    }
+
+    return weights;
+}
+
 }  // end namespace details::Cartesian
 
 /*!
@@ -246,7 +291,6 @@ template <std::size_t Dim, typename SC, std::size_t N>
                                    const typename Data::GridVector<Grid::Cartesian<Dim>, SC, N>& field,
                                    std::size_t n) {
     using Options = typename dare::Grid::Cartesian<Dim>::Options;
-    using LO = typename Grid::Cartesian<Dim>::LocalOrdinalType;
 
     Options stagg_source{field.GetGridRepresentation().GetOptions()};     // staggered position of source field
     Options stagg_target{target.GetOptions()};                            // staggered position of target
@@ -293,10 +337,8 @@ template <std::size_t Dim, typename SC, std::size_t N>
         }
         return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
     } break;
-    otherwise:
-        std::cerr << "In " << __func__ << ": Interpolation not implemented for cases higher than 3D" << std::endl;
-        return std::numeric_limits<SC>::signaling_NaN();
     }
+    ERROR << "Interpolation not implemented for cases higher than 3D" << ERROR_CLOSE;
     return std::numeric_limits<SC>::signaling_NaN();
 }
 
@@ -328,7 +370,6 @@ dare::utils::Vector<N, SC> InterpolateToFace(const typename Grid::Cartesian<Dim>
                                    const typename Grid::Cartesian<Dim>::NeighborID face,
                                    const typename Data::GridVector<Grid::Cartesian<Dim>, SC, N>& field) {
     using Options = typename dare::Grid::Cartesian<Dim>::Options;
-    using LO = typename Grid::Cartesian<Dim>::LocalOrdinalType;
 
     Options stagg_source{field.GetGridRepresentation().GetOptions()};     // staggered position of source field
     Options stagg_target{target.GetOptions()};                            // staggered position of target
@@ -375,13 +416,86 @@ dare::utils::Vector<N, SC> InterpolateToFace(const typename Grid::Cartesian<Dim>
         }
         return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
     } break;
-    otherwise:
-        std::cerr << "In " << __func__ << ": Interpolation not implemented for cases higher than 3D" << std::endl;
-        return dare::utils::Vector<N, SC>();
     }
+    ERROR << "Interpolation not implemented for cases higher than 3D" << ERROR_CLOSE;
     return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
 
+template <std::size_t Dim, typename SC, std::size_t N>
+SC InterpolateToPoint(const typename dare::utils::Vector<Dim, SC>& point,
+                      const Data::GridVector<dare::Grid::Cartesian<Dim>, SC, N>& field,
+                      std::size_t n) {
+    const std::size_t NUM_VALUES{details::Cartesian::THelper<Dim, Dim>::NUM_VALUES};
+    using GridType = dare::Grid::Cartesian<Dim>;
+    using Index = typename GridType::Index;
+    using LO = typename GridType::LocalOrdinalType;
+    using Point = dare::utils::Vector<Dim, SC>;
+    using VecList = dare::utils::Vector<NUM_VALUES, Index>;
+    using WList = dare::utils::Vector<NUM_VALUES, SC>;
+
+    Index ind = field.GetGridRepresentation().GetCell(point);
+    Point point_center = field.GetGridRepresentation().GetCoordinatesCenter(ind);
+    dare::utils::Vector<Dim, LO> off_rel;
+    Point point_rel{point_center - point};
+    for (std::size_t d{0}; d < Dim; d++) {
+        off_rel[d] = point_rel[d] >= 0 - point_rel[d] < 0;
+    }
+    dare::utils::Vector<Dim, std::size_t> dim_aff;
+    for (std::size_t d{0}; d < Dim; d++)
+        dim_aff[d] = d;
+
+    VecList vlist = details::Cartesian::GetInterpolationIndices(
+        ind, off_rel, dim_aff);
+
+    Point point_far = field.GetGridRepresentation().GetCoordinatesCenter(vlist[0]);
+    WList weights = details::Cartesian::GetLinearInterpolationWeights(field.GetGridRepresentation(),
+                                                                      point,
+                                                                      point_center,
+                                                                      point_far,
+                                                                      vlist);
+
+#ifndef DARE_NDEBUG
+        SC return_value = Interpolate(field, vlist, weights, n);
+    return return_value;
+#else
+        return Interpolate(field, vlist, weights, n);
+#endif
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+dare::utils::Vector<N, SC> InterpolateToPoint(const typename dare::utils::Vector<Dim, SC>& point,
+                                              const Data::GridVector<dare::Grid::Cartesian<Dim>, SC, N>& field) {
+    const std::size_t NUM_VALUES{details::Cartesian::THelper<Dim, Dim>::NUM_VALUES};
+    using GridType = dare::Grid::Cartesian<Dim>;
+    using Index = typename GridType::Index;
+    using LO = typename GridType::LocalOrdinalType;
+    using Point = dare::utils::Vector<Dim, SC>;
+    using VecList = dare::utils::Vector<NUM_VALUES, Index>;
+    using WList = dare::utils::Vector<NUM_VALUES, SC>;
+
+    Index ind = field.GetGridRepresentation().GetCell(point);
+    Point point_center = field.GetGridRepresentation().GetCoordinatesCenter(ind);
+    dare::utils::Vector<Dim, LO> off_rel;
+    Point point_rel{point_center - point};
+    for (std::size_t d{0}; d < Dim; d++) {
+        off_rel[d] = point_rel[d] >= 0 - point_rel[d] < 0;
+    }
+    dare::utils::Vector<Dim, std::size_t> dim_aff;
+    for (std::size_t d{0}; d < Dim; d++)
+        dim_aff[d] = d;
+
+    VecList vlist = details::Cartesian::GetInterpolationIndices(
+        ind, off_rel, dim_aff);
+
+    Point point_far = field.GetGridRepresentation().GetCoordinatesCenter(vlist[0]);
+    WList weights = details::Cartesian::GetLinearInterpolationWeights(field.GetGridRepresentation(),
+                                                                      point,
+                                                                      point_center,
+                                                                      point_far,
+                                                                      vlist);
+
+    return Interpolate(field, vlist, weights);
+}
 }  // end namespace dare::math
 
 #endif  // MATH_INTERPOLATION_CARTESIAN_H_

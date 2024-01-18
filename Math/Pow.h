@@ -36,7 +36,7 @@ namespace dare::math {
 //     }
 // }
 template <int BASE, std::size_t EXP>
-[[nodiscard]] constexpr std::size_t Pow() {
+[[nodiscard]] constexpr int Pow() {
     if constexpr (EXP == 0) {
         return 1;
     } else {

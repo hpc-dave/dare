@@ -191,7 +191,7 @@ template <std::size_t Dim, typename SC, std::size_t N>
 void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
     std::string func, Positions pos, std::size_t n) const {
 #ifndef DARE_NDEBUG
-    if (Grid::ToNum(pos) >= NUM_ENTRIES) {
+    if (Grid::ToNum(pos) >= static_cast<char>(NUM_ENTRIES)) {
         std::cerr << "In " << func << ": Provided position (" << std::to_string(Grid::ToNum(pos)) << ") "
                   << "is out of range of " << std::to_string(NUM_ENTRIES) << "-point center based stencil\n";
     }
@@ -419,7 +419,7 @@ template <std::size_t Dim, typename SC, std::size_t N>
 void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
     std::string func, Positions pos, std::size_t n) const {
 #ifndef DARE_NDEBUG
-    if (Grid::ToNum(pos) > NUM_FACES) {
+    if (Grid::ToNum(pos) > static_cast<char>(NUM_FACES)) {
         std::cerr << "In " << func << ": Provided position (" << std::to_string(Grid::ToNum(pos)) << ") "
                   << "is out of range of " << std::to_string(GridType::STENCIL_SIZE) << "-point center based stencil\n";
     } else if (Grid::ToNum(pos) == 0) {
@@ -609,7 +609,7 @@ template <std::size_t Dim, typename SC, std::size_t N>
 void FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
     std::string func, Positions pos, std::size_t n) const {
 #ifndef DARE_NDEBUG
-    if (Grid::ToNum(pos) > NUM_FACES) {
+    if (Grid::ToNum(pos) > static_cast<char>(NUM_FACES)) {
         std::cerr << "In " << func << ": Provided position (" << std::to_string(Grid::ToNum(pos)) << ") "
                   << "is out of range of " << std::to_string(NUM_FACES + 1) << "-point center based stencil\n";
     } else if (Grid::ToNum(pos) == 0) {
