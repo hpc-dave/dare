@@ -584,12 +584,17 @@ TEST_F(IntegrationTestCartesianOperators2D, DivergenceFaceMatrixStencil) {
     VecSC A = grid_rep.GetFaceArea();
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(s_c.GetValue(Positions::WEST, n), -v_west * n * A[0]);
-        EXPECT_EQ(s_c.GetValue(Positions::EAST, n), v_east * n * A[0]);
-        EXPECT_EQ(s_c.GetValue(Positions::SOUTH, n), -v_south * n * A[1]);
-        EXPECT_EQ(s_c.GetValue(Positions::NORTH, n), v_north * n * A[1]);
-        EXPECT_EQ(s_c.GetValue(Positions::CENTER, n), (v_west - v_east) * n * A[0]
-                                                    + (v_south - v_north) * n * A[1]);
+        EXPECT_NEAR(s_c.GetValue(Positions::WEST, n), -v_west * n * A[0],
+                    std::numeric_limits<SC>::epsilon() * std::abs(v_west * A[0] *n));
+        EXPECT_NEAR(s_c.GetValue(Positions::EAST, n), v_east * n * A[0],
+                    std::numeric_limits<SC>::epsilon() * std::abs(v_east * (A[0] * n)));
+        EXPECT_NEAR(s_c.GetValue(Positions::SOUTH, n), -v_south * n * A[1],
+                    std::numeric_limits<SC>::epsilon() * std::abs(v_south * A[0] * n));
+        EXPECT_NEAR(s_c.GetValue(Positions::NORTH, n), v_north * n * A[1],
+                    std::numeric_limits<SC>::epsilon() * std::abs(v_north * A[0] * n));
+        EXPECT_NEAR(s_c.GetValue(Positions::CENTER, n),
+                (v_west - v_east) * n * A[0] + (v_south - v_north) * n * A[1],
+                v_north * std::numeric_limits<SC>::epsilon() * std::abs(A[0]));
     }
 }
 

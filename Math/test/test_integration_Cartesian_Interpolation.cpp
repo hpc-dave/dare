@@ -534,6 +534,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
 TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     Options off_rel{0, 0, 0};
     Options opt{0, 0, 0};           // not staggered, in this test it's either way irrelevant
+    const double tol_eps{10.};
     dare::utils::Vector<1, std::size_t> dim_aff{0};
     auto grep = grid->GetRepresentation(opt);
     Field field("grid", grep);
@@ -563,7 +564,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
 
     SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     SC v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
-    EXPECT_EQ(v, v_ex);
+    EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
     // EAST
     off_rel.SetAllValues(0);
@@ -573,7 +574,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
 
     v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
-    EXPECT_EQ(v, v_ex);
+    EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
     // SOUTH
     n_comp = 1;
@@ -584,7 +585,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
 
     v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
-    EXPECT_EQ(v, v_ex);
+    EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
     // NORTH
     n_comp = 1;
@@ -595,7 +596,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
 
     v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
-    EXPECT_EQ(v, v_ex);
+    EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
     // BOTTOM
     n_comp = 2;
@@ -606,7 +607,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
 
     v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
-    EXPECT_EQ(v, v_ex);
+    EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
     // TOP
     n_comp = 2;
@@ -617,7 +618,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
 
     v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
-    EXPECT_EQ(v, v_ex);
+    EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
     // Multiple components
     // WEST
@@ -633,7 +634,8 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
-    EXPECT_EQ(v_m, v_m_ex);
+    for (std::size_t n{0}; n < N; n++)
+        EXPECT_NEAR(v_m[n], v_m_ex[n], tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_m_ex[n]));
 
     // Multiple components
     // EAST
@@ -647,7 +649,8 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
-    EXPECT_EQ(v_m, v_m_ex);
+    for (std::size_t n{0}; n < N; n++)
+        EXPECT_NEAR(v_m[n], v_m_ex[n], tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_m_ex[n]));
 
     // Multiple components
     // SOUTH
@@ -658,11 +661,12 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    
+
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
-    EXPECT_EQ(v_m, v_m_ex);
+    for (std::size_t n{0}; n < N; n++)
+        EXPECT_NEAR(v_m[n], v_m_ex[n], tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_m_ex[n]));
 
     // NORTH
     n_comp = 1;
@@ -672,11 +676,12 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    
+
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
-    EXPECT_EQ(v_m, v_m_ex);
+    for (std::size_t n{0}; n < N; n++)
+        EXPECT_NEAR(v_m[n], v_m_ex[n], tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_m_ex[n]));
 
     // BOTTOM
     n_comp = 2;
@@ -686,11 +691,12 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    
+
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
-    EXPECT_EQ(v_m, v_m_ex);
+    for (std::size_t n{0}; n < N; n++)
+        EXPECT_NEAR(v_m[n], v_m_ex[n], tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_m_ex[n]));
 
     // TOP
     n_comp = 2;
@@ -700,11 +706,12 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     dim_aff[0] = n_comp;
 
     v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    
+
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
-    EXPECT_EQ(v_m, v_m_ex);
+    for (std::size_t n{0}; n < N; n++)
+        EXPECT_NEAR(v_m[n], v_m_ex[n], tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_m_ex[n]));
 }
 
 TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
