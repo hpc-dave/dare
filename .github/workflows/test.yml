@@ -39,6 +39,7 @@ jobs:
           mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_P${{matrix.procs}}.xml" -T 1
 
     - name: Move reports
+      if: always()
       run: |
           cd build_test
           mv *xml ../
