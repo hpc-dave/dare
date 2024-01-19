@@ -36,8 +36,8 @@ jobs:
     - name: Run Test
       run: |
           cd build_test
-          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_P${{matrix.procs}}.xml" -T 1
-          mv *xml ../
+          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}/../Report_P${{matrix.procs}}.xml" -T 1
+        #   mv *xml ../
 
     - name: Archive Testing Reports
       uses: actions/upload-artifact@v3
