@@ -30,8 +30,9 @@ jobs:
             echo Doxygen check failed!
             exit $1
           fi
-          echo Doxygen succeded
+          echo Doxygen succeeded
     - name: Archive Reports
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: Doxygen_report
@@ -59,6 +60,7 @@ jobs:
 
     - name: Archive Reports
       uses: actions/upload-artifact@v3
+      if: always()
       with:
         name: CPPLINT_reports
         path: ./*.out
