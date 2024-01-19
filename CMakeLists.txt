@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(DaRe
-	VERSION 0.2.0
+	VERSION 0.2.1
 	DESCRIPTION "Dave's repository"
 	LANGUAGES C CXX
 )
