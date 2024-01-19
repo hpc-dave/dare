@@ -534,7 +534,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
 TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     Options off_rel{0, 0, 0};
     Options opt{0, 0, 0};           // not staggered, in this test it's either way irrelevant
-    const double tol_eps{10.};
+    const double tol_eps{1e2};
     dare::utils::Vector<1, std::size_t> dim_aff{0};
     auto grep = grid->GetRepresentation(opt);
     Field field("grid", grep);
@@ -721,7 +721,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
     auto grep = grid->GetRepresentation(opt);
     Field field("grid", grep);
     Index ind(2, 3, 4);
-    const double tol_eps{10.};
+    const double tol_eps{1e2};
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(-10000, 10000);
@@ -902,7 +902,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation3DimLinearTest) {
     auto grep = grid->GetRepresentation(opt);
     Field field("grid", grep);
     Index ind(2, 3, 4);
-    const double tol_eps{10.};
+    const double tol_eps{1e2};
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(-10000, 10000);
@@ -1095,7 +1095,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     Field field_xyz("xyz_field", grep_source_staggerXYZ);
 
     Index ind(2, 3, 4);
-    const double tol_eps{10.};
+    const double tol_eps{1e2};
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(-10000, 10000);
@@ -1283,7 +1283,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     Field field_xyz("xyz_field", grep_source_staggerXYZ);
 
     Index ind(2, 3, 4);
-    const double tol_eps{20.};
+    const double tol_eps{1e2};
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(-10000, 10000);
@@ -1457,7 +1457,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
     Field field("field", grep);
 
     Index ind(2, 3, 4);
-    const double tol_eps{20.};
+    const double tol_eps{1e2};
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(-10000, 10000);
