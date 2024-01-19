@@ -1492,4 +1492,253 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
         EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
         EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
     }
+
+    // EAST
+    point = grep.GetCoordinatesFace(ind, dare::Grid::CartesianNeighbor::EAST);
+    v_m = dare::math::InterpolateToPoint(point, field);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToPoint(point, field, n);
+        SC v_ex = field.At(ind, n);
+        Index ind_l{ind};
+        ind_l.i() += 1;
+        v_ex += field.At(ind_l, n);
+        v_ex *= 0.5;
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Moving on z-axis towards top
+    std::size_t n_steps{10};
+    std::size_t test_dim_1D{2};
+    point = grep.GetCoordinatesCenter(ind);
+    Index ind_far{ind};
+    ind_far[test_dim_1D] += 1;
+    dare::utils::Vector<Dim, SC> delta = grep.GetDistances() / static_cast<SC>(n_steps);
+    delta /= grep.GetDistances();
+    for (std::size_t d{0}; d < Dim; d++)
+        if (ind_far[d] == ind[d])
+            delta[d] = 0.;
+
+    dare::utils::Vector<8, dare::utils::Vector<Dim, SC>> values;
+    values[0] = field.GetValues(ind);
+    values[1] = field.GetValues(ind_far);
+
+    for (std::size_t step{0}; step < n_steps; step++) {
+        dare::utils::Vector<Dim, SC> poi = point + delta * grep.GetDistances() * static_cast<SC>(step);
+        v_m = dare::math::InterpolateToPoint(poi, field);
+        for (std::size_t n{0}; n < N; n++) {
+            SC v = dare::math::InterpolateToPoint(poi, field, n);
+            SC v_ex = values[0][n] * (1. - delta[test_dim_1D] * step);
+            v_ex += values[1][n] * delta[test_dim_1D]*step;
+            EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+            EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        }
+    }
+
+    // Moving along yz-plane towards south-top
+    std::size_t test_dim_2D[] = {1, 2};
+    point = grep.GetCoordinatesCenter(ind);
+    ind_far = ind;
+    ind_far[test_dim_2D[0]] -= 1;
+    ind_far[test_dim_2D[1]] += 1;
+    dare::utils::Vector<Dim, SC> point_far = grep.GetCoordinatesCenter(ind_far);
+    delta = point_far - point;
+    delta /= static_cast<SC>(n_steps);
+
+    Index ind_temp{ind};
+    values[0] = field.GetValues(ind_temp);
+    ind_temp[test_dim_2D[0]] = ind_far[test_dim_2D[0]];
+    values[1] = field.GetValues(ind_temp);
+    ind_temp = ind;
+    ind_temp[test_dim_2D[1]] = ind_far[test_dim_2D[1]];
+    values[2] = field.GetValues(ind_temp);
+    values[3] = field.GetValues(ind_far);
+
+    {
+        dare::utils::Vector<Dim, SC> poi = point;
+        for (std::size_t step{1}; step < n_steps; step++) {
+            poi[test_dim_2D[0]] += delta[test_dim_2D[0]];
+            SC w[4];  // weights
+            w[0] = w[2] = point_far[test_dim_2D[0]] - poi[test_dim_2D[0]];
+            w[1] = w[3] = poi[test_dim_2D[0]] - point[test_dim_2D[0]];
+            for (std::size_t d{0}; d < 4; d++)
+                w[d] /= grep.GetDistances()[test_dim_2D[0]];
+            w[0] *= (point_far[test_dim_2D[1]] - poi[test_dim_2D[1]]) / grep.GetDistances()[test_dim_2D[1]];
+            w[1] *= (point_far[test_dim_2D[1]] - poi[test_dim_2D[1]]) / grep.GetDistances()[test_dim_2D[1]];
+            w[2] *= (poi[test_dim_2D[1]] - point[test_dim_2D[1]]) / grep.GetDistances()[test_dim_2D[1]];
+            w[3] *= (poi[test_dim_2D[1]] - point[test_dim_2D[1]]) / grep.GetDistances()[test_dim_2D[1]];
+
+            for (std::size_t d{0}; d < 4; d++)
+                w[d] = std::abs(w[d]);
+
+            v_m = dare::math::InterpolateToPoint(poi, field);
+            for (std::size_t n{0}; n < N; n++) {
+                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v_ex = values[0][n] * w[0];
+                for (std::size_t d{1}; d < 4; d++)
+                    v_ex += values[d][n] * w[d];
+                EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+                EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+            }
+            poi[test_dim_2D[1]] += delta[test_dim_2D[1]];
+            w[0] = w[2] = point_far[test_dim_2D[0]] - poi[test_dim_2D[0]];
+            w[1] = w[3] = poi[test_dim_2D[0]] - point[test_dim_2D[0]];
+            for (std::size_t d{0}; d < 4; d++)
+                w[d] /= grep.GetDistances()[test_dim_2D[0]];
+            w[0] *= (point_far[test_dim_2D[1]] - poi[test_dim_2D[1]]) / grep.GetDistances()[test_dim_2D[1]];
+            w[1] *= (point_far[test_dim_2D[1]] - poi[test_dim_2D[1]]) / grep.GetDistances()[test_dim_2D[1]];
+            w[2] *= (poi[test_dim_2D[1]] - point[test_dim_2D[1]]) / grep.GetDistances()[test_dim_2D[1]];
+            w[3] *= (poi[test_dim_2D[1]] - point[test_dim_2D[1]]) / grep.GetDistances()[test_dim_2D[1]];
+            for (std::size_t d{0}; d < 4; d++)
+                w[d] = std::abs(w[d]);
+
+            v_m = dare::math::InterpolateToPoint(poi, field);
+            for (std::size_t n{0}; n < N; n++) {
+                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v_ex = values[0][n] * w[0];
+                for (std::size_t d{1}; d < 4; d++)
+                    v_ex += values[d][n] * w[d];
+                EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+                EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+            }
+        }
+    }
+
+    // Moving along xyz-cubus towards east-north-bottom
+    point = grep.GetCoordinatesCenter(ind);
+    ind_far = ind;
+    ind_far[0] += 1;
+    ind_far[1] += 1;
+    ind_far[2] -= 1;
+    point_far = grep.GetCoordinatesCenter(ind_far);
+    delta = point_far - point;
+    delta /= static_cast<SC>(n_steps);
+
+    ind_temp = ind;
+    values[0] = field.GetValues(ind_temp);
+    ind_temp[0] = ind_far[0];
+    values[1] = field.GetValues(ind_temp);
+    ind_temp = ind;
+    ind_temp[1] = ind_far[1];
+    values[2] = field.GetValues(ind_temp);
+    ind_temp[0] = ind_far[0];
+    values[3] = field.GetValues(ind_temp);
+    ind_temp = ind;
+    ind_temp[2] = ind_far[2];
+    values[4] = field.GetValues(ind_temp);
+    ind_temp[0] = ind_far[0];
+    values[5] = field.GetValues(ind_temp);
+    ind_temp[0] = ind[0];
+    ind_temp[1] = ind_far[1];
+    values[6] = field.GetValues(ind_temp);
+    values[7] = field.GetValues(ind_far);
+
+    {
+        dare::utils::Vector<Dim, SC> poi = point;
+        for (std::size_t step{1}; step < n_steps; step++) {
+            poi[0] += delta[0];
+            SC w[8];  // weights
+            w[0] = w[2] = w[4] = w[6] = (point_far[0] - poi[0]) / grep.GetDistances()[0];
+            w[1] = w[3] = w[5] = w[7] = (poi[0] - point[0]) / grep.GetDistances()[0];
+
+            w[0] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[1] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[2] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[3] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[4] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[5] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[6] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[7] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+
+            w[0] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[1] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[2] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[3] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[4] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[5] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[6] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[7] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+
+            for (std::size_t d{0}; d < 8; d++)
+                w[d] = std::abs(w[d]);
+
+            v_m = dare::math::InterpolateToPoint(poi, field);
+            for (std::size_t n{0}; n < N; n++) {
+                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v_ex = values[0][n] * w[0];
+                for (std::size_t d{1}; d < 8; d++)
+                    v_ex += values[d][n] * w[d];
+                EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+                EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+            }
+            poi[1] += delta[1];
+            w[0] = w[2] = w[4] = w[6] = (point_far[0] - poi[0]) / grep.GetDistances()[0];
+            w[1] = w[3] = w[5] = w[7] = (poi[0] - point[0]) / grep.GetDistances()[0];
+
+            w[0] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[1] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[2] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[3] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[4] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[5] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[6] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[7] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+
+            w[0] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[1] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[2] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[3] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[4] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[5] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[6] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[7] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+
+            for (std::size_t d{0}; d < 8; d++)
+                w[d] = std::abs(w[d]);
+
+            v_m = dare::math::InterpolateToPoint(poi, field);
+            for (std::size_t n{0}; n < N; n++) {
+                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v_ex = values[0][n] * w[0];
+                for (std::size_t d{1}; d < 8; d++)
+                    v_ex += values[d][n] * w[d];
+                EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+                EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+            }
+            poi[2] += delta[2];
+            w[0] = w[2] = w[4] = w[6] = (point_far[0] - poi[0]) / grep.GetDistances()[0];
+            w[1] = w[3] = w[5] = w[7] = (poi[0] - point[0]) / grep.GetDistances()[0];
+
+            w[0] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[1] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[2] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[3] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[4] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[5] *= (point_far[1] - poi[1]) / grep.GetDistances()[1];
+            w[6] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+            w[7] *= (poi[1] - point[1]) / grep.GetDistances()[1];
+
+            w[0] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[1] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[2] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[3] *= (point_far[2] - poi[2]) / grep.GetDistances()[2];
+            w[4] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[5] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[6] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+            w[7] *= (poi[2] - point[2]) / grep.GetDistances()[2];
+
+            for (std::size_t d{0}; d < 8; d++)
+                w[d] = std::abs(w[d]);
+
+            v_m = dare::math::InterpolateToPoint(poi, field);
+            for (std::size_t n{0}; n < N; n++) {
+                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v_ex = values[0][n] * w[0];
+                for (std::size_t d{1}; d < 8; d++)
+                    v_ex += values[d][n] * w[d];
+                EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+                EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+            }
+        }
+    }
 }
