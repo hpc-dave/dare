@@ -757,8 +757,6 @@ private:
     // T _data[N];  //!< internal data set
 };
 
-typedef Vector<3, double> Vector3;  //!< convenient typedef
-
 }  // namespace dare::utils
 
 namespace std {
@@ -791,6 +789,19 @@ template<std::size_t N, typename T>
 }
 
 }  // namespace std
+
+/*!
+ * @brief multiplication operator for convenience
+ * @tparam T basic type
+ * @tparam N number of elements
+ * @param v1 value to multiply with
+ * @param v2 vector
+ * @return vector
+ */
+template <std::size_t N, typename T>
+dare::utils::Vector<N, T> operator*(const T& v1, const dare::utils::Vector<N, T>& v2) {
+    return v2 * v1;
+}
 
 #include "Vector.inl"
 #endif  // UTILITIES_VECTOR_H_

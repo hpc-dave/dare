@@ -93,8 +93,8 @@ template <typename GridType, typename T, std::size_t N, std::size_t NUM_VALUES>
     v.SetAllValues(0);
     for (std::size_t n{0}; n < NUM_VALUES; n++) {
         auto v_field = field.GetValues(indices[n]);
-        for (std::size_t n_c{0}; n < N; n++)
-            v[n] = std::fma(weights[n], v_field[n_c], v[n]);
+        for (std::size_t n_c{0}; n_c < N; n_c++)
+            v[n_c] = std::fma(weights[n], v_field[n_c], v[n_c]);
     }
     return v;
 }

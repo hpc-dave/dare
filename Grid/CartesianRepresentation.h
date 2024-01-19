@@ -39,6 +39,12 @@ namespace dare::Grid {
 template <std::size_t Dim>
 class Cartesian;
 
+// forward declarations for CartesianNeighbor
+enum class CartesianNeighbor : char;
+char ToNum(CartesianNeighbor pos);
+char ToFace(CartesianNeighbor face);
+char ToNormal(CartesianNeighbor nb);
+
 /*!
  * @brief Representation of Cartesian grid
  * @tparam LO local ordinal type
@@ -98,14 +104,14 @@ public:
     /*!
      * @brief provides spatial position of specified face
      * @param ind local index
-     * @param dir one of the dimensions in positive direction
-     * @return 
+     * @param cnb identifier
+     * @return
      */
-    VecSC GetCoordinatesFace(const Index& ind, std::size_t dir) const;
+    VecSC GetCoordinatesFace(const Index& ind, CartesianNeighbor cnb) const;
 
     /*!
      * @brief returns the distances between two cell centers
-     * @return 
+     * @return
      */
     const VecSC& GetDistances() const;
 
@@ -217,6 +223,13 @@ public:
     IndexGlobal MapLocalToGlobal(const Index& ind) const;
 
     /*!
+     * @brief returns local Index of cell containing the point
+     * @param point point in space
+     * Make sure that the point is on the grid!
+     */
+    Index GetCell(VecSC point) const;
+
+    /*!
      * @brief provides resolution of local grid
      * @return local index with number of cells in each direction
      */
@@ -258,22 +271,22 @@ private:
      */
     void TestIfInitialized(std::string function) const;
 
-    const Cartesian<Dim>* grid;              //!< pointer to grid
-    Options options;                         //!< grid specific options
-    VecLO resolution_local;                  //!< resolution of the local grid
-    VecLO resolution_local_internal;         //!< resolution of the local grid without halo/ghost cells
-    VecGO resolution_global;                 //!< resolution of the global grid
-    VecGO resolution_global_internal;        //!< resolution of the global grid without halo/ghost cells
-    VecGO offset_cells;                      //!< offset of the cells from local to global
-    VecSC offset_size;                       //!< offset in size from local to global
+    const Cartesian<Dim>* grid;        //!< pointer to grid
+    Options options;                   //!< grid specific options
+    VecLO resolution_local;            //!< resolution of the local grid
+    VecLO resolution_local_internal;   //!< resolution of the local grid without halo/ghost cells
+    VecGO resolution_global;           //!< resolution of the global grid
+    VecGO resolution_global_internal;  //!< resolution of the global grid without halo/ghost cells
+    VecGO offset_cells;                //!< offset of the cells from local to global
+    VecSC offset_size;                 //!< offset in size from local to global
 
-    VecGO hierarchic_sum_glob;                //!< precomputed values to account for ordering
-    VecGO hierarchic_sum_glob_internal;       //!< same as above, just for the internal cells
-    VecLO hierarchic_sum_loc;                 //!< precomputed values to account for ordering
-    VecLO hierarchic_sum_loc_internal;        //!< same as above, just for the internal cells
+    VecGO hierarchic_sum_glob;           //!< precomputed values to account for ordering
+    VecGO hierarchic_sum_glob_internal;  //!< same as above, just for the internal cells
+    VecLO hierarchic_sum_loc;            //!< precomputed values to account for ordering
+    VecLO hierarchic_sum_loc_internal;   //!< same as above, just for the internal cells
 
-    mpi::HaloBuffer<SC> halo_buffer;          //!< maps with Halo Buffers
-};
+    mpi::HaloBuffer<SC> halo_buffer;  //!< maps with Halo Buffers
+    };
 
 }  // namespace dare::Grid
 

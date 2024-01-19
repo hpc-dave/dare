@@ -1440,3 +1440,49 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
         EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
     }
 }
+
+TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
+    Options opt{0, 0, 0};
+
+    using Representation = typename dare::Grid::Cartesian<Dim>::Representation;
+    Representation grep = grid->GetRepresentation(opt);
+
+    Field field("field", grep);
+
+    Index ind(2, 3, 4);
+    const double tol_eps{20.};
+
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * distribution(generator); };
+
+    for (std::size_t n{0}; n < field.GetSize(); n++)
+        field[n] = GetRandValue();
+
+    GridType::VecSC point;
+    // GridType::VecSC dn = grep.GetDistances();
+
+    // CENTER
+    point = grep.GetCoordinatesCenter(ind);
+    dare::utils::Vector<N, SC> v_m = dare::math::InterpolateToPoint(point, field);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToPoint(point, field, n);
+        SC v_ex = field.At(ind, n);
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // WEST
+    point = grep.GetCoordinatesFace(ind, dare::Grid::CartesianNeighbor::WEST);
+    v_m = dare::math::InterpolateToPoint(point, field);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToPoint(point, field, n);
+        SC v_ex = field.At(ind, n);
+        Index ind_l{ind};
+        ind_l.i() -= 1;
+        v_ex += field.At(ind_l, n);
+        v_ex *= 0.5;
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+}

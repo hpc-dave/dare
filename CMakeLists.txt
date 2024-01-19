@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(DaRe
 	VERSION 0.2.0
 	DESCRIPTION "Dave's repository"
-	LANGUAGES CXX
+	LANGUAGES C CXX
 )
 
 option(DEBUG
@@ -108,6 +108,13 @@ if(MPI_CXX_FOUND)
 	set_target_properties(MPI::MPI_CXX
 		PROPERTIES IMPORTED_GLOBAL TRUE
 	)
+endif()
+
+find_package(VTK REQUIRED)
+if(VTK_FOUND)
+    set_target_properties(${VTK_LIBRARIES}
+        PROPERTIES IMPORTED_GLOBAL TRUE
+    )
 endif()
 
 find_package(Boost 1.74 REQUIRED
@@ -252,13 +259,12 @@ target_link_libraries(exec
     # PUBLIC trilinos
 )
 if(USE_GTEST)
-target_link_libraries(dare
-    PUBLIC GTest::GTest
-)
-target_link_libraries(exec
-    PUBLIC GTest::GTest
-)
-target_link_libraries(unit_test PUBLIC Trilinos::all_selected_libs)
+# target_link_libraries(dare
+#     PUBLIC GTest::GTest
+# )
+# target_link_libraries(exec
+#     PUBLIC GTest::GTest
+# )
 target_link_libraries(unit_test
     PUBLIC OpenMP::OpenMP_CXX
     PUBLIC MPI::MPI_CXX
@@ -267,8 +273,9 @@ target_link_libraries(unit_test
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
-    # PUBLIC Trilinos::all_selected_libs
+    PUBLIC Trilinos::all_selected_libs
     PUBLIC GTest::GTest
+    PUBLIC ${VTK_LIBRARIES}
 )
 
 endif()

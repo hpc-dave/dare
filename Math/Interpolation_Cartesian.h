@@ -243,12 +243,14 @@ dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWei
     }
 #endif
 
+    // define some relevant values
     WList weights;
-    weights.setAllValues(1);
+    weights.SetAllValues(1);
     dare::utils::Vector<Dim, SC> delta_close{std::abs(point_center - poi)};
     dare::utils::Vector<Dim, SC> delta_far{std::abs(point_far - poi)};
     const Index& ind{indices[NUM_VALUES - 1]};
 
+    // assign weights to each corner, depending on their position
     for (std::size_t n{0}; n < NUM_VALUES; n++) {
         for (std::size_t d{0}; d < Dim; d++) {
             SC w = (indices[n][d] == ind[d]) * delta_far[d];
@@ -256,6 +258,12 @@ dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWei
             weights[n] *= w;
         }
     }
+
+    // normalization of the weights
+    SC sum_weights{0};
+    for(auto e : weights)
+        sum_weights += e;
+    weights /= sum_weights;
 
     return weights;
 }
@@ -436,9 +444,9 @@ SC InterpolateToPoint(const typename dare::utils::Vector<Dim, SC>& point,
     Index ind = field.GetGridRepresentation().GetCell(point);
     Point point_center = field.GetGridRepresentation().GetCoordinatesCenter(ind);
     dare::utils::Vector<Dim, LO> off_rel;
-    Point point_rel{point_center - point};
+    Point point_rel{point - point_center};
     for (std::size_t d{0}; d < Dim; d++) {
-        off_rel[d] = point_rel[d] >= 0 - point_rel[d] < 0;
+        off_rel[d] = static_cast<LO>(point_rel[d] >= 0) - (point_rel[d] < 0);
     }
     dare::utils::Vector<Dim, std::size_t> dim_aff;
     for (std::size_t d{0}; d < Dim; d++)
@@ -454,12 +462,7 @@ SC InterpolateToPoint(const typename dare::utils::Vector<Dim, SC>& point,
                                                                       point_far,
                                                                       vlist);
 
-#ifndef DARE_NDEBUG
-        SC return_value = Interpolate(field, vlist, weights, n);
-    return return_value;
-#else
-        return Interpolate(field, vlist, weights, n);
-#endif
+    return Interpolate(field, vlist, weights, n);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
@@ -476,9 +479,9 @@ dare::utils::Vector<N, SC> InterpolateToPoint(const typename dare::utils::Vector
     Index ind = field.GetGridRepresentation().GetCell(point);
     Point point_center = field.GetGridRepresentation().GetCoordinatesCenter(ind);
     dare::utils::Vector<Dim, LO> off_rel;
-    Point point_rel{point_center - point};
+    Point point_rel{point - point_center};
     for (std::size_t d{0}; d < Dim; d++) {
-        off_rel[d] = point_rel[d] >= 0 - point_rel[d] < 0;
+        off_rel[d] = static_cast<LO>(point_rel[d] >= 0) - (point_rel[d] < 0);
     }
     dare::utils::Vector<Dim, std::size_t> dim_aff;
     for (std::size_t d{0}; d < Dim; d++)

@@ -189,13 +189,11 @@ CartesianRepresentation<Dim>::GetCoordinatesCenter(const Index& ind) const {
 
 template <std::size_t Dim>
 typename CartesianRepresentation<Dim>::VecSC
-CartesianRepresentation<Dim>::GetCoordinatesFace(const Index& ind, std::size_t dir) const {
+CartesianRepresentation<Dim>::GetCoordinatesFace(const Index& ind, CartesianNeighbor cnb) const {
     TestIfInitialized(__func__);
-    VecSC pos;
-    for (std::size_t dim{0}; dim < Dim; dim++) {
-        pos[dim] = offset_size[dim] + (ind[dim] - grid->GetNumGhost()) * grid->GetCellWidth()[dim];
-    }
-    pos[dir] += grid->GetCellWidth()[dir] * ((ind[dir] + 1) % 2);
+    VecSC pos = GetCoordinatesCenter(ind);
+    std::size_t dim = ToFace(cnb) / 2;
+    pos[dim] += ToNormal(cnb) * 0.5 * this->GetDistances()[dim];
     return pos;
 }
 
@@ -456,6 +454,25 @@ CartesianRepresentation<Dim>::MapLocalToGlobalInternal(LO id_loc) const {
     Index ind_loc = MapOrdinalToIndexLocalInternal(id_loc);
     IndexGlobal ind_glob = MapLocalToGlobal(ind_loc);
     return MapIndexToOrdinalGlobalInternal(ind_glob);
+}
+
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::Index
+CartesianRepresentation<Dim>::GetCell(typename CartesianRepresentation<Dim>::VecSC point) const {
+    Index ind;
+
+    // computation of the cell indices as floating point values
+    // the offset size is referring to the origin of the INTERNAL grid
+    // and therefore we need to correct for the ghost cell layer
+    point -= offset_size;
+    point += this->GetDistances() * static_cast<SC>(grid->GetNumGhost());
+    point /= this->GetDistances();
+
+    for (std::size_t d{0}; d < Dim; d++) {
+        ind[d] = static_cast<LO>(point[d]);
+    }
+
+    return ind;
 }
 
 template <std::size_t Dim>
