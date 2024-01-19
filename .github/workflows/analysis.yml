@@ -23,8 +23,8 @@ jobs:
       run: doxygen Doxyfile
           
     - name: Evaluate result
+      shell: bash
       run: |
-          bash
           num_warnings=$(grep -F / DoxygenWarnings.txt | wc -l)
           echo Found $num_warnings problems in the documentation
           if [[ $num_warnings -gt 2000 ]]; then
