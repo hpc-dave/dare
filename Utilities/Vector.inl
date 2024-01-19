@@ -359,11 +359,14 @@ template <std::size_t I,
           typename B,
           typename C>
 void Vector<N, T>::SetValues(const Tin& arg, const Ts&... args) {
-    this->_data[I] = static_cast<T>(arg);
-    if constexpr (sizeof...(args) > 0 && (I + 1 < N))
-        SetValues<I + 1>(args...);
-    else if constexpr (I + 1 < N)
-        SetValues<I + 1>(static_cast<T>(0));
+    // special case of N == 0
+    if constexpr (N != 0) {
+        this->_data[I] = static_cast<T>(arg);
+        if constexpr (sizeof...(args) > 0 && (I + 1 < N))
+            SetValues<I + 1>(args...);
+        else if constexpr (I + 1 < N)
+            SetValues<I + 1>(static_cast<T>(0));
+    }
 }
 
 template <std::size_t N, typename T>
