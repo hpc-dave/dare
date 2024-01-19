@@ -60,6 +60,7 @@ jobs:
         . 1>CPPLINT_LOG.out 2>CPPLINT_ERRORS.out || true
 
     - name: Evaluate result
+      shell: bash
       run: |
           error_string=$(tail -n 1 CPPLINT_LOG.out)
           num_errors=$(echo "${error_string//[!0-9]/}")
