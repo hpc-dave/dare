@@ -27,14 +27,11 @@
 
 namespace dare::math {
 
-// template <std::size_t BASE, std::size_t EXP, typename TEnable = std::enable_if_t<std::is_integral_v<BASE>>>
-// [[nodiscard]] constexpr std::size_t Pow() {
-//     if constexpr (EXP == 0) {
-//         return 1;
-//     } else {
-//         return BASE * Pow<BASE, EXP - 1>();
-//     }
-// }
+/*!
+ * \brief computes the value of an integer base and integer exponent at compile time
+ * @tparam BASE base value
+ * @tparam EXP exponent value
+ */
 template <int BASE, std::size_t EXP>
 [[nodiscard]] constexpr int Pow() {
     if constexpr (EXP == 0) {
@@ -44,6 +41,13 @@ template <int BASE, std::size_t EXP>
     }
 }
 
+/*!
+ * \brief computes the value of any input and integer exponent and avoids expensive std::pow
+ * @tparam BASE type to 
+ * @tparam EXP exponent value
+ * @param base any base value which can be multiplied with itself
+ * For negative exponents, the value needs to support the operation 1./base
+ */
 template <int EXP, typename BASE>
 [[nodiscard]] BASE Pow(BASE base) {
     if constexpr (EXP == 0) {
@@ -55,6 +59,15 @@ template <int EXP, typename BASE>
     }
 }
 
+/*!
+ * \brief computes value of any input and integer exponent at runtime
+ * @tparam TBase type of base
+ * @tparam TExp type of exponent, must be integer
+ * @param base base value
+ * @param exp exponent to compute with
+ * This function basically just uses a loop the compute the exponent.
+ * But this way it is able to avoid expensive series expansion.
+ */
 template <typename TBase, typename TExp, typename TEnable = std::enable_if_t<std::is_integral_v<TExp>>>
 [[nodiscard]] TBase Pow(TBase base, TExp exp) {
     TBase res{1};

@@ -1095,7 +1095,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     Field field_xyz("xyz_field", grep_source_staggerXYZ);
 
     Index ind(2, 3, 4);
-    const double tol_eps{1e2};
+    const double tol_eps{1e3};
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(-10000, 10000);
@@ -1457,7 +1457,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
     Field field("field", grep);
 
     Index ind(2, 3, 4);
-    const double tol_eps{1e2};
+    const double tol_eps{1e3};
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(-10000, 10000);

@@ -51,6 +51,8 @@ constexpr bool IsRootOf() {
  * @tparam DIV integral value by which is divided
  * @tparam T type of variable
  * @tparam TEnable make sure the divisor is a multiple of 2 and not integral
+ * This is a convenient way to avoid writing magic numbers in the code with ugly
+ * if statements
  */
 template <typename T,
           std::size_t DIV,

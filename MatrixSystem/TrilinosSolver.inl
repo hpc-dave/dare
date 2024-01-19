@@ -116,8 +116,8 @@ TrilinosSolver<SC>::BuildPreconditioner(PreCondPackage precond_package,
         int rank{-1};
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         bool am_i_root{rank == 0};
-        if(am_i_root)
-        ERROR << "Preconditioner of type " << type
+        if (am_i_root)
+            ERROR << "Preconditioner of type " << type
                   << "is unknown or provided with wrong parameters!" << ERROR_CLOSE;
         MPI_Abort(MPI_COMM_WORLD, -5);
     }

@@ -94,6 +94,9 @@ struct THelper {
  *    1           2         example above with two points on a line
  *    2           4         interpolation plane and therefore 4 points are required
  *    3           8         interpolation in a 3D box with 8 required points
+ * 
+ * \note A special requirement for later use is, that the first value equals the origin cell
+ * and the last value corresponds to the cell which is furthes away!
  */
 template <std::size_t Dim, std::size_t DimProj>
 [[nodiscard]] typename THelper<Dim, DimProj>::IndexList
@@ -203,7 +206,6 @@ void GetRelativeOffset(typename utils::Vector<Dim, LO> opt_source,
                        typename Grid::Cartesian<Dim>::NeighborID face,
                        typename Grid::Cartesian<Dim>::Index* ind,
                        typename Grid::Cartesian<Dim>::Options* off_rel) {
-
     opt_source[ToFace(face) / 2] += ToNormal(face);  // accounting for the position of the face
 
     (*off_rel) = opt_source - opt_target;  // relative offset of the fields
@@ -261,7 +263,7 @@ dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWei
 
     // normalization of the weights
     SC sum_weights{0};
-    for(auto e : weights)
+    for (auto e : weights)
         sum_weights += e;
     weights /= sum_weights;
 

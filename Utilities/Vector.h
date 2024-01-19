@@ -803,5 +803,18 @@ dare::utils::Vector<N, T> operator*(const T& v1, const dare::utils::Vector<N, T>
     return v2 * v1;
 }
 
+/*!
+ * @brief division operator for convenience
+ * @tparam T basic type
+ * @tparam N number of elements
+ * @param v1 value to multiply with
+ * @param v2 vector
+ * @return vector
+ */
+template <std::size_t N, typename T>
+dare::utils::Vector<N, T> operator/(const T& v1, const dare::utils::Vector<N, T>& v2) {
+    return v2 / v1;
+}
+
 #include "Vector.inl"
 #endif  // UTILITIES_VECTOR_H_

@@ -26,14 +26,16 @@
 #define MATH_INTERPOLATION_H_
 
 #include <limits>
+#include <typeinfo>
 
 #include "Data/GridVector.h"
 #include "Pow.h"
+#include "Utilities/Errors.h"
 
 namespace dare::math {
 
 /*!
- * @brief dummy for SFINAE
+ * @brief Interpolates to a specified face of the target grid
  * @tparam GridType type of grid
  * @tparam SC type of scalar
  * @tparam N number of components
@@ -41,7 +43,10 @@ namespace dare::math {
  * @param ind_target indices of the target cell
  * @param field field with values
  * @param n component ID
- * @return 
+ * For some grids, optimization can be gained, if a certain face ID is known, e.g. WEST or EAST
+ * on a Cartesian grid. In those cases, the weight determination is trivial.
+ * \note This is merely a placeholder, for which an overload should be defined by the grid,
+ * otherwise a NaN is returned
  */
 template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] SC InterpolateToFace(const typename GridType::Representation& target,
@@ -49,30 +54,88 @@ template <typename GridType, typename SC, std::size_t N>
                                    const typename GridType::NeighborID face,
                                    const Data::GridVector<GridType, SC, N>& field,
                                    std::size_t n) {
+    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
     return std::numeric_limits<SC>::signaling_NaN();
 }
 
+/*!
+ * @brief Interpolates to a specified face of the target grid
+ * @tparam GridType type of grid
+ * @tparam SC type of scalar
+ * @tparam N number of components
+ * @param target target grid
+ * @param ind_target indices of the target cell
+ * @param field field with values
+ * @param n component ID
+ * For some grids, optimization can be gained, if a certain face ID is known, e.g. WEST or EAST
+ * on a Cartesian grid. In those cases, the weight determination is trivial.
+ * \note This is merely a placeholder, for which an overload should be defined by the grid,
+ * otherwise a NaN is returned
+ */
 template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] dare::utils::Vector<N, SC> InterpolateToFace(const typename GridType::Representation& target,
                                                            const typename GridType::Index& ind_target,
                                                            const typename GridType::NeighborID face,
                                                            const Data::GridVector<GridType, SC, N>& field) {
+    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
     return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
 
+/*!
+ * @brief Interpolates to a specified point in the field
+ * @tparam GridType type of grid
+ * @tparam SC type of scalar
+ * @tparam N number of components
+ * @param point target grid
+ * @param field field with values
+ * @param n component ID
+ * This is the workhorse for interpolation. For each grid, we need to be able to request the values at
+ * arbitrary positions inside the grid.
+ * \note This is merely a placeholder, for which an overload should be defined by the grid,
+ * otherwise a NaN is returned
+ */
 template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] SC InterpolateToPoint(const typename GridType::VecSC& point,
                       const Data::GridVector<GridType, SC, N>& field,
                       std::size_t n) {
+    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
     return std::numeric_limits<SC>::signaling_NaN();
 }
 
+/*!
+ * @brief Interpolates to a specified point in the field
+ * @tparam GridType type of grid
+ * @tparam SC type of scalar
+ * @tparam N number of components
+ * @param point target grid
+ * @param field field with values
+ * This is the workhorse for interpolation. For each grid, we need to be able to request the values at
+ * arbitrary positions inside the grid.
+ * \note This is merely a placeholder, for which an overload should be defined by the grid,
+ * otherwise a NaN is returned
+ */
 template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] dare::utils::Vector<N, SC> InterpolateToPoint(const typename GridType::VecSC& point,
                                                             const Data::GridVector<GridType, SC, N>& field) {
+    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
     return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
 
+/*!
+ * @brief Computes interpolated value according to indices and weights
+ * @tparam GridType type of grid
+ * @tparam T type of value
+ * @tparam N number of components
+ * @param field field with values
+ * @param indices a list of indices, correlating with the weights
+ * @param weights weight for each index
+ * @param n_component component ID
+ * The values are computed according to
+ * \f[
+ *      v \gets \sum_n \omega_n \cdot F(I_n)
+ * \f]
+ * with Index I and field F.
+ */
 template<typename GridType, typename T, std::size_t N, std::size_t NUM_VALUES>
 [[nodiscard]] T Interpolate(const dare::Data::GridVector<GridType, T, N>& field,
                const dare::utils::Vector<NUM_VALUES, typename GridType::Index>& indices,
@@ -85,6 +148,20 @@ template<typename GridType, typename T, std::size_t N, std::size_t NUM_VALUES>
     return v;
 }
 
+/*!
+ * @brief Computes interpolated value according to indices and weights
+ * @tparam GridType type of grid
+ * @tparam T type of value
+ * @tparam N number of components
+ * @param field field with values
+ * @param indices a list of indices, correlating with the weights
+ * @param weights weight for each index
+ * The values are computed according to
+ * \f[
+ *      v \gets \sum_n \omega_n \cdot F(I_n)
+ * \f]
+ * with Index I and field F.
+ */
 template <typename GridType, typename T, std::size_t N, std::size_t NUM_VALUES>
 [[nodiscard]] dare::utils::Vector<N, T> Interpolate(const dare::Data::GridVector<GridType, T, N>& field,
                                       const dare::utils::Vector<NUM_VALUES, typename GridType::Index>& indices,
@@ -98,6 +175,8 @@ template <typename GridType, typename T, std::size_t N, std::size_t NUM_VALUES>
     }
     return v;
 }
+
+
 
 }  // end namespace dare::math
 
