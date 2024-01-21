@@ -125,6 +125,9 @@ bool MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::IsSet(std::size_t n) con
         return GetNeighborBitSet<HostSpace>()[n] & static_cast<char>(CartesianNeighborBitSet::BOTTOM);
     else if constexpr (IsSame<CartesianNeighbor::TOP, CNB>() && (Dim > 2))
         return GetNeighborBitSet<HostSpace>()[n] & static_cast<char>(CartesianNeighborBitSet::TOP);
+
+    ERROR << "The specified cartesian neighbor (" << std::to_string(ToNum(CNB)) << ") is out of range!";
+    return false;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>

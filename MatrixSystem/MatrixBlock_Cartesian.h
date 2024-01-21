@@ -30,6 +30,7 @@
 #include "MatrixBlock_Default.h"
 #include "Grid/Cartesian.h"
 #include "Stencils_Cartesian.h"
+#include "Utilities/Errors.h"
 
 namespace dare::Matrix {
 
