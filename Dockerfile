@@ -32,7 +32,7 @@ RUN apt-get -y upgrade
 RUN apt-get install -y build-essential git cmake libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz mesa-common-dev mesa-utils freeglut3-dev ninja-build
 RUN pip install --break-system-packages cpplint virtualenv
 RUN virtualenv mynotebookenv
-RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel
+RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel cppcheck-junit cpplint-junit doxygen-junit
 RUN python -m bash_kernel.install
 
 # create a directory for the user

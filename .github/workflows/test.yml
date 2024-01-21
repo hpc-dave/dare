@@ -15,7 +15,7 @@ jobs:
   GoogleTest:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.2
+      image: davevader/dare_test:1.3
 
     strategy:
       matrix:
@@ -55,7 +55,7 @@ jobs:
     # For details checkout https://github.com/marketplace/actions/publish-test-results
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.2
+      image: davevader/dare_test:1.3
     name: Publish Tests Results
     needs: GoogleTest
     permissions:
