@@ -4,3 +4,4 @@ build*
 html*
 latex*
 *out
+*xml

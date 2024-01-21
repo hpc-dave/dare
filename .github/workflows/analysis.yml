@@ -65,3 +65,34 @@ jobs:
       with:
         name: CPPLINT_reports
         path: ./*.out
+
+  cppcheck:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:1.2
+
+    steps:
+    - name: Run CPPCHECK
+      run: |
+        cppcheck \
+        -j8 \
+        --std=c++17 \
+        --force \
+        --xml --xml-version=2 \
+        --platform=unix64 \
+        --enable=warning,performance,portability,missingInclude \
+        . 1> CPPCHECK_LOG.out 2> CPPCHECK_ERRORS.xml
+    
+    - name: Archive Reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: CPPCHECK_reports
+        path: ./*.out
+
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: |
+          test-results/**/*.xml
