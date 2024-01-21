@@ -27,7 +27,7 @@ jobs:
       run: |
           num_warnings=$(grep -F / DoxygenWarnings.txt | wc -l)
           echo Found $num_warnings problems in the documentation
-          if [[ $num_warnings -gt 2000 ]]; then
+          if [[ $num_warnings -gt 900 ]]; then
             echo Doxygen check failed!
             exit $1
           fi
@@ -95,4 +95,4 @@ jobs:
       if: always()
       with:
         files: |
-          test-results/**/*.xml
+          ./*.xml
