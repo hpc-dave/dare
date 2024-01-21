@@ -77,4 +77,8 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: "artifacts/**/*.xml"
+          files: |
+            "artifacts/test_reports_1/*.xml"
+            "artifacts/test_reports_2/*.xml"
+            "artifacts/test_reports_3/*.xml"
+            "artifacts/test_reports_4/*.xml"
