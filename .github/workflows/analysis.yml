@@ -38,7 +38,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: Doxygen_report
-        path: ./*.txt
+        path: ./DoxygenWarnings*
 
 
   cpplint:
