@@ -62,6 +62,7 @@ jobs:
 
     - name: Covert to Junit format
       if: always()
+      shell: bash
       run: |
         printf "<?xml version='1.0' encoding='utf-8'?>\n<testsuite name=\"cpplint errors\"></testsuite> > CPPLINT_junit.xml
         cpplint_junit CPPLINT_ERRORS.out CPPLINT_junit.xml
