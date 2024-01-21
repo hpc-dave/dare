@@ -274,9 +274,15 @@ public:
         using pointer = T*;
         using reference = T&;
         explicit ReverseIterator(pointer _ptr) : ptr(_ptr) {}
+        /*!
+         * @brief dereferencing operator
+         */
         reference operator*() const {
             return *ptr;
         }
+        /*!
+         * @brief dereferencing operator
+         */
         pointer operator->() {
             return ptr;
         }
