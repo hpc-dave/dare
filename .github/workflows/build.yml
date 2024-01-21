@@ -21,7 +21,7 @@ jobs:
 
     - name: Configure CMake Release
       run: |
-          mkdir build_release && cd build_release
+          mkdir build_release -p && cd build_release
           cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
           
     - name: Build Release
@@ -37,7 +37,7 @@ jobs:
     steps:
     - name: Configure CMake Debug
       run: |
-          mkdir build_debug && cd build_debug
+          mkdir build_debug -p && cd build_debug
           cmake .. -DCMAKE_BUILD_TYPE=Debug -GNinja -DUSE_GTEST=OFF -DDEBUG=ON
           
     - name: Build Debug

@@ -37,7 +37,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: Doxygen_report
+        name: analysis_Doxygen
         path: ./DoxygenWarnings*
 
 
@@ -70,7 +70,7 @@ jobs:
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: CPPLINT_reports
+        name: analysis_CPPLINT
         path: ./CPPLINT*
 
   cppcheck:
@@ -98,7 +98,7 @@ jobs:
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: CPPCHECK_reports
+        name: analysis_CPPCHECK
         path: ./CPPCHECK*
 
   publish-test-results:
@@ -127,4 +127,7 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: artifacts/**/*_junit.xml
+          files: |
+            artifacts/analysis_Doxygen/*_junit.xml
+            artifacts/analysis_CPPLINT/*_junit.xml
+            artifacts/analysis_CPPCHECK/*_junit.xml
