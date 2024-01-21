@@ -64,7 +64,7 @@ jobs:
       if: always()
       with:
         name: CPPLINT_reports
-        path: ./*.out
+        path: ./CPPLINT*
 
   cppcheck:
     runs-on: self-hosted
