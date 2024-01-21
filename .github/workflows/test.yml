@@ -52,6 +52,7 @@ jobs:
         path: ./*.xml
 
   publish-test-results:
+    # For details checkout https://github.com/marketplace/actions/publish-test-results
     runs-on: self-hosted
     container:
       image: davevader/dare_test:1.2
@@ -77,9 +78,3 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: artifacts/**/*.xml
-    # - name: Publish Test Results
-    #   uses: EnricoMi/publish-unit-test-result-action@v2
-    #   if: always()
-    #   with:
-    #     files: |
-    #       ./*.xml
