@@ -272,28 +272,10 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::TVD(
     LO ordinal_internal,
     dare::utils::Vector<Dim, const dare::Data::GridVector<GridType, SC, 1>&> v)
     : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))) {
-    // for (std::size_t dim{0}; dim < Dim; dim++) {
-    //     self_convection[dim] = grid.GetOptions()[dim] != 0;
-    // }
-    // for (std::size_t dim{0}; dim < Dim; dim++) {
-    //     Index ind_nb{ind};
-    //     SC v_low, v_up;
-    //     if (self_convection[dim]) {
-    //         Index ind_nb_far{ind_nb};
-    //         ind_nb_far[dim] -= 1;
-    //         v_low = static_cast<SC>(0.5) * (v[dim].At(ind_nb, 0) + v[dim].At(ind_nb_far, 0));
-    //         ind_nb_far = ind_nb;
-    //         ind_nb[dim] += 1;
-    //         v_up = static_cast<SC>(0.5) * (v[dim].At(ind_nb, 0) + v[dim].At(ind_nb_far, 0));
-    //     } else {
-    //         ind_nb[dim] = ind[dim] + 1;
-    //         v_low = v[dim].At(ind);
-    //         v_up = v[dim].At(ind_nb);
-    //     }
-    //     upwind[dim * 2] = v >= static_cast<SC>(0.);
-    //     ind_nb[dim] = ind[dim] + 1;
-    //     upwind[dim * 2 + 1] = v[dim].At(ind_nb, 0) >= static_cast<SC>(0.);
-    // }
+
+    for (std::size_t id{0}; id < (Dim * 2); id++) {
+        Grid::CartesianNeighbor 
+    }
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>

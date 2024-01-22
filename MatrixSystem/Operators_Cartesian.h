@@ -41,7 +41,7 @@ class Gradient<dare::Grid::Cartesian<Dim>> {
 public:
     static const std::size_t NUM_FACES{Dim * 2};                   //!< number of faces
     static const std::size_t NUM_ENTRIES{NUM_FACES + 1};           //!< stencil size
-    using GridType = dare::Grid::Cartesian<Dim>;       //!< type of grid
+    using GridType = dare::Grid::Cartesian<Dim>;                   //!< type of grid
     using GridRepresentation = typename GridType::Representation;  //!< representation of grid
     using LO = typename GridType::LocalOrdinalType;                //!< convenient aliasing
     using GO = typename GridType::GlobalOrdinalType;               //!< convenient aliasing
@@ -230,7 +230,6 @@ private:
     Index ind;                                               //!< triplet of indices
     dare::Data::FaceValueStencil<GridType, SC, 1> velocity;  //!< stencil with velocity
     dare::utils::Vector<NUM_FACES, bool> upwind;             //!< identifier for upwind at each face
-    dare::utils::Vector<Dim, bool> self_convection;          //!< identifier, if any direction is self convection
 };
 
 }  // end namespace dare::Matrix
