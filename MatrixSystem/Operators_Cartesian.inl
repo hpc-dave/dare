@@ -273,9 +273,9 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::TVD(
     dare::utils::Vector<Dim, const dare::Data::GridVector<GridType, SC, 1>&> v)
     : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))) {
 
-    for (std::size_t id{0}; id < (Dim * 2); id++) {
-        Grid::CartesianNeighbor 
-    }
+    // for (std::size_t id{0}; id < (Dim * 2); id++) {
+    //     Grid::CartesianNeighbor
+    // }
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>

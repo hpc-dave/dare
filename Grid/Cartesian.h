@@ -30,6 +30,7 @@
 #include "MPI/ExecutionManager.h"
 #include "Utilities/Vector.h"
 #include "Utilities/InitializationTracker.h"
+#include "Utilities/Errors.h"
 #include "Grid/DefaultTypes.h"
 #include "Grid/CartesianDistribution.h"
 #include "Grid/CartesianRepresentation.h"
@@ -118,7 +119,7 @@ enum class CartesianNeighbor : char {
 }
 
 template <char ID>
-[[nodiscard]] inline GetCartesianNeighbor() {
+[[nodiscard]] inline CartesianNeighbor ToCartesianNeighbor() {
     static_assert(ID >= 0 && ID < 9);
     using CNB = CartesianNeighbor;
     if constexpr (ID == 0)
