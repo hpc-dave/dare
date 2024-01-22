@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -303,6 +303,22 @@ typename Vector<N, T>::ConstReverseIterator Vector<N, T>::crend() const {
 }
 
 template <std::size_t N, typename T>
+T Vector<N, T>::AllSum() const {
+    T res{0};
+    for (auto& e : *this)
+        res += e;
+    return res;
+}
+
+template <std::size_t N, typename T>
+T Vector<N, T>::AllAbsSum() const {
+    T res{0};
+    for (auto& e : *this)
+            res += std::abs(e);
+    return res;
+}
+
+template <std::size_t N, typename T>
 T Vector<N, T>::dot(const Vector<N, T>& other) const {
     T res{static_cast<T>(0)};
     for (std::size_t n{0}; n < N; ++n)
@@ -343,11 +359,14 @@ template <std::size_t I,
           typename B,
           typename C>
 void Vector<N, T>::SetValues(const Tin& arg, const Ts&... args) {
-    this->_data[I] = static_cast<T>(arg);
-    if constexpr (sizeof...(args) > 0 && (I + 1 < N))
-        SetValues<I + 1>(args...);
-    else if constexpr (I + 1 < N)
-        SetValues<I + 1>(static_cast<T>(0));
+    // special case of N == 0
+    if constexpr (N != 0) {
+        this->_data[I] = static_cast<T>(arg);
+        if constexpr (sizeof...(args) > 0 && (I + 1 < N))
+            SetValues<I + 1>(args...);
+        else if constexpr (I + 1 < N)
+            SetValues<I + 1>(static_cast<T>(0));
+    }
 }
 
 template <std::size_t N, typename T>

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,11 @@
 
 #include <gtest/gtest.h>
 
-#include "../Grid/Cartesian.h"
-#include "../Grid/DefaultTypes.h"
-#include "../MatrixSystem/Trilinos.h"
-#include "../MatrixSystem/TrilinosSolver.h"
-#include "../Utilities/Vector.h"
+#include "Grid/Cartesian.h"
+#include "Grid/DefaultTypes.h"
+#include "MatrixSystem/Trilinos.h"
+#include "MatrixSystem/TrilinosSolver.h"
+#include "Utilities/Vector.h"
 
 namespace dare::test {
 
@@ -80,13 +80,12 @@ using IntegrationCartesianTrilinos2D = IntegrationCartesianTrilinos<2>;
 using IntegrationCartesianTrilinos3D = IntegrationCartesianTrilinos<3>;
 
 TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
-
     using CN = dare::Matrix::CartesianNeighbor;
     GridType::Options opt(0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -158,8 +157,8 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
     GridType::Options opt(1);  // staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -227,8 +226,8 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -242,7 +241,6 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -321,8 +319,8 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_south{0.};
     const double value_north{1.};
 
@@ -336,7 +334,6 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -415,8 +412,8 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
     GridType::Options opt(1, 0);  // staggered in X direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -430,7 +427,6 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -503,8 +499,8 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
     GridType::Options opt(0, 1);  // staggered in Y direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_south{0.};
     const double value_north{1.};
 
@@ -518,7 +514,6 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -591,8 +586,8 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
@@ -606,7 +601,6 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};
@@ -705,8 +699,8 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveStaggeredZ) {
     GridType::Options opt(1, 0);  // staggered in X direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Matrix::TrilinosSolver<SC> solver;
     const double value_bottom{0.};
     const double value_top{1.};
 
@@ -720,7 +714,6 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveStaggeredZ) {
 
     auto functor = [&](auto mblock) {
         EXPECT_TRUE(mblock->IsGlobal());
-        GO node_g = mblock->GetNode();
         IndexGlobal ind = mblock->GetIndexInternal();
         bool is_west_edge{ind.i() == 0};
         bool is_east_edge{ind.i() == (g_rep.GetGlobalResolutionInternal().i() - 1)};

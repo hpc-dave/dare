@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,13 @@ template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>::~GridVector() {}
 
 template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::Initialize(std::string identifier, GridRepresentation _grid) {
+    ident_string = identifier;
+    grid = _grid;
+    data = DualViewType(identifier, _grid.GetNumberLocalCells() * N);
+}
+
+template <typename Grid, typename T, std::size_t N>
 void GridVector<Grid, T, N>::Resize(LO n) {
     data.resize(n);
 }
@@ -51,6 +58,11 @@ void GridVector<Grid, T, N>::Resize(LO n) {
 template <typename Grid, typename T, std::size_t N>
 void GridVector<Grid, T, N>::ResizeByGrid(LO n) {
     Resize(n * N);
+}
+
+template <typename Grid, typename T, std::size_t N>
+T& GridVector<Grid, T, N>::At(std::size_t n) {
+    return operator[](n);
 }
 
 template <typename Grid, typename T, std::size_t N>
@@ -64,6 +76,11 @@ T& GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) {
 }
 
 template <typename Grid, typename T, std::size_t N>
+T GridVector<Grid, T, N>::At(std::size_t n) const {
+    return operator[](n);
+}
+
+template <typename Grid, typename T, std::size_t N>
 T GridVector<Grid, T, N>::At(LO n, std::size_t c) const {
     return operator[](n * N + c);
 }
@@ -71,6 +88,21 @@ T GridVector<Grid, T, N>::At(LO n, std::size_t c) const {
 template <typename Grid, typename T, std::size_t N>
 T GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) const {
     return At(grid.MapIndexToOrdinalLocal(ind), c);
+}
+
+template <typename Grid, typename T, std::size_t N>
+dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const LO n) const {
+    dare::utils::Vector<N, T> values;
+    LO n_start{n * static_cast<LO>(N)};
+    for (std::size_t c{0}; c < N; c++) {
+        values[c] = operator[](n_start + c);
+    }
+    return values;
+}
+
+template <typename Grid, typename T, std::size_t N>
+dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const Index& ind) const {
+    return GetValues(grid.MapIndexToOrdinalLocal(ind));
 }
 
 template <typename Grid, typename T, std::size_t N>
@@ -123,6 +155,21 @@ typename GridVector<Grid, T, N>::DeviceViewType& GridVector<Grid, T, N>::GetDevi
 template <typename Grid, typename T, std::size_t N>
 const typename GridVector<Grid, T, N>::DeviceViewType& GridVector<Grid, T, N>::GetDeviceView() const {
     return data.h_view;
+}
+
+template <typename Grid, typename T, std::size_t N>
+const typename GridVector<Grid, T, N>::GridRepresentation& GridVector<Grid, T, N>::GetGridRepresentation() const {
+    return grid;
+}
+
+template <typename Grid, typename T, std::size_t N>
+typename GridVector<Grid, T, N>::GridRepresentation& GridVector<Grid, T, N>::GetGridRepresentation() {
+    return grid;
+}
+
+template <typename Grid, typename T, std::size_t N>
+std::string GridVector<Grid, T, N>::GetIdentifier() const {
+    return ident_string;
 }
 
 }  // namespace dare::Data

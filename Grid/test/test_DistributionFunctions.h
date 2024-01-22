@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #define GRID_TEST_TEST_DISTRIBUTIONFUNCTIONS_H_
 
 #include <vector>
-#include "../../Utilities/Vector.h"
+#include "Utilities/Vector.h"
 
 namespace dare::Grid::test {
 template <std::size_t Dim, typename T>

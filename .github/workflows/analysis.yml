@@ -14,7 +14,7 @@ jobs:
   Doxygen:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.1
+      image: davevader/dare_test:1.3
 
     steps:
     - uses: actions/checkout@v3
@@ -23,25 +23,28 @@ jobs:
       run: doxygen Doxyfile
           
     - name: Evaluate result
+      shell: bash
       run: |
           num_warnings=$(grep -F / DoxygenWarnings.txt | wc -l)
           echo Found $num_warnings problems in the documentation
-          if [[ $num_warnings -gt 2000 ]]; then
+          doxygen_junit --input DoxygenWarnings.txt --output DoxygenWarnings_junit.xml
+          if [[ $num_warnings -gt 900 ]]; then
             echo Doxygen check failed!
             exit $1
           fi
-          echo Doxygen succeded
+          echo Doxygen succeeded
     - name: Archive Reports
+      if: always()
       uses: actions/upload-artifact@v3
       with:
-        name: Doxygen_report
-        path: ./*.txt
+        name: analysis_Doxygen
+        path: ./DoxygenWarnings*
 
 
   cpplint:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.1
+      image: davevader/dare_test:1.3
 
     steps:
     - name: Run CPPLINT
@@ -55,21 +58,76 @@ jobs:
         --linelength=120 \
         --filter=-build/include,+build/include_what_you_use,+build/include_order,\
         -whitespace/indent \
-        . 1>CPPLINT_LOG.out 2>CPPLINT_ERRORS.out || true
+        . 1>CPPLINT_LOG.out 2>CPPLINT_ERRORS.out
+
+    - name: Covert to Junit format
+      if: always()
+      shell: bash
+      run: |
+        cpplint_junit CPPLINT_ERRORS.out CPPLINT_junit.xml
 
     - name: Archive Reports
       uses: actions/upload-artifact@v3
+      if: always()
       with:
-        name: CPPLINT_reports
-        path: ./*.out
+        name: analysis_CPPLINT
+        path: ./CPPLINT*
 
-    # - name: Evaluate result
-    #   run: |
-    #       error_string=$(tail -n 1 CPPLINT_LOG.out)
-    #       num_errors=$(echo "${error_string//[!0-9]/}")
-    #       echo Found $num_errors problems in the formatting
-    #       if [[ $num_errors -gt 5450 ]]; then
-    #         echo CPPLINT check failed!
-    #       exit $num_errors
-    #       fi
-    #       echo CPPLINT check succeeded
+  cppcheck:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:1.3
+
+    steps:
+    - name: Run CPPCHECK
+      run: |
+        cppcheck \
+        -j8 \
+        --std=c++17 \
+        --force \
+        --xml --xml-version=2 \
+        --platform=unix64 \
+        --enable=warning,performance,portability,missingInclude \
+        . 1> CPPCHECK_LOG.out 2> CPPCHECK_ERRORS.xml
+    
+    - name: Convert to Junit format
+      if: always()
+      run: cppcheck_junit CPPCHECK_ERRORS.xml CPPCHECK_junit.xml
+
+    - name: Archive Reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: analysis_CPPCHECK
+        path: ./CPPCHECK*
+
+  publish-test-results:
+    # For details checkout https://github.com/marketplace/actions/publish-test-results
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:1.2
+    name: Publish Tests Results
+    needs: [Doxygen, cppcheck, cpplint]
+    permissions:
+      checks: write
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+      # only needed for private repository
+      contents: read
+      # only needed for private repository
+      issues: read
+    if: always()
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: |
+            artifacts/analysis_Doxygen/*_junit.xml
+            artifacts/analysis_CPPLINT/*_junit.xml
+            artifacts/analysis_CPPCHECK/*_junit.xml

@@ -3,3 +3,5 @@ build*
 *csv
 html*
 latex*
+*out
+*xml

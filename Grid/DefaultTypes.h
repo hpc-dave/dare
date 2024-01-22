@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,5 +33,11 @@ using ExecutionSpace = Tpetra::Map<>::execution_space;
 using MemorySpace = Tpetra::Map<>::memory_space;
 using NodeType = Tpetra::Map<>::node_type;
 }  // namespace dare::Grid::details
+
+namespace dare::defaults {
+using LocalOrdinalType = Grid::details::LocalOrdinalType;
+using GlobalOrdinalType = Grid::details::GlobalOrdinalType;
+using ScalarType = double;
+}  // end namespace dare::defaults
 
 #endif  // GRID_DEFAULTTYPES_H_

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,8 @@
 
 #include <Amesos2.hpp>
 
+#include "Utilities/Errors.h"
+#include "Grid/DefaultTypes.h"
 #include "BiCGStab2.h"
 namespace dare::Matrix {
 
@@ -61,12 +63,14 @@ enum class SolverPackage {
     BumbleBee
 };
 
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 class TrilinosSolver {
 public:
     using ScalarType = SC;
-    using LocalOrdinalType = LO;
-    using GlobalOrdinalType = GO;
+    using LocalOrdinalType = dare::defaults::LocalOrdinalType;
+    using GlobalOrdinalType = dare::defaults::GlobalOrdinalType;
+    using LO = LocalOrdinalType;
+    using GO = GlobalOrdinalType;
     using OperatorType = Tpetra::Operator<SC, LO, GO>;
     using MatrixType = Tpetra::CrsMatrix<SC, LO, GO>;
     using VectorType = Tpetra::Vector<SC, LO, GO>;

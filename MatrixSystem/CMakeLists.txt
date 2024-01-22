@@ -12,6 +12,8 @@ set(DaRe_HEADER_FILES
     "MatrixBlock_Default.inl"
     "MatrixBlock_Cartesian.h"
     "MatrixBlock_Cartesian.inl"
+    "Stencils_Cartesian.h"
+    "Stencils_Cartesian.inl"
 )
 
 target_sources(dare

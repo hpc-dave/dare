@@ -24,8 +24,6 @@ target_sources(exec
     PRIVATE ${DaRe_SOURCE_FILES}
 )
 
-
-
 if(USE_GTEST)
     target_sources(unit_test
         PRIVATE ${DaRe_HEADER_FILES}

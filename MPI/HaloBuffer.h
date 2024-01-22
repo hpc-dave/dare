@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "../Utilities/InitializationTracker.h"
+#include "../Grid/DefaultTypes.h"
 #include "SingleHaloBuffer.h"
 namespace dare::mpi {
 
@@ -39,9 +40,12 @@ namespace dare::mpi {
  * This class encapsulates the necessary communication to exchange data in the
  * halo cell region.
  */
-template <typename LO, typename GO, typename SC>
+template <typename SC>
 class HaloBuffer : public utils::InitializationTracker {
 public:
+    using LO = dare::defaults::LocalOrdinalType;
+    using GO = dare::defaults::GlobalOrdinalType;
+
     /*!
      * @brief default constructor
      */
@@ -87,9 +91,14 @@ public:
     template <typename Field>
     void Exchange(Field* field);
 
+    /*!
+     * @brief returns execution manager
+     */
+    ExecutionManager* GetExecutionManager();
+
 private:
     ExecutionManager* exec_man;                           //!< execution manager
-    std::map<int, SingleHaloBuffer<LO, GO, SC>> buffers;  //!< list of buffers
+    std::map<int, SingleHaloBuffer<SC>> buffers;          //!< list of buffers
 };
 }  // namespace dare::mpi
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,10 @@
 #include <Tpetra_CrsMatrix.hpp>
 #include <Tpetra_Version.hpp>
 
-#include "../Data/GridVector.h"
-#include "../MPI/ExecutionManager.h"
-#include "../Utilities/InitializationTracker.h"
+#include "Grid/DefaultTypes.h"
+#include "Data/GridVector.h"
+#include "MPI/ExecutionManager.h"
+#include "Utilities/InitializationTracker.h"
 #include "MatrixBlock.h"
 
 namespace dare::Matrix {
@@ -47,12 +48,14 @@ namespace dare::Matrix {
  * @tparam LO local ordinal type
  * @tparam GO global ordinal type
  */
-template <typename SC, typename LO, typename GO>
+template <typename SC>
 class Trilinos : public dare::utils::InitializationTracker {
 public:
     using ScalarType = SC;
-    using LocalOrdinalType = LO;
-    using GlobalOrdinalType = GO;
+    using LocalOrdinalType = dare::defaults::LocalOrdinalType;
+    using GlobalOrdinalType = dare::defaults::GlobalOrdinalType;
+    using GO = GlobalOrdinalType;
+    using LO = LocalOrdinalType;
     using MatrixType = Tpetra::CrsMatrix<ScalarType, LocalOrdinalType, GlobalOrdinalType>;
     using OpType = Tpetra::Operator<ScalarType, LocalOrdinalType, GlobalOrdinalType>;
     using VecType = Tpetra::Vector<ScalarType, LocalOrdinalType, GlobalOrdinalType>;

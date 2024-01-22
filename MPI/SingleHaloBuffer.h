@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,8 @@
 #include <string>
 #include <vector>
 
-#include "../Utilities/InitializationTracker.h"
+#include "Utilities/InitializationTracker.h"
+#include "Grid/DefaultTypes.h"
 #include "ExecutionManager.h"
 
 namespace dare::mpi {
@@ -43,9 +44,12 @@ namespace dare::mpi {
  * halo cell region. It stores the rank of a partner process and an array of local
  * grid cell IDs, which it will exchange and subsequently store in the field
  */
-template<typename LO, typename GO, typename SC>
+template<typename SC>
 class SingleHaloBuffer : public dare::utils::InitializationTracker{
 public:
+    using LO = dare::defaults::LocalOrdinalType;
+    using GO = dare::defaults::GlobalOrdinalType;
+
     /*!
      * @brief constructor
      * @param execution_manager pointer to execution manager

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-#include "../ScopeGuard/ScopeGuard.h"
+#include "ScopeGuard/ScopeGuard.h"
 
 static std::string xml_report_arg = "";  // NOLINT
 
@@ -53,7 +53,6 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
-        int rank_results{0};
 
         int ret = -1;
         {

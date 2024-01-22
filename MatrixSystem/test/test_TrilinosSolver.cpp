@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,18 @@
 
 #include <gtest/gtest.h>
 
-#include "../../Data/GridVector.h"
-#include "../../Grid/DefaultTypes.h"
-#include "../Trilinos.h"
-#include "../TrilinosSolver.h"
+#include "Data/GridVector.h"
+#include "Grid/DefaultTypes.h"
+#include "MatrixSystem/Trilinos.h"
+#include "MatrixSystem/TrilinosSolver.h"
 #include "test_TrilinosTestGrid.h"
+#include "Utilities/Errors.h"
 
 namespace dare::Matrix::test {
 struct _solverTestParam {
-    using SC = double;
-    using LO = dare::Grid::details::LocalOrdinalType;
-    using GO = dare::Grid::details::GlobalOrdinalType;
+    using SC = dare::defaults::ScalarType;
+    using LO = dare::defaults::LocalOrdinalType;
+    using GO = dare::defaults::GlobalOrdinalType;
     using PT = dare::Matrix::SolverPackage;
     using PTM = dare::Matrix::PreCondPackage;
     PT package;
@@ -59,8 +60,9 @@ Teuchos::RCP<Teuchos::ParameterList> GetPreconditionerParameters(_solverTestPara
         parameters->set("problem: type", "MHD");  // works best in our cases
         parameters->set("verbosity", "none");
         break;
-    otherwise:
-        {}
+    case _solverTestParam::PTM::None:
+        // No parameters are set
+        break;
     }
     return parameters;
 }
@@ -79,9 +81,9 @@ public:
     using GridRepresentation = typename GridType::Representation;
     static const std::size_t N = dare::Matrix::test::N;
     using FieldType = dare::Data::GridVector<GridType, SC, N>;
-    using GOViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::GOViewType;
-    using LOViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::LOViewType;
-    using SViewType = typename dare::Matrix::Trilinos<SC, LO, GO>::SViewType;
+    using GOViewType = typename dare::Matrix::Trilinos<SC>::GOViewType;
+    using LOViewType = typename dare::Matrix::Trilinos<SC>::LOViewType;
+    using SViewType = typename dare::Matrix::Trilinos<SC>::SViewType;
     GridType grid;
     FieldType field;
     dare::mpi::ExecutionManager exec_man;
@@ -112,8 +114,7 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
     GridRepresentation g_rep{grid.GetRepresentation()};
 
     for (LO node = 0; node < grid.local_size; node++) {
-        LO row = node * N;
-        for (LO i{0}; i < N; i++) {
+        for (std::size_t i{0}; i < N; i++) {
             field.At(node, i) = 0.5;
         }
     }
@@ -121,9 +122,7 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
     // assembles a pseudo-2D problem, since the preconditioners of Ifpack and MueLu seem
     // to have issues with fully 1D problems
     auto functor = [&](auto mblock) {
-        const std::size_t num_rows = grid.size_global * N;
         GO node_g = mblock->GetNode();
-        LO node_l = g_rep.MapInternalToLocal(g_rep.MapGlobalToLocalInternal(node_g));
         bool is_left_edge = node_g == 0;
         bool is_right_edge = node_g == (g_rep.GetNumberGlobalCellsInternal()-1);
         for (std::size_t n{0}; n < N; n++) {
@@ -166,10 +165,10 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
         }
     };
 
-    dare::Matrix::Trilinos<SC, LO, GO> trilinos(&exec_man);
+    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
     trilinos.Build(g_rep, field, functor, false);
 
-    dare::Matrix::TrilinosSolver<SC, LO, GO> solver;
+    dare::Matrix::TrilinosSolver<SC> solver;
 
     auto precond_param = dare::Matrix::test::GetPreconditionerParameters(test_param.package_pre, test_param.type_pre);
 
@@ -181,8 +180,8 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
     Belos::ReturnType ret = solver.Solve(test_param.package, test_param.type, trilinos.GetM(),
                                          trilinos.GetA(), trilinos.GetX(), trilinos.GetB(), solver_param);
     bool is_converged = ret == Belos::ReturnType::Converged;
-    Tpetra::Vector<SC, LO, GO> r(trilinos.GetMap());
-    Tpetra::Vector<SC, LO, GO> v(trilinos.GetMap());
+    Tpetra::Vector<SC> r(trilinos.GetMap());
+    Tpetra::Vector<SC> v(trilinos.GetMap());
     r.assign(*trilinos.GetB());
 
     trilinos.GetA()->apply(*trilinos.GetX(), v);

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,27 +28,24 @@
 #include <vector>
 
 #include "MatrixBlock_Default.h"
-#include "../Grid/Cartesian.h"
+#include "Grid/Cartesian.h"
+#include "Stencils_Cartesian.h"
+#include "Utilities/Errors.h"
 
 namespace dare::Matrix {
 
-enum class CartesianNeighbor : char {
-    CENTER = 0,
-    WEST = 1,
-    EAST = 2,
-    SOUTH = 3,
-    NORTH = 4,
-    BOTTOM = 5,
-    TOP = 6
-};
-enum class CartesianNeighborBitSet : char {
+using CartesianNeighbor = dare::Grid::CartesianNeighbor;
+
+enum class CartesianNeighborBitSet : int16_t {
     CENTER = 1 << static_cast<char>(CartesianNeighbor::CENTER),
     WEST = 1 << static_cast<char>(CartesianNeighbor::WEST),
     EAST = 1 << static_cast<char>(CartesianNeighbor::EAST),
     SOUTH = 1 << static_cast<char>(CartesianNeighbor::SOUTH),
     NORTH = 1 << static_cast<char>(CartesianNeighbor::NORTH),
     BOTTOM = 1 << static_cast<char>(CartesianNeighbor::BOTTOM),
-    TOP = 1 << static_cast<char>(CartesianNeighbor::TOP)
+    TOP = 1 << static_cast<char>(CartesianNeighbor::TOP),
+    FOURD_LOW = 1 << static_cast<char>(CartesianNeighbor::FOURD_LOW),
+    FOURD_UP = 1 << static_cast<char>(CartesianNeighbor::FOURD_UP)
 };
 
 template <CartesianNeighbor A, CartesianNeighbor B>
@@ -61,6 +58,7 @@ public:
     using GridRepresentation = typename GridType::Representation;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
     using GlobalOrdinalType = typename GridType::GlobalOrdinalType;
+    using OrdinalType = O;
     using SelfType = MatrixBlock<GridType, O, SC, N>;
     using HostSpace = typename MatrixBlockBase<O, SC, N>::HostSpace;
     using ExecutionSpace = typename MatrixBlockBase<O, SC, N>::ExecutionSpace;
@@ -150,20 +148,66 @@ public:
      */
     bool IsStencilLocal() const;
 
+    /*!
+     * @brief access to value of neighbor
+     * @tparam CNB neighbor ID
+     * @param n component id
+     */
     template <CartesianNeighbor CNB>
     SC& Get(std::size_t n);
 
+    /*!
+     * @brief non-templated access to value of neighbor
+     * @tparam CNB neighbor ID
+     * @param n component id
+     */
     SC& Get(std::size_t n, CartesianNeighbor cnb);
 
+    /*!
+     * @brief const access to value of neighbor
+     * @tparam CNB neighbor ID
+     * @param n component id
+     */
     template <CartesianNeighbor CNB>
     SC Get(std::size_t n) const;
 
+    /*!
+     * @brief non-templated const access to value of neighbor
+     * @tparam CNB neighbor ID
+     * @param n component id
+     */
     SC Get(std::size_t n, CartesianNeighbor cnb) const;
 
+    /*!
+     * @brief Inquiry, if a value was set
+     * @tparam CNB neighbor ID
+     * @param n component ID
+     */
     template <CartesianNeighbor CNB>
     bool IsSet(std::size_t n) const;
 
+    /*!
+     * @brief moves intermediate values to final ordinal & coefficient array
+     */
     void Finalize();
+
+    /*!
+     * @brief assigns values from a stencil
+     * @param s center stencil with matrix values
+     */
+    SelfType& operator=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+
+    /*!
+     * @brief adds values from stencil
+     * @param s center stencil with matrix values
+     */
+    SelfType& operator+=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+
+    /*!
+     * @brief subtracts values of stencil
+     * @param s center stencil with matrix values
+     */
+    SelfType& operator-=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
 
 private:
     template <typename Space>

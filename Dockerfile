@@ -29,10 +29,10 @@ RUN apt-get -y upgrade
 RUN apt-get install -y apt-utils
 RUN apt-get -y update
 RUN apt-get -y upgrade
-RUN apt-get install -y build-essential git cmake libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz
+RUN apt-get install -y build-essential git cmake libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz mesa-common-dev mesa-utils freeglut3-dev ninja-build
 RUN pip install --break-system-packages cpplint virtualenv
 RUN virtualenv mynotebookenv
-RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel
+RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel cppcheck-junit cpplint-junit doxygen-junit
 RUN python -m bash_kernel.install
 
 # create a directory for the user
@@ -49,9 +49,11 @@ WORKDIR /home/user
 # clone and install Trilinos
 RUN git clone https://github.com/trilinos/Trilinos.git TrilinosGit
 WORKDIR ./TrilinosGit
+RUN git pull
 RUN git checkout trilinos-release-15-0-0
 WORKDIR ./build
 RUN cmake ..\
+    -GNinja \
     -DCMAKE_CXX_COMPILER=mpic++ \
     -DCMAKE_C_COMPILER=mpicc \
     -DCMAKE_Fortran_COMPILER=gfortran \
@@ -88,7 +90,25 @@ RUN cmake ..\
     -DTrilinos_HIDE_DEPRECATED_CODE=ON \
     -DCMAKE_INSTALL_PREFIX="/usr/local"
 
-RUN make install -j 6
+RUN ninja install -j 6
+
+# install vtk
+WORKDIR /home/user
+RUN git clone https://gitlab.kitware.com/vtk/vtk.git
+WORKDIR ./vtk
+RUN git checkout v9.3.0
+WORKDIR ./build
+RUN cmake ..\
+     -GNinja \
+     -DCMAKE_BUILD_TYPE=Release\
+     -DVTK_USE_MPI=ON\
+     -DVTK_USE_CUDA=OFF\
+     -DVTK_SMP_IMPLEMENTATION_TYPE=OpenMP\
+     -DVTK_LEGACY_REMOVE=ON\
+     -DVTK_USE_FUTURE_CONST=ON\
+     -DVTK_USE_FUTURE_BOOL=ON
+
+RUN ninja install -j 6
 
 RUN apt-get -y update
 RUN apt-get -y upgrade

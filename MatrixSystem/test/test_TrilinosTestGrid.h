@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,9 @@
 namespace dare::Matrix::test {
 class TrilinosTestGrid {
 public:
-    using GlobalOrdinalType = dare::Grid::details::GlobalOrdinalType;
-    using LocalOrdinalType = dare::Grid::details::LocalOrdinalType;
-    using ScalarType = double;
+    using GlobalOrdinalType = dare::defaults::GlobalOrdinalType;
+    using LocalOrdinalType = dare::defaults::LocalOrdinalType;
+    using ScalarType = dare::defaults::ScalarType;
     using Index = dare::utils::Vector<1, LocalOrdinalType>;
     using IndexGlobal = dare::utils::Vector<1, GlobalOrdinalType>;
     class TestRepresentation {

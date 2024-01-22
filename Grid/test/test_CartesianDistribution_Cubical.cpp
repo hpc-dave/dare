@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,9 @@
 
 #include <gtest/gtest.h>
 #include "test_DistributionFunctions.h"
-#include "../../Utilities/Vector.h"
-#include "../Cartesian.h"
-#include "../CartesianDistribution.h"
+#include "Utilities/Vector.h"
+#include "Grid/Cartesian.h"
+#include "Grid/CartesianDistribution.h"
 
 TEST_P(ConsistencyTest, CubicalOneDim) {
     dare::mpi::ExecutionManager exman;
@@ -36,8 +36,6 @@ TEST_P(ConsistencyTest, CubicalOneDim) {
     int num_proc = GetParam();
     const std::size_t Dim{1};
     using Grid = dare::Grid::Cartesian<Dim>;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc*5);
@@ -59,8 +57,6 @@ TEST_P(ConsistencyTest, CubicalTwoDim) {
     int num_proc = GetParam();
     const std::size_t Dim{2};
     using Grid = dare::Grid::Cartesian<Dim>;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc * 5, num_proc * 5);
@@ -82,8 +78,6 @@ TEST_P(ConsistencyTest, CubicalThreeDim) {
     int num_proc = GetParam();
     const std::size_t Dim{3};
     using Grid = dare::Grid::Cartesian<Dim>;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc * 5, num_proc * 5, num_proc * 5);

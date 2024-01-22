@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(DaRe
-	VERSION 0.2.0
+	VERSION 0.2.1
 	DESCRIPTION "Dave's repository"
-	LANGUAGES CXX
+	LANGUAGES C CXX
 )
 
 option(DEBUG
@@ -70,6 +70,34 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 		PRIVATE -faligned-new
 		PRIVATE -fmessage-length=0
 	)
+    if(USE_GTEST)
+        target_compile_options(unit_test
+		PRIVATE -march=native
+		PRIVATE -Wall
+		PRIVATE -faligned-new
+		PRIVATE -fmessage-length=0
+	    )
+    endif()
+    if(DEBUG)
+        target_compile_options(dare
+        PRIVATE -Werror
+        )
+        target_compile_options(exec
+        PRIVATE -Werror
+        )
+        if(USE_GTEST)
+            target_compile_options(unit_test
+            PRIVATE -Werror
+            )
+        endif()
+        if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+            target_compile_options(dare PRIVATE -Wno-maybe-uninitialized)
+            target_compile_options(exec PRIVATE -Wno-maybe-uninitialized)
+            if(USE_GTEST)
+                target_compile_options(unit_test PRIVATE -Wno-maybe-uninitialized)
+            endif()
+        endif()
+    endif()
 else()
 	message(WARNING "DaRe: Flags have not been implemented for the current compiler! (${CMAKE_CXX_COMPILER_ID})")
 endif()
@@ -87,6 +115,13 @@ if(MPI_CXX_FOUND)
 	set_target_properties(MPI::MPI_CXX
 		PROPERTIES IMPORTED_GLOBAL TRUE
 	)
+endif()
+
+find_package(VTK REQUIRED)
+if(VTK_FOUND)
+    set_target_properties(${VTK_LIBRARIES}
+        PROPERTIES IMPORTED_GLOBAL TRUE
+    )
 endif()
 
 find_package(Boost 1.74 REQUIRED
@@ -166,6 +201,7 @@ add_subdirectory(Utilities                                            )
 add_subdirectory(MPI                                                  )
 add_subdirectory(Grid                                                 )
 add_subdirectory(MatrixSystem                                         )
+add_subdirectory(Math                                                 )
 add_subdirectory(ScopeGuard                                           )
 if(USE_GTEST)
     add_subdirectory(test)
@@ -192,11 +228,19 @@ target_sources(exec
 target_include_directories(dare PUBLIC 
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PACKAGE_VERSION_DIR}>"
 )
 target_include_directories(exec PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
+
+if(USE_GTEST)
+    target_include_directories(unit_test PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+    )
+endif()
 
 # link libraries
 target_link_libraries(dare
@@ -222,13 +266,12 @@ target_link_libraries(exec
     # PUBLIC trilinos
 )
 if(USE_GTEST)
-target_link_libraries(dare
-    PUBLIC GTest::GTest
-)
-target_link_libraries(exec
-    PUBLIC GTest::GTest
-)
-target_link_libraries(unit_test PUBLIC Trilinos::all_selected_libs)
+# target_link_libraries(dare
+#     PUBLIC GTest::GTest
+# )
+# target_link_libraries(exec
+#     PUBLIC GTest::GTest
+# )
 target_link_libraries(unit_test
     PUBLIC OpenMP::OpenMP_CXX
     PUBLIC MPI::MPI_CXX
@@ -237,8 +280,9 @@ target_link_libraries(unit_test
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
-    # PUBLIC Trilinos::all_selected_libs
+    PUBLIC Trilinos::all_selected_libs
     PUBLIC GTest::GTest
+    PUBLIC ${VTK_LIBRARIES}
 )
 
 endif()

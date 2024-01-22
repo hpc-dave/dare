@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,79 +26,98 @@
 #define DATA_STENCIL_H_
 
 #include <string>
-#include <Kokkos_Core.hpp>
 
 namespace dare::Data {
 
-template <typename T>
-class Stencil {
-public:
-    using Ordinal = int;
-    using ArrayType = Kokkos::View<T*>;
-
+/*!
+ * @brief dummy class for SFINAE
+ * @tparam Grid type of grid
+ */
+template <typename Grid, typename SC, std::size_t N>
+class CenterMatrixStencil {
     /*!
-     * @brief constructor
-     * @param identifier name provided for debugging
-     * @param size size of the stencil
+     * @brief dummy operator for compilation
+     * @param v 
      */
-    explicit Stencil(std::string identifier = "unspecified", Ordinal size = 0);
-
-    /*!
-     * @brief copy constructor
-     * @param other instance to copy from
-     * \note This is required, since the underlying data structure otherwise will
-     * do a shallow copy of the data
-     */
-    Stencil(const Stencil<T>& other);
-
-    /*!
-     * @brief copy assignment
-     * @param other instance to copy from
-     */
-    Stencil<T>& operator=(const Stencil<T>& other);
-
-    /*!
-     * @brief resized the data structure
-     * @param stencil_size size of the stencil
-     */
-    void Resize(Ordinal stencil_size);
-
-    /*!
-     * @brief returns size
-     */
-    Ordinal GetSize() const;
-
-    /*!
-     * @brief sets value at certain position
-     * @param pos position
-     * @param value value to set
-     * No range check will be conducted!
-     */
-    void InsertValue(Ordinal pos, const T& value);
-
-    /*!
-     * @brief getter
-     * @param pos position in array
-     */
-    T& GetValue(Ordinal pos);
-
-    /*!
-     * @brief constant getter
-     * @param pos position in array
-     */
-    const T& GetValue(Ordinal pos) const;
-
-    /*!
-     * @brief returns raw data set
-     */
-    const ArrayType& GetData() const;
-
-private:
-    ArrayType values;  //!< data array TODO(@dave): check which memory space is used
+    CenterMatrixStencil operator*(SC v) const {
+        return *this;
+    }
 };
 
-}  // namespace dare::Data
+/*!
+ * @brief dummy class for SFINAE
+ * @tparam Grid type of grid
+ */
+template <typename Grid, typename SC, std::size_t N>
+class CenterValueStencil {
+};
 
-#include "Stencil.inl"
+/*!
+ * @brief dummy class for SFINAE
+ * @tparam Grid type of grid
+ */
+template <typename Grid, typename SC, std::size_t N>
+class FaceMatrixStencil {
+};
+
+/*!
+ * @brief dummy class for SFINAE
+ * @tparam Grid type of grid
+ */
+template <typename Grid, typename SC, std::size_t N>
+class FaceValueStencil {
+};
+
+// operators for improved use
+
+/*!
+ * @brief multiplication operator with doubles
+ * @tparam Grid 
+ * @param v 
+ * @param s 
+ * @return 
+ */
+template <typename Grid, typename SC, std::size_t N>
+CenterMatrixStencil<Grid, SC, N> operator*(SC v, const CenterMatrixStencil<Grid, SC, N>& s) {
+    return s * v;
+}
+
+/*!
+ * @brief multiplication operator with doubles
+ * @tparam Grid
+ * @param v
+ * @param s
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+CenterValueStencil<Grid, SC, N> operator*(SC v, const CenterValueStencil<Grid, SC, N>& s) {
+    return s * v;
+}
+
+/*!
+ * @brief multiplication operator with doubles
+ * @tparam Grid
+ * @param v
+ * @param s
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+FaceMatrixStencil<Grid, SC, N> operator*(SC v, const FaceMatrixStencil<Grid, SC, N>& s) {
+    return s * v;
+}
+
+/*!
+ * @brief multiplication operator with doubles
+ * @tparam Grid
+ * @param v
+ * @param s
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+FaceValueStencil<Grid, SC, N> operator*(SC v, const FaceValueStencil<Grid, SC, N>& s) {
+    return s * v;
+}
+
+}  // namespace dare::Data
 
 #endif  // DATA_STENCIL_H_

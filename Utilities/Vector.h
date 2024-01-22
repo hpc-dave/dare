@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -274,9 +274,15 @@ public:
         using pointer = T*;
         using reference = T&;
         explicit ReverseIterator(pointer _ptr) : ptr(_ptr) {}
+        /*!
+         * @brief dereferencing operator
+         */
         reference operator*() const {
             return *ptr;
         }
+        /*!
+         * @brief dereferencing operator
+         */
         pointer operator->() {
             return ptr;
         }
@@ -727,6 +733,16 @@ public:
      */
     std::size_t GetHash() const;
 
+    /*!
+     * @brief returns sum of all elements
+     */
+    T AllSum() const;
+
+    /*!
+     * @brief returns sum of all absolute values
+     */
+    T AllAbsSum() const;
+
 private:
     /*!
      * \brief iterates over the internal values and executes arbitrary manipulation
@@ -747,8 +763,6 @@ private:
     // T _data[N];  //!< internal data set
 };
 
-typedef Vector<3, double> Vector3;  //!< convenient typedef
-
 }  // namespace dare::utils
 
 namespace std {
@@ -761,12 +775,52 @@ public:
     /*
      * \brief returns the hash for a Vector
      */
-    std::size_t operator()(const dare::utils::Vector<N, T>& v) const {
+    [[nodiscard]] std::size_t operator()(const dare::utils::Vector<N, T>& v) const {
         return v.GetHash();
     }
 };
 
+/*!
+ * \brief specialization for dare::utils::Vector: computes the absolute value
+ * @tparam N number of elements in vector
+ * @tparam T type of variable
+ * @param v input vector
+ * @return vector with all values absolute
+ */
+template<std::size_t N, typename T>
+[[nodiscard]] dare::utils::Vector<N, T> abs(dare::utils::Vector<N, T> v) {
+    for (auto& e : v)
+        e = std::abs(e);
+    return v;
+}
+
 }  // namespace std
+
+/*!
+ * @brief multiplication operator for convenience
+ * @tparam T basic type
+ * @tparam N number of elements
+ * @param v1 value to multiply with
+ * @param v2 vector
+ * @return vector
+ */
+template <std::size_t N, typename T>
+dare::utils::Vector<N, T> operator*(const T& v1, const dare::utils::Vector<N, T>& v2) {
+    return v2 * v1;
+}
+
+/*!
+ * @brief division operator for convenience
+ * @tparam T basic type
+ * @tparam N number of elements
+ * @param v1 value to multiply with
+ * @param v2 vector
+ * @return vector
+ */
+template <std::size_t N, typename T>
+dare::utils::Vector<N, T> operator/(const T& v1, const dare::utils::Vector<N, T>& v2) {
+    return v2 / v1;
+}
 
 #include "Vector.inl"
 #endif  // UTILITIES_VECTOR_H_

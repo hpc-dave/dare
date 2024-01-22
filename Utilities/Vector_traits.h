@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,14 +80,25 @@ public:
 };
 
 /*! \class VectorDecorator
+ * \brief specialization for integer types and N == 0
+ * @tparam Dim number of elements in the data set
+ * @tparam T type of integer
+ */
+template <std::size_t Dim, typename T>
+class VectorDecorator<0, Dim, T, std::enable_if_t<std::is_integral_v<T>>> : public VectorBase<Dim, T> {
+public:
+    VectorDecorator() : VectorBase<Dim, T>() {}
+};
+
+/*! \class VectorDecorator
  * \brief specialization for integer types and N == 1
  * @tparam Dim number of elements in the data set
  * @tparam T type of integer
  */
 template <std::size_t Dim, typename T>
-class VectorDecorator<1, Dim, T, std::enable_if_t<std::is_integral_v<T>>> : public VectorBase<Dim, T> {
+class VectorDecorator<1, Dim, T, std::enable_if_t<std::is_integral_v<T>>> : public VectorDecorator<0, Dim, T> {
 public:
-    VectorDecorator() : VectorBase<Dim, T>() {}
+    VectorDecorator() : VectorDecorator<0, Dim, T>() {}
 
     /*!
      * \brief getter for first variable

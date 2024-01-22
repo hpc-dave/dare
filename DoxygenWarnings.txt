@@ -1,0 +1,1007 @@
+/home/drieder/numerics/dare/Utilities/Vector.h:453: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:461: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:466: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:471: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:479: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:486: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:493: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:499: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:505: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:511: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:517: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:523: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:529: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:535: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:541: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:547: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:553: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:559: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:565: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:571: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:577: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:583: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:589: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:595: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:601: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:606: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:612: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:617: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:622: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:627: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:632: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:637: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:642: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:647: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:652: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:657: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:662: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/Utilities/Vector.h:667: warning: Ignoring \brief command inside argument documentation
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:52: warning: Compound IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:53: warning: Compound IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:51: warning: Compound IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:51: warning: Compound IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:49: warning: Compound IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:30: warning: Compound IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:239: warning: Compound dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/Data/Field.h:37: warning: Compound dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:69: warning: Compound dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:40: warning: Compound dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:107: warning: Compound dare::Grid::Cartesian::GetIndexType is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:59: warning: Compound dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:54: warning: Compound dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:70: warning: Compound dare::Matrix::MatrixBlockBase::ReturnTypeDV< DView, ExecutionSpace > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:66: warning: Compound dare::Matrix::MatrixBlockBase::ReturnTypeDV< DView, HostSpace > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:163: warning: Compound dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:67: warning: Compound dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:30: warning: Compound dare::Matrix::test::Grid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:35: warning: Compound dare::Matrix::test::Grid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:33: warning: Compound dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:40: warning: Compound dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:35: warning: Compound dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:118: warning: Compound dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:69: warning: Compound dare::ff::XML is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:41: warning: Compound dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:34: warning: Compound dare::ff::_XMLAttribute is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:184: warning: Compound dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:88: warning: Compound dare::utils::VectorDecorator< 0, Dim, T, std::enable_if_t< std::is_integral_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:179: warning: Compound dare::utils::VectorDecorator< 1, Dim, T, std::enable_if_t< std::is_floating_point_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:99: warning: Compound dare::utils::VectorDecorator< 1, Dim, T, std::enable_if_t< std::is_integral_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:201: warning: Compound dare::utils::VectorDecorator< 2, Dim, T, std::enable_if_t< std::is_floating_point_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:120: warning: Compound dare::utils::VectorDecorator< 2, Dim, T, std::enable_if_t< std::is_integral_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:222: warning: Compound dare::utils::VectorDecorator< 3, Dim, T, std::enable_if_t< std::is_floating_point_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:141: warning: Compound dare::utils::VectorDecorator< 3, Dim, T, std::enable_if_t< std::is_integral_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:163: warning: Compound dare::utils::VectorDecorator< N, Dim, T, std::enable_if_t< std::is_floating_point_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:77: warning: Compound dare::utils::VectorDecorator< N, Dim, T, std::enable_if_t< std::is_integral_v< T > > > is not documented.
+/home/drieder/numerics/dare/Utilities/Hashes.h:49: warning: Compound dare::utils::_FNVparam< 4 > is not documented.
+/home/drieder/numerics/dare/Utilities/Hashes.h:58: warning: Compound dare::utils::_FNVparam< 8 > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:767: warning: Compound std::hash< dare::utils::Vector< N, T > > is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.inl:28: warning: no matching class member found for 
+  template < VT >
+  dare::ff::STLfacet< VT >::STLfacet(const dare::ff::STLfacet< VT >::dare::utils::Vector< 3, ValueType > &v1, const STLfacet< VT >::PointType &v2, const STLfacet< VT >::PointType &v3)
+Possible candidates:
+  'dare::ff::STLfacet< VT >::STLfacet(const PointType &v1, const PointType &v2, const PointType &v3)' at line 57 of file /home/drieder/numerics/dare/FileFormats/STL.h
+  'dare::ff::STLfacet< VT >::STLfacet()' at line 63 of file /home/drieder/numerics/dare/FileFormats/STL.h
+  'dare::ff::STLfacet< VT >::STLfacet(const STLfacet< VT > &f)' at line 69 of file /home/drieder/numerics/dare/FileFormats/STL.h
+
+/home/drieder/numerics/dare/FileFormats/STL.inl:107: warning: no matching class member found for 
+  template < VT >
+  dare::ff::STL< VT >::STL(const typename dare::ff::STL< VT >::std::vector< Facet > &c)
+Possible candidates:
+  'dare::ff::STL< VT >::STL()' at line 124 of file /home/drieder/numerics/dare/FileFormats/STL.h
+  'dare::ff::STL< VT >::STL(const STL &other)' at line 125 of file /home/drieder/numerics/dare/FileFormats/STL.h
+  'dare::ff::STL< VT >::STL(const TriangleContainer &facets)' at line 126 of file /home/drieder/numerics/dare/FileFormats/STL.h
+  'dare::ff::STL< VT >::STL(const std::string &file)' at line 127 of file /home/drieder/numerics/dare/FileFormats/STL.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:32: warning: no matching file member found for 
+dare::utils::Vector< N, T >::Vector(const Ts &... args)
+Possible candidates:
+ 'dare::utils::Vector< Dim, T > Vector' at line 33 of file /home/drieder/numerics/dare/Grid/test/test_DistributionFunctions.h
+/home/drieder/numerics/dare/Utilities/Vector.inl:38: warning: no matching file member found for 
+dare::utils::Vector< N, T >::Vector(const Vector< N, A > &other)
+Possible candidates:
+ 'dare::utils::Vector< Dim, T > Vector' at line 33 of file /home/drieder/numerics/dare/Grid/test/test_DistributionFunctions.h
+/home/drieder/numerics/dare/Utilities/Vector.inl:45: warning: no uniquely matching class member found for 
+  template < N, T >
+  template < A, B >
+  Vector< N, T > & dare::utils::Vector< N, T >::operator=(const Vector< N, A > &other)
+Possible candidates:
+  'STLfacet & dare::ff::STLfacet< VT >::operator=(const STLfacet< VT > &f)' at line 75 of file /home/drieder/numerics/dare/FileFormats/STL.h
+  'void dare::Grid::Cartesian< Dim >::operator=(const Cartesian< Dim > &other)=delete' at line 139 of file /home/drieder/numerics/dare/Grid/Cartesian.h
+  'CartesianRepresentation< Dim > & dare::Grid::CartesianRepresentation< Dim >::operator=(const CartesianRepresentation< Dim > &other)=default' at line 95 of file /home/drieder/numerics/dare/Grid/CartesianRepresentation.h
+  'SelfType & dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N >::operator=(const SelfType &other)' at line 105 of file /home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h
+  'SelfType & dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N >::operator=(const dare::Data::CenterMatrixStencil< GridType, SC, N > &s)' at line 197 of file /home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h
+  'SelfType & dare::Matrix::MatrixBlock< Grid, O, SC, N >::operator=(const SelfType &other)' at line 87 of file /home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Default.h
+  'MatrixBlockBase< O, SC, N > & dare::Matrix::MatrixBlockBase< O, SC, N >::operator=(const MatrixBlockBase< O, SC, N > &other)' at line 97 of file /home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 72 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterValueStencil & dare::Data::CenterValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator=(const MatrixStencil &source)' at line 230 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 254 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator=(const FaceValueStencil< GridType, SC, N > &other)' at line 425 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'BlackHoleOStream & dare::mpi::BlackHoleOStream::operator=(BlackHoleOStream &&other)' at line 61 of file /home/drieder/numerics/dare/MPI/OBlackHoleStream.h
+  'InitializationTracker & dare::utils::InitializationTracker::operator=(const InitializationTracker &other)=default' at line 57 of file /home/drieder/numerics/dare/Utilities/InitializationTracker.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:57: warning: no uniquely matching class member found for 
+  template < N, T >
+  T * dare::utils::Vector< N, T >::data()
+Possible candidates:
+  'std::vector< VectorType > dare::Data::Field< Grid, SC, N >::data' at line 74 of file /home/drieder/numerics/dare/Data/Field.h
+  'DualViewType dare::Data::GridVector< Grid, T, N >::data' at line 222 of file /home/drieder/numerics/dare/Data/GridVector.h
+  'std::string dare::ff::XMLNode::data' at line 65 of file /home/drieder/numerics/dare/FileFormats/XML.h
+  'std::vector< double > dare::test::TestField::data' at line 57 of file /home/drieder/numerics/dare/MPI/test/TestField.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:62: warning: no uniquely matching class member found for 
+  template < N, T >
+  const T * dare::utils::Vector< N, T >::data() const
+Possible candidates:
+  'std::vector< VectorType > dare::Data::Field< Grid, SC, N >::data' at line 74 of file /home/drieder/numerics/dare/Data/Field.h
+  'DualViewType dare::Data::GridVector< Grid, T, N >::data' at line 222 of file /home/drieder/numerics/dare/Data/GridVector.h
+  'std::string dare::ff::XMLNode::data' at line 65 of file /home/drieder/numerics/dare/FileFormats/XML.h
+  'std::vector< double > dare::test::TestField::data' at line 57 of file /home/drieder/numerics/dare/MPI/test/TestField.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:67: warning: no uniquely matching class member found for 
+  template < N, T >
+  T & dare::utils::Vector< N, T >::operator[](std::size_t n)
+Possible candidates:
+  'T & dare::Data::GridVector< Grid, T, N >::operator[](LO n)' at line 158 of file /home/drieder/numerics/dare/Data/GridVector.h
+  'T dare::Data::GridVector< Grid, T, N >::operator[](LO n) const' at line 166 of file /home/drieder/numerics/dare/Data/GridVector.h
+  'reference dare::utils::Vector< N, T >::Iterator::operator[](int n)' at line 173 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ConstIterator::operator[](int n)' at line 259 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ReverseIterator::operator[](int n)' at line 345 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ConstReverseIterator::operator[](int n)' at line 431 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:77: warning: no uniquely matching class member found for 
+  template < N, T >
+  const T & dare::utils::Vector< N, T >::operator[](std::size_t n) const
+Possible candidates:
+  'T & dare::Data::GridVector< Grid, T, N >::operator[](LO n)' at line 158 of file /home/drieder/numerics/dare/Data/GridVector.h
+  'T dare::Data::GridVector< Grid, T, N >::operator[](LO n) const' at line 166 of file /home/drieder/numerics/dare/Data/GridVector.h
+  'reference dare::utils::Vector< N, T >::Iterator::operator[](int n)' at line 173 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ConstIterator::operator[](int n)' at line 259 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ReverseIterator::operator[](int n)' at line 345 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ConstReverseIterator::operator[](int n)' at line 431 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:87: warning: no uniquely matching class member found for 
+  template < N, T >
+  Vector< N, T > dare::utils::Vector< N, T >::operator+(const Vector< N, T > &other) const
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+(const CenterMatrixStencil< GridType, SC, N > &other) const' at line 108 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 290 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+(const FaceValueStencil< GridType, SC, N > &other) const' at line 461 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'Iterator dare::utils::Vector< N, T >::Iterator::operator+(int n) const' at line 152 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ConstIterator dare::utils::Vector< N, T >::ConstIterator::operator+(int n) const' at line 247 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ReverseIterator dare::utils::Vector< N, T >::ReverseIterator::operator+(int n) const' at line 333 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ConstReverseIterator dare::utils::Vector< N, T >::ConstReverseIterator::operator+(int n) const' at line 419 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:96: warning: no uniquely matching class member found for 
+  template < N, T >
+  Vector< N, T > dare::utils::Vector< N, T >::operator+(const T &val) const
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+(const CenterMatrixStencil< GridType, SC, N > &other) const' at line 108 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 290 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+(const FaceValueStencil< GridType, SC, N > &other) const' at line 461 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'Iterator dare::utils::Vector< N, T >::Iterator::operator+(int n) const' at line 152 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ConstIterator dare::utils::Vector< N, T >::ConstIterator::operator+(int n) const' at line 247 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ReverseIterator dare::utils::Vector< N, T >::ReverseIterator::operator+(int n) const' at line 333 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ConstReverseIterator dare::utils::Vector< N, T >::ConstReverseIterator::operator+(int n) const' at line 419 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:105: warning: no uniquely matching class member found for 
+  template < N, T >
+  void dare::utils::Vector< N, T >::operator+=(const Vector< N, T > &other)
+Possible candidates:
+  'SelfType & dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N >::operator+=(const dare::Data::CenterMatrixStencil< GridType, SC, N > &s)' at line 203 of file /home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 102 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 284 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+=(const FaceValueStencil< GridType, SC, N > &other)' at line 455 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:112: warning: no uniquely matching class member found for 
+  template < N, T >
+  void dare::utils::Vector< N, T >::operator+=(const T &val)
+Possible candidates:
+  'SelfType & dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N >::operator+=(const dare::Data::CenterMatrixStencil< GridType, SC, N > &s)' at line 203 of file /home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 102 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 284 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator+=(const FaceValueStencil< GridType, SC, N > &other)' at line 455 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:119: warning: no uniquely matching class member found for 
+  template < N, T >
+  Vector< N, T > dare::utils::Vector< N, T >::operator-(const Vector< N, T > &other) const
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-(const CenterMatrixStencil< GridType, SC, N > &other) const' at line 120 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 302 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-(const FaceValueStencil< GridType, SC, N > &other) const' at line 473 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'Iterator dare::utils::Vector< N, T >::Iterator::operator-(int n) const' at line 159 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'int dare::utils::Vector< N, T >::Iterator::operator-(const Iterator &other)' at line 166 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ConstIterator dare::utils::Vector< N, T >::ConstIterator::operator-(int n) const' at line 251 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'int dare::utils::Vector< N, T >::ConstIterator::operator-(const ConstIterator &other)' at line 255 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ReverseIterator dare::utils::Vector< N, T >::ReverseIterator::operator-(int n) const' at line 337 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'int dare::utils::Vector< N, T >::ReverseIterator::operator-(const ReverseIterator &other)' at line 341 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ConstReverseIterator dare::utils::Vector< N, T >::ConstReverseIterator::operator-(int n) const' at line 423 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'int dare::utils::Vector< N, T >::ConstReverseIterator::operator-(const ConstReverseIterator &other)' at line 427 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:128: warning: no uniquely matching class member found for 
+  template < N, T >
+  Vector< N, T > dare::utils::Vector< N, T >::operator-(const T &val) const
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-(const CenterMatrixStencil< GridType, SC, N > &other) const' at line 120 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 302 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-(const FaceValueStencil< GridType, SC, N > &other) const' at line 473 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'Iterator dare::utils::Vector< N, T >::Iterator::operator-(int n) const' at line 159 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'int dare::utils::Vector< N, T >::Iterator::operator-(const Iterator &other)' at line 166 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ConstIterator dare::utils::Vector< N, T >::ConstIterator::operator-(int n) const' at line 251 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'int dare::utils::Vector< N, T >::ConstIterator::operator-(const ConstIterator &other)' at line 255 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ReverseIterator dare::utils::Vector< N, T >::ReverseIterator::operator-(int n) const' at line 337 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'int dare::utils::Vector< N, T >::ReverseIterator::operator-(const ReverseIterator &other)' at line 341 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'ConstReverseIterator dare::utils::Vector< N, T >::ConstReverseIterator::operator-(int n) const' at line 423 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'int dare::utils::Vector< N, T >::ConstReverseIterator::operator-(const ConstReverseIterator &other)' at line 427 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:137: warning: no uniquely matching class member found for 
+  template < N, T >
+  void dare::utils::Vector< N, T >::operator-=(const Vector< N, T > &other)
+Possible candidates:
+  'SelfType & dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N >::operator-=(const dare::Data::CenterMatrixStencil< GridType, SC, N > &s)' at line 209 of file /home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 114 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 296 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-=(const FaceValueStencil< GridType, SC, N > &other)' at line 467 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:144: warning: no uniquely matching class member found for 
+  template < N, T >
+  void dare::utils::Vector< N, T >::operator-=(const T &val)
+Possible candidates:
+  'SelfType & dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N >::operator-=(const dare::Data::CenterMatrixStencil< GridType, SC, N > &s)' at line 209 of file /home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 114 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 296 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator-=(const FaceValueStencil< GridType, SC, N > &other)' at line 467 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:151: warning: no uniquely matching class member found for 
+  template < N, T >
+  Vector< N, T > dare::utils::Vector< N, T >::operator*(const Vector< N, T > &other) const
+Possible candidates:
+  'CenterMatrixStencil dare::Data::CenterMatrixStencil< Grid, SC, N >::operator*(SC v) const' at line 42 of file /home/drieder/numerics/dare/Data/Stencil.h
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(SC v) const' at line 84 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(const CenterMatrixStencil< GridType, SC, N > &other) const' at line 132 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(SC v) const' at line 266 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 314 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(SC v) const' at line 437 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(const FaceValueStencil< GridType, SC, N > &other) const' at line 485 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 503 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'reference dare::utils::Vector< N, T >::Iterator::operator*() const' at line 74 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ConstIterator::operator*() const' at line 191 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ReverseIterator::operator*() const' at line 277 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ConstReverseIterator::operator*() const' at line 363 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:160: warning: no uniquely matching class member found for 
+  template < N, T >
+  Vector< N, T > dare::utils::Vector< N, T >::operator*(const T &val) const
+Possible candidates:
+  'CenterMatrixStencil dare::Data::CenterMatrixStencil< Grid, SC, N >::operator*(SC v) const' at line 42 of file /home/drieder/numerics/dare/Data/Stencil.h
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(SC v) const' at line 84 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(const CenterMatrixStencil< GridType, SC, N > &other) const' at line 132 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(SC v) const' at line 266 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 314 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(SC v) const' at line 437 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(const FaceValueStencil< GridType, SC, N > &other) const' at line 485 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 503 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'reference dare::utils::Vector< N, T >::Iterator::operator*() const' at line 74 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ConstIterator::operator*() const' at line 191 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ReverseIterator::operator*() const' at line 277 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'reference dare::utils::Vector< N, T >::ConstReverseIterator::operator*() const' at line 363 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:169: warning: no uniquely matching class member found for 
+  template < N, T >
+  void dare::utils::Vector< N, T >::operator*=(const Vector< N, T > &other)
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(SC v)' at line 78 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 126 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(SC v)' at line 260 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 308 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(SC v)' at line 431 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(const FaceValueStencil< GridType, SC, N > &other)' at line 479 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:176: warning: no uniquely matching class member found for 
+  template < N, T >
+  void dare::utils::Vector< N, T >::operator*=(const T &val)
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(SC v)' at line 78 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 126 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(SC v)' at line 260 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 308 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(SC v)' at line 431 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator*=(const FaceValueStencil< GridType, SC, N > &other)' at line 479 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:183: warning: no uniquely matching class member found for 
+  template < N, T >
+  Vector< N, T > dare::utils::Vector< N, T >::operator/(const Vector< N, T > &other) const
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(SC v) const' at line 96 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(const CenterMatrixStencil< GridType, SC, N > &other) const' at line 144 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(SC v) const' at line 278 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 326 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(SC v) const' at line 449 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(const FaceValueStencil< GridType, SC, N > &other) const' at line 497 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:192: warning: no uniquely matching class member found for 
+  template < N, T >
+  Vector< N, T > dare::utils::Vector< N, T >::operator/(const T &val) const
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(SC v) const' at line 96 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(const CenterMatrixStencil< GridType, SC, N > &other) const' at line 144 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(SC v) const' at line 278 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(const FaceMatrixStencil< GridType, SC, N > &other) const' at line 326 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(SC v) const' at line 449 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/(const FaceValueStencil< GridType, SC, N > &other) const' at line 497 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:201: warning: no uniquely matching class member found for 
+  template < N, T >
+  void dare::utils::Vector< N, T >::operator/=(const Vector< N, T > &other)
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(SC v)' at line 90 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 138 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(SC v)' at line 272 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 320 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(SC v)' at line 443 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(const FaceValueStencil< GridType, SC, N > &other)' at line 491 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:208: warning: no uniquely matching class member found for 
+  template < N, T >
+  void dare::utils::Vector< N, T >::operator/=(const T &val)
+Possible candidates:
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(SC v)' at line 90 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'CenterMatrixStencil< GridType, SC, N > & dare::Data::CenterMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(const CenterMatrixStencil< GridType, SC, N > &other)' at line 138 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(SC v)' at line 272 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceMatrixStencil< GridType, SC, N > & dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(const FaceMatrixStencil< GridType, SC, N > &other)' at line 320 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(SC v)' at line 443 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+  'FaceValueStencil< GridType, SC, N > & dare::Data::FaceValueStencil< dare::Grid::Cartesian< Dim >, SC, N >::operator/=(const FaceValueStencil< GridType, SC, N > &other)' at line 491 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:215: warning: no uniquely matching class member found for 
+  template < N, T >
+  bool dare::utils::Vector< N, T >::operator==(const Vector< N, T > &other) const
+Possible candidates:
+  'bool dare::utils::Vector< N, T >::Iterator::operator==(const Iterator &a) const' at line 122 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'bool dare::utils::Vector< N, T >::ConstIterator::operator==(const ConstIterator &a)' at line 223 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'bool dare::utils::Vector< N, T >::ReverseIterator::operator==(const ReverseIterator &a)' at line 309 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'bool dare::utils::Vector< N, T >::ConstReverseIterator::operator==(const ConstReverseIterator &a)' at line 395 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:223: warning: no uniquely matching class member found for 
+  template < N, T >
+  bool dare::utils::Vector< N, T >::operator!=(const Vector< N, T > &other) const
+Possible candidates:
+  'bool dare::utils::Vector< N, T >::Iterator::operator!=(const Iterator &a) const' at line 129 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'bool dare::utils::Vector< N, T >::ConstIterator::operator!=(const ConstIterator &a)' at line 227 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'bool dare::utils::Vector< N, T >::ReverseIterator::operator!=(const ReverseIterator &a)' at line 313 of file /home/drieder/numerics/dare/Utilities/Vector.h
+  'bool dare::utils::Vector< N, T >::ConstReverseIterator::operator!=(const ConstReverseIterator &a)' at line 399 of file /home/drieder/numerics/dare/Utilities/Vector.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:228: warning: no matching class member found for 
+  template < N, T >
+  constexpr std::size_t dare::utils::Vector< N, T >::size() const
+Possible candidates:
+  'Index dare::Data::test::TestGrid::size' at line 114 of file /home/drieder/numerics/dare/Data/test/test_GridVector.cpp
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:233: warning: documented symbol 'T dare::utils::Vector< N, T >::length' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:246: warning: documented symbol 'Vector< N, T >::Iterator dare::utils::Vector< N, T >::begin' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:251: warning: documented symbol 'Vector< N, T >::ConstIterator dare::utils::Vector< N, T >::begin' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:256: warning: documented symbol 'Vector< N, T >::ConstIterator dare::utils::Vector< N, T >::cbegin' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:261: warning: documented symbol 'Vector< N, T >::ReverseIterator dare::utils::Vector< N, T >::rbegin' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:266: warning: documented symbol 'Vector< N, T >::ConstReverseIterator dare::utils::Vector< N, T >::rbegin' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:271: warning: documented symbol 'Vector< N, T >::ConstReverseIterator dare::utils::Vector< N, T >::crbegin' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:276: warning: documented symbol 'Vector< N, T >::Iterator dare::utils::Vector< N, T >::end' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:281: warning: documented symbol 'Vector< N, T >::ConstIterator dare::utils::Vector< N, T >::end' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:286: warning: documented symbol 'Vector< N, T >::ConstIterator dare::utils::Vector< N, T >::cend' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:291: warning: documented symbol 'Vector< N, T >::ReverseIterator dare::utils::Vector< N, T >::rend' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:296: warning: documented symbol 'Vector< N, T >::ConstReverseIterator dare::utils::Vector< N, T >::rend' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:301: warning: documented symbol 'Vector< N, T >::ConstReverseIterator dare::utils::Vector< N, T >::crend' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:306: warning: documented symbol 'T dare::utils::Vector< N, T >::AllSum' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:314: warning: documented symbol 'T dare::utils::Vector< N, T >::AllAbsSum' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:322: warning: documented symbol 'T dare::utils::Vector< N, T >::dot' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:331: warning: documented symbol 'std::enable_if<(Ns==3), Vector< N, T > >::type dare::utils::Vector< N, T >::cross' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:339: warning: documented symbol 'std::size_t dare::utils::Vector< N, T >::GetHash' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:361: warning: no matching class member found for 
+  template < N, T >
+  template < I, Tin, Ts, A, B, C >
+  void dare::utils::Vector< N, T >::SetValues(const Tin &arg, const Ts &... args)
+Possible candidates:
+  'void dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::SetValues(Positions pos, std::size_t n, SC v_nb, SC v_center)' at line 336 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:374: warning: no matching class member found for 
+  template < N, T >
+  template < I >
+  void dare::utils::Vector< N, T >::SetValues()
+Possible candidates:
+  'void dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N >::SetValues(Positions pos, std::size_t n, SC v_nb, SC v_center)' at line 336 of file /home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h
+
+/home/drieder/numerics/dare/Utilities/Vector.inl:380: warning: documented symbol 'void dare::utils::Vector< N, T >::SetAllValues' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:387: warning: documented symbol 'auto dare::utils::Vector< N, T >::IterateValues' was not declared or defined.
+/home/drieder/numerics/dare/Utilities/Vector.inl:397: warning: documented symbol 'auto dare::utils::Vector< N, T >::IterateValues' was not declared or defined.
+error: Problems running latex. Check your installation or look for typos in _formulas.tex and check _formulas.log!
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:77: warning: Member GridType (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:57: warning: Member GridType (typedef) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:78: warning: Member LO (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:35: warning: Member GridType (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:64: warning: Member GridType (typedef) of class MatrixBlockTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:33: warning: Member GridType (typedef) of class IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:34: warning: Member SC (typedef) of class IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:52: warning: Member GridType (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:57: warning: Member GridType (typedef) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:55: warning: Member GridType (typedef) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:79: warning: Member GO (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:58: warning: Member LO (typedef) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:35: warning: Member CenterMatrixStencil (typedef) of class IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:124: warning: Member TestGrid (typedef) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlockBase.cpp:36: warning: Member SizeHintVector (typedef) of class MatrixBlockBaseTest is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:125: warning: Member LO (typedef) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:126: warning: Member SC (typedef) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:36: warning: Member LO (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:128: warning: Member GridVector (typedef) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:130: warning: Member SetUp() override (function) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:36: warning: Member CenterValueStencil (typedef) of class IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:37: warning: Member FaceMatrixStencil (typedef) of class IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:38: warning: Member FaceValueStencil (typedef) of class IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:40: warning: Member SetUp() (function) of class IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:80: warning: Member SC (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Stencils.cpp:32: warning: Member N (variable) of class IntegrationTestCartesianStencils is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:81: warning: Member GridRepresentation (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:56: warning: Member LO (typedef) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:59: warning: Member GO (typedef) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:65: warning: Member LO (typedef) of class MatrixBlockTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:53: warning: Member GridType (typedef) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:53: warning: Member LO (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:136: warning: Member resolution (variable) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:37: warning: Member GO (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:137: warning: Member grid (variable) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:58: warning: Member LO (typedef) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:83: warning: Member FieldType (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:84: warning: Member GOViewType (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:66: warning: Member GO (typedef) of class MatrixBlockTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:85: warning: Member LOViewType (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:67: warning: Member SC (typedef) of class MatrixBlockTest is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:138: warning: Member test_vector (variable) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:86: warning: Member SViewType (typedef) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:127: warning: Member num_eq (variable) of class GridVectorTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:92: warning: Member SetUp() (function) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:87: warning: Member grid (variable) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:88: warning: Member field (variable) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:38: warning: Member SC (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:89: warning: Member exec_man (variable) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:90: warning: Member solver_param (variable) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:57: warning: Member GO (typedef) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:91: warning: Member multiSolves (variable) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:82: warning: Member N (variable) of class TrilinosSolverTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:68: warning: Member GridRepresentation (typedef) of class MatrixBlockTest is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:58: warning: Member SC (typedef) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:54: warning: Member LO (typedef) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:39: warning: Member GridRepresentation (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:69: warning: Member num_ghost (variable) of class MatrixBlockTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:54: warning: Member GO (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:59: warning: Member GO (typedef) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:71: warning: Member grid (variable) of class MatrixBlockTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:60: warning: Member Index (typedef) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:70: warning: Member N (variable) of class MatrixBlockTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:41: warning: Member FieldType (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:42: warning: Member GOViewType (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:43: warning: Member LOViewType (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:55: warning: Member GO (typedef) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:59: warning: Member Index (typedef) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:55: warning: Member SC (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:44: warning: Member SViewType (typedef) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:49: warning: Member SetUp() (function) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:60: warning: Member Index (typedef) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:61: warning: Member IndexGlobal (typedef) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:62: warning: Member SC (typedef) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:61: warning: Member IndexGlobal (typedef) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:45: warning: Member grid (variable) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:62: warning: Member SC (typedef) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:60: warning: Member Field (typedef) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:63: warning: Member GridVector (typedef) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:63: warning: Member Field (typedef) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:65: warning: Member SetUp() (function) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:46: warning: Member field (variable) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:61: warning: Member Options (typedef) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:64: warning: Member GridVector (typedef) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:47: warning: Member exec_man (variable) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:74: warning: Member grid (variable) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:63: warning: Member SetUp() (function) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:56: warning: Member Index (typedef) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_Trilinos.cpp:40: warning: Member N (variable) of class TrilinosTest is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:66: warning: Member SetUp() (function) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:75: warning: Member exec_man (variable) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:75: warning: Member grid (variable) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:57: warning: Member IndexGlobal (typedef) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Trilinos.cpp:56: warning: Member N (variable) of class IntegrationCartesianTrilinos is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:58: warning: Member SC (typedef) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:56: warning: Member Index (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:76: warning: Member exec_man (variable) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:53: warning: Member Dim (variable) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:55: warning: Member N (variable) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:60: warning: Member GridVector (typedef) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:57: warning: Member CenterMatrixStencil (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:62: warning: Member SetUp() (function) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/Math/test/test_integration_Cartesian_Interpolation.cpp:54: warning: Member N (variable) of class IntegrationTestCartesianInterpolation is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:70: warning: Member grid (variable) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:71: warning: Member exec_man (variable) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Field.cpp:56: warning: Member num_time_steps (variable) of class IntegrationCartesianField is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:58: warning: Member CenterValueStencil (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_GridVector.cpp:59: warning: Member N (variable) of class IntegrationTestCartesianGridVector is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:59: warning: Member FaceMatrixStencil (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:60: warning: Member FaceValueStencil (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:61: warning: Member Gradient (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:62: warning: Member Divergence (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:63: warning: Member MatrixBlock (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:64: warning: Member VecSC (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:65: warning: Member Positions (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:66: warning: Member Field (typedef) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:68: warning: Member SetUp() (function) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/test/test_integration_Cartesian_Operators.cpp:51: warning: Member N (variable) of class IntegrationTestCartesianOperators is not documented.
+/home/drieder/numerics/dare/ScopeGuard/ScopeGuard.h:125: warning: Member argc (variable) of class dare::ScopeGuard is not documented.
+/home/drieder/numerics/dare/ScopeGuard/ScopeGuard.h:126: warning: Member argv (variable) of class dare::ScopeGuard is not documented.
+/home/drieder/numerics/dare/ScopeGuard/ScopeGuard.h:128: warning: Member is_root (variable) of class dare::ScopeGuard is not documented.
+/home/drieder/numerics/dare/ScopeGuard/ScopeGuard.h:129: warning: Member manage_mpi (variable) of class dare::ScopeGuard is not documented.
+/home/drieder/numerics/dare/Data/Field.h:39: warning: Member GridType (typedef) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/Field.h:40: warning: Member LocalOrdinalType (typedef) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/Field.h:41: warning: Member IndexType (typedef) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/Field.h:42: warning: Member GridRepresentation (typedef) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/Field.h:43: warning: Member ScalarType (typedef) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:44: warning: Member GridType (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/Field.h:44: warning: Member VectorType (typedef) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:45: warning: Member GridRepresentation (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:46: warning: Member LO (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:47: warning: Member GO (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/Field.h:58: warning: Member GetDataVector(std::size_t time_level=0) (function) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:48: warning: Member Index (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:49: warning: Member IndexGlobal (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/Field.h:59: warning: Member GetDataVector(std::size_t time_level=0) const (function) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:50: warning: Member DualViewType (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/Field.h:61: warning: Member GetFieldName() const (function) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/Field.h:63: warning: Member GetGridRepresentation() (function) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/Field.h:64: warning: Member GetGridRepresentation() const (function) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/Field.h:66: warning: Member GetExecutionManager() (function) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:51: warning: Member DeviceViewType (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:208: warning: Member GridType (typedef) of class dare::Data::CenterValueStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:209: warning: Member MatrixStencil (typedef) of class dare::Data::CenterValueStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:52: warning: Member HostViewType (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:53: warning: Member HostSpace (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/Field.h:68: warning: Member CopyDataVectorsToOldTimeStep() (function) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/Field.h:70: warning: Member ExchangeHaloCells() (function) of class dare::Data::Field is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:54: warning: Member ExecutionSpace (typedef) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:251: warning: Member FaceMatrixStencil(const FaceMatrixStencil< GridType, SC, N > &other) (function) of class dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:254: warning: Member operator=(const FaceMatrixStencil< GridType, SC, N > &other) (function) of class dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/Data/Field.h:50: warning: argument 'num_time_fields' of command @param is not found in the argument list of dare::Data::Field< Grid, SC, N >::Field(std::string identifier, GridRepresentation grid_rep, std::size_t num_time_levels)
+/home/drieder/numerics/dare/Data/Field.h:50: warning: The following parameter of dare::Data::Field::Field(std::string identifier, GridRepresentation grid_rep, std::size_t num_time_levels) is not documented:
+  parameter 'num_time_levels'
+/home/drieder/numerics/dare/Data/GridVector.h:213: warning: Member GetGridRepresentation() const (function) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:214: warning: Member GetGridRepresentation() (function) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/Data/GridVector.h:217: warning: Member GridVector(std::string identifier, LO num_cells, GridRepresentation grid) (function) of class dare::Data::GridVector is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:335: warning: Member SetValueCenter(Positions pos, std::size_t n, SC v) (function) of class dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:336: warning: Member SetValues(Positions pos, std::size_t n, SC v_nb, SC v_center) (function) of class dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:350: warning: Member GetValueCenter(Positions pos, std::size_t n) (function) of class dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:358: warning: Member GetValueCenter(Positions pos, std::size_t n) const (function) of class dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:364: warning: Member GetDataCenter() (function) of class dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Stencils_Cartesian.h:371: warning: Member GetDataCenter() const (function) of class dare::Data::FaceMatrixStencil< dare::Grid::Cartesian< Dim >, SC, N > is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:37: warning: Member LocalOrdinalType (typedef) of class dare::Data::test::TestGrid is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:38: warning: Member GlobalOrdinalType (typedef) of class dare::Data::test::TestGrid is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:39: warning: Member LO (typedef) of class dare::Data::test::TestGrid is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:40: warning: Member Index (typedef) of class dare::Data::test::TestGrid is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:41: warning: Member IndexGlobal (typedef) of class dare::Data::test::TestGrid is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:89: warning: Member Representation (typedef) of class dare::Data::test::TestGrid is not documented.
+/home/drieder/numerics/dare/Data/test/test_GridVector.cpp:48: warning: Member LO (typedef) of class dare::Data::test::TestGrid::TestGridRepresentation is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:120: warning: Member ValueType (typedef) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:35: warning: Member _XMLAttribute(std::string _name, std::string _value) (function) of struct dare::ff::_XMLAttribute is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:37: warning: Member name (variable) of struct dare::ff::_XMLAttribute is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:121: warning: Member Facet (typedef) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:38: warning: Member value (variable) of struct dare::ff::_XMLAttribute is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:72: warning: Member XML(const XMLNode &node) (function) of class dare::ff::XML is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:122: warning: Member TriangleContainer (typedef) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:74: warning: Member AddNode(const XMLNode &node) (function) of class dare::ff::XML is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:125: warning: Member STL(const STL &other) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:75: warning: Member operator<<(const XMLNode &node) (function) of class dare::ff::XML is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:76: warning: Member operator<<(const XML &other) (function) of class dare::ff::XML is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:126: warning: Member STL(const TriangleContainer &facets) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:77: warning: Member AddXMLObject(const XML &other) (function) of class dare::ff::XML is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:127: warning: Member STL(const std::string &file) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:79: warning: Member WriteToFile(const std::string &file_name, std::ios::openmode mode=std::ios::out) (function) of class dare::ff::XML is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:129: warning: Member GetFacets() (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:130: warning: Member GetFacets() const (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:82: warning: Member nodes (variable) of class dare::ff::XML is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:132: warning: Member ReadFile(const std::string &file) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:133: warning: Member WriteToFile(const std::string &file, bool write_ASCII=false) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:136: warning: Member IsASCII(std::ifstream &in) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:138: warning: Member ReadASCII(std::ifstream &in) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:139: warning: Member ReadBinary(std::ifstream &in) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:141: warning: Member WriteToASCII(std::ostream &ofs) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:142: warning: Member WriteToBinary(std::ostream &ofs) (function) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:144: warning: Member facets (variable) of class dare::ff::STL is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:44: warning: Member XMLNode(const std::string &_tag) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:45: warning: Member XMLNode(const std::string &_tag, const std::string &_data) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:46: warning: Member XMLNode(const std::string &_tag, const XMLNode &_nodes) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:47: warning: Member XMLNode(const std::string &_tag, const std::vector< XMLNode > &_nodes) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:48: warning: Member XMLNode(const std::string &_tag, const std::vector< _XMLAttribute > &_att) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:49: warning: Member XMLNode(const std::string &_tag, const _XMLAttribute &_att) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:50: warning: Member XMLNode(const std::string &_tag, const std::vector< _XMLAttribute > &_att, const std::vector< XMLNode > &_nodes) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:51: warning: Member XMLNode(const std::string &_tag, const std::vector< _XMLAttribute > &_att, const std::string &data) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:53: warning: Member operator<<(const XMLNode &node) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:54: warning: Member AddChild(const XMLNode &node) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:56: warning: Member AppendToOutput(const std::size_t indent_level, std::ostream &os) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:58: warning: Member SetIndentLength(std::size_t length) (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:59: warning: Member GetIndentLength() (function) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:63: warning: Member tag (variable) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:64: warning: Member attributes (variable) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:65: warning: Member data (variable) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:66: warning: Member children (variable) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/XML.h:62: warning: Member indent_length (variable) of class dare::ff::XMLNode is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:57: warning: Member STLfacet(const PointType &v1, const PointType &v2, const PointType &v3) (function) of class dare::ff::STLfacet is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:87: warning: Member GetNormal() const (function) of class dare::ff::STLfacet is not documented.
+/home/drieder/numerics/dare/FileFormats/STL.h:93: warning: Member GetPoints() const (function) of class dare::ff::STLfacet is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:58: warning: Member GridType (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:59: warning: Member LocalOrdinalType (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:60: warning: Member GlobalOrdinalType (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:88: warning: Member LO (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:61: warning: Member ScalarType (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:62: warning: Member LO (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:89: warning: Member GO (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:63: warning: Member GO (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:64: warning: Member SC (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:90: warning: Member SC (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:65: warning: Member VecLO (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:91: warning: Member GlobalOrdinalType (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:66: warning: Member VecGO (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:92: warning: Member LocalOrdinalType (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:67: warning: Member VecSC (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:96: warning: Member ScalarType (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:68: warning: Member Index (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:69: warning: Member IndexGlobal (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:97: warning: Member VecGO (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:70: warning: Member Options (typedef) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:98: warning: Member VecLO (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:99: warning: Member VecSC (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:100: warning: Member Representation (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:101: warning: Member Options (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:102: warning: Member Index (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:103: warning: Member IndexGlobal (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:104: warning: Member NeighborID (typedef) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:117: warning: Member Cartesian(mpi::ExecutionManager *exec_man, const VecGO &resolution, const VecSC &size, const LO num_ghost, const VecLO &periodic, Distributor distributor) (function) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:125: warning: Member Cartesian(mpi::ExecutionManager *exec_man, const VecGO &resolution, const VecSC &size, const LO num_ghost, const VecLO &periodic) (function) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:132: warning: Member Cartesian(mpi::ExecutionManager *exec_man, const VecGO &resolution, const VecSC &size, const LO num_ghost) (function) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:178: warning: Member MapIndexToOrdinalLocal(const Index &ind) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:179: warning: Member MapIndexToOrdinalLocalInternal(const Index &ind) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:180: warning: Member MapIndexToOrdinalGlobal(const IndexGlobal &ind) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:181: warning: Member MapIndexToOrdinalGlobalInternal(const IndexGlobal &ind) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:183: warning: Member MapGlobalToLocal(GO id_glob) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.inl:35: warning: Member Cartesian(mpi::ExecutionManager *_exec_man, const typename Cartesian< Dim >::VecGO &res, const typename Cartesian< Dim >::VecSC &size, const LO _num_ghost, const VecLO &periodic, Distributor dist) (function) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:184: warning: Member MapGlobalToLocal(const IndexGlobal &ind_glob) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:185: warning: Member MapGlobalToLocalInternal(GO id_glob) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.inl:106: warning: Member Cartesian(mpi::ExecutionManager *_exec_man, const typename Cartesian< Dim >::VecGO &res, const typename Cartesian< Dim >::VecSC &size, const LO _num_ghost, const VecLO &periodic) (function) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:186: warning: Member MapLocalToGlobalInternal(LO id_glob) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.inl:125: warning: Member Cartesian(mpi::ExecutionManager *_exec_man, const typename Cartesian< Dim >::VecGO &res, const typename Cartesian< Dim >::VecSC &size, const LO _num_ghost) (function) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:93: warning: Member Dimension (variable) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:94: warning: Member STENCIL_SIZE (variable) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:95: warning: Member NUM_FACES (variable) of class dare::Grid::Cartesian is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:214: warning: Member IsInternal(const Index &ind_loc) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:215: warning: Member IsInternal(const IndexGlobal &ind_glob) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:216: warning: Member IsInternal(LO n) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:218: warning: Member MapOrdinalToIndexLocal(const LO n_loc) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:219: warning: Member MapOrdinalToIndexLocalInternal(const LO n_loc) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:220: warning: Member MapOrdinalToIndexGlobal(GO n_loc) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:221: warning: Member MapOrdinalToIndexGlobalInternal(GO n_loc) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:223: warning: Member MapLocalToGlobal(const Index &ind) const (function) of class dare::Grid::CartesianRepresentation is not documented.
+/home/drieder/numerics/dare/Grid/Cartesian.h:108: warning: Member type (typedef) of struct dare::Grid::Cartesian::GetIndexType is not documented.
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:174: warning: argument 'ind_global' of command @param is not found in the argument list of dare::Grid::CartesianRepresentation< Dim >::MapInternalToGlobal(IndexGlobal ind_internal) const
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:174: warning: The following parameter of dare::Grid::CartesianRepresentation::MapInternalToGlobal(IndexGlobal ind_internal) const is not documented:
+  parameter 'ind_internal'
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:162: warning: argument 'ind_local' of command @param is not found in the argument list of dare::Grid::CartesianRepresentation< Dim >::MapInternalToLocal(Index ind_internal) const
+/home/drieder/numerics/dare/Grid/CartesianRepresentation.h:162: warning: The following parameter of dare::Grid::CartesianRepresentation::MapInternalToLocal(Index ind_internal) const is not documented:
+  parameter 'ind_internal'
+/home/drieder/numerics/dare/Math/Interpolation_Cartesian.h:50: warning: Member GridType (typedef) of struct dare::math::details::Cartesian::THelper is not documented.
+/home/drieder/numerics/dare/Math/Interpolation_Cartesian.h:51: warning: Member Index (typedef) of struct dare::math::details::Cartesian::THelper is not documented.
+/home/drieder/numerics/dare/Math/Interpolation_Cartesian.h:52: warning: Member IndexList (typedef) of struct dare::math::details::Cartesian::THelper is not documented.
+/home/drieder/numerics/dare/Math/Interpolation_Cartesian.h:53: warning: Member Options (typedef) of struct dare::math::details::Cartesian::THelper is not documented.
+/home/drieder/numerics/dare/Math/Interpolation_Cartesian.h:55: warning: Member GridVector (typedef) of struct dare::math::details::Cartesian::THelper is not documented.
+/home/drieder/numerics/dare/Math/Interpolation_Cartesian.h:49: warning: Member NUM_VALUES (variable) of struct dare::math::details::Cartesian::THelper is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:69: warning: Member ScalarType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:70: warning: Member LocalOrdinalType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:71: warning: Member GlobalOrdinalType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:72: warning: Member LO (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:73: warning: Member GO (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:74: warning: Member OperatorType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:72: warning: Member ConvergenceCriteria (enumeration) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:75: warning: Member MatrixType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:61: warning: Member ScalarType (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:62: warning: Member MultiVectorType (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:63: warning: Member OperatorType (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:76: warning: Member VectorType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:64: warning: Member LocalOrdinal (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:65: warning: Member GlobalOrdinal (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:126: warning: Member GridType (typedef) of class dare::Matrix::Divergence< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:77: warning: Member MultiVectorType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:66: warning: Member Node (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:127: warning: Member LO (typedef) of class dare::Matrix::Divergence< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Default.h:45: warning: Member GridRepresentation (typedef) of class dare::Matrix::MatrixBlock is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:67: warning: Member STS (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:78: warning: Member ParameterList (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:79: warning: Member ReturnType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:128: warning: Member GridRepresentation (typedef) of class dare::Matrix::Divergence< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:68: warning: Member Magnitude (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:129: warning: Member Positions (typedef) of class dare::Matrix::Divergence< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Default.h:46: warning: Member LocalOrdinalType (typedef) of class dare::Matrix::MatrixBlock is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:69: warning: Member Problem (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Default.h:47: warning: Member GlobalOrdinalType (typedef) of class dare::Matrix::MatrixBlock is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:70: warning: Member MapType (typedef) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:48: warning: Member Positions (typedef) of class dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:49: warning: Member Index (typedef) of class dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:166: warning: Member GridType (typedef) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:82: warning: Member BiCGStab2(const Teuchos::RCP< Teuchos::ParameterList > &params) (function) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:80: warning: Member SolverManager (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/BiCGStab2.h:83: warning: Member ~BiCGStab2() (function) of class dare::Matrix::BiCGStab2 is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:56: warning: Member GridType (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:167: warning: Member GridRepresentation (typedef) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Default.h:48: warning: Member SelfType (typedef) of class dare::Matrix::MatrixBlock is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:51: warning: Member OrdinalType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:51: warning: Member OrdinalType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:52: warning: Member ScalarType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:81: warning: Member ProblemType (typedef) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:57: warning: Member GridRepresentation (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:52: warning: Member ScalarType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:53: warning: Member DualViewOrdinalArrayType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:168: warning: Member LO (typedef) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:53: warning: Member DualViewOrdinalArrayType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:58: warning: Member LocalOrdinalType (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:54: warning: Member DualViewScalarArrayType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:169: warning: Member GO (typedef) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:170: warning: Member Index (typedef) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:59: warning: Member GlobalOrdinalType (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:54: warning: Member DualViewScalarArrayType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:93: warning: Member Solve(SolverPackage solver_pack, const std::string &type, Teuchos::RCP< MatrixType > A, Teuchos::RCP< VectorType > x, Teuchos::RCP< VectorType > B, Teuchos::RCP< ParameterList > param) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:55: warning: Member OrdinalArray (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:55: warning: Member OrdinalArray (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:60: warning: Member OrdinalType (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:56: warning: Member ScalarArray (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:56: warning: Member ScalarArray (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:171: warning: Member Options (typedef) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:57: warning: Member OrdinalArrayDevice (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:172: warning: Member Positions (typedef) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:57: warning: Member OrdinalArrayDevice (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:54: warning: Member ScalarType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:58: warning: Member ScalarArrayDevice (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:225: warning: Member operator()(const dare::Data::FaceMatrixStencil< GridType, SC, N > &s) const (function) of class dare::Matrix::Divergence< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:59: warning: Member HostSpace (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:58: warning: Member ScalarArrayDevice (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:60: warning: Member ExecutionSpace (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:61: warning: Member SelfType (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:55: warning: Member LocalOrdinalType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:100: warning: Member Solve(SolverPackage solver_pack, const std::string &type, Teuchos::RCP< OperatorType > M, Teuchos::RCP< MatrixType > A, Teuchos::RCP< VectorType > x, Teuchos::RCP< VectorType > B, Teuchos::RCP< ParameterList > param) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:59: warning: Member HostSpace (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:56: warning: Member GlobalOrdinalType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:62: warning: Member HostSpace (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:60: warning: Member ExecutionSpace (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:57: warning: Member GO (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:108: warning: Member Solve(SolverPackage solver_pack, const std::string &type, Teuchos::RCP< MatrixType > A, Teuchos::RCP< MultiVectorType > x, Teuchos::RCP< MultiVectorType > B, Teuchos::RCP< ParameterList > param) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:58: warning: Member LO (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:63: warning: Member ExecutionSpace (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:59: warning: Member MatrixType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:115: warning: Member Solve(SolverPackage solver_pack, const std::string &type, Teuchos::RCP< OperatorType > M, Teuchos::RCP< MatrixType > A, Teuchos::RCP< MultiVectorType > x, Teuchos::RCP< MultiVectorType > B, Teuchos::RCP< ParameterList > param) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:60: warning: Member OpType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:61: warning: Member VecType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:65: warning: Member ReturnTypeDV (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:123: warning: Member BuildPreconditioner(PreCondPackage precond_packag, const std::string &type, Teuchos::RCP< ParameterList > param, Teuchos::RCP< MatrixType > A) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:62: warning: Member MultiVecType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:66: warning: Member Index (typedef) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:129: warning: Member CreateSolver(SolverPackage solver_pack, const std::string &type, Teuchos::RCP< ParameterList > param) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:63: warning: Member MapType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:133: warning: Member CreatePreconditionerIfPack2(const std::string &type, Teuchos::RCP< ParameterList > param, Teuchos::RCP< const MatrixType > A) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:52: warning: Member ScalarType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:64: warning: Member Communicator (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:65: warning: Member LOViewType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:66: warning: Member GOViewType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:53: warning: Member DualViewOrdinalArrayType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:67: warning: Member SViewType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:54: warning: Member DualViewScalarArrayType (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:137: warning: Member CreatePreconditionerMueLu(const std::string &type, Teuchos::RCP< ParameterList > param, Teuchos::RCP< MatrixType > A) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:68: warning: Member constLOViewType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:55: warning: Member OrdinalArray (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:69: warning: Member constGOViewType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/TrilinosSolver.h:141: warning: Member SolveWithAmesos2(const std::string &type, Teuchos::RCP< MatrixType > A, Teuchos::RCP< MultiVectorType > x, Teuchos::RCP< MultiVectorType > B, Teuchos::RCP< ParameterList > param) (function) of class dare::Matrix::TrilinosSolver is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Trilinos.h:70: warning: Member constSViewType (typedef) of class dare::Matrix::Trilinos is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:56: warning: Member ScalarArray (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:57: warning: Member OrdinalArrayDevice (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:58: warning: Member ScalarArrayDevice (typedef) of class dare::Matrix::MatrixBlockBase is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:39: warning: Member operator()(const MatrixBlock< GridType, O, SC, N > &) const (function) of class dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:63: warning: Member operator()(const dare::Data::GridVector< GridType, SC, N > &field) const (function) of class dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:101: warning: Member operator()(const dare::Data::CenterValueStencil< GridType, SC, N > &s_c) const (function) of class dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:128: warning: Member operator()(const dare::Data::GridVector< GridType, SC, N > &field, std::size_t n) const (function) of class dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:165: warning: Member operator()(const dare::Data::CenterValueStencil< GridType, SC, N > &s_c, std::size_t n) const (function) of class dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:329: warning: Member Interpolate(const dare::Data::CenterValueStencil< GridType, SC, N > &s_close, const dare::Data::CenterValueStencil< GridType, SC, N > &s_far, Options opt) const (function) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:338: warning: Member Interpolate(const dare::Data::GridVector< GridType, SC, N > &field) const (function) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.inl:345: warning: Member operator()(const dare::Data::GridVector< GridType, SC, N > &field) const (function) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:165: warning: Member NUM_FACES (variable) of class dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:201: warning: The following parameter of dare::Matrix::TVD< dare::Grid::Cartesian< Dim >, SC, FluxLimiter >::Interpolate(const dare::Data::CenterValueStencil< GridType, SC, N > &s_close, const dare::Data::CenterValueStencil< GridType, SC, N > &s_far, Options opt) const is not documented:
+  parameter 'opt'
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:91: warning: argument 'f' of command @param is not found in the argument list of dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > >::operator()(const dare::Data::GridVector< GridType, SC, N > &field, std::size_t n) const
+/home/drieder/numerics/dare/MatrixSystem/Operators_Cartesian.h:91: warning: The following parameter of dare::Matrix::Gradient< dare::Grid::Cartesian< Dim > >::operator()(const dare::Data::GridVector< GridType, SC, N > &field, std::size_t n) const is not documented:
+  parameter 'field'
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:213: warning: Member GetNeighbors() (function) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:216: warning: Member GetNeighbors() const (function) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:219: warning: Member GetNeighborBitSet() (function) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:222: warning: Member GetNeighborBitSet() const (function) of class dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: argument 'g_rep' of command @param is not found in the argument list of dare::Matrix::MatrixBlockBase< O, SC, N >::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint)
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: argument 'field' of command @param is not found in the argument list of dare::Matrix::MatrixBlockBase< O, SC, N >::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint)
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: The following parameter of dare::Matrix::MatrixBlockBase::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint) is not documented:
+  parameter 'size_hint'
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:160: warning: The following parameter of dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N >::Get(std::size_t n, CartesianNeighbor cnb) is not documented:
+  parameter 'cnb'
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlock_Cartesian.h:175: warning: The following parameter of dare::Matrix::MatrixBlock< dare::Grid::Cartesian< Dim >, O, SC, N >::Get(std::size_t n, CartesianNeighbor cnb) const is not documented:
+  parameter 'cnb'
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: argument 'g_rep' of command @param is not found in the argument list of dare::Matrix::MatrixBlockBase< O, SC, N >::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint)
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: argument 'field' of command @param is not found in the argument list of dare::Matrix::MatrixBlockBase< O, SC, N >::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint)
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: The following parameter of dare::Matrix::MatrixBlockBase::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint) is not documented:
+  parameter 'size_hint'
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:71: warning: Member type (typedef) of struct dare::Matrix::MatrixBlockBase::ReturnTypeDV< DView, ExecutionSpace > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:67: warning: Member type (typedef) of struct dare::Matrix::MatrixBlockBase::ReturnTypeDV< DView, HostSpace > is not documented.
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: argument 'g_rep' of command @param is not found in the argument list of dare::Matrix::MatrixBlockBase< O, SC, N >::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint)
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: argument 'field' of command @param is not found in the argument list of dare::Matrix::MatrixBlockBase< O, SC, N >::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint)
+/home/drieder/numerics/dare/MatrixSystem/MatrixBlockBase.h:106: warning: The following parameter of dare::Matrix::MatrixBlockBase::Initialize(O node, const dare::utils::Vector< N, std::size_t > &size_hint) is not documented:
+  parameter 'size_hint'
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:32: warning: Member GlobalOrdinalType (typedef) of class dare::Matrix::test::Grid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:33: warning: Member LocalOrdinalType (typedef) of class dare::Matrix::test::Grid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:34: warning: Member ScalarType (typedef) of class dare::Matrix::test::Grid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:36: warning: Member SC (typedef) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:52: warning: Member Representation (typedef) of class dare::Matrix::test::Grid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:54: warning: Member GetRepresentation() (function) of class dare::Matrix::test::Grid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:37: warning: Member LO (typedef) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:35: warning: Member GlobalOrdinalType (typedef) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:36: warning: Member LocalOrdinalType (typedef) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:38: warning: Member GO (typedef) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:37: warning: Member ScalarType (typedef) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:39: warning: Member PT (typedef) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:38: warning: Member Index (typedef) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:40: warning: Member PTM (typedef) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:39: warning: Member IndexGlobal (typedef) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:96: warning: Member Representation (typedef) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:46: warning: Member _solverTestParam(PT pack, std::string typ, PTM pack_pre=PTM::None, std::string typ_pre="none") (function) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:98: warning: Member GetRepresentation() (function) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:41: warning: Member package (variable) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:42: warning: Member type (variable) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:100: warning: Member Initialize(dare::mpi::ExecutionManager *_exman) (function) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:43: warning: Member package_pre (variable) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosSolver.cpp:44: warning: Member type_pre (variable) of struct dare::Matrix::test::_solverTestParam is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:110: warning: Member size_global (variable) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:111: warning: Member local_size (variable) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:112: warning: Member offset (variable) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:113: warning: Member exman (variable) of class dare::Matrix::test::TrilinosTestGrid is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:37: warning: Member GlobalOrdinalType (typedef) of class dare::Matrix::test::Grid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:38: warning: Member LocalOrdinalType (typedef) of class dare::Matrix::test::Grid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:40: warning: Member MapLocalToGlobalInternal(LocalOrdinalType node) const (function) of class dare::Matrix::test::Grid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:44: warning: Member MapGlobalToLocalInternal(GlobalOrdinalType node) const (function) of class dare::Matrix::test::Grid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:48: warning: Member IsLocalInternal(GlobalOrdinalType id_glob) const (function) of class dare::Matrix::test::Grid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_MatrixBlock.cpp:39: warning: Member offset (variable) of class dare::Matrix::test::Grid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:42: warning: Member GlobalOrdinalType (typedef) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:43: warning: Member LocalOrdinalType (typedef) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:47: warning: Member TestRepresentation(dare::Matrix::test::TrilinosTestGrid *_grid) (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:56: warning: Member MapLocalToGlobalInternal(LocalOrdinalType node) const (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:60: warning: Member MapGlobalToLocalInternal(GlobalOrdinalType node) const (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:64: warning: Member MapInternalToLocal(LocalOrdinalType n_internal) const (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:68: warning: Member MapInternalToLocal(GlobalOrdinalType n_internal) const (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:72: warning: Member IsLocalInternal(GlobalOrdinalType id_glob) const (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:77: warning: Member GetNumberLocalCellsInternal() const (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:82: warning: Member GetNumberLocalCells() const (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:86: warning: Member GetNumberGlobalCellsInternal() const (function) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:91: warning: Member grid (variable) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:92: warning: Member size_global (variable) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:93: warning: Member local_size (variable) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MatrixSystem/test/test_TrilinosTestGrid.h:94: warning: Member offset (variable) of class dare::Matrix::test::TrilinosTestGrid::TestRepresentation is not documented.
+/home/drieder/numerics/dare/MPI/HaloBuffer.h:46: warning: Member LO (typedef) of class dare::mpi::HaloBuffer is not documented.
+/home/drieder/numerics/dare/MPI/HaloBuffer.h:47: warning: Member GO (typedef) of class dare::mpi::HaloBuffer is not documented.
+/home/drieder/numerics/dare/MPI/SingleHaloBuffer.h:50: warning: Member LO (typedef) of class dare::mpi::SingleHaloBuffer is not documented.
+/home/drieder/numerics/dare/MPI/SingleHaloBuffer.h:51: warning: Member GO (typedef) of class dare::mpi::SingleHaloBuffer is not documented.
+/home/drieder/numerics/dare/MPI/HaloBuffer.h:65: warning: expected whitespace after \b command
+/home/drieder/numerics/dare/MPI/HaloBuffer.h:65: warning: Found unknown command '\i'
+/home/drieder/numerics/dare/MPI/HaloBuffer.h:73: warning: end of comment block while expecting command </i>
+/home/drieder/numerics/dare/MPI/HaloBuffer.h:73: warning: end of comment block while expecting command </b>
+/home/drieder/numerics/dare/MPI/ExecutionManager.h:347: warning: found documented return type for dare::mpi::ExecutionManager::AllLogicAnd that does not return anything
+/home/drieder/numerics/dare/MPI/ExecutionManager.h:295: warning: found documented return type for dare::mpi::ExecutionManager::Allmax that does not return anything
+/home/drieder/numerics/dare/MPI/ExecutionManager.h:322: warning: found documented return type for dare::mpi::ExecutionManager::Allmin that does not return anything
+/home/drieder/numerics/dare/MPI/ExecutionManager.h:268: warning: found documented return type for dare::mpi::ExecutionManager::Allsum that does not return anything
+/home/drieder/numerics/dare/MPI/ExecutionManager.h:192: warning: argument 'data' of command @param is not found in the argument list of dare::mpi::ExecutionManager::Exchange(const std::vector< T > &send, std::vector< T > *recv, int rank_other, int tag, MPI_Status *status_send=MPI_STATUS_IGNORE, MPI_Status *status_recv=MPI_STATUS_IGNORE)
+/home/drieder/numerics/dare/MPI/ExecutionManager.h:192: warning: argument 'count_send' of command @param is not found in the argument list of dare::mpi::ExecutionManager::Exchange(const std::vector< T > &send, std::vector< T > *recv, int rank_other, int tag, MPI_Status *status_send=MPI_STATUS_IGNORE, MPI_Status *status_recv=MPI_STATUS_IGNORE)
+/home/drieder/numerics/dare/MPI/ExecutionManager.h:192: warning: The following parameter of dare::mpi::ExecutionManager::Exchange(const std::vector< T > &send, std::vector< T > *recv, int rank_other, int tag, MPI_Status *status_send=MPI_STATUS_IGNORE, MPI_Status *status_recv=MPI_STATUS_IGNORE) is not documented:
+  parameter 'send'
+/home/drieder/numerics/dare/MPI/test/TestField.h:38: warning: Member ResizeByGridSize(int grid_size) (function) of class dare::test::TestField is not documented.
+/home/drieder/numerics/dare/MPI/test/TestField.h:41: warning: Member GetData() (function) of class dare::test::TestField is not documented.
+/home/drieder/numerics/dare/MPI/test/TestField.h:44: warning: Member GetNumEquations() const (function) of class dare::test::TestField is not documented.
+/home/drieder/numerics/dare/MPI/test/TestField.h:48: warning: Member At(std::size_t pos) (function) of class dare::test::TestField is not documented.
+/home/drieder/numerics/dare/MPI/test/TestField.h:51: warning: Member At(std::size_t pos) const (function) of class dare::test::TestField is not documented.
+/home/drieder/numerics/dare/Utilities/Hashes.h:50: warning: Member prime (variable) of struct dare::utils::_FNVparam< 4 > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class dare::utils::VectorBase is not documented.
+/home/drieder/numerics/dare/Utilities/Hashes.h:51: warning: Member offset (variable) of struct dare::utils::_FNVparam< 4 > is not documented.
+/home/drieder/numerics/dare/Utilities/Hashes.h:59: warning: Member prime (variable) of struct dare::utils::_FNVparam< 8 > is not documented.
+/home/drieder/numerics/dare/Utilities/Hashes.h:60: warning: Member offset (variable) of struct dare::utils::_FNVparam< 8 > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, T > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:55: warning: Member InternalType (typedef) of class dare::utils::Vector is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:56: warning: Member iterator_tag (typedef) of class dare::utils::Vector is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:57: warning: Member iterator_diff_type (typedef) of class dare::utils::Vector is not documented.
+/home/drieder/numerics/dare/Utilities/Vector_traits.h:48: warning: Member _data[N] (variable) of class VectorBase< Dim, double > is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:185: warning: Member iterator_category (typedef) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:186: warning: Member difference_type (typedef) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:187: warning: Member value_type (typedef) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:188: warning: Member pointer (typedef) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:189: warning: Member reference (typedef) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:190: warning: Member ConstIterator(pointer _ptr) (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:191: warning: Member operator*() const (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:194: warning: Member operator->() (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:198: warning: Member operator++() (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:204: warning: Member operator++(int) (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:211: warning: Member operator--() (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:217: warning: Member operator--(int) (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:223: warning: Member operator==(const ConstIterator &a) (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:227: warning: Member operator!=(const ConstIterator &a) (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:231: warning: Member operator<=(const ConstIterator &a) (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:235: warning: Member operator>=(const ConstIterator &a) const (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:239: warning: Member operator<(const ConstIterator &a) const (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:243: warning: Member operator>(const ConstIterator &a) const (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:247: warning: Member operator+(int n) const (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:251: warning: Member operator-(int n) const (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:255: warning: Member operator-(const ConstIterator &other) (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:259: warning: Member operator[](int n) (function) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:264: warning: Member ptr (variable) of struct dare::utils::Vector::ConstIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:357: warning: Member iterator_category (typedef) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:358: warning: Member difference_type (typedef) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:359: warning: Member value_type (typedef) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:360: warning: Member pointer (typedef) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:361: warning: Member reference (typedef) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:362: warning: Member ConstReverseIterator(pointer _ptr) (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:363: warning: Member operator*() const (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:366: warning: Member operator->() (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:370: warning: Member operator++() (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:376: warning: Member operator++(int) (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:383: warning: Member operator--() (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:389: warning: Member operator--(int) (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:395: warning: Member operator==(const ConstReverseIterator &a) (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:399: warning: Member operator!=(const ConstReverseIterator &a) (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:403: warning: Member operator<=(const ConstReverseIterator &a) (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:407: warning: Member operator>=(const ConstReverseIterator &a) const (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:411: warning: Member operator<(const ConstReverseIterator &a) const (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:415: warning: Member operator>(const ConstReverseIterator &a) const (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:419: warning: Member operator+(int n) const (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:423: warning: Member operator-(int n) const (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:427: warning: Member operator-(const ConstReverseIterator &other) (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:431: warning: Member operator[](int n) (function) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:436: warning: Member ptr (variable) of struct dare::utils::Vector::ConstReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:63: warning: Member iterator_category (typedef) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:64: warning: Member difference_type (typedef) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:65: warning: Member value_type (typedef) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:66: warning: Member pointer (typedef) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:67: warning: Member reference (typedef) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:74: warning: Member operator*() const (function) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:133: warning: Member operator<=(const Iterator &a) const (function) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:137: warning: Member operator>=(const Iterator &a) const (function) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:141: warning: Member operator<(const Iterator &a) const (function) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:145: warning: Member operator>(const Iterator &a) const (function) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:178: warning: Member ptr (variable) of struct dare::utils::Vector::Iterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:271: warning: Member iterator_category (typedef) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:272: warning: Member difference_type (typedef) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:273: warning: Member value_type (typedef) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:274: warning: Member pointer (typedef) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:275: warning: Member reference (typedef) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:276: warning: Member ReverseIterator(pointer _ptr) (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:277: warning: Member operator*() const (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:280: warning: Member operator->() (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:284: warning: Member operator++() (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:290: warning: Member operator++(int) (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:297: warning: Member operator--() (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:303: warning: Member operator--(int) (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:309: warning: Member operator==(const ReverseIterator &a) (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:313: warning: Member operator!=(const ReverseIterator &a) (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:317: warning: Member operator<=(const ReverseIterator &a) (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:321: warning: Member operator>=(const ReverseIterator &a) const (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:325: warning: Member operator<(const ReverseIterator &a) const (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:329: warning: Member operator>(const ReverseIterator &a) const (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:333: warning: Member operator+(int n) const (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:337: warning: Member operator-(int n) const (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:341: warning: Member operator-(const ReverseIterator &other) (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:345: warning: Member operator[](int n) (function) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:350: warning: Member ptr (variable) of struct dare::utils::Vector::ReverseIterator is not documented.
+/home/drieder/numerics/dare/Utilities/Vector.h:772: warning: Member operator()(const dare::utils::Vector< N, T > &v) const (function) of class std::hash< dare::utils::Vector< N, T > > is not documented.

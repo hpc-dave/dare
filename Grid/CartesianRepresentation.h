@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,19 @@
 #include <fstream>
 #include <string>
 
-#include "../MPI/HaloBuffer.h"
-#include "../Utilities/InitializationTracker.h"
+#include "MPI/HaloBuffer.h"
+#include "Utilities/InitializationTracker.h"
 namespace dare::Grid {
 
 // forward declaration for the grid
-template <std::size_t Dim, class LO, class GO, class SC>
+template <std::size_t Dim>
 class Cartesian;
+
+// forward declarations for CartesianNeighbor
+enum class CartesianNeighbor : char;
+char ToNum(CartesianNeighbor pos);
+char ToFace(CartesianNeighbor face);
+char ToNormal(CartesianNeighbor nb);
 
 /*!
  * @brief Representation of Cartesian grid
@@ -46,15 +52,22 @@ class Cartesian;
  * @tparam SC scalar type
  * @tparam Dim dimension of grid
  */
-template <std::size_t Dim, class LO, class GO, class SC>
+template <std::size_t Dim>
 class CartesianRepresentation : public dare::utils::InitializationTracker {
 public:
-    using GridType = Cartesian<Dim, LO, GO, SC>;
+    using GridType = Cartesian<Dim>;
+    using LocalOrdinalType = typename GridType::LocalOrdinalType;
+    using GlobalOrdinalType = typename GridType::GlobalOrdinalType;
+    using ScalarType = typename GridType::ScalarType;
+    using LO = LocalOrdinalType;
+    using GO = GlobalOrdinalType;
+    using SC = ScalarType;
     using VecLO = typename GridType::VecLO;
     using VecGO = typename GridType::VecGO;
     using VecSC = typename GridType::VecSC;
     using Index = typename GridType::Index;
     using IndexGlobal = typename GridType::IndexGlobal;
+    using Options = typename GridType::Options;
 
     /*!
      * @brief default construction without initialization
@@ -72,14 +85,14 @@ public:
      * @brief default copy constructor
      * @param other instance to copy from
      */
-    CartesianRepresentation(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
+    CartesianRepresentation(const CartesianRepresentation<Dim>& other) = default;
 
     /*!
      * @brief default copy assignment operator
      * @param other instance to copy from
      */
-    CartesianRepresentation<Dim, LO, GO, SC>&
-    operator=(const CartesianRepresentation<Dim, LO, GO, SC>& other) = default;
+    CartesianRepresentation<Dim>&
+    operator=(const CartesianRepresentation<Dim>& other) = default;
 
     /*!
      * @brief provides spatial position of the specified cell
@@ -91,10 +104,21 @@ public:
     /*!
      * @brief provides spatial position of specified face
      * @param ind local index
-     * @param dir one of the dimensions in positive direction
-     * @return 
+     * @param cnb identifier
+     * @return
      */
-    VecSC GetCoordinatesFace(const Index& ind, std::size_t dir) const;
+    VecSC GetCoordinatesFace(const Index& ind, CartesianNeighbor cnb) const;
+
+    /*!
+     * @brief returns the distances between two cell centers
+     * @return
+     */
+    const VecSC& GetDistances() const;
+
+    /*!
+     * @brief returns the face areas in each dimension
+     */
+    const VecSC& GetFaceArea() const;
 
     /*!
      * @brief number of cells in local subgrid including ghost/halo cells
@@ -115,6 +139,11 @@ public:
      * @brief number of cells in global grid excluding ghost/halo cells
      */
     GO GetNumberGlobalCellsInternal() const;
+
+    /*!
+     * @brief returns the struct with provided options
+     */
+    const Options& GetOptions() const;
 
     /*!
      * @brief adds ghost/halo cells to ordinal
@@ -194,6 +223,13 @@ public:
     IndexGlobal MapLocalToGlobal(const Index& ind) const;
 
     /*!
+     * @brief returns local Index of cell containing the point
+     * @param point point in space
+     * Make sure that the point is on the grid!
+     */
+    Index GetCell(VecSC point) const;
+
+    /*!
      * @brief provides resolution of local grid
      * @return local index with number of cells in each direction
      */
@@ -223,6 +259,11 @@ public:
      */
     void PrintDistribution(std::string fname) const;
 
+    /*!
+     * @brief Provides Halobuffer for exchange of data across processes
+     */
+    mpi::HaloBuffer<SC>& GetHaloBuffer();
+
 private:
     /*!
      * @brief Tests if grid is initialized
@@ -230,22 +271,22 @@ private:
      */
     void TestIfInitialized(std::string function) const;
 
-    const Cartesian<Dim, LO, GO, SC>* grid;  //!< pointer to grid
-    typename GridType::Options options;      //!< grid specific options
-    VecLO resolution_local;                  //!< resolution of the local grid
-    VecLO resolution_local_internal;         //!< resolution of the local grid without halo/ghost cells
-    VecGO resolution_global;                 //!< resolution of the global grid
-    VecGO resolution_global_internal;        //!< resolution of the global grid without halo/ghost cells
-    VecGO offset_cells;                      //!< offset of the cells from local to global
-    VecSC offset_size;                       //!< offset in size from local to global
+    const Cartesian<Dim>* grid;        //!< pointer to grid
+    Options options;                   //!< grid specific options
+    VecLO resolution_local;            //!< resolution of the local grid
+    VecLO resolution_local_internal;   //!< resolution of the local grid without halo/ghost cells
+    VecGO resolution_global;           //!< resolution of the global grid
+    VecGO resolution_global_internal;  //!< resolution of the global grid without halo/ghost cells
+    VecGO offset_cells;                //!< offset of the cells from local to global
+    VecSC offset_size;                 //!< offset in size from local to global
 
-    VecGO hierarchic_sum_glob;                //!< precomputed values to account for ordering
-    VecGO hierarchic_sum_glob_internal;       //!< same as above, just for the internal cells
-    VecLO hierarchic_sum_loc;                 //!< precomputed values to account for ordering
-    VecLO hierarchic_sum_loc_internal;        //!< same as above, just for the internal cells
+    VecGO hierarchic_sum_glob;           //!< precomputed values to account for ordering
+    VecGO hierarchic_sum_glob_internal;  //!< same as above, just for the internal cells
+    VecLO hierarchic_sum_loc;            //!< precomputed values to account for ordering
+    VecLO hierarchic_sum_loc_internal;   //!< same as above, just for the internal cells
 
-    mpi::HaloBuffer<LO, GO, SC> halo_buffer;  //!< maps with Halo Buffers
-};
+    mpi::HaloBuffer<SC> halo_buffer;  //!< maps with Halo Buffers
+    };
 
 }  // namespace dare::Grid
 

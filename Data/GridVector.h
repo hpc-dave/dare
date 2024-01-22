@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include <string>
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>
+#include "Utilities/Vector.h"
 
 namespace dare::Data {
 
@@ -59,8 +60,8 @@ public:
 
     /*!
      * @brief initialization constructor
-     * @param identifier 
-     * @param grid 
+     * @param identifier string to identify the instance
+     * @param grid representation of grid
      */
     GridVector(std::string identifier, GridRepresentation grid);
 
@@ -68,6 +69,13 @@ public:
      * @brief default destructor
      */
     virtual ~GridVector();
+
+    /*!
+     * @brief Initialization
+     * @param identifier string to identify the instance
+     * @param grid representation of grid
+     */
+    void Initialize(std::string identifier, GridRepresentation grid);
 
     /*!
      * @brief resize to dedicated number
@@ -83,6 +91,12 @@ public:
      * Multiplies the number with the number of equations
      */
     void ResizeByGrid(LO n);
+
+    /*!
+     * @brief returns element at position in vector
+     * @param n offset in vector
+     */
+    T& At(std::size_t n);
 
     /*!
      * @brief access based on cell and component
@@ -101,6 +115,12 @@ public:
     T& At(const Index& ind, std::size_t c);
 
     /*!
+     * @brief returns element at position n
+     * @param n offset
+     */
+    T At(std::size_t n) const;
+
+    /*!
      * @brief const access based on cell and component
      * @param n grid ordinal
      * @param c component number
@@ -115,6 +135,19 @@ public:
      * @return specified value
      */
     T At(const Index& ind, std::size_t c) const;
+
+    /*!
+     * @brief returns vector with all components
+     * @param n local ordinal
+     */
+    dare::utils::Vector<N, T> GetValues(const LO n) const;
+
+    /*!
+     * @brief returns vector with all components
+     * @param ind index
+     */
+    dare::utils::Vector<N, T> GetValues(const Index& ind) const;
+
 
     /*!
      * @brief access to element in the data
@@ -171,6 +204,14 @@ public:
      * @brief returns data on device
      */
     const DeviceViewType& GetDeviceView() const;
+
+    /*!
+     * @brief provides identificiation string
+     */
+    std::string GetIdentifier() const;
+
+    const GridRepresentation& GetGridRepresentation() const;
+    GridRepresentation& GetGridRepresentation();
 
 protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);

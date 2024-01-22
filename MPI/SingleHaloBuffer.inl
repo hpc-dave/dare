@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 David Rieder
+ * Copyright (c) 2024 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,21 @@
 
 namespace dare::mpi {
 
-template <typename LO, typename GO, typename SC>
-SingleHaloBuffer<LO, GO, SC>::SingleHaloBuffer(ExecutionManager* execution_manager,
+template<typename SC>
+SingleHaloBuffer<SC>::SingleHaloBuffer(ExecutionManager* execution_manager,
                                    int rank_partner)
                                    : exec_man(execution_manager),
                                      rank_partner_proc(rank_partner) {}
 
-template <typename LO, typename GO, typename SC>
-void SingleHaloBuffer<LO, GO, SC>::Initialize(ExecutionManager* execution_manager,
+template<typename SC>
+void SingleHaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
                                           int rank_partner) {
     exec_man = execution_manager;
     rank_partner_proc = rank_partner;
 }
 
-template <typename LO, typename GO, typename SC>
-void SingleHaloBuffer<LO, GO, SC>::CommunicateNumCellIDs(std::size_t num_send,
+template<typename SC>
+void SingleHaloBuffer<SC>::CommunicateNumCellIDs(std::size_t num_send,
                                                          std::size_t* num_recv,
                                                          MPI_Request* request_send,
                                                          MPI_Request* request_recv) {
@@ -47,8 +47,8 @@ void SingleHaloBuffer<LO, GO, SC>::CommunicateNumCellIDs(std::size_t num_send,
     exec_man->Iexchange(&num_send, 1, num_recv, 1, rank_partner_proc, tag_communicated, request_send, request_recv);
 }
 
-template <typename LO, typename GO, typename SC>
-void SingleHaloBuffer<LO, GO, SC>::CommunicateRequiredHaloCellIDs(const std::vector<GO>& list_global_ID,
+template<typename SC>
+void SingleHaloBuffer<SC>::CommunicateRequiredHaloCellIDs(const std::vector<GO>& list_global_ID,
                                                               std::vector<GO>* list_global_IDs_partner,
                                                               MPI_Request* request_send,
                                                               MPI_Request* request_receive) {
@@ -59,8 +59,8 @@ void SingleHaloBuffer<LO, GO, SC>::CommunicateRequiredHaloCellIDs(const std::vec
                         request_send, request_receive);
 }
 
-template <typename LO, typename GO, typename SC>
-void SingleHaloBuffer<LO, GO, SC>::CommunicateFilteredHaloCellIDs(const std::vector<GO>& list_filtered_IDs,
+template<typename SC>
+void SingleHaloBuffer<SC>::CommunicateFilteredHaloCellIDs(const std::vector<GO>& list_filtered_IDs,
                                                               std::vector<GO>* list_filtered_IDs_partner,
                                                               MPI_Request* request_send, MPI_Request* request_receive) {
     const int tag{2003};
@@ -80,8 +80,8 @@ void SingleHaloBuffer<LO, GO, SC>::CommunicateFilteredHaloCellIDs(const std::vec
                         rank_partner_proc, tag, request_send, request_receive);
 }
 
-template <typename LO, typename GO, typename SC>
-void SingleHaloBuffer<LO, GO, SC>::FinalizeInitialization(const std::vector<LO>& list_IDs_send,
+template<typename SC>
+void SingleHaloBuffer<SC>::FinalizeInitialization(const std::vector<LO>& list_IDs_send,
                                                           const std::vector<LO>& list_IDs_recv) {
     // the send and receive buffers
     list_local_IDs_send = list_IDs_send;
@@ -90,14 +90,14 @@ void SingleHaloBuffer<LO, GO, SC>::FinalizeInitialization(const std::vector<LO>&
     this->utils::InitializationTracker::Initialize();
 }
 
-template <typename LO, typename GO, typename SC>
+template<typename SC>
 template <typename Field>
-void SingleHaloBuffer<LO, GO, SC>::Exchange(const Field& field,
+void SingleHaloBuffer<SC>::Exchange(const Field& field,
                                            MPI_Request* request_send, MPI_Request* request_recv) {
     std::size_t num_eq = field.GetNumEquations();
     const int tag_exchange{2100};
-    int num_send = list_local_IDs_send.size() * num_eq;
-    int num_recv = list_local_IDs_recv.size() * num_eq;
+    std::size_t num_send = list_local_IDs_send.size() * num_eq;
+    std::size_t num_recv = list_local_IDs_recv.size() * num_eq;
 
     if (num_send > buffer_send.size())
         buffer_send.resize(num_send);
@@ -114,9 +114,9 @@ void SingleHaloBuffer<LO, GO, SC>::Exchange(const Field& field,
                                rank_partner_proc, tag_exchange, request_send, request_recv);
 }
 
-template <typename LO, typename GO, typename SC>
+template<typename SC>
 template <typename Field>
-void SingleHaloBuffer<LO, GO, SC>::FillValues(Field* field) {
+void SingleHaloBuffer<SC>::FillValues(Field* field) {
     std::size_t num_eq = field->GetNumEquations();
 
     for (std::size_t n{0}; n < list_local_IDs_recv.size(); n++) {
@@ -126,8 +126,8 @@ void SingleHaloBuffer<LO, GO, SC>::FillValues(Field* field) {
     }
 }
 
-template <typename LO, typename GO, typename SC>
-int SingleHaloBuffer<LO, GO, SC>::GetPartnerRank() const {
+template<typename SC>
+int SingleHaloBuffer<SC>::GetPartnerRank() const {
     return rank_partner_proc;
 }
 }  // namespace dare::mpi
