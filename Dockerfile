@@ -3,7 +3,7 @@
 # The final image features:
 # - OS: debian bookworm
 # - libraries: gcc, cmake, ninja, boost, eigen3, OpenMPI, sqlite 3, doxygen, python, cpplint, cppcheck, Trilinos
-# - Trilinos: 15.0.0 - compiled with release optimization
+# - Trilinos: 14.4.0 - compiled with release optimization
 # - default entrypoint: /home/user
 #
 # Note, that this image only contains a root-user and therefore certain libraries may complain, e.g. OpenMPI. 
@@ -30,9 +30,9 @@ RUN apt-get install -y apt-utils
 RUN apt-get -y update
 RUN apt-get -y upgrade
 RUN apt-get install -y build-essential git cmake libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz mesa-common-dev mesa-utils freeglut3-dev ninja-build
-RUN pip install --break-system-packages cpplint virtualenv
+RUN pip install --break-system-packages cpplint virtualenv cppcheck-junit cpplint-junit doxygen-junit
 RUN virtualenv mynotebookenv
-RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel cppcheck-junit cpplint-junit doxygen-junit
+RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel
 RUN python -m bash_kernel.install
 
 # create a directory for the user
