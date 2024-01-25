@@ -27,7 +27,9 @@
 #include "Operators.h"
 #include "MatrixBlock_Cartesian.h"
 #include "Stencils_Cartesian.h"
+#include "FluxLimiter.h"
 #include "Data/GridVector.h"
+#include "Math/Interpolation_Cartesian.h"
 
 namespace dare::Matrix {
 
@@ -119,6 +121,14 @@ private:
  * By using the Cartesian grid instance, we can optimize the procedure significantly,
  * since we don't need to look up any values besides the face area in each direction.
  * All other required information is encoded by the position of the values.
+ * 
+ * The divergence integrates the flux over the faces. In case of explicit contributions,
+ * they are also scaled, with the same sign as the implicit contributions. Therefore,
+ * the user has to make sure that the explicit values are properly treated afterwards.
+ * 
+ * \f[
+ *      \int_V div(\phi_{face})\,\mathrm{d}V \approx \sum_{nb} \vec{n}_{nb} A_{nb}
+ * \f]
  */
 template <std::size_t Dim>
 class Divergence<dare::Grid::Cartesian<Dim>> {
@@ -164,7 +174,7 @@ class TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter> {
 public:
     static const std::size_t NUM_FACES{2 * Dim};
     using GridType = dare::Grid::Cartesian<Dim>;
-    using GridRepresentation = typename GridType::GridRepresentation;
+    using GridRepresentation = typename GridType::Representation;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using Index = typename GridType::Index;
@@ -179,7 +189,7 @@ public:
      */
     TVD(const GridRepresentation& grid,
         LO ordinal_internal,
-        dare::utils::Vector<Dim, const dare::Data::GridVector<GridType, SC, 1>&> v);
+        dare::utils::Vector<Dim, const dare::Data::GridVector<GridType, SC, 1>*> v);
 
     /*!
      * @brief initialization with constant velocities
@@ -201,30 +211,51 @@ public:
      * @tparam N number of components
      * @param s_close CenterMatrixStencil for close neighbors
      * @param s_far CenterValueStencil for far neighbors
+     * Here, the face values are computed according to the TVD scheme,
+     * excluding the velocity component
      */
     template <std::size_t N>
-    dare::Data::FaceValueStencil<GridType, SC, N> Interpolate(
+    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, N> Interpolate(
         const dare::Data::CenterValueStencil<GridType, SC, N>& s_close,
-        const dare::Data::CenterValueStencil<GridType, SC, N>& s_far,
-        Options opt) const;
+        const dare::Data::CenterValueStencil<GridType, SC, N>& s_far) const;
 
     /*!
      * @brief When used for interpolation from a field
      * @tparam N number of components
      * @param field field
+     * Here, the face values are computed according to the TVD scheme,
+     * excluding the velocity component
      */
     template <std::size_t N>
-    dare::Data::FaceValueStencil<GridType, SC, N> Interpolate(
+    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, N> Interpolate(
         const dare::Data::GridVector<GridType, SC, N>& field) const;
 
     /*!
      * \brief when used for matrix assembly
      * @tparam N number of components
      * @param field reference to relevant field
+     * Here, the flux is computed by the TVD scheme, including the velocity component.
+     * \f[
+     *    J = u \cdot \phi
+     * \f]
+     * An example code can look like this:
+     * @code{.cpp}
+     *   GridVector<...> phi;
+     *   TVD<...> u(...);
+     *   FaceValueStencil<...> rho;
+     *
+     *   FaceMatrixStenci<...> J = rho * u * phi
+     *
+     * @endcode
      */
     template <std::size_t N>
-    dare::Data::FaceMatrixStencil<GridType, SC, N> operator()(
+    [[nodiscard]] dare::Data::FaceMatrixStencil<GridType, SC, N> operator*(
         const dare::Data::GridVector<GridType, SC, N>& field) const;
+
+    /*!
+     * @brief returns the velocity values
+     */
+    [[nodiscard]] const dare::Data::FaceValueStencil<GridType, SC, 1>& GetVelocities() const;
 
 private:
     Index ind;                                               //!< triplet of indices

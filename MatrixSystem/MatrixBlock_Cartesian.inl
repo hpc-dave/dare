@@ -438,6 +438,7 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator=(
             Get<CartesianNeighbor::BOTTOM>(n) = s.GetValue(CartesianNeighbor::BOTTOM, n);
             Get<CartesianNeighbor::TOP>(n) = s.GetValue(CartesianNeighbor::TOP, n);
         }
+        this->GetRhs(n) = s.GetRHS()[n];
     }
     return *this;
 }
@@ -458,6 +459,7 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator+=(
             Get<CartesianNeighbor::BOTTOM>(n) += s.GetValue(CartesianNeighbor::BOTTOM, n);
             Get<CartesianNeighbor::TOP>(n) += s.GetValue(CartesianNeighbor::TOP, n);
         }
+        this->GetRhs(n) += s.GetRHS()[n];
     }
     return *this;
 }

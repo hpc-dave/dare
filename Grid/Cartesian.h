@@ -46,7 +46,7 @@ enum class CartesianNeighbor : char {
     BOTTOM = 5,
     TOP = 6,
     FOURD_LOW = 7,
-    FOURD_UP = 8
+    FOURD_UP = 8,
 };
 
 /*!
@@ -116,10 +116,11 @@ enum class CartesianNeighbor : char {
         break;
     }
     ERROR << "invalid ID provided (" << id << ")" << ERROR_CLOSE;
+    return CNB::FOURD_UP;  // most unlikely to be ever used
 }
 
 template <char ID>
-[[nodiscard]] inline CartesianNeighbor ToCartesianNeighbor() {
+[[nodiscard]] constexpr CartesianNeighbor ToCartesianNeighbor() {
     static_assert(ID >= 0 && ID < 9);
     using CNB = CartesianNeighbor;
     if constexpr (ID == 0)

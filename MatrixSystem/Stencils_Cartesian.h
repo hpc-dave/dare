@@ -47,6 +47,7 @@ public:
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion
     using ComponentArray = dare::utils::Vector<NUM_ENTRIES, SC>;            //!< stencil of each component
     using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
+    using RHSType = dare::utils::Vector<NUM_COMPONENTS, SC>;                //!< storage of explicit rhs values
 
     /*!
      * @brief default constructor
@@ -122,24 +123,28 @@ public:
     /*!
      * @brief multiplication of this instance with another stencil
      * @param other stencil to mulitply with
+     * \note the rhs will be added, not multiplied!
      */
     CenterMatrixStencil<GridType, SC, N>& operator*=(const CenterMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief multiplication with another stencil
      * @param other factors to mulitply with
+     * \note the rhs will be added, not multiplied!
      */
     CenterMatrixStencil<GridType, SC, N> operator*(const CenterMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
      * @brief division of this instance by another stencil
      * @param other stencil to divide by
+     * \note the rhs will be added, not multiplied!
      */
     CenterMatrixStencil<GridType, SC, N>& operator/=(const CenterMatrixStencil<GridType, SC, N>& other);
 
     /*!
      * @brief division of stencil by another stencil
      * @param other stencil to divide by
+     * \note the rhs will be added, not multiplied!
      */
     CenterMatrixStencil<GridType, SC, N> operator/(const CenterMatrixStencil<GridType, SC, N>& other) const;
 
@@ -150,6 +155,13 @@ public:
      * @param v value
      */
     void SetValue(Positions pos, std::size_t n, SC v);
+
+    /*!
+     * @brief sets value at the rhs
+     * @param n component ID
+     * @param v value to set
+     */
+    void SetRHS(std::size_t n, SC v);
 
     /*!
      * @brief sets the whole stencil to a certain value
@@ -172,6 +184,12 @@ public:
     SC GetValue(Positions pos, std::size_t n) const;
 
     /*!
+     * @brief returns values of all components
+     * @param pos position of value (e.g. CENTER)
+     */
+    dare::utils::Vector<N, SC> GetValues(Positions pos) const;
+
+    /*!
      * @brief returns raw data array
      */
     DataArray& GetData();
@@ -182,6 +200,28 @@ public:
      */
     const DataArray& GetData() const;
 
+    /*!
+     * @brief getter for right hand side
+     */
+    RHSType& GetRHS();
+
+    /*!
+     * @brief const getter for right hand side
+     */
+    const RHSType& GetRHS() const;
+
+    /*!
+     * @brief getter for right hand side
+     * @param n component ID
+     */
+    SC& GetRHS(std::size_t n);
+
+    /*!
+     * @brief const getter for right hand side
+     * @param n component ID
+     */
+    SC GetRHS(std::size_t n) const;
+
 private:
     /*!
      * @brief internal range check, disabled with DARE_NDEBUG
@@ -191,6 +231,7 @@ private:
      */
     void RangeCheck(std::string func, Positions pos, std::size_t n) const;
     DataArray coefficients;  //!< raw data array with stencil data
+    RHSType rhs;             //!< potential array for storing RHS values
 };
 
 /*!
@@ -235,21 +276,46 @@ public:
     }
 };
 
+
+/*!
+ * @brief storage structure for matrix stencils referred to with faces of a stencil
+ * @tparam SC type of scalar value
+ * @tparam Dim dimension of the Cartesian grid
+ * @tparam N number of components
+ * The matrix entries associated witha face consist of two values. One for the neighbor
+ * and one for the center. Therefore a more complex data structure is used here!
+ */
 template <std::size_t Dim, typename SC, std::size_t N>
 class FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;                //!< type of grid
+    using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
     static const std::size_t NUM_FACES{GridType::NUM_FACES};                //!< faces in stencil
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion
     using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;              //!< stencil of each component
     using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
+    using RHSType = dare::Data::FaceValueStencil<GridType, SC, N>;          //!< array for explicit rhs values
 
+    /*!
+     * @brief default constructor
+     */
     FaceMatrixStencil();
+
+    /*!
+     * @brief default destructor
+     */
     ~FaceMatrixStencil();
 
+    /*!
+     * @brief copy constructor
+     * @param other instance to copy from
+     */
     FaceMatrixStencil(const FaceMatrixStencil<GridType, SC, N>& other);
 
+    /*!
+     * @brief copy assignment operator
+     * @param other instance to copy from
+     */
     FaceMatrixStencil<GridType, SC, N>&
     operator=(const FaceMatrixStencil<GridType, SC, N>& other);
 
@@ -332,8 +398,58 @@ public:
      * @param v value
      */
     void SetValueNeighbor(Positions pos, std::size_t n, SC v);
+
+    /*!
+     * @brief Sets specific value for center coefficient
+     * @param pos neighbor this contribution is associated with
+     * @param n component ID
+     * @param v value to set
+     */
     void SetValueCenter(Positions pos, std::size_t n, SC v);
+
+    /*!
+     * @brief Sets specific value pair
+     * @param pos neighbor this contribution is associated with
+     * @param n component ID
+     * @param v value to set
+     */
     void SetValues(Positions pos, std::size_t n, SC v_nb, SC v_center);
+
+    /*!
+     * @brief sets value at the rhs
+     * @param n component ID
+     * @param v value to set
+     */
+    void SetRHS(Positions pos, std::size_t n, SC v);
+
+    /*!
+     * @brief sets a specific value in the stencil
+     * @param pos position of the value (e.g. CENTER)
+     * @param v vector with values
+     */
+    void SetValueNeighbor(Positions pos, const dare::utils::Vector<N, SC>& v);
+
+    /*!
+     * @brief Sets specific value for center coefficient
+     * @param pos neighbor this contribution is associated with
+     * @param v vector with values
+     */
+    void SetValueCenter(Positions pos, const dare::utils::Vector<N, SC>& v);
+
+    /*!
+     * @brief Sets specific value pair
+     * @param pos neighbor this contribution is associated with
+     * @param v vector with values
+     */
+    void SetValues(Positions pos,
+                   const dare::utils::Vector<N, SC>& v_nb,
+                   const dare::utils::Vector<N, SC>& v_center);
+
+    /*!
+     * @brief sets value at the rhs
+     * @param v vector with values
+     */
+    void SetRHS(Positions pos, const dare::utils::Vector<N, SC>& v);
 
     /*!
      * @brief sets the whole stencil to a certain value
@@ -342,11 +458,17 @@ public:
     void SetAll(SC v);
 
     /*!
-     * @brief returns reference to value
-     * @param pos position of value (e.g. CENTER)
+     * @brief returns reference to value of face
+     * @param pos position of value (e.g. WEST)
      * @param n component ID
      */
     SC& GetValueNeighbor(Positions pos, std::size_t n);
+
+    /*!
+     * @brief Getter for center associated coefficient
+     * @param pos face of value
+     * @param n component ID
+     */
     SC& GetValueCenter(Positions pos, std::size_t n);
 
     /*!
@@ -355,7 +477,27 @@ public:
      * @param n component ID
      */
     SC GetValueNeighbor(Positions pos, std::size_t n) const;
+
+    /*!
+     * @brief returns value
+     * @param pos position of value (e.g. CENTER)
+     * @param n component ID
+     */
     SC GetValueCenter(Positions pos, std::size_t n) const;
+
+    /*!
+     * @brief returns explicit contributions at face
+     * @param pos position of value
+     * @param n component ID
+     */
+    SC& GetRHS(Positions pos, std::size_t n);
+
+    /*!
+     * @brief constant getter for contributions at face
+     * @param pos position of value
+     * @param n component ID
+     */
+    SC GetRHS(Positions pos, std::size_t n) const;
 
     /*!
      * @brief returns raw data array
@@ -370,6 +512,16 @@ public:
     const DataArray& GetDataNeighbor() const;
     const DataArray& GetDataCenter() const;
 
+    /*!
+     * @brief getter for right hand side
+     */
+    RHSType& GetRHS();
+
+    /*!
+     * @brief const getter for right hand side
+     */
+    const RHSType& GetRHS() const;
+
 private:
     /*!
      * @brief internal range check, disabled with DARE_NDEBUG
@@ -381,6 +533,7 @@ private:
 
     DataArray coefficients_nb;    //!< values associated for each neighbor
     DataArray coefficients_c;     //!< values associated with center
+    RHSType rhs;                  //!< storage for explicit components
 };
 
 /*!
@@ -394,7 +547,7 @@ private:
 template <std::size_t Dim, typename SC, std::size_t N>
 class FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;                //!< type of grid
+    using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
     static const std::size_t NUM_FACES{GridType::NUM_FACES};                //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion
@@ -511,6 +664,13 @@ public:
     void SetValue(Positions pos, std::size_t n, SC v);
 
     /*!
+     * @brief sets values in the stencil at certain position
+     * @param pos position of the value (e.g. CENTER)
+     * @param v value
+     */
+    void SetValues(Positions pos, const dare::utils::Vector<N, SC>& v);
+
+    /*!
      * @brief sets the whole stencil to a certain value
      * @param v value
      */
@@ -537,7 +697,6 @@ public:
 
     /*!
      * @brief return copy of raw data
-     * @return
      */
     const DataArray& GetData() const;
 
