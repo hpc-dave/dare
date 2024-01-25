@@ -874,3 +874,51 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDValueTest) {
         EXPECT_NEAR(v.GetValue(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
     }
 }
+
+TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDMatrixTest) {
+    using Scheme = dare::Matrix::UPWIND;
+    using CNB = dare::Grid::CartesianNeighbor;
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    VecSC velocity{1.};  // upwind velocity
+    LO internal_ordinal{0};
+    TVD<Scheme> tvd(grid_rep, internal_ordinal, velocity);
+
+    Field field("values", grid_rep);
+    for (LO i{0}; i < grid_rep.GetLocalResolution().i(); i++) {
+        Index ind(i);
+        for (std::size_t n{0}; n < N; n++) {
+            field.At(ind, n) = i * n;
+        }
+    }
+
+    auto v = tvd * field;
+    static_assert(std::is_same_v<decltype(v), dare::Data::FaceMatrixStencil<GridType, SC, N>>);
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(v.GetValueNeighbor(CNB::WEST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueCenter(CNB::WEST, n), 0.);
+        EXPECT_EQ(v.GetValueNeighbor(CNB::EAST, n), 0.);
+        EXPECT_EQ(v.GetValueCenter(CNB::EAST, n), velocity[0]);
+
+        SC v_ex = 0.;
+        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex);
+        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex);
+    }
+
+    // Downwind velocity
+    velocity[0] = -1.;
+    TVD<Scheme> tvd_down(grid_rep, internal_ordinal, velocity);
+    v = tvd_down * field;
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(v.GetValueNeighbor(CNB::WEST, n), 0.);
+        EXPECT_EQ(v.GetValueCenter(CNB::WEST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueNeighbor(CNB::EAST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueCenter(CNB::EAST, n), 0.);
+
+        SC v_ex = 0.;
+        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex);
+        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex);
+    }
+}
