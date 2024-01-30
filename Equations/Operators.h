@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef MATRIXSYSTEM_OPERATORS_H_
-#define MATRIXSYSTEM_OPERATORS_H_
+#ifndef EQUATIONS_OPERATORS_H_
+#define EQUATIONS_OPERATORS_H_
 
 namespace dare::Matrix {
 
@@ -136,4 +136,4 @@ class TVD {
 
 }  // end namespace dare::Matrix
 
-#endif  // MATRIXSYSTEM_OPERATORS_H_
+#endif  // EQUATIONS_OPERATORS_H_

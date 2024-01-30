@@ -4,6 +4,8 @@ set(DaRe_HEADER_FILES
     "GridVector.h"
     "GridVector.inl"
     "Stencil.h"
+    "Stencils_Cartesian.h"
+    "Stencils_Cartesian.inl"
 )
 
 target_sources(dare

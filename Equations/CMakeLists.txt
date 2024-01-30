@@ -1,17 +1,12 @@
 set(DaRe_HEADER_FILES
-    "BiCGStab2.h"
-    "BiCGStab2.inl"
-    "Trilinos.h"
-    "Trilinos.inl"
-    "TrilinosSolver.h"
-    "TrilinosSolver.inl"
-    "MatrixBlockBase.h"
-    "MatrixBlockBase.inl"
-    "MatrixBlock.h"
-    "MatrixBlock_Default.h"
-    "MatrixBlock_Default.inl"
-    "MatrixBlock_Cartesian.h"
-    "MatrixBlock_Cartesian.inl"
+    "Operators.h"
+    "Gradient_Cartesian.h"
+    "Gradient_Cartesian.inl"
+    "Divergence_Cartesian.h"
+    "Divergence_Cartesian.inl"
+    "FluxLimiter.h"
+    "TVD_Cartesian.h"
+    "TVD_Cartesian.inl"
 )
 
 target_sources(dare

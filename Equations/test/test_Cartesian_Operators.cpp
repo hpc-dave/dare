@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 
-#include "MatrixSystem/Operators_Cartesian.h"
+#include "Equations/Operators_Cartesian.h"
 
 namespace dare::test {
 
@@ -920,5 +920,337 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDMatrixTest) {
         SC v_ex = 0.;
         EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex);
         EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODValueTest) {
+    using Scheme = dare::Matrix::MINMOD;
+    using CNB = dare::Grid::CartesianNeighbor;
+    const SC eps_tol{1e3};
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    VecSC velocity{1.};  // upwind velocity
+    LO internal_ordinal{0};
+    TVD<Scheme> tvd(grid_rep, internal_ordinal, velocity);
+
+    Field field("values", grid_rep);
+    for (LO i{0}; i < grid_rep.GetLocalResolution().i(); i++) {
+        Index ind(i);
+        for (std::size_t n{0}; n < N; n++) {
+            field.At(ind, n) = i * i * n;
+        }
+    }
+
+    auto v = tvd.Interpolate(field);
+    static_assert(std::is_same_v<decltype(v), dare::Data::FaceValueStencil<GridType, SC, N>>);
+
+    Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
+    for (std::size_t n{0}; n < N; n++) {
+        Index ind_w{ind};
+        Index ind_ww{ind};
+        ind_w.i() -= 1;
+        ind_ww.i() -= 2;
+        SC phi_c = field.At(ind, n);
+        SC phi_w = field.At(ind_w, n);
+        SC phi_ww = field.At(ind_ww, n);
+        SC r_w = (phi_w - phi_ww) / (phi_c - phi_w);
+        if (std::isnan(r_w))
+            r_w = 0.;
+        r_w = std::max(0., std::min(r_w, 1.));
+        SC v_ex = phi_w + 0.5 * r_w * (phi_c - phi_w);
+        EXPECT_NEAR(v.GetValue(CNB::WEST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
+        Index ind_e{ind};
+        ind_e.i() += 1;
+        SC phi_e = field.At(ind_e, n);
+        SC r_e = (phi_c - phi_w) / (phi_e - phi_c);
+        if (std::isnan(r_e))
+            r_e = 0.;
+        r_e = std::max(0., std::min(r_e, 1.));
+        v_ex = phi_c + 0.5 * r_e * (phi_e - phi_c);
+        EXPECT_NEAR(v.GetValue(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
+    }
+
+    // down wind
+    velocity[0] = -1.;
+    TVD<Scheme> tvd_down(grid_rep, internal_ordinal, velocity);
+
+    v = tvd_down.Interpolate(field);
+
+    for (std::size_t n{0}; n < N; n++) {
+        Index ind_w{ind};
+        Index ind_e{ind};
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        SC phi_c = field.At(ind, n);
+        SC phi_w = field.At(ind_w, n);
+        SC phi_e = field.At(ind_e, n);
+        SC r_w = (phi_e - phi_c) / (phi_c - phi_w);
+        if (std::isnan(r_w))
+            r_w = 0.;
+        r_w = std::max(0., std::min(r_w, 1.));
+        SC v_ex = phi_c + 0.5 * r_w * (phi_w - phi_c);
+        EXPECT_NEAR(v.GetValue(CNB::WEST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
+        Index ind_ee{ind};
+        ind_ee.i() += 2;
+        SC phi_ee = field.At(ind_ee, n);
+        SC r_e = (phi_ee - phi_e) / (phi_e - phi_c);
+        if (std::isnan(r_e))
+            r_e = 0.;
+        r_e = std::max(0., std::min(r_e, 1.));
+        v_ex = phi_e + 0.5 * r_e * (phi_c - phi_e);
+        EXPECT_NEAR(v.GetValue(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODMatrixTest) {
+    using Scheme = dare::Matrix::MINMOD;
+    using CNB = dare::Grid::CartesianNeighbor;
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    VecSC velocity{1.};  // upwind velocity
+    LO internal_ordinal{0};
+    TVD<Scheme> tvd(grid_rep, internal_ordinal, velocity);
+
+    Field field("values", grid_rep);
+    for (LO i{0}; i < grid_rep.GetLocalResolution().i(); i++) {
+        Index ind(i);
+        for (std::size_t n{0}; n < N; n++) {
+            field.At(ind, n) = i * i * n;
+        }
+    }
+
+    auto v = tvd * field;
+    static_assert(std::is_same_v<decltype(v), dare::Data::FaceMatrixStencil<GridType, SC, N>>);
+
+    Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(v.GetValueNeighbor(CNB::WEST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueCenter(CNB::WEST, n), 0.);
+        EXPECT_EQ(v.GetValueNeighbor(CNB::EAST, n), 0.);
+        EXPECT_EQ(v.GetValueCenter(CNB::EAST, n), velocity[0]);
+
+        Index ind_w{ind};
+        Index ind_ww{ind};
+        ind_w.i() -= 1;
+        ind_ww.i() -= 2;
+        SC phi_c = field.At(ind, n);
+        SC phi_w = field.At(ind_w, n);
+        SC phi_ww = field.At(ind_ww, n);
+        SC r_w = (phi_w - phi_ww) / (phi_c - phi_w);
+        if (std::isnan(r_w))
+            r_w = 0.;
+        r_w = std::max(0., std::min(r_w, 1.));
+        SC v_ex_w = -0.5 * r_w * (phi_c - phi_w) * velocity[0];
+        Index ind_e{ind};
+        ind_e.i() += 1;
+        SC phi_e = field.At(ind_e, n);
+        SC r_e = (phi_c - phi_w) / (phi_e - phi_c);
+        if (std::isnan(r_e))
+            r_e = 0.;
+        r_e = std::max(0., std::min(r_e, 1.));
+        SC v_ex_e = -0.5 * r_e * (phi_e - phi_c) * velocity[0];
+        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex_w);
+        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex_e);
+    }
+
+    // Downwind velocity
+    velocity[0] = -1.;
+    TVD<Scheme> tvd_down(grid_rep, internal_ordinal, velocity);
+    v = tvd_down * field;
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(v.GetValueNeighbor(CNB::WEST, n), 0.);
+        EXPECT_EQ(v.GetValueCenter(CNB::WEST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueNeighbor(CNB::EAST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueCenter(CNB::EAST, n), 0.);
+
+        Index ind_w{ind};
+        Index ind_e{ind};
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        SC phi_c = field.At(ind, n);
+        SC phi_w = field.At(ind_w, n);
+        SC phi_e = field.At(ind_e, n);
+        SC r_w = (phi_e - phi_c) / (phi_c - phi_w);
+        if (std::isnan(r_w))
+            r_w = 0.;
+        r_w = std::max(0., std::min(r_w, 1.));
+        SC v_ex_w = -0.5 * r_w * (phi_w - phi_c) * velocity[0];
+        Index ind_ee{ind};
+        ind_ee.i() += 2;
+        SC phi_ee = field.At(ind_ee, n);
+        SC r_e = (phi_ee - phi_e) / (phi_e - phi_c);
+        if (std::isnan(r_e))
+            r_e = 0.;
+        r_e = std::max(0., std::min(r_e, 1.));
+        SC v_ex_e = -0.5 * r_e * (phi_c - phi_e) * velocity[0];
+        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex_w);
+        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex_e);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAValueTest) {
+    using Scheme = dare::Matrix::VANALBADA;
+    using CNB = dare::Grid::CartesianNeighbor;
+    const SC eps_tol{1e3};
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    VecSC velocity{1.};  // upwind velocity
+    LO internal_ordinal{0};
+    TVD<Scheme> tvd(grid_rep, internal_ordinal, velocity);
+
+    Field field("values", grid_rep);
+    for (LO i{0}; i < grid_rep.GetLocalResolution().i(); i++) {
+        Index ind(i);
+        for (std::size_t n{0}; n < N; n++) {
+            field.At(ind, n) = i * n;
+        }
+    }
+
+    auto v = tvd.Interpolate(field);
+    static_assert(std::is_same_v<decltype(v), dare::Data::FaceValueStencil<GridType, SC, N>>);
+
+    Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
+    for (std::size_t n{0}; n < N; n++) {
+        Index ind_w{ind};
+        Index ind_ww{ind};
+        ind_w.i() -= 1;
+        ind_ww.i() -= 2;
+        SC phi_c = field.At(ind, n);
+        SC phi_w = field.At(ind_w, n);
+        SC phi_ww = field.At(ind_ww, n);
+        SC r_w = (phi_w - phi_ww) / (phi_c - phi_w);
+        if (std::isnan(r_w))
+            r_w = 0.;
+        r_w = (r_w + r_w * r_w) / (1. + r_w * r_w);
+        SC v_ex = phi_w + 0.5 * r_w * (phi_c - phi_w);
+        EXPECT_NEAR(v.GetValue(CNB::WEST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
+        Index ind_e{ind};
+        ind_e.i() += 1;
+        SC phi_e = field.At(ind_e, n);
+        SC r_e = (phi_c - phi_w) / (phi_e - phi_c);
+        if (std::isnan(r_e))
+            r_e = 0.;
+        r_e = (r_e + r_e * r_e) / (1. + r_e * r_e);
+        v_ex = phi_c + 0.5 * r_e * (phi_e - phi_c);
+        EXPECT_NEAR(v.GetValue(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
+    }
+
+    // down wind
+    velocity[0] = -1.;
+    TVD<Scheme> tvd_down(grid_rep, internal_ordinal, velocity);
+
+    v = tvd_down.Interpolate(field);
+
+    for (std::size_t n{0}; n < N; n++) {
+        Index ind_w{ind};
+        Index ind_e{ind};
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        SC phi_c = field.At(ind, n);
+        SC phi_w = field.At(ind_w, n);
+        SC phi_e = field.At(ind_e, n);
+        SC r_w = (phi_e - phi_c) / (phi_c - phi_w);
+        if (std::isnan(r_w))
+            r_w = 0.;
+        r_w = (r_w + r_w * r_w) / (1. + r_w * r_w);
+        SC v_ex = phi_c + 0.5 * r_w * (phi_w - phi_c);
+        EXPECT_NEAR(v.GetValue(CNB::WEST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
+        Index ind_ee{ind};
+        ind_ee.i() += 2;
+        SC phi_ee = field.At(ind_ee, n);
+        SC r_e = (phi_ee - phi_e) / (phi_e - phi_c);
+        if (std::isnan(r_e))
+            r_e = 0.;
+        r_e = (r_e + r_e * r_e) / (1. + r_e * r_e);
+        v_ex = phi_e + 0.5 * r_e * (phi_c - phi_e);
+        EXPECT_NEAR(v.GetValue(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * v_ex);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAMatrixTest) {
+    using Scheme = dare::Matrix::VANALBADA;
+    using CNB = dare::Grid::CartesianNeighbor;
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    VecSC velocity{1.};  // upwind velocity
+    LO internal_ordinal{0};
+    TVD<Scheme> tvd(grid_rep, internal_ordinal, velocity);
+
+    Field field("values", grid_rep);
+    for (LO i{0}; i < grid_rep.GetLocalResolution().i(); i++) {
+        Index ind(i);
+        for (std::size_t n{0}; n < N; n++) {
+            field.At(ind, n) = i * i * n;
+        }
+    }
+
+    auto v = tvd * field;
+    static_assert(std::is_same_v<decltype(v), dare::Data::FaceMatrixStencil<GridType, SC, N>>);
+
+    Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(v.GetValueNeighbor(CNB::WEST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueCenter(CNB::WEST, n), 0.);
+        EXPECT_EQ(v.GetValueNeighbor(CNB::EAST, n), 0.);
+        EXPECT_EQ(v.GetValueCenter(CNB::EAST, n), velocity[0]);
+
+        Index ind_w{ind};
+        Index ind_ww{ind};
+        ind_w.i() -= 1;
+        ind_ww.i() -= 2;
+        SC phi_c = field.At(ind, n);
+        SC phi_w = field.At(ind_w, n);
+        SC phi_ww = field.At(ind_ww, n);
+        SC r_w = (phi_w - phi_ww) / (phi_c - phi_w);
+        if (std::isnan(r_w))
+            r_w = 0.;
+        r_w = (r_w + r_w * r_w) / (1. + r_w * r_w);
+        SC v_ex_w = -0.5 * r_w * (phi_c - phi_w) * velocity[0];
+        Index ind_e{ind};
+        ind_e.i() += 1;
+        SC phi_e = field.At(ind_e, n);
+        SC r_e = (phi_c - phi_w) / (phi_e - phi_c);
+        if (std::isnan(r_e))
+            r_e = 0.;
+        r_e = (r_e + r_e * r_e) / (1. + r_e * r_e);
+        SC v_ex_e = -0.5 * r_e * (phi_e - phi_c) * velocity[0];
+        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex_w);
+        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex_e);
+    }
+
+    // Downwind velocity
+    velocity[0] = -1.;
+    TVD<Scheme> tvd_down(grid_rep, internal_ordinal, velocity);
+    v = tvd_down * field;
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(v.GetValueNeighbor(CNB::WEST, n), 0.);
+        EXPECT_EQ(v.GetValueCenter(CNB::WEST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueNeighbor(CNB::EAST, n), velocity[0]);
+        EXPECT_EQ(v.GetValueCenter(CNB::EAST, n), 0.);
+
+        Index ind_w{ind};
+        Index ind_e{ind};
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        SC phi_c = field.At(ind, n);
+        SC phi_w = field.At(ind_w, n);
+        SC phi_e = field.At(ind_e, n);
+        SC r_w = (phi_e - phi_c) / (phi_c - phi_w);
+        if (std::isnan(r_w))
+            r_w = 0.;
+        r_w = (r_w + r_w * r_w) / (1. + r_w * r_w);
+        SC v_ex_w = -0.5 * r_w * (phi_w - phi_c) * velocity[0];
+        Index ind_ee{ind};
+        ind_ee.i() += 2;
+        SC phi_ee = field.At(ind_ee, n);
+        SC r_e = (phi_ee - phi_e) / (phi_e - phi_c);
+        if (std::isnan(r_e))
+            r_e = 0.;
+        r_e = (r_e + r_e * r_e) / (1. + r_e * r_e);
+        SC v_ex_e = -0.5 * r_e * (phi_c - phi_e) * velocity[0];
+        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex_w);
+        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex_e);
     }
 }

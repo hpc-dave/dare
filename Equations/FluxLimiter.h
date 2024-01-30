@@ -22,10 +22,11 @@
  * SOFTWARE.
  */
 
-#ifndef MATRIXSYSTEM_FLUXLIMITER_H_
-#define MATRIXSYSTEM_FLUXLIMITER_H_
+#ifndef EQUATIONS_FLUXLIMITER_H_
+#define EQUATIONS_FLUXLIMITER_H_
 
 #include <algorithm>
+#include <cmath>
 
 #include "Utilities/Vector.h"
 
@@ -120,9 +121,12 @@ struct VANALBADA {
      * @brief computes flux-limiter for single value
      * @tparam SC type of scalar
      * @param r face-gradient
+     * In the case of r == NaN, the value 0 will be returned
      */
     template <typename SC>
-    static SC GetValue(const SC& r) {
+    static SC GetValue(SC r) {
+        const SC ZERO{0};
+        r = std::isnan(r) ? ZERO : r;
         const SC r_sqr{r * r};
         return (r + r_sqr) / (1. + r_sqr);
     }
@@ -157,12 +161,16 @@ struct MINMOD {
      * @brief computes flux-limiter for single value
      * @tparam SC type of scalar
      * @param r face-gradient
+     * If the face-gradient is NaN, the limit value is 0
      */
     template <typename SC>
-    static SC GetValue(const SC& r) {
-        return std::max(0., std::min(r, 1));
+    static SC GetValue(SC r) {
+        const SC ONE{1};
+        const SC ZERO{0};
+        r = std::isnan(r) ? ZERO : r;
+        return std::max(ZERO, std::min(r, ONE));
     }
 };
 }  // namespace dare::Matrix
 
-#endif  // MATRIXSYSTEM_FLUXLIMITER_H_
+#endif  // EQUATIONS_FLUXLIMITER_H_

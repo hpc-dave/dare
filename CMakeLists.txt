@@ -196,6 +196,7 @@ if(USE_GTEST)
 endif()
 
 add_subdirectory(Data                                                 )
+add_subdirectory(Equations                                            )
 add_subdirectory(FileFormats                                          )
 add_subdirectory(Utilities                                            )
 add_subdirectory(MPI                                                  )
