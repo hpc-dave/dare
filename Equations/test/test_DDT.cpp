@@ -101,4 +101,12 @@ TEST_F(DDTTest, EulerBackward) {
         EXPECT_NEAR(s_1.Center(n), dV_dt , std::numeric_limits<SC>::epsilon());
         EXPECT_NEAR(s_1.GetRHS(n), 0., std::numeric_limits<SC>::epsilon());
     }
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_NEAR(s_2.Center(n), p1_base  * dV_dt, std::numeric_limits<SC>::epsilon());
+        EXPECT_NEAR(s_2.GetRHS(n), 0., std::numeric_limits<SC>::epsilon());
+    }
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_NEAR(s_3.Center(n), p2_base * p1_base * dV_dt, std::numeric_limits<SC>::epsilon());
+        EXPECT_NEAR(s_3.GetRHS(n), 0., std::numeric_limits<SC>::epsilon());
+    }
 }
