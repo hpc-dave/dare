@@ -210,6 +210,12 @@ CartesianRepresentation<Dim>::GetFaceArea() const {
 }
 
 template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::SC
+CartesianRepresentation<Dim>::GetCellVolume(LO local_ordinal) const {
+    return grid->GetCellVolume();
+}
+
+template <std::size_t Dim>
 typename CartesianRepresentation<Dim>::LO
 CartesianRepresentation<Dim>::GetNumberLocalCellsInternal() const {
     TestIfInitialized(__func__);

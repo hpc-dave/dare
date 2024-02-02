@@ -1,4 +1,6 @@
 set(DaRe_HEADER_FILES
+    "DDT.h"
+    "DDT.inl"
     "Operators.h"
     "Gradient_Cartesian.h"
     "Gradient_Cartesian.inl"

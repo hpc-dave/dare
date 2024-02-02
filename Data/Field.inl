@@ -102,4 +102,28 @@ template <typename Grid, typename SC, std::size_t N>
 void Field<Grid, SC, N>::ExchangeHaloCells() {
     GetGridRepresentation().GetHaloBuffer().Exchange(&data[0]);
 }
+
+template <typename Grid, typename SC, std::size_t N>
+std::size_t Field<Grid, SC, N>::GetNumberTimesteps() const {
+    return data.size();
+}
+
+template <typename Grid, typename SC, std::size_t N>
+void Field<Grid, SC, N>::SetValues(SC v, std::size_t time_step) {
+    if (time_step == std::numeric_limits<std::size_t>::max()) {
+        for (std::size_t t{0}; t < GetNumberTimesteps(); t++) {
+            for (std::size_t n{0}; n < data[t].GetSize(); n++)
+                data[t][n] = v;
+        }
+    } else {
+        if (time_step >= GetNumberTimesteps()) {
+            ERROR << "specified timestep (" << time_step
+                  << ") exceeds the number of allocated fields ("
+                  << GetNumberTimesteps() << ")" << ERROR_CLOSE;
+            return;
+        }
+        for (std::size_t n{0}; n < data[time_step].GetSize(); n++)
+            data[time_step][n] = v;
+    }
+}
 }  // end namespace dare::Data

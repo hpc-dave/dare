@@ -149,6 +149,18 @@ public:
     CenterMatrixStencil<GridType, SC, N> operator/(const CenterMatrixStencil<GridType, SC, N>& other) const;
 
     /*!
+     * @brief returns center value
+     * @param n component ID
+     */
+    SC& Center(std::size_t n);
+
+    /*!
+     * @brief returns center value
+     * @param n component ID
+     */
+    SC Center(std::size_t n) const;
+
+    /*!
      * @brief sets a specific value in the stencil
      * @param pos position of the value (e.g. CENTER)
      * @param n component ID

@@ -121,6 +121,12 @@ public:
     const VecSC& GetFaceArea() const;
 
     /*!
+     * @brief returns volume of cell
+     * @param local_ordinal local index of cell
+     */
+    SC GetCellVolume(LO local_ordinal = 0) const;
+
+    /*!
      * @brief number of cells in local subgrid including ghost/halo cells
      */
     LO GetNumberLocalCells() const;

@@ -27,12 +27,23 @@
 
 #include <vector>
 #include <string>
+#include <limits>
 
 #include "GridVector.h"
 #include "MPI/HaloBuffer.h"
+#include "Utilities/Errors.h"
 
 namespace dare::Data {
 
+/*!
+ * @brief manages field related data and stores time steps
+ * @tparam Grid type of grid
+ * @tparam SC type of scalar
+ * @tparam N number of components
+ * This Field can store arbitrary amounts of timesteps. Recommended use is to
+ * utilize the grid at level 0 as current timestep and subsequently store
+ * timesteps at levels 1, 2, ...
+ */
 template <typename Grid, typename SC, std::size_t N>
 class Field {
 public:
@@ -43,7 +54,8 @@ public:
     using ScalarType = SC;
     using VectorType = GridVector<Grid, SC, N>;
 
-    static const unsigned int version = 0;  //!< used for serialization
+    static const std::size_t NUM_COMPONENTS{N};  //!< number of components
+    static const unsigned int version = 0;       //!< used for serialization
 
     /*!
      * @brief initializing constructor
@@ -53,21 +65,59 @@ public:
      */
     Field(std::string identifier, GridRepresentation grid_rep, std::size_t num_time_levels);
 
+    /*!
+     * @brief default destructor
+     */
     virtual ~Field();
 
+    /*!
+     * @brief Getter for fields
+     * @param time_level time level to access
+     */
     VectorType& GetDataVector(std::size_t time_level = 0);
+
+    /*!
+     * @brief const getter for fields
+     * @param time_level time level to access
+     */
     const VectorType& GetDataVector(std::size_t time_level = 0) const;
 
+    /*!
+     * @brief provides field name for identification
+     */
     std::string GetFieldName() const;
 
+    /*!
+     * @brief getter for grid representation
+     */
     GridRepresentation& GetGridRepresentation();
+
+    /*!
+     * @brief const getter for GridRepresentation
+     */
     const GridRepresentation& GetGridRepresentation() const;
 
+    /*!
+     * @brief getter for execution manager
+     */
     dare::mpi::ExecutionManager* GetExecutionManager();
 
+    /*!
+     * @brief initializes cascade of copy steps
+     */
     void CopyDataVectorsToOldTimeStep();
 
+    /*!
+     * @brief Exchanges halo cells at level 0
+     */
     void ExchangeHaloCells();
+
+    /*!
+     * @brief provides number of allocated timesteps
+     */
+    std::size_t GetNumberTimesteps() const;
+
+    void SetValues(SC v, std::size_t time_step = std::numeric_limits<std::size_t>::max());
 
 private:
     std::string identifier;         //!< name of the field
@@ -75,6 +125,35 @@ private:
 };
 
 }  // end namespace dare::Data
+
+namespace dare {
+
+/*!
+ * @brief type trait to determine if type is a Field
+ * @tparam T type to test
+ * This is the SFINAE option for false
+ */
+template <typename T>
+struct is_field : std::false_type{
+};
+
+/*!
+ * @brief type trait to determine if type is a Field
+ * @tparam T type to test
+ * This is the SFINAE option for true
+ */
+template<typename Grid, typename SC, std::size_t N>
+struct is_field<Data::Field<Grid, SC, N>> : std::true_type{
+};
+
+template <typename Grid, typename SC, std::size_t N>
+struct is_field<const Data::Field<Grid, SC, N>> : std::true_type {
+};
+
+template <typename T>
+static const bool is_field_v = is_field<T>::value;
+
+}  // end namespace dare
 
 #include "Field.inl"
 

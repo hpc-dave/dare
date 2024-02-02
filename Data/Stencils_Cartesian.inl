@@ -161,6 +161,16 @@ CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
+SC& CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::Center(std::size_t n) {
+    return GetValue(Positions::CENTER, n);
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+SC CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::Center(std::size_t n) const {
+    return GetValue(Positions::CENTER, n);
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
 void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValue(Positions pos, std::size_t n, SC v) {
     RangeCheck(__func__, pos, n);
     coefficients[n][Grid::ToNum(pos)] = v;
