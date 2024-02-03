@@ -32,13 +32,15 @@ Cartesian<Dim>::Cartesian() : exec_man(nullptr) {
 
 template <std::size_t Dim>
 template <typename Distributor>
-Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
-                                      const typename Cartesian<Dim>::VecGO& res,
-                                      const typename Cartesian<Dim>::VecSC& size,
-                                      const LO _num_ghost,
-                                      const VecLO& periodic,
-                                      Distributor dist)
-    : resolution_global(res),
+Cartesian<Dim>::Cartesian(std::string _name,
+                          mpi::ExecutionManager* _exec_man,
+                          const typename Cartesian<Dim>::VecGO& res,
+                          const typename Cartesian<Dim>::VecSC& size,
+                          const LO _num_ghost,
+                          const VecLO& periodic,
+                          Distributor dist)
+    : name(_name),
+      resolution_global(res),
       size_global(size),
       cell_volume(1.),
       num_ghost(_num_ghost),
@@ -48,6 +50,16 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
     static_assert(std::is_signed_v<LO> && std::is_integral_v<LO>, "The local ordinal needs to be a signed integer!");
     static_assert(std::is_signed_v<GO> && std::is_integral_v<GO>, "The global ordinal needs to be a signed integer!");
 
+    // test if grid with same name was already allocated and register this one
+    auto it = std::find(details::Cartesian::allocation_manager.begin(),
+                        details::Cartesian::allocation_manager.end(),
+                        name);
+    if (it != details::Cartesian::allocation_manager.end()) {
+        ERROR << "The requested grid name '" << name << "'is already registered, chose an alternative!" << ERROR_CLOSE;
+        exec_man->Terminate(__func__, "double allocation");
+    }
+    details::Cartesian::allocation_manager.push_back(name);
+
     // Test for some potentially problematic resolutions
     for (std::size_t dim{0}; dim < Dim; dim++) {
         if (res[dim] <= num_ghost) {
@@ -56,7 +68,8 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
                << "The resolution in Dimension " << dim << " was found to be " << res[dim]
                << " but should be > " << num_ghost << "!\n"
                << " Otherwise the halo buffers might become problematic\n";
-            exec_man->Terminate(__func__, os.str());
+            ERROR << os.str() << ERROR_CLOSE;
+            exec_man->Terminate(__func__, "problematic resolution");
         }
     }
     /*
@@ -103,11 +116,22 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
 }
 
 template <std::size_t Dim>
+template <typename Distributor>
+Cartesian<Dim>::Cartesian(mpi::ExecutionManager* exec_man,
+                          const typename Cartesian<Dim>::VecGO& res,
+                          const typename Cartesian<Dim>::VecSC& size,
+                          const LO num_ghost,
+                          const VecLO& periodic,
+                          Distributor dist)
+                          : Cartesian("Cartesian", exec_man, res, size, num_ghost, periodic, dist) {
+}
+
+template <std::size_t Dim>
 Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
-                                      const typename Cartesian<Dim>::VecGO& res,
-                                      const typename Cartesian<Dim>::VecSC& size,
-                                      const LO _num_ghost,
-                                      const VecLO& periodic)
+                          const typename Cartesian<Dim>::VecGO& res,
+                          const typename Cartesian<Dim>::VecSC& size,
+                          const LO _num_ghost,
+                          const VecLO& periodic)
     : Cartesian(_exec_man,
                 res,
                 size,
@@ -134,7 +158,15 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
 }
 
 template <std::size_t Dim>
-Cartesian<Dim>::~Cartesian() {}
+Cartesian<Dim>::~Cartesian() {
+    auto it = std::find(details::Cartesian::allocation_manager.begin(),
+                        details::Cartesian::allocation_manager.end(),
+                        name);
+    if (it == details::Cartesian::allocation_manager.end()) {
+        ERROR << "The grid could not be found during deallocation in the registry" << ERROR_CLOSE;
+    }
+    dare::Grid::details::Cartesian::allocation_manager.erase(it);
+}
 
 template <std::size_t Dim>
 typename Cartesian<Dim>::Representation Cartesian<Dim>::GetRepresentation(Options opt) {
@@ -220,6 +252,11 @@ bool Cartesian<Dim>::IsPeriodic() const {
 template <std::size_t Dim>
 mpi::ExecutionManager* Cartesian<Dim>::GetExecutionManager() const {
     return exec_man;
+}
+
+template <std::size_t Dim>
+std::string Cartesian<Dim>::GetName() const {
+    return name;
 }
 
 }  // namespace dare::Grid

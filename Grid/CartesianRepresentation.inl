@@ -30,7 +30,7 @@ CartesianRepresentation<Dim>::CartesianRepresentation()
 
 template <std::size_t Dim>
 CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
-                                                                  typename GridType::Options opt)
+                                                      typename GridType::Options opt)
             : grid(grid),
               options(opt) {
     /*
@@ -47,6 +47,11 @@ CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
     // either way, the user should be warned before doing something stupid
     static_assert(Dim <= 4,
         "Currently, grids cannot have more than 4 dimensions. Not sure what you're trying to do here, weirdo?!");
+    name = grid->GetName();
+    name += "_";
+    for (std::size_t d{0}; d < Dim; d++) {
+        name += std::to_string(opt[d]);
+    }
 
     // Get information from main grid
     resolution_local = grid->GetLocalResolution();
@@ -617,6 +622,11 @@ template <std::size_t Dim>
 mpi::HaloBuffer<typename CartesianRepresentation<Dim>::SC>&
 CartesianRepresentation<Dim>::GetHaloBuffer() {
     return halo_buffer;
+}
+
+template <std::size_t Dim>
+std::string CartesianRepresentation<Dim>::GetName() const {
+    return name;
 }
 
 }  // namespace dare::Grid

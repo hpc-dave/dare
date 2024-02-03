@@ -270,6 +270,11 @@ public:
      */
     mpi::HaloBuffer<SC>& GetHaloBuffer();
 
+    /*!
+     * @brief provides name of the grid including options
+     */
+    std::string GetName() const;
+
 private:
     /*!
      * @brief Tests if grid is initialized
@@ -277,6 +282,7 @@ private:
      */
     void TestIfInitialized(std::string function) const;
 
+    std::string name;                  //!< Identifier of the grid instance
     const Cartesian<Dim>* grid;        //!< pointer to grid
     Options options;                   //!< grid specific options
     VecLO resolution_local;            //!< resolution of the local grid
@@ -292,7 +298,7 @@ private:
     VecLO hierarchic_sum_loc_internal;   //!< same as above, just for the internal cells
 
     mpi::HaloBuffer<SC> halo_buffer;  //!< maps with Halo Buffers
-    };
+};
 
 }  // namespace dare::Grid
 
