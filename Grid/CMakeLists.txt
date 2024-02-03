@@ -7,12 +7,18 @@ set(DaRe_HEADER_FILES
     "DefaultTypes.h"
 )
 
+set(DaRe_SOURCE_FILES
+    # "Cartesian.cpp"
+)
+
 target_sources(dare
     PRIVATE ${DaRe_HEADER_FILES}
+    PRIVATE ${DaRe_SOURCE_FILES}
 )
 
 target_sources(exec
     PRIVATE ${DaRe_HEADER_FILES}
+    PRIVATE ${DaRe_SOURCE_FILES}
 )
 
 if(USE_GTEST)
