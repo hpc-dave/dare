@@ -41,6 +41,7 @@ namespace dare::Data {
 template<typename Grid, typename T, std::size_t N = 1>
 class GridVector {
 public:
+    static const std::size_t NUM_COMPONENTS{N};
     using GridType = Grid;
     using GridRepresentation = typename Grid::Representation;
     using LO = typename Grid::LocalOrdinalType;
@@ -212,6 +213,17 @@ public:
 
     const GridRepresentation& GetGridRepresentation() const;
     GridRepresentation& GetGridRepresentation();
+
+    /*!
+     * @brief overload for GetIdentifier for consistency
+     * @return 
+     */
+    std::string GetName() const;
+
+    /*!
+     * @brief provides number of components at run-time
+     */
+    std::size_t GetNumComponents() const;
 
 protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);

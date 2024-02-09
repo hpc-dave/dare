@@ -275,6 +275,17 @@ public:
      */
     std::string GetName() const;
 
+    /*!
+     * @brief returns dimensional offset cell to origin
+     */
+    const VecSC& GetOffsetSize() const;
+
+    /*!
+     * @brief returns offset to origin in cells
+     * @return 
+     */
+    const VecGO& GetOffsetCells() const;
+
 private:
     /*!
      * @brief Tests if grid is initialized

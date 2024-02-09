@@ -201,6 +201,7 @@ add_subdirectory(FileFormats                                          )
 add_subdirectory(Utilities                                            )
 add_subdirectory(MPI                                                  )
 add_subdirectory(Grid                                                 )
+add_subdirectory(IO                                                   )
 add_subdirectory(MatrixSystem                                         )
 add_subdirectory(Math                                                 )
 add_subdirectory(ScopeGuard                                           )
@@ -252,6 +253,7 @@ target_link_libraries(dare
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
+    PUBLIC ${VTK_LIBRARIES}
     PUBLIC Trilinos::all_selected_libs
     # PUBLIC trilinos
 )
@@ -263,6 +265,7 @@ target_link_libraries(exec
     PUBLIC Boost::regex
     PUBLIC Boost::serialization
     PUBLIC Boost::system
+    PUBLIC ${VTK_LIBRARIES}
     PUBLIC Trilinos::all_selected_libs
     # PUBLIC trilinos
 )

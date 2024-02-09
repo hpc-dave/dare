@@ -3,6 +3,7 @@ set(DaRe_HEADER_FILES
     "Interpolation.h"
     "Interpolation_Cartesian.h"
     "Pow.h"
+    "Random.h"
 )
 
 target_sources(dare

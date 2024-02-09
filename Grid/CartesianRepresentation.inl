@@ -47,10 +47,14 @@ CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
     // either way, the user should be warned before doing something stupid
     static_assert(Dim <= 4,
         "Currently, grids cannot have more than 4 dimensions. Not sure what you're trying to do here, weirdo?!");
+    char staggered_IDs[] = {'X', 'Y', 'Z'};
     name = grid->GetName();
     name += "_";
     for (std::size_t d{0}; d < Dim; d++) {
-        name += std::to_string(opt[d]);
+        if (opt[d] == 0)
+            name += 'S';
+        else
+            name += staggered_IDs[d];
     }
 
     // Get information from main grid
@@ -627,6 +631,18 @@ CartesianRepresentation<Dim>::GetHaloBuffer() {
 template <std::size_t Dim>
 std::string CartesianRepresentation<Dim>::GetName() const {
     return name;
+}
+
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::VecSC&
+CartesianRepresentation<Dim>::GetOffsetSize() const {
+    return offset_size;
+}
+
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::VecGO&
+CartesianRepresentation<Dim>::GetOffsetCells() const {
+    return offset_cells;
 }
 
 }  // namespace dare::Grid

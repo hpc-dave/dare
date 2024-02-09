@@ -172,4 +172,13 @@ std::string GridVector<Grid, T, N>::GetIdentifier() const {
     return ident_string;
 }
 
+template <typename Grid, typename T, std::size_t N>
+std::string GridVector<Grid, T, N>::GetName() const {
+    return GetIdentifier();
+}
+
+template <typename Grid, typename T, std::size_t N>
+std::size_t GridVector<Grid, T, N>::GetNumComponents() const {
+    return N;
+}
 }  // namespace dare::Data
