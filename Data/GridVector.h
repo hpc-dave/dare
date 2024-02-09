@@ -225,13 +225,27 @@ public:
      */
     std::size_t GetNumComponents() const;
 
+    /*!
+     * @brief allows specific naming of components for output
+     * @param n component ID
+     * @param name name to be set
+     */
+    void SetComponentName(std::size_t n, const std::string& name);
+
+    /*!
+     * @brief Provides name of component
+     * @param n component ID
+     */
+    const std::string& GetComponentName(std::size_t n) const;
+
 protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);
 
 private:
-    std::string ident_string;       //!< identification string
-    GridRepresentation grid;        //!< representation and reference to grid
-    DualViewType data;      //!< array with data
+    std::string ident_string;        //!< identification string
+    std::string component_names[N];  //!< names of the components, by default '0', '1', ...
+    GridRepresentation grid;         //!< representation and reference to grid
+    DualViewType data;               //!< array with data
 };
 
 }  // namespace dare::Data

@@ -98,6 +98,7 @@ TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
             scalar_data.At(i, n) = GetRandValue();
         }
     }
+    scalar_data.SetComponentName(0, "myscalar");
 
     writer.Write("",
                  std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),

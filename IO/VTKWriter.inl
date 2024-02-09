@@ -81,17 +81,30 @@ bool VTKWriter<Grid>::Write(const std::string& base_path, const PairLike&... dat
             // access vtk output type
             vtkNew<vtkDoubleArray> data_array;
             int num_components{0};
+            std::vector<std::string> cnames;
             VTKOutputType otype{VTKOutputType::SCALAR_DATA};
             // allocate field according to the specified type
             auto SetInformation = [&](std::size_t pos, auto instance) {
                 if (pos == num_instance) {
                     data_array->SetName(instance.second->GetName().c_str());
                     num_components = static_cast<int>(instance.second->GetNumComponents());
+                    cnames.resize(num_components);
+                    for (int n{0}; n < num_components; n++) {
+                        cnames[n] = instance.second->GetComponentName(n);
+                    }
                 }
             };
             LoopThroughData<0>(SetInformation, data_tuple);
             data_array->SetNumberOfComponents(num_components);
             data_array->SetNumberOfTuples(vtkDataSet->GetNumberOfCells());
+            if (num_components > 1 || !cnames[0].empty()) {
+                for (int i{0}; i < num_components; i++) {
+                    std::string cname = cnames[i];
+                    if (cname.empty())
+                        cname = std::to_string(i);
+                    data_array->SetComponentName(i, cname.c_str());
+                }
+            }
             auto SetData = [&](std::size_t pos, auto instance) {
                 if (pos == num_instance) {
                     std::vector<double> tuple_like(num_components);

@@ -181,4 +181,13 @@ template <typename Grid, typename T, std::size_t N>
 std::size_t GridVector<Grid, T, N>::GetNumComponents() const {
     return N;
 }
+
+template <typename Grid, typename T, std::size_t N>
+void GridVector<Grid, T, N>::SetComponentName(std::size_t n, const std::string& name) {
+    component_names[n] = name;
+}
+template <typename Grid, typename T, std::size_t N>
+const std::string& GridVector<Grid, T, N>::GetComponentName(std::size_t n) const {
+    return component_names[n];
+}
 }  // namespace dare::Data
