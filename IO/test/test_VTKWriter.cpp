@@ -111,9 +111,10 @@ TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
     }
     scalar_data.SetComponentName(0, "myscalar");
 
-    writer.Write(*fsys_man,
+    bool res = writer.Write(*fsys_man,
                  std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
                  std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
+    EXPECT_TRUE(res);
 }
 
 TEST_F(VTKWriterTestsCartesian2Dim, GridVectorOutputTest) {
@@ -140,9 +141,10 @@ TEST_F(VTKWriterTestsCartesian2Dim, GridVectorOutputTest) {
     scalar_data.SetComponentName(0, "myscalar_0");
     scalar_data.SetComponentName(1, "myscalar_1");
 
-    writer.Write(*fsys_man,
+    bool res = writer.Write(*fsys_man,
                  std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
                  std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
+    EXPECT_TRUE(res);
 }
 
 TEST_F(VTKWriterTestsCartesian3Dim, GridVectorOutputTest) {
@@ -175,7 +177,8 @@ TEST_F(VTKWriterTestsCartesian3Dim, GridVectorOutputTest) {
     scalar_data.SetComponentName(1, "myscalar_1");
     scalar_data.SetComponentName(2, "myscalar_2");
 
-    writer.Write(*fsys_man,
+    bool res = writer.Write(*fsys_man,
                  std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
                  std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
+    EXPECT_TRUE(res);
 }
