@@ -49,12 +49,11 @@ CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
         "Currently, grids cannot have more than 4 dimensions. Not sure what you're trying to do here, weirdo?!");
     char staggered_IDs[] = {'X', 'Y', 'Z'};
     name = grid->GetName();
-    name += "_";
     for (std::size_t d{0}; d < Dim; d++) {
-        if (opt[d] == 0)
-            name += 'S';
-        else
+        if (opt[d] != 0) {
+            name += "_";
             name += staggered_IDs[d];
+        }
     }
 
     // Get information from main grid

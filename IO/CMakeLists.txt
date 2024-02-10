@@ -1,29 +1,31 @@
 set(DaRe_HEADER_FILES
-    "IODefaults.h"
+    "FileSystemOperations.h"
+    "FileSystemManager.h"
     "VTKOptions.h"
     "VTKOptions_Cartesian.h"
     "VTKWriter.h"
     "VTKWriter.inl"
 )
 
-# set(DaRe_SOURCE_FILES
-#     "ExecutionManager.cpp"
-# )
+set(DaRe_SOURCE_FILES
+    "FileSystemOperations.cpp"
+    "FileSystemManager.cpp"
+)
 
 target_sources(dare
     PRIVATE ${DaRe_HEADER_FILES}
-    # PRIVATE ${DaRe_SOURCE_FILES}
+    PRIVATE ${DaRe_SOURCE_FILES}
 )
 
 target_sources(exec
     PRIVATE ${DaRe_HEADER_FILES}
-    # PRIVATE ${DaRe_SOURCE_FILES}
+    PRIVATE ${DaRe_SOURCE_FILES}
 )
 
 if(USE_GTEST)
     target_sources(unit_test
         PRIVATE ${DaRe_HEADER_FILES}
-        # PRIVATE ${DaRe_SOURCE_FILES}
+        PRIVATE ${DaRe_SOURCE_FILES}
     )
     add_subdirectory(test)
 endif()

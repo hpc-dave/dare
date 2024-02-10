@@ -40,7 +40,31 @@
 namespace dare::Grid {
 namespace details::Cartesian {
 static std::list<std::string> allocation_manager;  //!< helper to manage singular naming of grid
+inline bool RegisterGrid(const std::string& gname) {
+    // test if grid with same name was already allocated and register this one
+    auto it = std::find(details::Cartesian::allocation_manager.begin(),
+                        details::Cartesian::allocation_manager.end(),
+                        gname);
+    if (it != details::Cartesian::allocation_manager.end()) {
+        ERROR << "The requested grid name '" << gname << "'is already registered, chose an alternative!" << ERROR_CLOSE;
+        return false;
+    }
+    details::Cartesian::allocation_manager.push_back(gname);
+    return true;
 }
+
+inline bool DeregisterGrid(const std::string& gname) {
+    auto it = std::find(details::Cartesian::allocation_manager.begin(),
+                        details::Cartesian::allocation_manager.end(),
+                        gname);
+    if (it == details::Cartesian::allocation_manager.end()) {
+        ERROR << "The grid "<< gname << " could not be found during deallocation in the registry" << ERROR_CLOSE;
+        return false;
+    }
+    dare::Grid::details::Cartesian::allocation_manager.erase(it);
+    return true;
+}
+}  // end namespace details::Cartesian
 
 enum class CartesianNeighbor : char {
     CENTER = 0,
@@ -215,11 +239,26 @@ public:
         Distributor distributor);
 
     Cartesian(
+        const std::string& name,
         mpi::ExecutionManager* exec_man,
         const VecGO& resolution,
         const VecSC& size,
         const LO num_ghost,
         const VecLO& periodic);
+
+    Cartesian(
+        mpi::ExecutionManager* exec_man,
+        const VecGO& resolution,
+        const VecSC& size,
+        const LO num_ghost,
+        const VecLO& periodic);
+
+    Cartesian(
+        const std::string& name,
+        mpi::ExecutionManager * exec_man,
+        const VecGO& resolution,
+        const VecSC& size,
+        const LO num_ghost);
 
     Cartesian(
         mpi::ExecutionManager* exec_man,

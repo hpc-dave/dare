@@ -51,14 +51,9 @@ Cartesian<Dim>::Cartesian(std::string _name,
     static_assert(std::is_signed_v<GO> && std::is_integral_v<GO>, "The global ordinal needs to be a signed integer!");
 
     // test if grid with same name was already allocated and register this one
-    auto it = std::find(details::Cartesian::allocation_manager.begin(),
-                        details::Cartesian::allocation_manager.end(),
-                        name);
-    if (it != details::Cartesian::allocation_manager.end()) {
-        ERROR << "The requested grid name '" << name << "'is already registered, chose an alternative!" << ERROR_CLOSE;
+    if (!details::Cartesian::RegisterGrid(name)) {
         exec_man->Terminate(__func__, "double allocation");
     }
-    details::Cartesian::allocation_manager.push_back(name);
 
     // Test for some potentially problematic resolutions
     for (std::size_t dim{0}; dim < Dim; dim++) {
@@ -146,6 +141,27 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
 }
 
 template <std::size_t Dim>
+Cartesian<Dim>::Cartesian(const std::string& _name,
+                          mpi::ExecutionManager* _exec_man,
+                          const typename Cartesian<Dim>::VecGO& res,
+                          const typename Cartesian<Dim>::VecSC& size,
+                          const LO _num_ghost,
+                          const VecLO& periodic)
+    : Cartesian(_name,
+                _exec_man,
+                res,
+                size,
+                _num_ghost,
+                periodic,
+                [](mpi::ExecutionManager* a,
+                   const typename Cartesian<Dim>::VecGO& b,
+                   typename Cartesian<Dim>::VecLO* c,
+                   typename Cartesian<Dim>::VecGO* d) {
+                    dare::Grid::CartesianDistribution_MPI_Dims_create(a, b, c, d);
+                }) {
+}
+
+template <std::size_t Dim>
 Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
                                       const typename Cartesian<Dim>::VecGO& res,
                                       const typename Cartesian<Dim>::VecSC& size,
@@ -158,14 +174,24 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
 }
 
 template <std::size_t Dim>
+Cartesian<Dim>::Cartesian(const std::string& _name,
+                          mpi::ExecutionManager* _exec_man,
+                          const typename Cartesian<Dim>::VecGO& res,
+                          const typename Cartesian<Dim>::VecSC& size,
+                          const LO _num_ghost)
+    : Cartesian(_name,
+                _exec_man,
+                res,
+                size,
+                _num_ghost,
+                VecLO()) {
+}
+
+template <std::size_t Dim>
 Cartesian<Dim>::~Cartesian() {
-    auto it = std::find(details::Cartesian::allocation_manager.begin(),
-                        details::Cartesian::allocation_manager.end(),
-                        name);
-    if (it == details::Cartesian::allocation_manager.end()) {
-        ERROR << "The grid could not be found during deallocation in the registry" << ERROR_CLOSE;
+    if (!details::Cartesian::DeregisterGrid(name)) {
+        exec_man->Terminate(__func__, "register issue");
     }
-    dare::Grid::details::Cartesian::allocation_manager.erase(it);
 }
 
 template <std::size_t Dim>

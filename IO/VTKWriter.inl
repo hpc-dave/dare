@@ -31,15 +31,20 @@ VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man)
 
 template <typename Grid>
 template <typename... PairLike>
-bool VTKWriter<Grid>::Write(const std::string& base_path, const PairLike&... data) {
+bool VTKWriter<Grid>::Write(const std::string& base_path,
+                            const std::string& parallel_folder_name,
+                            const PairLike&... data) {
     static_assert(sizeof...(PairLike) > 0, "at least one data set has to be provided for writing!");
     using LO = typename Grid::LocalOrdinalType;
     const std::string proc_id = std::to_string(exec_man->GetRank());
-    std::string parallel_data_path;
-    if (!base_path.empty())
-        parallel_data_path += base_path + "/";
-
-    parallel_data_path += proc_id + "/";
+    std::string parallel_data_path(base_path);
+    if (!parallel_data_path.empty()) {
+        if (base_path.back() != '/')
+            parallel_data_path += '/';
+    }
+    parallel_data_path += parallel_folder_name;
+    if (parallel_data_path.back() != '/')
+        parallel_data_path += '/';
 
     // convert parameter pack to tuple to use STL-functionality
     auto data_tuple = std::forward_as_tuple(data...);
@@ -97,7 +102,7 @@ bool VTKWriter<Grid>::Write(const std::string& base_path, const PairLike&... dat
             LoopThroughData<0>(SetInformation, data_tuple);
             data_array->SetNumberOfComponents(num_components);
             data_array->SetNumberOfTuples(vtkDataSet->GetNumberOfCells());
-            if (num_components > 1 || !cnames[0].empty()) {
+            if (num_components > 1) {
                 for (int i{0}; i < num_components; i++) {
                     std::string cname = cnames[i];
                     if (cname.empty())
@@ -137,9 +142,12 @@ bool VTKWriter<Grid>::Write(const std::string& base_path, const PairLike&... dat
         vtkNew<WriterType> writer;
         std::ostringstream os;
 
-        os <<   parallel_data_path
+        os << parallel_data_path
              << grep->GetName()
              << "." << writer->GetDefaultFileExtension();
+        exec_man->Print(dare::mpi::Verbosity::Medium) << "Writing to file "
+                << parallel_data_path << "*" << grep->GetName()
+                << "." << writer->GetDefaultFileExtension() << std::endl;
         writer->SetFileName(os.str().c_str());
         writer->SetInputData(vtkDataSet);
         writer->Write();
@@ -147,6 +155,20 @@ bool VTKWriter<Grid>::Write(const std::string& base_path, const PairLike&... dat
     return true;
 }
 
+template <typename Grid>
+template <typename... PairLike>
+bool VTKWriter<Grid>::Write(const FileSystemManager& fman, const PairLike&... data) {
+    if (!fman.CreateCommonDirectory(fman.GetOutputPath()) && exec_man->AmIRoot()) {
+        ERROR << "Could not create the output folder!" << ERROR_CLOSE;
+        return false;
+    }
+    std::string pfolder_name = std::to_string(exec_man->GetRank());
+    if (!fman.CreateDirectory(fman.GetOutputPath().native() + '/' + pfolder_name, true)) {
+        ERROR << "An error occured while creating the folder for paralle output!" << ERROR_CLOSE;
+        return false;
+    }
+    return Write(fman.GetOutputPath().native(), pfolder_name, data...);
+}
 template <typename Grid>
 template <std::size_t I, typename Lambda, typename... Data>
 void VTKWriter<Grid>::LoopThroughData(Lambda lambda, std::tuple<const Data&...> data) {

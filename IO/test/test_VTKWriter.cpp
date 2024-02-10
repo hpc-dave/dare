@@ -27,6 +27,7 @@
 #include "Grid/DefaultTypes.h"
 #include "IO/VTKOptions_Cartesian.h"
 #include "IO/VTKWriter.h"
+#include "IO/FileSystemManager.h"
 #include "Math/Interpolation_Cartesian.h"
 #include "Math/Random.h"
 
@@ -64,14 +65,24 @@ public:
 
     void SetUp() {
         const LO num_ghost{2};
-        grid = std::make_unique<GridType>(&exec_man,
+        std::string name_grid = "Cartesian";
+        name_grid += std::to_string(Dim) + "D";
+        grid = std::make_unique<GridType>(
+                                          name_grid,
+                                          &exec_man,
                                           dare::test::GetResolutionTestVTKWriterCart<Dim>(),
                                           dare::test::GetSizeTestVTKWriterCart<Dim>(),
                                           num_ghost);
+        fsys_man = std::make_unique<dare::io::FileSystemManager>(&exec_man);
+        fsys_man->SetOutputPath("cartesian_test");
+        fsys_man->CheckWithUser(false);
+        fsys_man->OverwriteFiles(true);
+        fsys_man->ClearContents(false);
     }
 
     std::unique_ptr<GridType> grid;        //!< the grid
     dare::mpi::ExecutionManager exec_man;  //!< the execution manager
+    std::unique_ptr<dare::io::FileSystemManager> fsys_man;  //!< a file system manager
 };
 
 using VTKWriterTestsCartesian1Dim = VTKWriterTestsCartesian<1>;
@@ -85,8 +96,8 @@ TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
     auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
     auto grep = grid->GetRepresentation(opt);
     auto grep_s = grid->GetRepresentation(opt_s);
-    GridVector vector_data("1D_vector", grep);
-    GridVector scalar_data("1D_scalar", grep_s);
+    GridVector vector_data("3D_vector", grep);
+    GridVector scalar_data("3D_scalar", grep_s);
     VTKWriter writer(&exec_man);
     for (LO i{0}; i < grep.GetNumberLocalCells(); i++) {
         for (std::size_t n{0}; n < N; n++) {
@@ -100,7 +111,71 @@ TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
     }
     scalar_data.SetComponentName(0, "myscalar");
 
-    writer.Write("",
+    writer.Write(*fsys_man,
+                 std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
+                 std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
+}
+
+TEST_F(VTKWriterTestsCartesian2Dim, GridVectorOutputTest) {
+    Options opt(0, 0);    // not staggered option
+    Options opt_s(1, 0);  // staggered options
+
+    dare::math::Randomizer dice(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
+    auto grep = grid->GetRepresentation(opt);
+    auto grep_s = grid->GetRepresentation(opt_s);
+    GridVector vector_data("2D_vector", grep);
+    GridVector scalar_data("2D_scalar", grep_s);
+    VTKWriter writer(&exec_man);
+    for (LO i{0}; i < grep.GetNumberLocalCells(); i++) {
+        for (std::size_t n{0}; n < N; n++) {
+            vector_data.At(i, n) = GetRandValue();
+        }
+    }
+    for (LO i{0}; i < grep_s.GetNumberLocalCells(); i++) {
+        for (std::size_t n{0}; n < N; n++) {
+            scalar_data.At(i, n) = GetRandValue();
+        }
+    }
+    scalar_data.SetComponentName(0, "myscalar_0");
+    scalar_data.SetComponentName(1, "myscalar_1");
+
+    writer.Write(*fsys_man,
+                 std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
+                 std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
+}
+
+TEST_F(VTKWriterTestsCartesian3Dim, GridVectorOutputTest) {
+    Options opt(0, 0, 0);    // not staggered option
+    Options opt_s(1, 0, 0);  // staggered options
+
+    dare::math::Randomizer dice(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
+    auto grep = grid->GetRepresentation(opt);
+    auto grep_s = grid->GetRepresentation(opt_s);
+    GridVector vector_data("1D_vector", grep);
+    GridVector scalar_data("1D_scalar", grep_s);
+    VTKWriter writer(&exec_man);
+    for (LO i{0}; i < grep.GetLocalResolution().i(); i++) {
+        for (LO j{0}; j < grep.GetLocalResolution().j(); j++) {
+            for (LO k{0}; k < grep.GetLocalResolution().k(); k++) {
+                Index ind(i, j, k);
+                vector_data.At(ind, 0) = i;
+                vector_data.At(ind, 1) = j * 2;
+                vector_data.At(ind, 2) = k * 3;
+            }
+        }
+    }
+    for (LO i{0}; i < grep_s.GetNumberLocalCells(); i++) {
+        for (std::size_t n{0}; n < N; n++) {
+            scalar_data.At(i, n) = GetRandValue();
+        }
+    }
+    scalar_data.SetComponentName(0, "myscalar_0");
+    scalar_data.SetComponentName(1, "myscalar_1");
+    scalar_data.SetComponentName(2, "myscalar_2");
+
+    writer.Write(*fsys_man,
                  std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
                  std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
 }

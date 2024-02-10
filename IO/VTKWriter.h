@@ -39,6 +39,7 @@
 
 #include "MPI/ExecutionManager.h"
 #include "VTKOptions.h"
+#include "FileSystemManager.h"
 
 namespace dare::io {
 
@@ -65,7 +66,12 @@ public:
     explicit VTKWriter(mpi::ExecutionManager* ex_man);
 
     template<typename... Data>
-    bool Write(const std::string& base_path, const Data&... data);
+    bool Write(const std::string& base_path,
+               const std::string& parallel_folder_name,
+               const Data&... data);
+
+    template <typename... Data>
+    bool Write(const FileSystemManager& fman, const Data&... data);
 
 private:
     template<std::size_t I, typename Lambda, typename... Data>

@@ -2,7 +2,7 @@
  * MIT License
  *
  * Copyright (c) 2024 David Rieder
-
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -22,27 +22,28 @@
  * SOFTWARE.
  */
 
-#ifndef IO_IODEFAULTS_H_
-#define IO_IODEFAULTS_H_
+#ifndef IO_FILESYSTEMOPERATIONS_H_
+#define IO_FILESYSTEMOPERATIONS_H_
 
 #include <string>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 namespace dare::io {
 
-struct IODefaultOptions {
-    std::string PROCESS_FOLDER_BASE_NAME = "";
-    std::string OUTPUT_BASE_PATH = "";
-    std::string INPUT_BASE_PATH = "";
-} IODefaults;
+using Path = boost::filesystem::path;
 
-std::string GetFolderName(int process) {
-    return IODefaults.PROCESS_FOLDER_BASE_NAME + std::to_string(process);
-}
+namespace details {
 
-std::string GetBaseOutputPath() {
-    return IODefaults.OUTPUT_BASE_PATH;
-}
+bool Exists(const Path& path);
+bool IsDirectory(const Path& path);
+bool IsDirectoryEmpty(const Path& path);
+bool CreateDirectory(const Path& path);
+bool RemoveAllEntries(const Path& path);
+bool CreateDirectoryRecursive(const Path& path);
+
+}  // end namespace details
 
 }  // end namespace dare::io
 
-#endif  // IO_IODEFAULTS_H_
+#endif  // IO_FILESYSTEMOPERATIONS_H_
