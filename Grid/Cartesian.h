@@ -39,40 +39,31 @@
 
 namespace dare::Grid {
 namespace details::Cartesian {
+/*!
+ * @brief A small object to avoid double definition of grids of same names
+ */
 class AllocationManager {
-    static std::list<std::string> reg;
+    static std::list<std::string> reg;  //!< register for grid names
 public:
-
+    /*!
+     * @brief registering a name 
+     * @param gname name of the grid to register
+     * @return true, if not registered before, false if another grid exists
+     */
     static bool RegisterGrid(const std::string& gname);
+
+    /*!
+     * @brief removing grid from register
+     * @param gname name of the grid to deregister
+     * @return true, if successful, false if gridname unknown
+     */
     static bool DeregisterGrid(const std::string& gname);
 };
-// static std::list<std::string> allocation_manager;  //!< helper to manage singular naming of grid
-// inline bool RegisterGrid(const std::string& gname) {
-//     // test if grid with same name was already allocated and register this one
-//     auto it = std::find(details::Cartesian::allocation_manager.begin(),
-//                         details::Cartesian::allocation_manager.end(),
-//                         gname);
-//     if (it != details::Cartesian::allocation_manager.end()) {
-//         ERROR << "The requested grid name '" << gname << "'is already registered, chose an alternative!" << ERROR_CLOSE;
-//         return false;
-//     }
-//     details::Cartesian::allocation_manager.push_back(gname);
-//     return true;
-// }
-
-// inline bool DeregisterGrid(const std::string& gname) {
-//     auto it = std::find(details::Cartesian::allocation_manager.begin(),
-//                         details::Cartesian::allocation_manager.end(),
-//                         gname);
-//     if (it == details::Cartesian::allocation_manager.end()) {
-//         ERROR << "The grid "<< gname << " could not be found during deallocation in the registry" << ERROR_CLOSE;
-//         return false;
-//     }
-//     dare::Grid::details::Cartesian::allocation_manager.erase(it);
-//     return true;
-// }
 }  // end namespace details::Cartesian
 
+/*!
+ * @brief identifiers for neighbor IDs of a Cartesian cell
+ */
 enum class CartesianNeighbor : char {
     CENTER = 0,
     WEST = 1,
@@ -155,6 +146,10 @@ enum class CartesianNeighbor : char {
     return CNB::FOURD_UP;  // most unlikely to be ever used
 }
 
+/*!
+ * @brief converts an integer to enum
+ * @tparam ID signed 8 bit integer
+ */
 template <char ID>
 [[nodiscard]] constexpr CartesianNeighbor ToCartesianNeighbor() {
     static_assert(ID >= 0 && ID < 9);
