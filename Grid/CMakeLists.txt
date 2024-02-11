@@ -8,7 +8,7 @@ set(DaRe_HEADER_FILES
 )
 
 set(DaRe_SOURCE_FILES
-    # "Cartesian.cpp"
+    "Cartesian.cpp"
 )
 
 target_sources(dare

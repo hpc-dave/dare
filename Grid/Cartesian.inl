@@ -51,7 +51,8 @@ Cartesian<Dim>::Cartesian(std::string _name,
     static_assert(std::is_signed_v<GO> && std::is_integral_v<GO>, "The global ordinal needs to be a signed integer!");
 
     // test if grid with same name was already allocated and register this one
-    if (!details::Cartesian::RegisterGrid(name)) {
+    // if (!details::Cartesian::RegisterGrid(name)) {
+    if (!details::Cartesian::AllocationManager::RegisterGrid(name)) {
         exec_man->Terminate(__func__, "double allocation");
     }
 
@@ -189,7 +190,7 @@ Cartesian<Dim>::Cartesian(const std::string& _name,
 
 template <std::size_t Dim>
 Cartesian<Dim>::~Cartesian() {
-    if (!details::Cartesian::DeregisterGrid(name)) {
+    if (!details::Cartesian::AllocationManager::DeregisterGrid(name)) {
         exec_man->Terminate(__func__, "register issue");
     }
 }
