@@ -31,8 +31,10 @@ namespace dare::math {
  * \brief tests if an integral number is a integral root of another
  * @tparam NUM number which is tested
  * @tparam ROOT potential root of the number
+ * Note, that root here refers to the possibility to retain the original number
+ * with an exponent
  */
-template<std::size_t NUM, std::size_t ROOT>
+template<int NUM, int ROOT>
 constexpr bool IsRootOf() {
     if constexpr (NUM == 0)
         return false;
@@ -50,36 +52,45 @@ constexpr bool IsRootOf() {
  * \brief computes divisor at compile time
  * @tparam DIV integral value by which is divided
  * @tparam T type of variable
- * @tparam TEnable make sure the divisor is a multiple of 2 and not integral
- * This is a convenient way to avoid writing magic numbers in the code with ugly
- * if statements
+ * @tparam TEnable check to make sure we don't try to get the divisor for an integral value
+ * Note, that division of integral values is heavily optimized by bitshifting. A divisor will
+ * not lead to the desired result and may lead to a loss in accuracy!
  */
-template <typename T,
-          std::size_t DIV,
-          typename TEnable = std::enable_if_t<!std::is_integral_v<T> && (IsRootOf<DIV, 2>() || DIV == 1)>>
+template<typename T, int Denominator, typename TEnable = std::enable_if_t<!std::is_integral_v<T>>>
 constexpr T Divisor() {
-    if constexpr (DIV == 1) {
-        return static_cast<T>(1.);
-    } else {
-        return Divisor<T, DIV / 2>() * static_cast<T>(0.5);
-    }
+    static_assert(Denominator != 0);
+    return static_cast<T>(1) / static_cast<T>(Denominator);
 }
 
 /*!
- * \brief Divides the provided floating point value by an integral value which is pow(2)
+ * \brief Divides the provided value by an integral value
  * @tparam DIV integral value by which is divided
  * @tparam T type of variable
  * @tparam TEnable make sure the divisor has the root 2
  */
-template <std::size_t DIV,
-          typename T,
-          typename TEnable = std::enable_if_t<IsRootOf<DIV, 2>() || DIV == 1>>
+template <int DIV,
+          typename T>
 [[nodiscard]] T Divide(T value) {
     if constexpr (std::is_integral_v<T>) {
         return value / DIV;
     } else {
         return value * Divisor<T, DIV>();
     }
+}
+
+/*!
+ * @brief provides division value at compile time
+ * @tparam T type of value we want to get
+ * @tparam Nominator integer nominator
+ * @tparam Denominator integer denominator
+ */
+template <typename T, int Nominator, int Denominator>
+[[nodiscard]] constexpr T Divide() {
+    if constexpr (std::is_integral_v<T>) {
+        static_assert(IsRootOf<Nominator, Denominator>,
+                      "I won't allow the loss of accuracy by dividing integer by not a root!");
+    }
+    return static_cast<T>(Nominator) / static_cast<T>(Denominator);
 }
 
 }  // end namespace dare::math

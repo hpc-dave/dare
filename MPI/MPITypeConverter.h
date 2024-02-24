@@ -128,6 +128,12 @@ inline MPI_Datatype GetMPIType<unsigned long long int>() { // NOLINT
     return MPI_UNSIGNED_LONG_LONG;
 }
 
+/* \brief . */
+template <>
+inline MPI_Datatype GetMPIType<char>() {
+    return MPI_CHAR;
+}
+
 }  // namespace dare::mpi
 
 #endif  // MPI_MPITYPECONVERTER_H_
