@@ -82,4 +82,20 @@ void ExecutionManager::Barrier() const {
 
     MPI_Barrier(MPI_COMM_WORLD);
 }
+
+int ExecutionManager::Waitall(std::vector<MPI_Request>& requests, std::vector<MPI_Status>& status) {
+    if (requests.size() > status.size()) {
+        ERROR << "Size of status array (" << status.size() << ") incompatible with size request array ("
+              << requests.size() << ")" << ERROR_CLOSE;
+    }
+    return Waitall(requests, status.data());
+}
+
+int ExecutionManager::Waitall(std::vector<MPI_Request>& requests, MPI_Status* status) {
+    return Waitall(requests.size(), requests.data(), status);
+}
+
+int ExecutionManager::Waitall(int count, MPI_Request* requests, MPI_Status* status) {
+    return MPI_Waitall(count, requests, status);
+}
 }  // namespace dare::mpi

@@ -35,6 +35,7 @@
 
 #include "MPITypeConverter.h"
 #include "OBlackHoleStream.h"
+#include "Utilities/Errors.h"
 
 namespace dare::mpi {
 
@@ -416,6 +417,29 @@ public:
      * @return MPI error
      */
     inline int Probe(int source, int tag, MPI_Status* status);
+
+    /*!
+     * @brief Stops execution until all requests are satisfied
+     * @param requests list of requests
+     * @param status list of statuses
+     */
+    int Waitall(std::vector<MPI_Request>& requests, std::vector<MPI_Status>& status); // NOLINT
+
+    /*!
+     * @brief stops execution until all requests are satisfied
+     * @param requests list of all requests
+     * @param status pointer to array with statuses
+     * @return 
+     */
+    int Waitall(std::vector<MPI_Request>& requests, MPI_Status* status = MPI_STATUSES_IGNORE);  // NOLINT
+
+    /*!
+     * @brief stops execution until all requests are satisfied
+     * @param count number of entries
+     * @param requests array of requests
+     * @param status array of statuses
+     */
+    int Waitall(int count, MPI_Request* requests, MPI_Status* status = MPI_STATUSES_IGNORE);
 
     /*!
      * \brief returns internal MPI-communicator
