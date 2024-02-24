@@ -644,4 +644,21 @@ CartesianRepresentation<Dim>::GetOffsetCells() const {
     return offset_cells;
 }
 
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::LO
+CartesianRepresentation<Dim>::GetNumberGhostCells() const {
+    return grid->GetNumGhost();
+}
+
+template <std::size_t Dim>
+uint8_t CartesianRepresentation<Dim>::GetBoundaryID() const {
+    return grid->GetBoundaryID();
+}
+
+template <std::size_t Dim>
+const typename CartesianRepresentation<Dim>::VecLO&
+CartesianRepresentation<Dim>::GetPeriodicity() const {
+    return grid->GetPeriodicity();
+}
+
 }  // namespace dare::Grid

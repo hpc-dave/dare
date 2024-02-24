@@ -286,6 +286,21 @@ public:
      */
     const VecGO& GetOffsetCells() const;
 
+    /*!
+     * @brief returns the number of ghost cells
+     */
+    [[nodiscard]] LO GetNumberGhostCells() const;
+
+    /*!
+     * @brief provides identifier for the boundaries of the domain
+     */
+    [[nodiscard]] uint8_t GetBoundaryID() const;
+
+    /*!
+     * @brief identifier of periodicity
+     */
+    [[nodiscard]] const VecLO& GetPeriodicity() const;
+
 private:
     /*!
      * @brief Tests if grid is initialized
