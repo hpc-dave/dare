@@ -91,6 +91,8 @@ using VTKWriterTestsCartesian3Dim = VTKWriterTestsCartesian<3>;
 TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
     Options opt(0);     // not staggered option
     Options opt_s(1);   // staggered options
+    double time = 0.2;
+    int step = 100;
 
     dare::math::Randomizer dice(-10000, 10000);
     auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
@@ -98,7 +100,7 @@ TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
     auto grep_s = grid->GetRepresentation(opt_s);
     GridVector vector_data("3D_vector", grep);
     GridVector scalar_data("3D_scalar", grep_s);
-    VTKWriter writer(&exec_man);
+    VTKWriter writer(&exec_man, time, step);
     for (LO i{0}; i < grep.GetNumberLocalCells(); i++) {
         for (std::size_t n{0}; n < N; n++) {
             vector_data.At(i, n) = GetRandValue();
@@ -112,14 +114,16 @@ TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
     scalar_data.SetComponentName(0, "myscalar");
 
     bool res = writer.Write(*fsys_man,
-                 std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
-                 std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
+                 std::make_pair(dare::io::VTKDataAgglomerateType::VECTORS, &vector_data),
+                 std::make_pair(dare::io::VTKDataAgglomerateType::SCALARS, &scalar_data));
     EXPECT_TRUE(res);
 }
 
 TEST_F(VTKWriterTestsCartesian2Dim, GridVectorOutputTest) {
     Options opt(0, 0);    // not staggered option
     Options opt_s(1, 0);  // staggered options
+    double time = 0.5;
+    int step = 200;
 
     dare::math::Randomizer dice(-10000, 10000);
     auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
@@ -127,7 +131,7 @@ TEST_F(VTKWriterTestsCartesian2Dim, GridVectorOutputTest) {
     auto grep_s = grid->GetRepresentation(opt_s);
     GridVector vector_data("2D_vector", grep);
     GridVector scalar_data("2D_scalar", grep_s);
-    VTKWriter writer(&exec_man);
+    VTKWriter writer(&exec_man, time, step);
     for (LO i{0}; i < grep.GetNumberLocalCells(); i++) {
         for (std::size_t n{0}; n < N; n++) {
             vector_data.At(i, n) = GetRandValue();
@@ -142,14 +146,16 @@ TEST_F(VTKWriterTestsCartesian2Dim, GridVectorOutputTest) {
     scalar_data.SetComponentName(1, "myscalar_1");
 
     bool res = writer.Write(*fsys_man,
-                 std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
-                 std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
+                 std::make_pair(dare::io::VTKDataAgglomerateType::VECTORS, &vector_data),
+                 std::make_pair(dare::io::VTKDataAgglomerateType::SCALARS, &scalar_data));
     EXPECT_TRUE(res);
 }
 
 TEST_F(VTKWriterTestsCartesian3Dim, GridVectorOutputTest) {
     Options opt(0, 0, 0);    // not staggered option
     Options opt_s(1, 0, 0);  // staggered options
+    double time = 0.67;
+    int step = 300;
 
     dare::math::Randomizer dice(-10000, 10000);
     auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
@@ -157,7 +163,7 @@ TEST_F(VTKWriterTestsCartesian3Dim, GridVectorOutputTest) {
     auto grep_s = grid->GetRepresentation(opt_s);
     GridVector vector_data("1D_vector", grep);
     GridVector scalar_data("1D_scalar", grep_s);
-    VTKWriter writer(&exec_man);
+    VTKWriter writer(&exec_man, time, step);
     for (LO i{0}; i < grep.GetLocalResolution().i(); i++) {
         for (LO j{0}; j < grep.GetLocalResolution().j(); j++) {
             for (LO k{0}; k < grep.GetLocalResolution().k(); k++) {
@@ -178,7 +184,7 @@ TEST_F(VTKWriterTestsCartesian3Dim, GridVectorOutputTest) {
     scalar_data.SetComponentName(2, "myscalar_2");
 
     bool res = writer.Write(*fsys_man,
-                 std::make_pair(dare::io::VTKOutputType::VECTORS, &vector_data),
-                 std::make_pair(dare::io::VTKOutputType::SCALAR_DATA, &scalar_data));
+                 std::make_pair(dare::io::VTKDataAgglomerateType::VECTORS, &vector_data),
+                 std::make_pair(dare::io::VTKDataAgglomerateType::SCALARS, &scalar_data));
     EXPECT_TRUE(res);
 }

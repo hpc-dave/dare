@@ -34,9 +34,10 @@ namespace dare::io {
 
 template <std::size_t Dim>
 struct VTKOptions<Grid::Cartesian<Dim>> {
-    using Representation = typename Grid::Cartesian<Dim>::Representation;
+    using CartesianGrid = Grid::Cartesian<Dim>;
+    using Representation = typename CartesianGrid::Representation;
     using GridType = vtkStructuredGrid;
-    using LO = typename Grid::Cartesian<Dim>::LocalOrdinalType;
+    using LO = typename CartesianGrid::LocalOrdinalType;
 
     /*!
      * @brief just some default which serves as example
@@ -87,15 +88,30 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         auto offset = grep.GetOffsetSize();
         offset -= 0.5 * dn;
         dare::utils::Vector<3, double> offset_3d(0., 0., 0.), dn_3d(0., 0., 0.);
+        dare::utils::Vector<3, int> offset_cells(0, 0, 0);
         for (std::size_t d{0}; d < Dim; d++) {
             dn_3d[d] = dn[d];
             offset_3d[d] = offset[d];
+            offset_cells[d] = grep.GetOffsetCells()[d];
         }
+        dare::utils::Vector<6, int> extent;
+        extent[0] = extent[1] = offset_cells[2];
+        extent[2] = extent[3] = offset_cells[1];
+        extent[4] = extent[5] = offset_cells[0];
+        // in x-direction
+        extent[5] += res_3d.i() - 1;
+        // in y-direction
+        if constexpr (Dim > 1)
+            extent[3] += res_3d.j() - 1;
+        // in z-direction
+        if constexpr (Dim > 2)
+            extent[1] += res_3d.k() - 1;
 
         vtkNew<vtkPoints> points;
         vtkNew<GridType> grid;
+        // points->SetDataTypeToDouble();
         points->SetNumberOfPoints(res_3d.i() * res_3d.j() * res_3d.k());
-        grid->SetDimensions(res_3d.i(), res_3d.j(), res_3d.k());
+        grid->SetExtent(extent.data());
 
         int count = 0;
         for (int k = 0; k < res_3d.k(); k++) {
@@ -112,6 +128,82 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         }
         grid->SetPoints(points);
         return grid;
+    }
+
+    static VTKExtent GetPExtentGlobal(const Representation& grep) {
+        using Index = typename Representation::IndexGlobal;
+        Index res = grep.GetGlobalResolution();
+        dare::utils::Vector<3, int> res_3d(0, 0, 0);
+        // VTK always expects 3D data, so we need accomodate that
+        for (std::size_t d{0}; d < Dim; d++) {
+            res_3d[d] = static_cast<int>(res[d]);
+        }
+        VTKExtent extent;
+        // just to be consistent with the other formulations
+        extent[0] = extent[1] = 0;
+        extent[2] = extent[3] = 0;
+        extent[4] = extent[5] = 0;
+        // in x-direction
+        extent[5] += res_3d.i();
+        // in y-direction
+        if constexpr (Dim > 1)
+            extent[3] += res_3d.j();
+        // in z-direction
+        if constexpr (Dim > 2)
+            extent[1] += res_3d.k();
+
+        return extent;
+    }
+
+    static VTKExtent GetPExtentLocal(const Representation& grep) {
+        using Index = typename Representation::Index;
+        Index res = grep.GetLocalResolution();
+        dare::utils::Vector<3, int> res_3d(0, 0, 0);
+        dare::utils::Vector<3, int> offset_cells(0, 0, 0);
+        // VTK always expects 3D data, so we need accomodate that
+        for (std::size_t d{0}; d < Dim; d++) {
+            res_3d[d] = static_cast<int>(res[d]);
+            offset_cells[d] = grep.GetOffsetCells()[d];
+        }
+        VTKExtent extent;
+        extent[0] = extent[1] = offset_cells[2];
+        extent[2] = extent[3] = offset_cells[1];
+        extent[4] = extent[5] = offset_cells[0];
+        // in x-direction
+        extent[5] += res_3d.i();
+        // in y-direction
+        if constexpr (Dim > 1)
+            extent[3] += res_3d.j();
+        // in z-direction
+        if constexpr (Dim > 2)
+            extent[1] += res_3d.k();
+
+        // for the parallel output, we need to remove the halo-layers
+        int num_ghost = static_cast<int>(grep.GetNumberGhostCells());
+        uint8_t bc = grep.GetBoundaryID();
+        if (!(bc & CartesianGrid::BOUNDARIES_WEST)) {
+            extent[4] += num_ghost;
+        }
+        if (!(bc & CartesianGrid::BOUNDARIES_EAST)) {
+            extent[5] -= num_ghost;
+        }
+        if constexpr (Dim > 1) {
+            if (!(bc & CartesianGrid::BOUNDARIES_SOUTH)) {
+                extent[2] += num_ghost;
+            }
+            if (!(bc & CartesianGrid::BOUNDARIES_NORTH)) {
+                extent[3] -= num_ghost;
+            }
+        }
+        if constexpr (Dim > 2) {
+            if (!(bc & CartesianGrid::BOUNDARIES_BOTTOM)) {
+                extent[0] += num_ghost;
+            }
+            if (!(bc & CartesianGrid::BOUNDARIES_TOP)) {
+                extent[1] -= num_ghost;
+            }
+        }
+        return extent;
     }
 };
 

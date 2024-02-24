@@ -1,6 +1,7 @@
 set(DaRe_HEADER_FILES
     "FileSystemOperations.h"
     "FileSystemManager.h"
+    "VTKPXMLStructuredGridWriter.h"
     "VTKOptions.h"
     "VTKOptions_Cartesian.h"
     "VTKWriter.h"
@@ -10,6 +11,8 @@ set(DaRe_HEADER_FILES
 set(DaRe_SOURCE_FILES
     "FileSystemOperations.cpp"
     "FileSystemManager.cpp"
+    "VTKPXMLStructuredGridWriter.cpp"
+    "VTKWriter.cpp"
 )
 
 target_sources(dare

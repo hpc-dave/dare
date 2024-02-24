@@ -28,16 +28,21 @@
 #include <vtkNew.h>
 
 #include "Grid/DefaultTypes.h"
-
+#include "Utilities/Vector.h"
 namespace dare::io {
+using VTKExtent = dare::utils::Vector<6, int>;
 
 /*!
  * @brief type of vtk output that is dealt with here
  */
+enum class VTKDataAgglomerateType {
+    VECTORS,
+    SCALARS
+};
+
 enum class VTKOutputType {
-    SCALAR_DATA,
-    POINT_DATA,
-    VECTORS
+    CELL_DATA,
+    POINT_DATA
 };
 
 /*!

@@ -22,11 +22,13 @@
  * SOFTWARE.
  */
 
+#include "VTKPXMLStructuredGridWriter.h"
+
 namespace dare::io {
 
 template<typename Grid>
-VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man)
-    : exec_man(ex_man) {
+VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man, double _time, int _step)
+    : exec_man(ex_man), time(_time), step(_step) {
 }
 
 template <typename Grid>
@@ -36,15 +38,9 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
                             const PairLike&... data) {
     static_assert(sizeof...(PairLike) > 0, "at least one data set has to be provided for writing!");
     using LO = typename Grid::LocalOrdinalType;
-    const std::string proc_id = std::to_string(exec_man->GetRank());
-    std::string parallel_data_path(base_path);
-    if (!parallel_data_path.empty()) {
-        if (base_path.back() != '/')
-            parallel_data_path += '/';
-    }
-    parallel_data_path += parallel_folder_name;
-    if (parallel_data_path.back() != '/')
-        parallel_data_path += '/';
+    std::string parallel_data_path = details::VTKGetParallelOutputPath(*exec_man,
+                                                                        base_path,
+                                                                        parallel_folder_name);
 
     // convert parameter pack to tuple to use STL-functionality
     auto data_tuple = std::forward_as_tuple(data...);
@@ -70,28 +66,34 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
         std::string grid_name = grid.first;
         const typename Grid::Representation* grep{representations[grid_name]};
 
+        // some data for the root file writing
+        std::list<VTKXMLPStructuredGridCData> c_data;
+
         // allocate vtkGrid
         vtkNew<GridType> vtkDataSet;
         vtkDataSet = VTKOptions<Grid>::GetGrid(*grep);
         int num_cells = vtkDataSet->GetNumberOfCells();
-
         if (num_cells != grep->GetNumberLocalCells()) {
             ERROR << "Number of cells are incompatible! VTK computed "
                   << num_cells << " vs the number of local cells: "
                   << grep->GetNumberLocalCells() << ERROR_CLOSE;
         }
 
+        // add time stamp, if time is negative this will be skipped
+        AddTimeStamp(vtkDataSet);
+
         // add data per data set
         for (auto num_instance : grid.second) {
             // access vtk output type
             vtkNew<vtkDoubleArray> data_array;
             int num_components{0};
+            std::string data_name;
             std::vector<std::string> cnames;
-            VTKOutputType otype{VTKOutputType::SCALAR_DATA};
+            VTKDataAgglomerateType otype{VTKDataAgglomerateType::SCALARS};
             // allocate field according to the specified type
             auto SetInformation = [&](std::size_t pos, auto instance) {
                 if (pos == num_instance) {
-                    data_array->SetName(instance.second->GetName().c_str());
+                    data_name = instance.second->GetName();
                     num_components = static_cast<int>(instance.second->GetNumComponents());
                     cnames.resize(num_components);
                     for (int n{0}; n < num_components; n++) {
@@ -100,6 +102,7 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
                 }
             };
             LoopThroughData<0>(SetInformation, data_tuple);
+            data_array->SetName(data_name.c_str());
             data_array->SetNumberOfComponents(num_components);
             data_array->SetNumberOfTuples(vtkDataSet->GetNumberOfCells());
             if (num_components > 1) {
@@ -127,30 +130,61 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
 
             // and add to data set
             switch (otype) {
-            case VTKOutputType::SCALAR_DATA:
+            case VTKDataAgglomerateType::SCALARS:
                 vtkDataSet->GetCellData()->SetScalars(data_array);
                 break;
-            case VTKOutputType::VECTORS:
+            case VTKDataAgglomerateType::VECTORS:
                 vtkDataSet->GetCellData()->SetVectors(data_array);
                 break;
             default:
                 ERROR << "Unsupported output type provided!" << ERROR_CLOSE;
             }
+
+            VTKXMLPStructuredGridCData c_data_loc;
+            c_data_loc.name = data_name;
+            c_data_loc.number_components = cnames.size();
+            c_data_loc.output_type = VTKOutputType::CELL_DATA;
+            c_data_loc.data_type = otype;
+            c_data.push_back(c_data_loc);
         }  // end loop through instances
 
         // write to file
         vtkNew<WriterType> writer;
-        std::ostringstream os;
-
-        os << parallel_data_path
-             << grep->GetName()
-             << "." << writer->GetDefaultFileExtension();
-        exec_man->Print(dare::mpi::Verbosity::Medium) << "Writing to file "
-                << parallel_data_path << "*" << grep->GetName()
-                << "." << writer->GetDefaultFileExtension() << std::endl;
-        writer->SetFileName(os.str().c_str());
+        std::string fname = details::VTKGetOutputFileName(
+                                exec_man, parallel_data_path,
+                                grep->GetName(), step, writer->GetDefaultFileExtension());
+        writer->SetFileName(fname.c_str());
         writer->SetInputData(vtkDataSet);
-        writer->Write();
+        writer->SetGhostLevel(grep->GetNumberGhostCells());
+        if (!writer->Write()) {
+            ERROR << "VTK writer returned with an error!" << ERROR_CLOSE;
+            return false;
+        }
+        // write root file --- IMPROVE THIS!
+        VTKPXMLStructuredGridWriter pwriter(exec_man);
+        std::string root_path = details::VTKGetParallelOutputFileName(exec_man, base_path,
+                                                                      grep->GetName(),
+                                                                      step,
+                                                                      pwriter.GetDefaultFileExtension());
+        std::string piece_path = details::VTKGetOutputFileName(exec_man,
+                                                               details::VTKGetParallelOutputPath(*exec_man,
+                                                               "", parallel_folder_name),
+                                                               grep->GetName(),
+                                                               step,
+                                                               writer->GetDefaultFileExtension());
+
+        VTKExtent extent_pglobal = VTKOptions<Grid>::GetPExtentGlobal(*grep);
+        VTKExtent extent_plocal  = VTKOptions<Grid>::GetPExtentLocal(*grep);
+        pwriter.SetFileName(root_path);
+        pwriter.SetGhostLevel(grep->GetNumberGhostCells());
+        pwriter.SetGlobalExtent(extent_pglobal);
+        pwriter.SetPieceExtent(extent_plocal);
+        pwriter.SetPieceFileName(piece_path);
+        pwriter.SetTime(time);
+        for (auto it = c_data.begin(); it != c_data.end(); it++) {
+            pwriter.AddComponents(*it);
+        }
+        pwriter.Write();
     }
     return true;
 }
@@ -176,6 +210,18 @@ void VTKWriter<Grid>::LoopThroughData(Lambda lambda, std::tuple<const Data&...> 
     if constexpr (I < (sizeof...(Data) - 1)) {
         LoopThroughData<I + 1>(lambda, data);
     }
+}
+
+template <typename Grid>
+void VTKWriter<Grid>::AddTimeStamp(vtkNew<GridType>& data_set) {    // NOLINT
+    if (time < 0)
+        return;
+
+    vtkNew<vtkDoubleArray> time_array;
+    time_array->SetName("TimeValue");
+    time_array->SetNumberOfTuples(1);
+    time_array->SetTuple1(0, time);
+    data_set->GetFieldData()->AddArray(time_array);
 }
 
 }  // end namespace dare::io
