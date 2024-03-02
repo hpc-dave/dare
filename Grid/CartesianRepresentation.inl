@@ -560,6 +560,15 @@ CartesianRepresentation<Dim>::MapLocalToGlobal(const Index& ind) const {
 }
 
 template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::GO
+CartesianRepresentation<Dim>::MapLocalToGlobal(LO n_loc) const {
+    TestIfInitialized(__func__);
+    Index ind_l = MapOrdinalToIndexLocal(n_loc);
+    IndexGlobal ind_g = MapLocalToGlobal(ind_l);
+    GO n_glob = MapIndexToOrdinalGlobal(ind_g);
+    return n_glob;
+}
+template <std::size_t Dim>
 const typename CartesianRepresentation<Dim>::Index&
 CartesianRepresentation<Dim>::GetLocalResolution() const {
     return resolution_local;

@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 #include "ScopeGuard.h"
+
+#include <vtkMPIController.h>
+#include <vtkNew.h>
 
 namespace dare {
 ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_argc), argv(_argv) {
@@ -140,6 +142,12 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
         MPI_Finalize();
         exit(0);
     }
+
+    // This has ot be done once at the beginning and some global functionality
+    // will then be introduced
+    // Multiple initializations will lead to annoying warings by VTK.
+    vtkNew<vtkMPIController> vtkmpic;
+    vtkmpic->Initialize();
 }
 
 ScopeGuard::~ScopeGuard() {

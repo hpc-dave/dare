@@ -227,6 +227,7 @@ public:
     IndexGlobal MapOrdinalToIndexGlobalInternal(GO n_loc) const;
 
     IndexGlobal MapLocalToGlobal(const Index& ind) const;
+    GO MapLocalToGlobal(LO n_loc) const;
 
     /*!
      * @brief returns local Index of cell containing the point
