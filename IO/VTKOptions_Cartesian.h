@@ -52,8 +52,8 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
      */
     static LO Map(const Representation& grep, LO local_ordinal) {
         using Index = typename Representation::Index;
-        Index res = grep.GetLocalInternalResolution();
-        Index ind = grep.MapOrdinalToIndexInternal(local_ordinal);
+        Index res = grep.GetLocalResolution();
+        Index ind = grep.MapOrdinalToIndexLocal(local_ordinal);
         dare::utils::Vector<3, LO> res_3d(1, 1, 1);
         dare::utils::Vector<3, LO> ind_3d(0, 0, 0);
         for (std::size_t d{0}; d < Dim; d++) {
@@ -98,7 +98,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
      */
     static vtkNew<GridType> GetGrid(const Representation& grep) {
         using Index = typename Representation::Index;
-        Index res = grep.GetLocalResolutionInternal();
+        Index res = grep.GetLocalResolution();
         dare::utils::Vector<3, vtkOrdinal> res_3d(1, 1, 1);
         for (std::size_t d{0}; d < Dim; d++) {
             res_3d[d] = res[d] + 1;  // +1 for the number of points, required by VTK
@@ -218,7 +218,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
 
     static VTKExtent GetPExtentGlobal(const Representation& grep) {
         using Index = typename Representation::IndexGlobal;
-        Index res = grep.GetGlobalResolutionInternal();
+        Index res = grep.GetGlobalResolution();
         dare::utils::Vector<3, int> res_3d(0, 0, 0);
         // VTK always expects 3D data, so we need accomodate that
         for (std::size_t d{0}; d < Dim; d++) {
@@ -245,7 +245,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
 
     static VTKExtent GetPExtentLocal(const Representation& grep) {
         using Index = typename Representation::Index;
-        Index res = grep.GetLocalResolutionInternal();
+        Index res = grep.GetLocalResolution();
         dare::utils::Vector<3, int> res_3d(0, 0, 0);
         dare::utils::Vector<3, int> offset_cells(0, 0, 0);
         // VTK always expects 3D data, so we need accomodate that

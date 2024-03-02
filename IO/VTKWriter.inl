@@ -95,12 +95,12 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
         vtkNew<GridType> vtkDataSet;
         vtkDataSet = VTKOptions<Grid>::GetGrid(*grep);
         vtkOrdinal num_cells_glob = vtkDataSet->GetNumberOfCells();
-        if (num_cells_glob != grep->GetNumberGlobalCellsInternal()) {
+        if (num_cells_glob != grep->GetNumberGlobalCells()) {
             ERROR << "Number of cells are incompatible! VTK computed "
-                  << num_cells_glob << " vs the number of local cells: "
-                  << grep->GetNumberGlobalCellsInternal() << ERROR_CLOSE;
+                  << num_cells_glob << " vs the number of global cells: "
+                  << grep->GetNumberGlobalCells() << ERROR_CLOSE;
         }
-        LO num_cells_loc = grep->GetNumberLocalCellsInternal();
+        LO num_cells_loc = grep->GetNumberLocalCells();
 
         // add time stamp, if time is negative this will be skipped
         AddTimeStamp(vtkDataSet);
@@ -137,21 +137,22 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
                 }
             }
             auto SetData = [&](std::size_t pos, auto instance) {
-                // if (pos == num_instance) {
-                //     std::vector<double> tuple_like(num_components);
-                //     for (LO cell_id{0}; cell_id < num_cells_loc; cell_id++) {
-                //         vtkOrdinal vtk_id = VTKOptions<Grid>::Map(*grep, cell_id);
-                //         // tuple
-                //         for (int n{0}; n < num_components; n++) {
-                //             tuple_like[n] = instance.second->At(cell_id, n);
-                //         }
-                //         data_array->SetTuple(vtk_id, tuple_like.data());
-                //     }
-                // }
+                if (pos == num_instance) {
+                    std::vector<double> tuple_like(num_components);
+                    for (LO cell_id{0}; cell_id < num_cells_loc; cell_id++) {
+                        vtkOrdinal vtk_id = VTKOptions<Grid>::Map(*grep, cell_id);
+                        // tuple
+                        for (int n{0}; n < num_components; n++) {
+                            tuple_like[n] = instance.second->At(cell_id, n);
+                        }
+                        data_array->SetTuple(vtk_id, tuple_like.data());
+                    }
+                }
             };
             LoopThroughData<0>(SetData, data_tuple);
+            vtkDataSet->GetCellData()->AddArray(data_array);
 
-            // and add to data set
+            // // and add to data set
             switch (otype) {
             case VTKDataAgglomerateType::SCALARS:
                 // vtkDataSet->GetCellData()->SetScalars(data_array);
@@ -236,7 +237,7 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
         parallel_writer->SetStartPiece(exec_man->GetRank());
         parallel_writer->SetEndPiece(exec_man->GetRank());
         parallel_writer->SetDataModeToBinary();
-        // parallel_writer->SetGhostLevel(grep->GetNumberGhostCells());
+        parallel_writer->SetGhostLevel(grep->GetNumberGhostCells());
         parallel_writer->Update();
         parallel_writer->Write();
     }
