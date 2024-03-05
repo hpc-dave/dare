@@ -30,22 +30,22 @@
 
 
 namespace dare::io {
-struct Args {
-    vtkProgrammableFilter* pf;
-    int local_extent[6];
-};
+// struct Args {
+//     vtkProgrammableFilter* pf;
+//     int local_extent[6];
+// };
 
-// function to operate on the point attribute data
-void inline execute(void* arg) {
-    Args* args = reinterpret_cast<Args*>(arg);
-    // auto info = args->pf->GetOutputInformation(0);
-    auto output_tmp = args->pf->GetOutput();
-    auto input_tmp = args->pf->GetInput();
-    vtkStructuredGrid* output = dynamic_cast<vtkStructuredGrid*>(output_tmp);
-    vtkStructuredGrid* input = dynamic_cast<vtkStructuredGrid*>(input_tmp);
-    output->ShallowCopy(input);
-    output->SetExtent(args->local_extent);
-}
+// // function to operate on the point attribute data
+// void inline execute(void* arg) {
+//     Args* args = reinterpret_cast<Args*>(arg);
+//     // auto info = args->pf->GetOutputInformation(0);
+//     auto output_tmp = args->pf->GetOutput();
+//     auto input_tmp = args->pf->GetInput();
+//     vtkStructuredGrid* output = dynamic_cast<vtkStructuredGrid*>(output_tmp);
+//     vtkStructuredGrid* input = dynamic_cast<vtkStructuredGrid*>(input_tmp);
+//     output->ShallowCopy(input);
+//     output->SetExtent(args->local_extent);
+// }
 
 template<typename Grid>
 VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man, double _time, int _step)
@@ -59,11 +59,21 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
                             const PairLike&... data) {
     static_assert(sizeof...(PairLike) > 0, "at least one data set has to be provided for writing!");
     using LO = typename Grid::LocalOrdinalType;
-    using vtkOrdinal = typename VTKOptions<Grid>::vtkOrdinal;
+    using Options = VTKOptions<Grid>;
+    using vtkOrdinal = typename Options::vtkOrdinal;
+    using Mapper = typename Options::Mapper;
     std::string parallel_data_path = details::VTKGetParallelOutputPath(*exec_man,
                                                                        base_path,
                                                                        parallel_folder_name);
 
+    /*
+     * To do:
+     * - move data assignment into subfunction
+     * - set up a parallel writer, where the relative path to the pieces is given
+     * - try, if ghost cell arrangement can be improved
+     * - test in 3D
+     * - post on StackOverflow
+     */
     // convert parameter pack to tuple to use STL-functionality
     auto data_tuple = std::forward_as_tuple(data...);
 
@@ -84,23 +94,21 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
     // to the file
     for (auto grid : grouped_data) {
         // basic setup for a grid
-        // get a representation for this grid
+        // get a representation for this grid, the total number of cells/entries to print
+        // and a mapper for local grid IDs to vtk grid IDs
         std::string grid_name = grid.first;
         const typename Grid::Representation* grep{representations[grid_name]};
-
-        // some data for the root file writing
-        // std::list<VTKXMLPStructuredGridCData> c_data;
+        LO num_cells_loc = grep->GetNumberLocalCells();
+        Mapper mapToVTK(grep);
 
         // allocate vtkGrid
         vtkNew<GridType> vtkDataSet;
-        vtkDataSet = VTKOptions<Grid>::GetGrid(*grep);
-        vtkOrdinal num_cells_glob = vtkDataSet->GetNumberOfCells();
-        if (num_cells_glob != grep->GetNumberGlobalCells()) {
-            ERROR << "Number of cells are incompatible! VTK computed "
-                  << num_cells_glob << " vs the number of global cells: "
-                  << grep->GetNumberGlobalCells() << ERROR_CLOSE;
+        bool success = Options::AllocateGrid(*grep, vtkDataSet);
+        if (!success) {
+            exec_man->Print(dare::mpi::Verbosity::Low)
+                << "Error during grid allocation, cannot write " << grep->GetName() << " to file!" << std::endl;
+            continue;
         }
-        LO num_cells_loc = grep->GetNumberLocalCells();
 
         // add time stamp, if time is negative this will be skipped
         AddTimeStamp(vtkDataSet);
@@ -140,7 +148,8 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
                 if (pos == num_instance) {
                     std::vector<double> tuple_like(num_components);
                     for (LO cell_id{0}; cell_id < num_cells_loc; cell_id++) {
-                        vtkOrdinal vtk_id = VTKOptions<Grid>::Map(*grep, cell_id);
+                        // vtkOrdinal vtk_id = VTKOptions<Grid>::Map(*grep, cell_id);
+                        vtkOrdinal vtk_id = mapToVTK(cell_id);
                         // tuple
                         for (int n{0}; n < num_components; n++) {
                             tuple_like[n] = instance.second->At(cell_id, n);
@@ -163,83 +172,19 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
             default:
                 ERROR << "Unsupported output type provided!" << ERROR_CLOSE;
             }
-
-            // VTKXMLPStructuredGridCData c_data_loc;
-            // c_data_loc.name = data_name;
-            // c_data_loc.number_components = cnames.size();
-            // c_data_loc.output_type = VTKOutputType::CELL_DATA;
-            // c_data_loc.data_type = otype;
-            // c_data.push_back(c_data_loc);
         }  // end loop through instances
 
-        // write to file
-        // vtkNew<WriterType> writer;
-        // std::string fname = details::VTKGetOutputFileName(
-        //                         exec_man, parallel_data_path,
-        //                         grep->GetName(), step, writer->GetDefaultFileExtension());
-        // writer->SetFileName(fname.c_str());
-        // writer->SetInputData(vtkDataSet);
-        // if (!writer->Write()) {
-        //     ERROR << "VTK writer returned with an error!" << ERROR_CLOSE;
-        //     return false;
-        // }
-        // write root file --- IMPROVE THIS!
-        VTKPXMLStructuredGridWriter pwriter(exec_man);
+        // Create the parallel writer and call some functions
+        vtkNew<Writer> writer;
         std::string root_path = details::VTKGetParallelOutputFileName(exec_man, base_path,
                                                                       grep->GetName(),
                                                                       step,
-                                                                      pwriter.GetDefaultFileExtension());
-        // std::string piece_path = details::VTKGetOutputFileName(exec_man,
-        //                                                        details::VTKGetParallelOutputPath(*exec_man,
-        //                                                        "", parallel_folder_name),
-        //                                                        grep->GetName(),
-        //                                                        step,
-        //                                                        writer->GetDefaultFileExtension());
-
-        // VTKExtent extent_pglobal = VTKOptions<Grid>::GetPExtentGlobal(*grep);
-        VTKExtent extent_plocal  = VTKOptions<Grid>::GetPExtentLocal(*grep);
-        // pwriter.SetFileName(root_path);
-        // pwriter.SetGhostLevel(grep->GetNumberGhostCells());
-        // pwriter.SetGlobalExtent(extent_pglobal);
-        // pwriter.SetPieceExtent(extent_plocal);
-        // pwriter.SetPieceFileName(piece_path);
-        // pwriter.SetTime(time);
-        // for (auto it = c_data.begin(); it != c_data.end(); it++) {
-        //     pwriter.AddComponents(*it);
-        // }
-        // pwriter.Write();
-        // Create a vtkProgrammableFilter
-        vtkNew<vtkProgrammableFilter> pf;
-        vtkNew<vtkMPIController> contr;
-        // contr->Initialize(&argc, &argv, 1);
-        // contr->Initialize();
-        // Initialize an instance of Args
-        Args args;
-        args.pf = pf;
-        for (int i = 0; i < 6; ++i)
-            args.local_extent[i] = extent_plocal[i];
-
-        pf->SetExecuteMethod(execute, &args);
-
-        // Create a structured grid and assign point data and cell data to it
-        // auto structuredGrid = vtkSmartPointer<vtkStructuredGrid>::New();
-        // structuredGrid->SetExtent(global_extent);
-        pf->SetInputData(vtkDataSet);
-        // structuredGrid->SetPoints(points);
-        // structuredGrid->GetCellData()->AddArray(density);
-
-        // Create the parallel writer and call some functions
-        auto parallel_writer = vtkSmartPointer<vtkXMLPStructuredGridWriter>::New();
-        parallel_writer->SetInputConnection(pf->GetOutputPort());
-        parallel_writer->SetController(contr);
-        parallel_writer->SetFileName(root_path.c_str());
-        parallel_writer->SetNumberOfPieces(exec_man->GetNumberProcesses());
-        parallel_writer->SetStartPiece(exec_man->GetRank());
-        parallel_writer->SetEndPiece(exec_man->GetRank());
-        parallel_writer->SetDataModeToBinary();
-        parallel_writer->SetGhostLevel(grep->GetNumberGhostCells());
-        parallel_writer->Update();
-        parallel_writer->Write();
+                                                                      writer->GetDefaultFileExtension());
+        Options::AddDataToWriter(*grep, exec_man, vtkDataSet, writer);
+        writer->SetFileName(root_path.c_str());
+        writer->SetDataModeToBinary();
+        writer->Update();
+        writer->Write();
     }
     return true;
 }

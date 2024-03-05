@@ -26,11 +26,31 @@
 #define IO_VTKOPTIONS_H_
 
 #include <vtkNew.h>
+#include <vtkStructuredGrid.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkXMLPStructuredGridWriter.h>
+#include <vtkXMLPUnstructuredGridWriter.h>
+#include <vtkXMLStructuredGridWriter.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 
 #include "Grid/DefaultTypes.h"
 #include "Utilities/Vector.h"
 namespace dare::io {
 using VTKExtent = dare::utils::Vector<6, int>;
+
+template <typename VTKGridType>
+struct VTKWriterMapper {
+};
+
+template <>
+struct VTKWriterMapper<vtkStructuredGrid> {
+    using type = vtkXMLPStructuredGridWriter;
+};
+
+template <>
+struct VTKWriterMapper<vtkUnstructuredGrid> {
+    using type = vtkXMLPUnstructuredGridWriter;
+};
 
 /*!
  * @brief type of vtk output that is dealt with here
@@ -48,31 +68,12 @@ enum class VTKOutputType {
 /*!
  * @brief VTKOptions for a grid, which allows mapping between data and vtk formats
  * @tparam Grid grid type
+ * \note if you end up here during compilation, then check your linking or write the specialization
+ * of this struct
  */
 template <typename Grid>
 struct VTKOptions {
-    // using GridType = void;  // will lead to compilation error if not set by SFINAE
-    // using LO = typename Grid::LocalOrdinalType;
-
-    /*!
-     * @brief just some default which serves as example
-     * @param grep instance of the grid
-     * @param local_ordinal input ordinal
-     * @return output ordinal according to the requirements of VTK
-     * This may be required, since VTK orders structured grids differently than
-     * this implementation
-     */
-    // static LO Map(const typename Grid::Representation& grep, LO local_ordinal) {
-    //     return local_ordinal;
-    // }
-
-    /*!
-     * @brief provides the grid for IO
-     * @param grep representation of the grid
-     */
-    // static vtkNew<GridType> GetGrid(const typename Grid::Representation& grep) {
-    //     return vtkNew<GridType>();
-    // }
+    static_assert(std::is_same_v<Grid, void>, "No specialization for your grid type found!");
 };
 
 }  // end namespace dare::io

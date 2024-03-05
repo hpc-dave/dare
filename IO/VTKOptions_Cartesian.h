@@ -24,13 +24,91 @@
 
 #ifndef IO_VTKOPTIONS_CARTESIAN_H_
 #define IO_VTKOPTIONS_CARTESIAN_H_
-#include <utility>
+#include <vtkInformation.h>
+#include <vtkMPIController.h>
+#include <vtkProgrammableFilter.h>
 #include <vtkStructuredGrid.h>
+
+#include <utility>
+#include <string>
 
 #include "Grid/Cartesian.h"
 #include "VTKOptions.h"
 
 namespace dare::io {
+
+namespace details::Cartesian {
+
+struct PFArgs {
+    vtkProgrammableFilter* pf;
+    VTKExtent local_extent;
+};
+
+// function to operate on the point attribute data
+void inline execute(void* arg) {
+    PFArgs* args = reinterpret_cast<PFArgs*>(arg);
+    int extent[6] = {0};
+    for (std::size_t n{0}; n < 6; n++)
+        extent[n] = args->local_extent[n];
+    auto output_tmp = args->pf->GetOutput();
+    auto input_tmp = args->pf->GetInput();
+    vtkStructuredGrid* output = dynamic_cast<vtkStructuredGrid*>(output_tmp);
+    vtkStructuredGrid* input = dynamic_cast<vtkStructuredGrid*>(input_tmp);
+    output->ShallowCopy(input);
+    output->SetExtent(extent);
+}
+
+/*!
+ * @brief small object for mapping grid ordinals to vtk ordinals
+ * @tparam Dim dimension of the grid
+ * This is required, since the Cartesian grid orders x-y-z, whereas
+ * vtk orders z-y-x
+ */
+template <std::size_t Dim>
+class Mapper {
+public:
+    using CartesianGrid = Grid::Cartesian<Dim>;
+    using Representation = typename CartesianGrid::Representation;
+    using LO = typename CartesianGrid::LocalOrdinalType;
+    using Index = typename Representation::Index;
+    using vtkOrdinal = vtkIdType;
+
+    /*!
+     * @brief constructor
+     * @param representation representation of the Cartesian grid
+     */
+    explicit Mapper(const Representation* representation)
+        : grep(representation), hsum(1, 1, 1) {
+        Index res = grep->GetLocalResolution();
+        dare::utils::Vector<3, vtkOrdinal> res_3d(1, 1, 1);
+        for (std::size_t d{0}; d < Dim; d++) {
+            res_3d[d] = res[d];
+        }
+        hsum[1] = res_3d[0];              // jmax
+        hsum[2] = res_3d[0] * res_3d[1];  // imax * jmax
+    }
+
+    /*!
+     * @brief maps a local ordinal to the vtk ordinal
+     * @param local_ordinal local ordinal of the grid
+     * @return mapped ordinal
+     */
+    [[nodiscard]] vtkOrdinal operator()(LO local_ordinal) {
+        Index ind = grep->MapOrdinalToIndexLocal(local_ordinal);
+        dare::utils::Vector<3, vtkOrdinal> ind_3d;
+        for (std::size_t d{0}; d < Dim; d++) {
+            ind_3d[d] = ind[d];
+        }
+        vtkOrdinal mapped_ordinal = hsum[0] * ind_3d[0] + hsum[1] * ind_3d[1] + hsum[2] * ind_3d[2];
+        return mapped_ordinal;
+    }
+
+private:
+    const Representation* grep;               //!< representation of the grid
+    dare::utils::Vector<3, vtkOrdinal> hsum;  //!< hierarchical sum for mapping
+};
+
+}  // end namespace details::Cartesian
 
 template <std::size_t Dim>
 struct VTKOptions<Grid::Cartesian<Dim>> {
@@ -40,63 +118,15 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
     using LO = typename CartesianGrid::LocalOrdinalType;
     using SC = typename CartesianGrid::ScalarType;
     using vtkOrdinal = vtkIdType;
-
-    /*!
-     * @brief just some default which serves as example
-     * @param grep instance of the grid
-     * @param local_ordinal input ordinal
-     * @return output ordinal according to the requirements of VTK
-     * In the VTK structured grid, the x-component advances fastest,
-     * while the z-component advances slowest, inverse to how the
-     * Cartesian grid deals with that
-     */
-    static LO Map(const Representation& grep, LO local_ordinal) {
-        using Index = typename Representation::Index;
-        Index res = grep.GetLocalResolution();
-        Index ind = grep.MapOrdinalToIndexLocal(local_ordinal);
-        dare::utils::Vector<3, LO> res_3d(1, 1, 1);
-        dare::utils::Vector<3, LO> ind_3d(0, 0, 0);
-        for (std::size_t d{0}; d < Dim; d++) {
-            res_3d[d] = res[d];
-            ind_3d[d] = ind[d];
-        }
-
-        // std::swap(res_3d[0], res_3d[2]);
-        // std::swap(ind_3d[0], ind_3d[2]);
-
-        dare::utils::Vector<3, LO> hsum(1, 1, 1);
-        hsum[0] = res_3d[1] * res_3d[2];  // jmax * imax
-        hsum[1] = res_3d[2];             // imax
-
-        LO mapped_ordinal = hsum[0] * ind_3d[0] + hsum[1] * ind_3d[1] + hsum[2] * ind_3d[2];
-        return mapped_ordinal;
-        // using Index = typename Representation::IndexGlobal;
-        // auto ind_local = grep.MapOrdinalToIndexLocal(local_ordinal);
-        // Index ind = grep.MapLocalToGlobal(ind_local);
-        // Index res = grep.GetGlobalResolution();
-        // dare::utils::Vector<3, vtkOrdinal> res_3d(1, 1, 1);
-        // dare::utils::Vector<3, vtkOrdinal> ind_3d(0, 0, 0);
-        // for (std::size_t d{0}; d < Dim; d++) {
-        //     res_3d[d] = static_cast<vtkOrdinal>(res[d]);
-        //     ind_3d[d] = static_cast<vtkOrdinal>(ind[d]);
-        // }
-
-        // std::swap(res_3d[0], res_3d[2]);
-        // std::swap(ind_3d[0], ind_3d[2]);
-
-        // dare::utils::Vector<3, vtkOrdinal> hsum(1, 1, 1);
-        // hsum[0] = res_3d[1] * res_3d[2];  // jmax * imax
-        // hsum[1] = res_3d[2];              // imax
-
-        // LO mapped_ordinal = hsum[0] * ind_3d[0] + hsum[1] * ind_3d[1] + hsum[2] * ind_3d[2];
-        // return mapped_ordinal;
-    }
+    using Mapper = typename details::Cartesian::Mapper<Dim>;
+    using Writer = typename VTKWriterMapper<GridType>::type;
 
     /*!
      * @brief provides the grid for IO
      * @param grep representation of the grid
+     * @param vtkgrid pointer to the grid which requires the information
      */
-    static vtkNew<GridType> GetGrid(const Representation& grep) {
+    static bool AllocateGrid(const Representation& grep, GridType* vtkgrid) {
         using Index = typename Representation::Index;
         Index res = grep.GetLocalResolution();
         dare::utils::Vector<3, vtkOrdinal> res_3d(1, 1, 1);
@@ -108,8 +138,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         // since the offset refers to the cell center!
         auto dn = grep.GetDistances();
         auto offset = grep.GetOffsetSize();
-        // offset -= 0.5 * dn;
-        // offset -= static_cast<SC>(grep.GetNumberGhostCells()) * dn;
+        offset -= static_cast<SC>(grep.GetNumberGhostCells()) * dn;
         dare::utils::Vector<3, double> offset_3d(0., 0., 0.), dn_3d(0., 0., 0.);
         dare::utils::Vector<3, int> offset_cells(0, 0, 0);
         for (std::size_t d{0}; d < Dim; d++) {
@@ -117,103 +146,66 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
             offset_3d[d] = offset[d];
             offset_cells[d] = grep.GetOffsetCells()[d];
         }
-        dare::utils::Vector<6, int> extent;
-        // extent[0] = extent[1] = offset_cells[2];
-        // extent[2] = extent[3] = offset_cells[1];
-        // extent[4] = extent[5] = offset_cells[0];
-        // // in x-direction
-        // extent[5] += res_3d.i() - 1;
-        // // in y-direction
-        // if constexpr (Dim > 1)
-        //     extent[3] += res_3d.j() - 1;
-        // // in z-direction
-        // if constexpr (Dim > 2)
-        //     extent[1] += res_3d.k() - 1;
-        extent = GetPExtentGlobal(grep);
+        dare::utils::Vector<6, int> extent = GetPExtentGlobal(grep);
 
         vtkNew<vtkPoints> points;
-        vtkNew<GridType> grid;
-        // points->SetDataTypeToDouble();
         points->Allocate(res_3d.i() * res_3d.j() * res_3d.k());
-        grid->SetExtent(extent[0], extent[1], extent[2], extent[3], extent[4], extent[5]);
-        // grid->SetExtent(extent[0], extent[5], extent[2], extent[3], extent[4], extent[1]);
+        vtkgrid->SetExtent(extent[0], extent[1], extent[2], extent[3], extent[4], extent[5]);
 
         int rank{0};
         int nranks{0};
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         MPI_Comm_size(MPI_COMM_WORLD, &nranks);
 
-        // if(rank == 0)
-        //     std::cout << "size of vtkIdType: " << std::to_string(sizeof(vtkOrdinal) * 8) << " bit\n";
         int count = 0;
-        for (int nr = 0; nr < nranks; nr++){
-            if (nr == rank) {
-                for (int k = 0; k < res_3d.k(); k++) {
-                    for (int j = 0; j < res_3d.j(); j++) {
-                        // if (rank == 1)
-                        std::cout << "new layer" << std::endl;
-                        // auto n_glob = grep.MapLocalToGlobal(count);
-                        // count++;
-                        for (int i = 0; i < res_3d.i(); i++) {
-                            vtkOrdinal n = count;
-                            // double tuple[3];
-                            double x = dn_3d.x() * i + offset_3d.x();
-                            double y = dn_3d.y() * j + offset_3d.y();
-                            double z = dn_3d.z() * k + offset_3d.z();
-                            // if (rank == 1)
-                            std::cout << "index: " << n << " x: " << x << " y: " << y << " z: " << z << std::endl;
-                            points->InsertPoint(n, x, y, z);
-                            count++;
-                        }
-                    }
+        for (int k = 0; k < res_3d.k(); k++) {
+            for (int j = 0; j < res_3d.j(); j++) {
+                for (int i = 0; i < res_3d.i(); i++) {
+                    vtkOrdinal n = count;
+                    // double tuple[3];
+                    double x = dn_3d.x() * i + offset_3d.x();
+                    double y = dn_3d.y() * j + offset_3d.y();
+                    double z = dn_3d.z() * k + offset_3d.z();
+                    points->InsertPoint(n, x, y, z);
+                    count++;
                 }
             }
-            MPI_Barrier(MPI_COMM_WORLD);
         }
-        // int count = 0;
-        // count = 0;
-        // dare::utils::Vector<3, vtkOrdinal> hsum(1, 1, 1);
-        // hsum[0] = res_3d[0] * res_3d[1];  // jmax * imax
-        // hsum[1] = res_3d[0];              // imax
 
-        // for (int i = 0; i < res_3d.i(); i++) {
-        //     for (int j = 0; j < res_3d.j(); j++) {
-        //         for (int k = 0; k < res_3d.k(); k++) {
-        //             // if (rank == 1)
-        //             //     std::cout << "new layer" << std::endl;
-        //             // auto n_glob = grep.MapLocalToGlobal(count);
-        //             // count++;
-        //             // vtkOrdinal n = Map(grep, count);
-        //             vtkOrdinal n = hsum[0] * k + hsum[1] * j + hsum[2] * i;
-        //             // double tuple[3];
-        //             double x = dn_3d.x() * i + offset_3d.x();
-        //             double y = dn_3d.y() * j + offset_3d.y();
-        //             double z = dn_3d.z() * k + offset_3d.z();
-        //             // if (rank == 1)
-        //             //     std::cout << "index: " << n << " x: " << x << " y: " << y << " z: " << z << std::endl;
-        //             points->SetPoint(n, x, y, z);
-        //             i_failing[n].SetValues(x,y,z);
-        //             count++;
-        //         }
-        //     }
-        // }
-        // if(rank == 1)
-        // for (std::size_t n = 0; n < i_working.size(); n++){
-        //     std::cout << i_working[n] << " : " << i_failing[n] << std::endl;
-        // }
+        vtkgrid->SetPoints(points);
 
-        grid->SetPoints(points);
-        std::ostringstream os;
-        os << "process " << rank << ": local extent -> ";
-        for (int i = 0; i < 6; i++)
-            os << extent[i] << " ";
-        os << '\n';
-        // os << "process " << rank << ": global extent -> ";
-        // for (int i = 0; i < 6; i++)
-        //     os << global_extent[i] << " ";
-        // os << '\n';
-        std::cout << os.str();
-        return grid;
+        vtkOrdinal num_cells_glob = vtkgrid->GetNumberOfCells();
+        bool success = num_cells_glob != grep.GetNumberGlobalCells();
+        if (!success) {
+            ERROR << "Number of cells are incompatible! VTK computed "
+                  << num_cells_glob << " vs the number of global cells: "
+                  << grep.GetNumberGlobalCells() << ERROR_CLOSE;
+        }
+        return success;
+    }
+
+    static void AddDataToWriter(const Representation& grep,
+                                dare::mpi::ExecutionManager* exec_man,
+                                vtkStructuredGrid* data,
+                                Writer* writer) {
+        VTKExtent extent_plocal = GetPExtentLocal(grep);
+
+        // Create a vtkProgrammableFilter
+        vtkNew<vtkProgrammableFilter> pf;
+        vtkNew<vtkMPIController> contr;
+        // Initialize an instance of Args
+        details::Cartesian::PFArgs args;
+        args.pf = pf;
+        args.local_extent = extent_plocal;
+
+        pf->SetExecuteMethod(details::Cartesian::execute, &args);
+        pf->SetInputData(data);
+        writer->SetInputConnection(pf->GetOutputPort());
+        writer->SetController(contr);
+        writer->SetNumberOfPieces(exec_man->GetNumberProcesses());
+        writer->SetStartPiece(exec_man->GetRank());
+        writer->SetEndPiece(exec_man->GetRank());
+        writer->SetGhostLevel(grep.GetNumberGhostCells());
     }
 
     static VTKExtent GetPExtentGlobal(const Representation& grep) {
@@ -260,41 +252,14 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         // extent[4] = extent[5] = offset_cells[0];
         extent[4] = extent[5] = offset_cells[2];
         // in x-direction
-        // extent[5] += res_3d.i();
         extent[1] += res_3d.i();
         // in y-direction
         if constexpr (Dim > 1)
             extent[3] += res_3d.j();
         // in z-direction
         if constexpr (Dim > 2)
-            // extent[1] += res_3d.k();
             extent[5] += res_3d.k();
 
-        // for the parallel output, we need to remove the halo-layers
-        // int num_ghost = static_cast<int>(grep.GetNumberGhostCells());
-        // uint8_t bc = grep.GetBoundaryID();
-        // if (!(bc & CartesianGrid::BOUNDARIES_WEST)) {
-        //     extent[4] += num_ghost;
-        // }
-        // if (!(bc & CartesianGrid::BOUNDARIES_EAST)) {
-        //     extent[5] -= num_ghost;
-        // }
-        // if constexpr (Dim > 1) {
-        //     if (!(bc & CartesianGrid::BOUNDARIES_SOUTH)) {
-        //         extent[2] += num_ghost;
-        //     }
-        //     if (!(bc & CartesianGrid::BOUNDARIES_NORTH)) {
-        //         extent[3] -= num_ghost;
-        //     }
-        // }
-        // if constexpr (Dim > 2) {
-        //     if (!(bc & CartesianGrid::BOUNDARIES_BOTTOM)) {
-        //         extent[0] += num_ghost;
-        //     }
-        //     if (!(bc & CartesianGrid::BOUNDARIES_TOP)) {
-        //         extent[1] -= num_ghost;
-        //     }
-        // }
         return extent;
     }
 };

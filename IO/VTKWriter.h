@@ -28,12 +28,6 @@
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkNew.h>
-#include <vtkStructuredGrid.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkXMLPStructuredGridWriter.h>
-#include <vtkXMLPUnstructuredGridWriter.h>
-#include <vtkXMLStructuredGridWriter.h>
-#include <vtkXMLUnstructuredGridWriter.h>
 
 #include <bit>  // for c++20 std::endian, once available
 #include <list>
@@ -49,22 +43,6 @@
 #include "Utilities/Vector.h"
 
 namespace dare::io {
-
-template<typename VTKGridType>
-struct VTKWriterMapper {
-};
-
-template <>
-struct VTKWriterMapper<vtkStructuredGrid> {
-    using type = vtkXMLStructuredGridWriter;
-    using ptype = vtkXMLPStructuredGridWriter;
-};
-
-template <>
-struct VTKWriterMapper<vtkUnstructuredGrid> {
-    using type = vtkXMLUnstructuredGridWriter;
-    using ptype = vtkXMLPUnstructuredGridWriter;
-};
 
 namespace details {
 /*!
@@ -137,7 +115,7 @@ template <typename Grid>
 class VTKWriter {
 public:
     using GridType = typename VTKOptions<Grid>::GridType;
-    using WriterType = typename VTKWriterMapper<GridType>::type;
+    using Writer   = typename VTKWriterMapper<GridType>::type;
 
     explicit VTKWriter(mpi::ExecutionManager* ex_man,
                        double time,
