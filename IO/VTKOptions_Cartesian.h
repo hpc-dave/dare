@@ -31,6 +31,7 @@
 
 #include <utility>
 #include <string>
+#include <memory>
 
 #include "Grid/Cartesian.h"
 #include "VTKOptions.h"
@@ -40,7 +41,8 @@ namespace dare::io {
 namespace details::Cartesian {
 
 struct PFArgs {
-    vtkProgrammableFilter* pf;
+    explicit PFArgs(const VTKExtent& lextent) : local_extent(lextent) {}
+    vtkNew<vtkProgrammableFilter> pf;
     VTKExtent local_extent;
 };
 
@@ -71,7 +73,7 @@ public:
     using Representation = typename CartesianGrid::Representation;
     using LO = typename CartesianGrid::LocalOrdinalType;
     using Index = typename Representation::Index;
-    using vtkOrdinal = vtkIdType;
+    // using vtkOrdinal = vtkIdType;
 
     /*!
      * @brief constructor
@@ -146,7 +148,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
             offset_3d[d] = offset[d];
             offset_cells[d] = grep.GetOffsetCells()[d];
         }
-        dare::utils::Vector<6, int> extent = GetPExtentGlobal(grep);
+        VTKExtent extent = GetPExtentGlobal(grep);
 
         vtkNew<vtkPoints> points;
         points->Allocate(res_3d.i() * res_3d.j() * res_3d.k());
@@ -175,7 +177,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         vtkgrid->SetPoints(points);
 
         vtkOrdinal num_cells_glob = vtkgrid->GetNumberOfCells();
-        bool success = num_cells_glob != grep.GetNumberGlobalCells();
+        bool success = num_cells_glob == grep.GetNumberGlobalCells();
         if (!success) {
             ERROR << "Number of cells are incompatible! VTK computed "
                   << num_cells_glob << " vs the number of global cells: "
@@ -184,28 +186,40 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         return success;
     }
 
-    static void AddDataToWriter(const Representation& grep,
+    static std::unique_ptr<details::Cartesian::PFArgs> AddDataToWriter(const Representation& grep,
                                 dare::mpi::ExecutionManager* exec_man,
                                 vtkStructuredGrid* data,
                                 Writer* writer) {
+        using G = CartesianGrid;
+        auto args = std::make_unique<details::Cartesian::PFArgs>(GetPExtentLocal(grep));
         VTKExtent extent_plocal = GetPExtentLocal(grep);
+        // for improved output we remove the halo cell layer from
+        // the extent in the parallel file
+        // Warning! This only applies to the halo cells, NOT the ghost cells!
+        VTKExtent halo_correction(0, 0, 0, 0, 0, 0);
+        LO num_ghost = grep.GetNumberGhostCells();
+        uint8_t b_id = grep.GetBoundaryID();
+        halo_correction[0] = !(b_id & G::BOUNDARIES_WEST) * num_ghost;
+        halo_correction[1] = !(b_id & G::BOUNDARIES_EAST) * (-num_ghost);
+        if constexpr (Dim > 1) {
+            halo_correction[2] = !(b_id & G::BOUNDARIES_SOUTH) * num_ghost;
+            halo_correction[3] = !(b_id & G::BOUNDARIES_NORTH) * (-num_ghost);
+        }
+        if constexpr(Dim > 2) {
+            halo_correction[4] = !(b_id & G::BOUNDARIES_BOTTOM) * num_ghost;
+            halo_correction[5] = !(b_id & G::BOUNDARIES_TOP) * (-num_ghost);
+        }
+        extent_plocal += halo_correction;
 
-        // Create a vtkProgrammableFilter
-        vtkNew<vtkProgrammableFilter> pf;
-        vtkNew<vtkMPIController> contr;
-        // Initialize an instance of Args
-        details::Cartesian::PFArgs args;
-        args.pf = pf;
-        args.local_extent = extent_plocal;
-
-        pf->SetExecuteMethod(details::Cartesian::execute, &args);
-        pf->SetInputData(data);
-        writer->SetInputConnection(pf->GetOutputPort());
-        writer->SetController(contr);
+        args->pf->SetExecuteMethod(details::Cartesian::execute, args.get());
+        args->pf->SetInputData(data);
+        writer->SetInputConnection(args->pf->GetOutputPort());
         writer->SetNumberOfPieces(exec_man->GetNumberProcesses());
         writer->SetStartPiece(exec_man->GetRank());
         writer->SetEndPiece(exec_man->GetRank());
         writer->SetGhostLevel(grep.GetNumberGhostCells());
+        writer->SetPPieceExtent(extent_plocal, exec_man);
+        return args;
     }
 
     static VTKExtent GetPExtentGlobal(const Representation& grep) {
@@ -216,14 +230,10 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         for (std::size_t d{0}; d < Dim; d++) {
             res_3d[d] = static_cast<int>(res[d]);
         }
-        VTKExtent extent;
-        // just to be consistent with the other formulations
-        extent[0] = extent[1] = 0;
-        extent[2] = extent[3] = 0;
-        extent[4] = extent[5] = 0;
+        VTKExtent extent(0, 0, 0, 0, 0, 0);
+
         // in x-direction
         extent[1] += res_3d.i();
-        // extent[5] += res_3d.i();
         // in y-direction
         if constexpr (Dim > 1)
             extent[3] += res_3d.j();
@@ -237,6 +247,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
 
     static VTKExtent GetPExtentLocal(const Representation& grep) {
         using Index = typename Representation::Index;
+
         Index res = grep.GetLocalResolution();
         dare::utils::Vector<3, int> res_3d(0, 0, 0);
         dare::utils::Vector<3, int> offset_cells(0, 0, 0);
@@ -246,11 +257,10 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
             offset_cells[d] = grep.GetOffsetCells()[d];
         }
         VTKExtent extent;
-        // extent[0] = extent[1] = offset_cells[2];
         extent[0] = extent[1] = offset_cells[0];
         extent[2] = extent[3] = offset_cells[1];
-        // extent[4] = extent[5] = offset_cells[0];
         extent[4] = extent[5] = offset_cells[2];
+
         // in x-direction
         extent[1] += res_3d.i();
         // in y-direction
@@ -261,6 +271,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
             extent[5] += res_3d.k();
 
         return extent;
+    //    +ghost_correction;
     }
 };
 

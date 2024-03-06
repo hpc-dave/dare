@@ -4,6 +4,7 @@ set(DaRe_HEADER_FILES
     "VTKPXMLStructuredGridWriter.h"
     "VTKOptions.h"
     "VTKOptions_Cartesian.h"
+    "VTKTypes.h"
     "VTKWriter.h"
     "VTKWriter.inl"
 )

@@ -29,7 +29,6 @@
 #include <vtkDoubleArray.h>
 #include <vtkNew.h>
 
-#include <bit>  // for c++20 std::endian, once available
 #include <list>
 #include <map>
 #include <string>
@@ -45,30 +44,7 @@
 namespace dare::io {
 
 namespace details {
-/*!
- * @brief concatenates and checks output folder path for parallel output
- * @param exman execution manager
- * @param base_path basic output path, where all output is directed to
- * @param pfolder_name name of the parallel folder
- * @return correct string for parallel subfolders
- */
-[[nodiscard]] std::string VTKGetParallelOutputPath(const dare::mpi::ExecutionManager& exman,
-                                                   const std::string& base_path,
-                                                   const std::string& pfolder_name);
 
-/*!
- * @brief concatenates specific file name for output
- * @param exman execution manager
- * @param parallel_data_path path to parallel folder
- * @param grid_name name of the grid
- * @param step step to print
- * @param ext extension of the file
- */
-[[nodiscard]] std::string VTKGetOutputFileName(dare::mpi::ExecutionManager* exman,
-                                         const std::string& parallel_data_path,
-                                         const std::string& grid_name,
-                                         int step,
-                                         const std::string& ext);
 /*!
  * @brief concatenates file name for parallel format
  * @param exman execution manager
@@ -92,23 +68,6 @@ struct VTKXMLPStructuredGridComponentData {
     std::string DataAgglomerateType;
 };
 
-/*!
- * @brief writes root file for parallel vtk format, overload for structured grid
- * @param path path of root file
- * @param extent_domain total extent of the domain
- * @param ghost_level number of ghost cells of total domain
- * @param path_distributed_files paths to all the distributed files
- * @param comp_data global data of each component on the grid
- * @param extent_subdomains extent of all subdomains
- * @param time time stamp
- */
-bool VTKWritePXMLRootFile(const std::string& path,
-                          const VTKExtent& extent_domain,
-                          int ghost_level,
-                          const std::list<std::string>& path_distributed_files,
-                          const std::list<VTKXMLPStructuredGridComponentData>& comp_data,
-                          const std::list<VTKExtent>& extent_subdomains,
-                          double time = -1.);
 }  // end namespace details
 
 template <typename Grid>
@@ -123,7 +82,6 @@ public:
 
     template<typename... Data>
     bool Write(const std::string& base_path,
-               const std::string& parallel_folder_name,
                const Data&... data);
 
     template <typename... Data>

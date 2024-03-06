@@ -30,22 +30,6 @@
 
 
 namespace dare::io {
-// struct Args {
-//     vtkProgrammableFilter* pf;
-//     int local_extent[6];
-// };
-
-// // function to operate on the point attribute data
-// void inline execute(void* arg) {
-//     Args* args = reinterpret_cast<Args*>(arg);
-//     // auto info = args->pf->GetOutputInformation(0);
-//     auto output_tmp = args->pf->GetOutput();
-//     auto input_tmp = args->pf->GetInput();
-//     vtkStructuredGrid* output = dynamic_cast<vtkStructuredGrid*>(output_tmp);
-//     vtkStructuredGrid* input = dynamic_cast<vtkStructuredGrid*>(input_tmp);
-//     output->ShallowCopy(input);
-//     output->SetExtent(args->local_extent);
-// }
 
 template<typename Grid>
 VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man, double _time, int _step)
@@ -55,16 +39,12 @@ VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man, double _time, int _ste
 template <typename Grid>
 template <typename... PairLike>
 bool VTKWriter<Grid>::Write(const std::string& base_path,
-                            const std::string& parallel_folder_name,
                             const PairLike&... data) {
     static_assert(sizeof...(PairLike) > 0, "at least one data set has to be provided for writing!");
     using LO = typename Grid::LocalOrdinalType;
     using Options = VTKOptions<Grid>;
     using vtkOrdinal = typename Options::vtkOrdinal;
     using Mapper = typename Options::Mapper;
-    std::string parallel_data_path = details::VTKGetParallelOutputPath(*exec_man,
-                                                                       base_path,
-                                                                       parallel_folder_name);
 
     /*
      * To do:
@@ -176,12 +156,15 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
 
         // Create the parallel writer and call some functions
         vtkNew<Writer> writer;
+        vtkNew<vtkMPIController> contr;
         std::string root_path = details::VTKGetParallelOutputFileName(exec_man, base_path,
                                                                       grep->GetName(),
                                                                       step,
                                                                       writer->GetDefaultFileExtension());
-        Options::AddDataToWriter(*grep, exec_man, vtkDataSet, writer);
+        writer->SetController(contr);
+        auto persistent_obj = Options::AddDataToWriter(*grep, exec_man, vtkDataSet, writer);
         writer->SetFileName(root_path.c_str());
+        writer->SetUseSubdirectory(true);
         writer->SetDataModeToBinary();
         writer->Update();
         writer->Write();
@@ -196,13 +179,10 @@ bool VTKWriter<Grid>::Write(const FileSystemManager& fman, const PairLike&... da
         ERROR << "Could not create the output folder!" << ERROR_CLOSE;
         return false;
     }
-    std::string pfolder_name = std::to_string(exec_man->GetRank());
-    if (!fman.CreateDirectory(fman.GetOutputPath().native() + '/' + pfolder_name, true)) {
-        ERROR << "An error occured while creating the folder for paralle output!" << ERROR_CLOSE;
-        return false;
-    }
-    return Write(fman.GetOutputPath().native(), pfolder_name, data...);
+
+    return Write(fman.GetOutputPath().native(), data...);
 }
+
 template <typename Grid>
 template <std::size_t I, typename Lambda, typename... Data>
 void VTKWriter<Grid>::LoopThroughData(Lambda lambda, std::tuple<const Data&...> data) {

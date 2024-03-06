@@ -125,6 +125,28 @@ inline void ExecutionManager::AllLogicAnd(const bool* data, bool* recv, int coun
 }
 
 template <typename T>
+inline int ExecutionManager::Allgather(const T* data, int count_send, T* recv, int count_recv) {
+    return MPI_Allgather(data, count_send, GetMPIType<T>(),
+                         recv, count_recv, GetMPIType<T>(),
+                         communicator);
+}
+
+template <typename T>
+inline int ExecutionManager::Allgather(const std::vector<T>& data,
+                                       std::vector<T>* recv,
+                                       bool is_equally_distributed) {
+    if (is_equally_distributed) {
+        recv->resize(data.size() * GetNumberProcesses());
+    } else {
+        if (recv->size() == 0) {
+            ERROR << "Rank " << std::to_string(GetRank()) << ": receive buffer has size 0! "
+                  << "Expect segmentation fault!" << ERROR_CLOSE;
+        }
+    }
+    return Allgather(data.data(), static_cast<int>(data.size()), recv->data(), static_cast<int>(data.size()));
+}
+
+template <typename T>
 int ExecutionManager::Send(const T* data, int count, int receiver, int tag) {
     return MPI_Send(data, count, GetMPIType<T>(), receiver, tag, communicator);
 }

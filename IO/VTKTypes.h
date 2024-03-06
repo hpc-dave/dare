@@ -22,28 +22,17 @@
  * SOFTWARE.
  */
 
-#include "VTKWriter.h"
+#ifndef IO_VTKTYPES_H_
+#define IO_VTKTYPES_H_
 
-namespace dare::io::details {
+#include <vtkType.h>
+#include "Utilities/Vector.h"
 
-std::string VTKGetParallelOutputFileName(dare::mpi::ExecutionManager* exman,
-                                 const std::string& output_path,
-                                 const std::string& grid_name,
-                                 int step,
-                                 const std::string& ext) {
-    std::ostringstream os;
-    os << output_path;
-    if (!output_path.empty() && (output_path.back() != '/'))
-        os << '/';
-    os << grid_name
-       << '_' << std::to_string(step)
-       << "." << ext;
-    exman->Print(dare::mpi::Verbosity::Medium) << "Writing to file "
-                                               << output_path << grid_name
-                                               << '_' << std::to_string(step)
-                                               << "." << ext
-                                               << std::endl;
-    return os.str();
+namespace dare::io {
+
+using vtkOrdinal = vtkIdType;
+using VTKExtent = dare::utils::Vector<6, vtkOrdinal>;
+
 }
 
-}  // end namespace dare::io::details
+#endif  // IO_VTKTYPES_H_

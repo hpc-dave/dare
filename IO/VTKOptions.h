@@ -35,8 +35,10 @@
 
 #include "Grid/DefaultTypes.h"
 #include "Utilities/Vector.h"
+#include "VTKTypes.h"
+#include "VTKPXMLStructuredGridWriter.h"
+
 namespace dare::io {
-using VTKExtent = dare::utils::Vector<6, int>;
 
 template <typename VTKGridType>
 struct VTKWriterMapper {
@@ -44,7 +46,8 @@ struct VTKWriterMapper {
 
 template <>
 struct VTKWriterMapper<vtkStructuredGrid> {
-    using type = vtkXMLPStructuredGridWriter;
+    // using type = vtkXMLPStructuredGridWriter;
+    using type = VTKPXMLStructuredGridWriter;
 };
 
 template <>

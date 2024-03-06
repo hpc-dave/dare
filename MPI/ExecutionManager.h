@@ -359,6 +359,27 @@ public:
     inline void AllLogicAnd(const bool* data, bool* recv, int count);
 
     /*!
+     * @brief gathers and distributes buffers in communicator
+     * @tparam T data type to send
+     * @param data data buffer
+     * @param count_send length of buffer
+     * @param recv receive buffer
+     * @param count_recv length of receive buffer
+     */
+    template <typename T>
+    inline int Allgather(const T* data, int count_send, T* recv, int count_recv);
+
+    /*!
+     * @brief gathers and distributes buffers in communicator
+     * @tparam T data type to send
+     * @param data data buffer
+     * @param recv receive buffer
+     * @param is_equally_distributed identifier, if the data buffers have the same size on each process
+     */
+    template <typename T>
+    inline int Allgather(const std::vector<T>& data, std::vector<T>* recv, bool is_equally_distributed = true);
+
+    /*!
      * \brief blocking MPI send operation
      * \tparam T type of data, needs to be convertible via GetMPIType()
      * @param[in] data pointer to the array of data to send

@@ -26,81 +26,46 @@
 #define IO_VTKPXMLSTRUCTUREDGRIDWRITER_H_
 
 #include <vtkStructuredGrid.h>
+#include <vtkXMLPStructuredGridWriter.h>
+#include <vtkInformation.h>
+#include <vtkInformationIntegerKey.h>
 
 #include <iostream>
-
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "MPI/ExecutionManager.h"
 #include "Utilities/Vector.h"
-#include "VTKOptions.h"
+#include "VTKTypes.h"
 
 namespace dare::io {
 
-struct VTKXMLPStructuredGridCData {
-    std::string name;
-    int number_components{0};
-    VTKOutputType output_type{VTKOutputType::CELL_DATA};
-    VTKDataAgglomerateType data_type{VTKDataAgglomerateType::SCALARS};
+/*!
+ * \brief custom writer for the parallel output of the structured grid
+ */
+class VTKPXMLStructuredGridWriter : public vtkXMLPStructuredGridWriter {
+public:
+    /*!
+     * @brief default construction by vtkMacro
+     */
+    static VTKPXMLStructuredGridWriter* New();
 
     /*!
-     * @brief fast check if the dataset is valid
+     * @brief provide the local extent that you want to see in the root file
+     * @param local_extent local extent to print to the file
+     * @param exman execution manager
+     * \note to developers: invoces communication!
      */
-    bool IsValid() const {
-        bool valid{true};
-        valid &= !name.empty();
-        valid &= number_components > 0;
-        return valid;
-    }
-};
+    void SetPPieceExtent(const VTKExtent& local_extent, dare::mpi::ExecutionManager* exman);
 
-class VTKPXMLStructuredGridWriter {
-public:
-    explicit VTKPXMLStructuredGridWriter(mpi::ExecutionManager* exec_man);
-
-    void AddComponents(const VTKXMLPStructuredGridCData& data);
-    void SetTime(double time);
-    void SetGhostLevel(int ghost_level);
-    void SetFileName(const std::string& fname);
-    void SetGlobalExtent(const VTKExtent& extent);
-    void SetPieceFileName(const std::string& fname);
-    void SetPieceExtent(const VTKExtent& extent);
-    bool Write();
-
-    const std::string& GetDefaultFileExtension() const;
+    /*!
+     * @brief override of the WritePPieceAttributes function
+     * @param index index of the pieces (effectively the rank)
+     */
+    void WritePPieceAttributes(int index);
 
 private:
-    void GatherPieceInformation();
-
-    void WriteHeader(std::ostringstream& os);
-
-    void AddComponents(std::ostringstream& os);
-
-    void AddPieces(std::ostringstream& os);
-
-    void AddTimeStamp(std::ostringstream& os);
-
-    void AddClosing(std::ostringstream& os);
-
-    // global properties
-    mpi::ExecutionManager* exec_man;
-    bool is_root;
-    std::string file_name;
-    std::string path_piece;
-    const std::string file_extension;
-    VTKExtent extent_global;
-    VTKExtent extent_piece;
-    int ghost_levels;
-    double time;
-    const std::string in;
-
-    // properties of the pieces
-    std::vector<int> extent_pieces;
-    std::vector<std::string> path_pieces;
-
-    // properties of the components
-    std::vector<VTKXMLPStructuredGridCData> component_data;
+    std::vector<vtkOrdinal> extent_array;   //!< list of the extents of each piece
 };
 
 }  // end namespace dare::io
