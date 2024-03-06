@@ -114,8 +114,8 @@ TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
     scalar_data.SetComponentName(0, "myscalar");
 
     bool res = writer.Write(*fsys_man,
-                 std::make_pair(dare::io::VTKDataAgglomerateType::VECTORS, &vector_data),
-                 std::make_pair(dare::io::VTKDataAgglomerateType::SCALARS, &scalar_data));
+                 std::make_pair(dare::io::VTKOutputType::CELL_DATA, &vector_data),
+                 std::make_pair(dare::io::VTKOutputType::CELL_DATA, &scalar_data));
     EXPECT_TRUE(res);
 }
 
@@ -146,8 +146,8 @@ TEST_F(VTKWriterTestsCartesian2Dim, GridVectorOutputTest) {
     scalar_data.SetComponentName(1, "myscalar_1");
 
     bool res = writer.Write(*fsys_man,
-                 std::make_pair(dare::io::VTKDataAgglomerateType::VECTORS, &vector_data),
-                 std::make_pair(dare::io::VTKDataAgglomerateType::SCALARS, &scalar_data));
+                            std::make_pair(dare::io::VTKOutputType::CELL_DATA, &vector_data),
+                            std::make_pair(dare::io::VTKOutputType::CELL_DATA, &scalar_data));
     EXPECT_TRUE(res);
 }
 
@@ -184,7 +184,7 @@ TEST_F(VTKWriterTestsCartesian3Dim, GridVectorOutputTest) {
     scalar_data.SetComponentName(2, "myscalar_2");
 
     bool res = writer.Write(*fsys_man,
-                 std::make_pair(dare::io::VTKDataAgglomerateType::VECTORS, &vector_data),
-                 std::make_pair(dare::io::VTKDataAgglomerateType::SCALARS, &scalar_data));
+                            std::make_pair(dare::io::VTKOutputType::CELL_DATA, &vector_data),
+                            std::make_pair(dare::io::VTKOutputType::CELL_DATA, &scalar_data));
     EXPECT_TRUE(res);
 }

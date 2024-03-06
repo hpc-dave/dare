@@ -40,13 +40,19 @@ namespace dare::io {
 
 namespace details::Cartesian {
 
+/*!
+ * @brief arguments for the programmable filter
+ */
 struct PFArgs {
     explicit PFArgs(const VTKExtent& lextent) : local_extent(lextent) {}
-    vtkNew<vtkProgrammableFilter> pf;
-    VTKExtent local_extent;
+    vtkNew<vtkProgrammableFilter> pf;   //!< programmable filter
+    VTKExtent local_extent;             //!< local extent
 };
 
-// function to operate on the point attribute data
+/*!
+ * @brief function to set up the vtkFilter
+ * @param arg pointer to the arguments
+ */
 void inline execute(void* arg) {
     PFArgs* args = reinterpret_cast<PFArgs*>(arg);
     int extent[6] = {0};
@@ -73,7 +79,6 @@ public:
     using Representation = typename CartesianGrid::Representation;
     using LO = typename CartesianGrid::LocalOrdinalType;
     using Index = typename Representation::Index;
-    // using vtkOrdinal = vtkIdType;
 
     /*!
      * @brief constructor
@@ -112,6 +117,10 @@ private:
 
 }  // end namespace details::Cartesian
 
+/*!
+ * @brief specialization for the Cartesian grid type
+ * @tparam Dim dimension of the Cartesian grid
+ */
 template <std::size_t Dim>
 struct VTKOptions<Grid::Cartesian<Dim>> {
     using CartesianGrid = Grid::Cartesian<Dim>;
@@ -127,6 +136,10 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
      * @brief provides the grid for IO
      * @param grep representation of the grid
      * @param vtkgrid pointer to the grid which requires the information
+     * VTK always requires a 3d version of the grid (using 0 for missing dimensions) and
+     * sorts strongly with i, then j and finally z. Additionally, VTK requires
+     * the node points, which form the cells and not the cells itself, although the extent
+     * is given in number of cells and not points. Somebody understand that....
      */
     static bool AllocateGrid(const Representation& grep, GridType* vtkgrid) {
         using Index = typename Representation::Index;
@@ -186,6 +199,16 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         return success;
     }
 
+    /*!
+     * @brief adds specialized data to the parallel writer
+     * @param grep grid representation
+     * @param exec_man execution manager
+     * @param data vtkGridtype
+     * @param writer the parallel writer
+     * @return data which needs to persist until the files are written
+     * Here, the halo cells are explicitly removed from the displayed extents int the root file.
+     * This does not mean, that they don't exist in the separate pieces!
+     */
     static std::unique_ptr<details::Cartesian::PFArgs> AddDataToWriter(const Representation& grep,
                                 dare::mpi::ExecutionManager* exec_man,
                                 vtkStructuredGrid* data,
@@ -222,6 +245,10 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         return args;
     }
 
+    /*!
+     * @brief computes the global extent of the grid
+     * @param grep representation of the grid
+     */
     static VTKExtent GetPExtentGlobal(const Representation& grep) {
         using Index = typename Representation::IndexGlobal;
         Index res = grep.GetGlobalResolution();
@@ -245,6 +272,10 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         return extent;
     }
 
+    /*!
+     * @brief returns the local extent of the grid including halo cells
+     * @param grep grid representation
+     */
     static VTKExtent GetPExtentLocal(const Representation& grep) {
         using Index = typename Representation::Index;
 
@@ -271,7 +302,6 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
             extent[5] += res_3d.k();
 
         return extent;
-    //    +ghost_correction;
     }
 };
 

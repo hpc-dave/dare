@@ -26,6 +26,7 @@
 #define IO_VTKWRITER_H_
 
 #include <vtkCellData.h>
+#include <vtkPointData.h>
 #include <vtkDoubleArray.h>
 #include <vtkNew.h>
 
@@ -61,41 +62,74 @@ namespace details {
                                                        int step,
                                                        const std::string& ext);
 
-struct VTKXMLPStructuredGridComponentData {
-    std::string Name;
-    std::string NumberOfComponents;
-    std::string OutputType;
-    std::string DataAgglomerateType;
-};
-
 }  // end namespace details
 
+/*!
+ * \brief high-level object for creating output in VTKformat
+ * Each time output should be created, an instance of this class should be
+ * constructed. Do not try to reuse it.
+ */
 template <typename Grid>
 class VTKWriter {
 public:
     using GridType = typename VTKOptions<Grid>::GridType;
     using Writer   = typename VTKWriterMapper<GridType>::type;
 
+    /*!
+     * @brief constructor
+     * @param ex_man instance of execution manager
+     * @param time current simulation time (ignored if <0)
+     * @param step time/simulation step
+     */
     explicit VTKWriter(mpi::ExecutionManager* ex_man,
                        double time,
                        int step);
 
+    /*!
+     * @brief writes data into a specified folder
+     * @tparam ...Data type of parameter pack with data
+     * @param base_path path to folder
+     * @param ...data parameter pack with output data
+     * @return true, if successful
+     */
     template<typename... Data>
     bool Write(const std::string& base_path,
                const Data&... data);
 
+    /*!
+     * @brief writes data into folder according to file system manager
+     * @tparam ...Data type of parameter pack with data
+     * @param fman file system manager
+     * @param ...data parameter pack with output data
+     * @return true, if successful
+     * The use of a FileSystemManager allows the dynamic piping of data
+     * into dedicated folders. The FileSystemManager will also create the
+     * output folder, if required.
+     */
     template <typename... Data>
     bool Write(const FileSystemManager& fman, const Data&... data);
 
 private:
+    /*!
+     * @brief Convenient loop to access an instance in the parameter pack
+     * @tparam Lambda anonymous function/functor to work with the data
+     * @tparam ...Data type parameter pack
+     * @tparam I instance to access
+     * @param lambda functor of form (std::size_t pos, auto instance)
+     * @param data tuple with references to data
+     */
     template<std::size_t I, typename Lambda, typename... Data>
     void LoopThroughData(Lambda lambda, std::tuple<const Data&...> data);
 
-    void AddTimeStamp(vtkNew<GridType>& data_set);  // NOLINT
+    /*!
+     * @brief adds a timestamp, if the time is >= 0
+     * @param data_set vtkGridType
+     */
+    void AddTimeStamp(GridType* data_set);
 
-    mpi::ExecutionManager* exec_man;
-    double time;
-    double step;
+    mpi::ExecutionManager* exec_man;    //!< reference to execution manager
+    double time;                        //!< timestamp
+    int step;                           //!< time/simulation step
 };
 
 }  // end namespace dare::io

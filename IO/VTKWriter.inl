@@ -28,7 +28,6 @@
 #include <vtkProgrammableFilter.h>
 #include <vtkXMLPStructuredGridWriter.h>
 
-
 namespace dare::io {
 
 template<typename Grid>
@@ -49,10 +48,7 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
     /*
      * To do:
      * - move data assignment into subfunction
-     * - set up a parallel writer, where the relative path to the pieces is given
-     * - try, if ghost cell arrangement can be improved
      * - test in 3D
-     * - post on StackOverflow
      */
     // convert parameter pack to tuple to use STL-functionality
     auto data_tuple = std::forward_as_tuple(data...);
@@ -100,10 +96,12 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
             int num_components{0};
             std::string data_name;
             std::vector<std::string> cnames;
-            VTKDataAgglomerateType otype{VTKDataAgglomerateType::SCALARS};
+            // VTKDataAgglomerateType otype{VTKDataAgglomerateType::SCALARS};
+            VTKOutputType otype{VTKOutputType::CELL_DATA};
             // allocate field according to the specified type
             auto SetInformation = [&](std::size_t pos, auto instance) {
                 if (pos == num_instance) {
+                    otype = instance.first;
                     data_name = instance.second->GetName();
                     num_components = static_cast<int>(instance.second->GetNumComponents());
                     cnames.resize(num_components);
@@ -139,18 +137,13 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
                 }
             };
             LoopThroughData<0>(SetData, data_tuple);
-            vtkDataSet->GetCellData()->AddArray(data_array);
-
-            // // and add to data set
             switch (otype) {
-            case VTKDataAgglomerateType::SCALARS:
-                // vtkDataSet->GetCellData()->SetScalars(data_array);
+            case VTKOutputType::CELL_DATA:
+                vtkDataSet->GetCellData()->AddArray(data_array);
                 break;
-            case VTKDataAgglomerateType::VECTORS:
-                // vtkDataSet->GetCellData()->SetVectors(data_array);
+            case VTKOutputType::POINT_DATA:
+                vtkDataSet->GetPointData()->AddArray(data_array);
                 break;
-            default:
-                ERROR << "Unsupported output type provided!" << ERROR_CLOSE;
             }
         }  // end loop through instances
 
@@ -193,7 +186,7 @@ void VTKWriter<Grid>::LoopThroughData(Lambda lambda, std::tuple<const Data&...> 
 }
 
 template <typename Grid>
-void VTKWriter<Grid>::AddTimeStamp(vtkNew<GridType>& data_set) {    // NOLINT
+void VTKWriter<Grid>::AddTimeStamp(GridType* data_set) {    // NOLINT
     if (time < 0)
         return;
 

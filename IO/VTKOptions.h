@@ -40,32 +40,36 @@
 
 namespace dare::io {
 
+/*!
+ * @brief provides writer type according to vtkGrid via SFINAE
+ * @tparam VTKGridType type of vtk grid
+ */
 template <typename VTKGridType>
 struct VTKWriterMapper {
 };
 
+/*!
+ * @brief partial specialization for vtkStructuredGrid
+ */
 template <>
 struct VTKWriterMapper<vtkStructuredGrid> {
-    // using type = vtkXMLPStructuredGridWriter;
     using type = VTKPXMLStructuredGridWriter;
 };
 
+/*!
+ * @brief partial specialization for vtkUnstructured grid
+ */
 template <>
 struct VTKWriterMapper<vtkUnstructuredGrid> {
     using type = vtkXMLPUnstructuredGridWriter;
 };
 
 /*!
- * @brief type of vtk output that is dealt with here
+ * @brief user input to define if data is located at cell centers or nodes
  */
-enum class VTKDataAgglomerateType {
-    VECTORS,
-    SCALARS
-};
-
 enum class VTKOutputType {
-    CELL_DATA,
-    POINT_DATA
+    CELL_DATA,      //!< data at the cell centers
+    POINT_DATA      //!< data at the node points
 };
 
 /*!
