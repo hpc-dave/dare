@@ -100,7 +100,7 @@ public:
      * @param local_ordinal local ordinal of the grid
      * @return mapped ordinal
      */
-    [[nodiscard]] vtkOrdinal operator()(LO local_ordinal) {
+    [[nodiscard]] vtkOrdinal operator()(LO local_ordinal) const {
         Index ind = grep->MapOrdinalToIndexLocal(local_ordinal);
         dare::utils::Vector<3, vtkOrdinal> ind_3d;
         for (std::size_t d{0}; d < Dim; d++) {

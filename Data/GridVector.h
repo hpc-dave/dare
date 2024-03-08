@@ -250,6 +250,35 @@ private:
 
 }  // namespace dare::Data
 
+namespace dare {
+
+/*!
+ * @brief type trait to determine if type is a GridVector
+ * @tparam T type to test
+ * This is the SFINAE option for false
+ */
+template <typename T>
+struct is_gridvector : std::false_type {
+};
+
+/*!
+ * @brief type trait to determine if type is a GridVector
+ * @tparam T type to test
+ * This is the SFINAE option for true
+ */
+template <typename Grid, typename SC, std::size_t N>
+struct is_gridvector<Data::GridVector<Grid, SC, N>> : std::true_type {
+};
+
+template <typename Grid, typename SC, std::size_t N>
+struct is_gridvector<const Data::GridVector<Grid, SC, N>> : std::true_type {
+};
+
+template <typename T>
+static const bool is_gridvector_v = is_gridvector<T>::value;
+
+}  // end namespace dare
+
 #include "GridVector.inl"
 
 #endif  // DATA_GRIDVECTOR_H_

@@ -36,14 +36,10 @@ VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man, double _time, int _ste
 }
 
 template <typename Grid>
-template <typename... PairLike>
+template <typename... Data>
 bool VTKWriter<Grid>::Write(const std::string& base_path,
-                            const PairLike&... data) {
-    static_assert(sizeof...(PairLike) > 0, "at least one data set has to be provided for writing!");
-    using LO = typename Grid::LocalOrdinalType;
-    using Options = VTKOptions<Grid>;
-    using vtkOrdinal = typename Options::vtkOrdinal;
-    using Mapper = typename Options::Mapper;
+                            const Data&... data) {
+    static_assert(sizeof...(Data) > 0, "at least one data set has to be provided for writing!");
 
     /*
      * To do:
@@ -56,15 +52,9 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
     // Loop through provided data to group all instances with the same underlying grid
     // As an example, this allows to reuse the scalar grid for all scalar transport quantities,
     // while the staggered fields need dedicated handling
-    std::map<std::string, std::list<std::size_t>> grouped_data;
-    std::map<std::string, const typename Grid::Representation*> representations;
-    auto GroupData = [&](std::size_t pos, auto instance) {
-        std::string grid_name = instance.second->GetGridRepresentation().GetName();
-        grouped_data[grid_name].push_back(pos);
-        if (representations.find(grid_name) == representations.end())
-            representations[grid_name] = &instance.second->GetGridRepresentation();
-    };
-    LoopThroughData<0>(GroupData, data_tuple);
+    GroupedIndices grouped_data;
+    GroupedRepresentations representations;
+    GroupData(data_tuple, &grouped_data, &representations);
 
     // Loop through each determined grid and write the associated data
     // to the file
@@ -93,61 +83,11 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
         for (auto num_instance : grid.second) {
             // access vtk output type
             vtkNew<vtkDoubleArray> data_array;
-            int num_components{0};
-            std::string data_name;
-            std::vector<std::string> cnames;
-            // VTKDataAgglomerateType otype{VTKDataAgglomerateType::SCALARS};
-            VTKOutputType otype{VTKOutputType::CELL_DATA};
-            // allocate field according to the specified type
-            auto SetInformation = [&](std::size_t pos, auto instance) {
-                if (pos == num_instance) {
-                    otype = instance.first;
-                    data_name = instance.second->GetName();
-                    num_components = static_cast<int>(instance.second->GetNumComponents());
-                    cnames.resize(num_components);
-                    for (int n{0}; n < num_components; n++) {
-                        cnames[n] = instance.second->GetComponentName(n);
-                    }
-                }
-            };
-            LoopThroughData<0>(SetInformation, data_tuple);
-            data_array->SetName(data_name.c_str());
-            data_array->SetNumberOfComponents(num_components);
-            data_array->SetNumberOfTuples(num_cells_loc);
-            if (num_components > 1) {
-                for (int i{0}; i < num_components; i++) {
-                    std::string cname = cnames[i];
-                    if (cname.empty())
-                        cname = std::to_string(i);
-                    data_array->SetComponentName(i, cname.c_str());
-                }
-            }
-            auto SetData = [&](std::size_t pos, auto instance) {
-                if (pos == num_instance) {
-                    std::vector<double> tuple_like(num_components);
-                    for (LO cell_id{0}; cell_id < num_cells_loc; cell_id++) {
-                        // vtkOrdinal vtk_id = VTKOptions<Grid>::Map(*grep, cell_id);
-                        vtkOrdinal vtk_id = mapToVTK(cell_id);
-                        // tuple
-                        for (int n{0}; n < num_components; n++) {
-                            tuple_like[n] = instance.second->At(cell_id, n);
-                        }
-                        data_array->SetTuple(vtk_id, tuple_like.data());
-                    }
-                }
-            };
-            LoopThroughData<0>(SetData, data_tuple);
-            switch (otype) {
-            case VTKOutputType::CELL_DATA:
-                vtkDataSet->GetCellData()->AddArray(data_array);
-                break;
-            case VTKOutputType::POINT_DATA:
-                vtkDataSet->GetPointData()->AddArray(data_array);
-                break;
-            }
+            PopulateVTKArray(data_tuple, num_instance, num_cells_loc, mapToVTK, data_array);
+            vtkDataSet->GetCellData()->AddArray(data_array);
         }  // end loop through instances
 
-        // Create the parallel writer and call some functions
+        // Create the parallel writer and set required information
         vtkNew<Writer> writer;
         vtkNew<vtkMPIController> contr;
         std::string root_path = details::VTKGetParallelOutputFileName(exec_man, base_path,
@@ -186,6 +126,25 @@ void VTKWriter<Grid>::LoopThroughData(Lambda lambda, std::tuple<const Data&...> 
 }
 
 template <typename Grid>
+template <typename... Data>
+void VTKWriter<Grid>::GroupData(std::tuple<const Data&...> data,
+                                GroupedIndices* positions,
+                                GroupedRepresentations* rep) {
+    // Loop through provided data to group all instances with the same underlying grid
+    // As an example, this allows to reuse the scalar grid for all scalar transport quantities,
+    // while the staggered fields need dedicated handling
+    std::map<std::string, std::list<std::size_t>> grouped_data;
+    std::map<std::string, const typename Grid::Representation*> representations;
+    auto GroupData = [&](std::size_t pos, auto instance) {
+        std::string grid_name = instance->GetGridRepresentation().GetName();
+        (*positions)[grid_name].push_back(pos);
+        if (rep->find(grid_name) == rep->end())
+            (*rep)[grid_name] = &instance->GetGridRepresentation();
+    };
+    LoopThroughData<0>(GroupData, data);
+}
+
+template <typename Grid>
 void VTKWriter<Grid>::AddTimeStamp(GridType* data_set) {    // NOLINT
     if (time < 0)
         return;
@@ -195,6 +154,62 @@ void VTKWriter<Grid>::AddTimeStamp(GridType* data_set) {    // NOLINT
     time_array->SetNumberOfTuples(1);
     time_array->SetTuple1(0, time);
     data_set->GetFieldData()->AddArray(time_array);
+}
+
+template <typename Grid>
+template <typename... Data>
+void VTKWriter<Grid>::PopulateVTKArray(std::tuple<const Data&...> data,
+                                       std::size_t num_instance,
+                                       LO num_cells_loc,
+                                       const Mapper& mapToVtk,
+                                       vtkDoubleArray* data_array) {
+    int num_components{0};
+    std::string data_name;              // name of data set
+    std::vector<std::string> cnames;    // individual component names
+    // Inquire the information concerning the number of components,
+    // name of the dataset and and the individual component names
+    auto SetInformation = [&](std::size_t pos, auto instance) {
+        if (pos == num_instance) {
+            // otype = instance.first;
+            data_name = instance->GetName();
+            num_components = static_cast<int>(instance->GetNumComponents());
+            cnames.resize(num_components);
+            for (int n{0}; n < num_components; n++) {
+                cnames[n] = instance->GetComponentName(n);
+            }
+        }
+    };
+    LoopThroughData<0>(SetInformation, data);
+
+    // Set the inquired information, note that by default,
+    // a component will be assigned its index
+    data_array->SetName(data_name.c_str());
+    data_array->SetNumberOfComponents(num_components);
+    data_array->SetNumberOfTuples(num_cells_loc);
+    if (num_components > 1) {
+        for (int i{0}; i < num_components; i++) {
+            std::string cname = cnames[i];
+            if (cname.empty())
+                cname = std::to_string(i);
+            data_array->SetComponentName(i, cname.c_str());
+        }
+    }
+
+    // loop through the data set and copy the appropriately mapped
+    // components to the array
+    auto SetData = [&](std::size_t pos, auto instance) {
+        if (pos == num_instance) {
+            std::vector<double> tuple_like(num_components);
+            for (LO cell_id{0}; cell_id < num_cells_loc; cell_id++) {
+                vtkOrdinal vtk_id = mapToVtk(cell_id);
+                for (int n{0}; n < num_components; n++) {
+                    tuple_like[n] = instance->At(cell_id, n);
+                }
+                data_array->SetTuple(vtk_id, tuple_like.data());
+            }
+        }
+    };
+    LoopThroughData<0>(SetData, data);
 }
 
 }  // end namespace dare::io

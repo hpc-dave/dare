@@ -74,6 +74,14 @@ class VTKWriter {
 public:
     using GridType = typename VTKOptions<Grid>::GridType;
     using Writer   = typename VTKWriterMapper<GridType>::type;
+    template<typename T>
+    using GroupedData = std::map<std::string, T>;
+    using GroupedIndices = GroupedData<std::list<std::size_t>>;
+    using GroupedRepresentations = GroupedData<typename Grid::Representation*>;
+    using LO = typename Grid::LocalOrdinalType;
+    using Options = VTKOptions<Grid>;
+    using vtkOrdinal = typename Options::vtkOrdinal;
+    using Mapper = typename Options::Mapper;
 
     /*!
      * @brief constructor
@@ -120,6 +128,27 @@ private:
      */
     template<std::size_t I, typename Lambda, typename... Data>
     void LoopThroughData(Lambda lambda, std::tuple<const Data&...> data);
+
+    /*!
+     * @brief sort and group the data in the tuple
+     * @param data tupe with references to the data
+     * @param positions positions of the data sets of a grid
+     * @param rep representations of the grid
+     * Loop through provided data to group all instances with the same underlying grid
+     * As an example, this allows to reuse the scalar grid for all scalar transport quantities,
+     * while the staggered fields need dedicated handling
+     */
+    template<typename... Data>
+    void GroupData(std::tuple<const Data&...> data,
+                   GroupedIndices* positions,
+                   GroupedRepresentations* rep);
+
+    template <typename... Data>
+    void PopulateVTKArray(std::tuple<const Data&...> data,
+                          std::size_t num_instance,
+                          LO num_cells_loc,
+                          const Mapper& mapToVtk,
+                          vtkDoubleArray* data_array);
 
     /*!
      * @brief adds a timestamp, if the time is >= 0
