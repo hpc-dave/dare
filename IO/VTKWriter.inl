@@ -41,11 +41,6 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
                             const Data&... data) {
     static_assert(sizeof...(Data) > 0, "at least one data set has to be provided for writing!");
 
-    /*
-     * To do:
-     * - move data assignment into subfunction
-     * - test in 3D
-     */
     // convert parameter pack to tuple to use STL-functionality
     auto data_tuple = std::forward_as_tuple(data...);
 

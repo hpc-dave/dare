@@ -148,6 +148,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         for (std::size_t d{0}; d < Dim; d++) {
             res_3d[d] = res[d] + 1;  // +1 for the number of points, required by VTK
         }
+
         // Here we compute some relevant data, including the cell dimensions and offset
         // Note, that we need to move the offset by half a cell size in each dimension
         // since the offset refers to the cell center!
@@ -162,6 +163,12 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
             offset_cells[d] = grep.GetOffsetCells()[d];
         }
         VTKExtent extent = GetPExtentGlobal(grep);
+
+        // for 1D grids, we allocate a pseudo 2D grid
+        if constexpr (Dim == 1) {
+            res_3d.j() = 2;
+            dn_3d.y() = dn_3d.x();
+        }
 
         vtkNew<vtkPoints> points;
         points->Allocate(res_3d.i() * res_3d.j() * res_3d.k());
@@ -261,9 +268,13 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
 
         // in x-direction
         extent[1] += res_3d.i();
+
         // in y-direction
         if constexpr (Dim > 1)
             extent[3] += res_3d.j();
+        else
+            extent[3] = 1;  // pseudo 2D grid for 1D
+
         // in z-direction
         if constexpr (Dim > 2)
             // extent[1] += res_3d.k();
@@ -294,9 +305,13 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
 
         // in x-direction
         extent[1] += res_3d.i();
+
         // in y-direction
         if constexpr (Dim > 1)
             extent[3] += res_3d.j();
+        else
+            extent[3] = 1;
+
         // in z-direction
         if constexpr (Dim > 2)
             extent[5] += res_3d.k();
