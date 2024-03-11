@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef EQUATIONS_OPERATORS_CARTESIAN_H_
-#define EQUATIONS_OPERATORS_CARTESIAN_H_
+#ifndef GRID_CARTESIAN_OPERATORS_CARTESIAN_H_
+#define GRID_CARTESIAN_OPERATORS_CARTESIAN_H_
 
-#include "Operators.h"
-#include "Gradient_Cartesian.h"
 #include "Divergence_Cartesian.h"
+#include "Equations/FluxLimiter.h"
+#include "Equations/Operators.h"
+#include "Gradient_Cartesian.h"
 #include "TVD_Cartesian.h"
-#include "FluxLimiter.h"
 
-#endif  // EQUATIONS_OPERATORS_CARTESIAN_H_
+#endif  // GRID_CARTESIAN_OPERATORS_CARTESIAN_H_

@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-#ifndef EQUATIONS_GRADIENT_CARTESIAN_H_
-#define EQUATIONS_GRADIENT_CARTESIAN_H_
+#ifndef GRID_CARTESIAN_GRADIENT_CARTESIAN_H_
+#define GRID_CARTESIAN_GRADIENT_CARTESIAN_H_
 
 #include "Data/GridVector.h"
-#include "Math/Interpolation_Cartesian.h"
-#include "MatrixSystem/MatrixBlock_Cartesian.h"
-#include "Operators.h"
-#include "Data/Stencils_Cartesian.h"
+#include "Equations/Operators.h"
+#include "Grid/Cartesian/Interpolation_Cartesian.h"
+#include "Grid/Cartesian/MatrixBlock_Cartesian.h"
+#include "Grid/Cartesian/Stencils_Cartesian.h"
 
 namespace dare::Matrix {
 
@@ -118,4 +118,4 @@ private:
 
 #include "Gradient_Cartesian.inl"
 
-#endif  // EQUATIONS_GRADIENT_CARTESIAN_H_
+#endif  // GRID_CARTESIAN_GRADIENT_CARTESIAN_H_

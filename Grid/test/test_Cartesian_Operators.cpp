@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Equations/Operators_Cartesian.h"
+#include "Grid/Cartesian/Operators_Cartesian.h"
 
 namespace dare::test {
 

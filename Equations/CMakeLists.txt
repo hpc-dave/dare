@@ -2,13 +2,7 @@ set(DaRe_HEADER_FILES
     "DDT.h"
     "DDT.inl"
     "Operators.h"
-    "Gradient_Cartesian.h"
-    "Gradient_Cartesian.inl"
-    "Divergence_Cartesian.h"
-    "Divergence_Cartesian.inl"
     "FluxLimiter.h"
-    "TVD_Cartesian.h"
-    "TVD_Cartesian.inl"
 )
 
 target_sources(dare

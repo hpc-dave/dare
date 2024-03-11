@@ -26,6 +26,9 @@
 #define GRID_CARTESIAN_H_
 
 #include "Cartesian/CartesianMesh.h"
+#include "Cartesian/MatrixBlock_Cartesian.h"
+#include "Cartesian/Operators_Cartesian.h"
+#include "Cartesian/Stencils_Cartesian.h"
 #include "Cartesian/VTKOptions_Cartesian.h"
 
 #endif  // GRID_CARTESIAN_H_

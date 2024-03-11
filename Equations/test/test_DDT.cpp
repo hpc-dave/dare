@@ -26,7 +26,6 @@
 
 #include "Equations/DDT.h"
 #include "Grid/Cartesian.h"
-#include "Data/Stencils_Cartesian.h"
 
 namespace dare::test {
 

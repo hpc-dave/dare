@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-#ifndef EQUATIONS_DIVERGENCE_CARTESIAN_H_
-#define EQUATIONS_DIVERGENCE_CARTESIAN_H_
+#ifndef GRID_CARTESIAN_DIVERGENCE_CARTESIAN_H_
+#define GRID_CARTESIAN_DIVERGENCE_CARTESIAN_H_
 
 #include "Data/GridVector.h"
-#include "Data/Stencils_Cartesian.h"
-#include "Math/Interpolation_Cartesian.h"
-#include "MatrixSystem/MatrixBlock_Cartesian.h"
-#include "Operators.h"
+#include "Grid/Cartesian/Stencils_Cartesian.h"
+#include "Grid/Cartesian/Interpolation_Cartesian.h"
+#include "Grid/Cartesian/MatrixBlock_Cartesian.h"
+#include "Equations/Operators.h"
 
 namespace dare::Matrix {
 
@@ -92,4 +92,4 @@ private:
 
 #include "Divergence_Cartesian.inl"
 
-#endif  // EQUATIONS_DIVERGENCE_CARTESIAN_H_
+#endif  // GRID_CARTESIAN_DIVERGENCE_CARTESIAN_H_

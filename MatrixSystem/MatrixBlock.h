@@ -26,6 +26,5 @@
 #define MATRIXSYSTEM_MATRIXBLOCK_H_
 
 #include "MatrixBlock_Default.h"
-#include "MatrixBlock_Cartesian.h"
 
 #endif  // MATRIXSYSTEM_MATRIXBLOCK_H_

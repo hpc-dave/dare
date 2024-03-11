@@ -4,9 +4,19 @@ set(DaRe_HEADER_FILES
     "CartesianRepresentation.h"
     "CartesianMesh.inl"
     "CartesianRepresentation.inl"
-    "VTKOptions_Cartesian.h"
+    "Divergence_Cartesian.h"
+    "Divergence_Cartesian.inl"
+    "Gradient_Cartesian.h"
+    "Gradient_Cartesian.inl"
     "Interpolation_Cartesian.h"
-    
+    "MatrixBlock_Cartesian.h"
+    "MatrixBlock_Cartesian.inl"
+    "Operators_Cartesian.h"
+    "Stencils_Cartesian.h"
+    "Stencils_Cartesian.inl"
+    "TVD_Cartesian.h"
+    "TVD_Cartesian.inl"
+    "VTKOptions_Cartesian.h"
 )
 
 set(DaRe_SOURCE_FILES

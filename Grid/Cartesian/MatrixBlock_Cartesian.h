@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-#ifndef MATRIXSYSTEM_MATRIXBLOCK_CARTESIAN_H_
-#define MATRIXSYSTEM_MATRIXBLOCK_CARTESIAN_H_
+#ifndef GRID_CARTESIAN_MATRIXBLOCK_CARTESIAN_H_
+#define GRID_CARTESIAN_MATRIXBLOCK_CARTESIAN_H_
 
 #include <vector>
 
-#include "MatrixBlock_Default.h"
-#include "Grid/Cartesian.h"
-#include "Data/Stencils_Cartesian.h"
+#include "MatrixSystem/MatrixBlock_Default.h"
+#include "Grid/Cartesian/CartesianMesh.h"
+#include "Grid/Cartesian/Stencils_Cartesian.h"
 #include "Utilities/Errors.h"
 
 namespace dare::Matrix {
@@ -234,4 +234,4 @@ private:
 
 #include "MatrixBlock_Cartesian.inl"
 
-#endif  // MATRIXSYSTEM_MATRIXBLOCK_CARTESIAN_H_
+#endif  // GRID_CARTESIAN_MATRIXBLOCK_CARTESIAN_H_
