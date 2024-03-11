@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef IO_VTKOPTIONS_CARTESIAN_H_
-#define IO_VTKOPTIONS_CARTESIAN_H_
+#ifndef GRID_CARTESIAN_VTKOPTIONS_CARTESIAN_H_
+#define GRID_CARTESIAN_VTKOPTIONS_CARTESIAN_H_
 #include <vtkInformation.h>
 #include <vtkMPIController.h>
 #include <vtkProgrammableFilter.h>
@@ -34,7 +34,7 @@
 #include <memory>
 
 #include "Grid/Cartesian.h"
-#include "VTKOptions.h"
+#include "IO/VTKOptions.h"
 
 namespace dare::io {
 
@@ -322,4 +322,4 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
 
 }  // end namespace dare::io
 
-#endif  // IO_VTKOPTIONS_CARTESIAN_H_
+#endif  // GRID_CARTESIAN_VTKOPTIONS_CARTESIAN_H_

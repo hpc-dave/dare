@@ -34,7 +34,7 @@
 #include <Tpetra_CrsMatrix.hpp>
 #include <Tpetra_Version.hpp>
 
-#include "Grid/DefaultTypes.h"
+#include "Data/DefaultTypes.h"
 #include "Data/GridVector.h"
 #include "MPI/ExecutionManager.h"
 #include "Utilities/InitializationTracker.h"

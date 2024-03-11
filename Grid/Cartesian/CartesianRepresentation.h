@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef GRID_CARTESIANREPRESENTATION_H_
-#define GRID_CARTESIANREPRESENTATION_H_
+#ifndef GRID_CARTESIAN_CARTESIANREPRESENTATION_H_
+#define GRID_CARTESIAN_CARTESIANREPRESENTATION_H_
 
 #include <map>
 #include <unordered_map>
@@ -331,4 +331,4 @@ private:
 
 #include "CartesianRepresentation.inl"
 
-#endif  // GRID_CARTESIANREPRESENTATION_H_
+#endif  // GRID_CARTESIAN_CARTESIANREPRESENTATION_H_

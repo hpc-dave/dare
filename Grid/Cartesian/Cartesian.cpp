@@ -22,10 +22,33 @@
  * SOFTWARE.
  */
 
-#ifndef GRID_CARTESIAN_H_
-#define GRID_CARTESIAN_H_
+#include "CartesianMesh.h"
 
-#include "Cartesian/CartesianMesh.h"
-#include "Cartesian/VTKOptions_Cartesian.h"
+namespace dare::Grid::details::Cartesian {
+std::list<std::string> AllocationManager::reg;
+bool AllocationManager::RegisterGrid(const std::string& gname) {
+    // test if grid with same name was already allocated and register this one
+    auto it = std::find(reg.begin(),
+                        reg.end(),
+                        gname);
+    if (it != reg.end()) {
+        ERROR << "The requested grid name '" << gname << "'is already registered, chose an alternative!" << ERROR_CLOSE;
+        return false;
+    }
+    reg.push_back(gname);
+    return true;
+}
 
-#endif  // GRID_CARTESIAN_H_
+bool AllocationManager::DeregisterGrid(const std::string& gname) {
+    auto it = std::find(reg.begin(),
+                        reg.end(),
+                        gname);
+    if (it == reg.end()) {
+        ERROR << "The grid " << gname << " could not be found during deallocation in the registry" << ERROR_CLOSE;
+        return false;
+    }
+    reg.erase(it);
+    return true;
+}
+
+}  // end namespace dare::Grid::details::Cartesian

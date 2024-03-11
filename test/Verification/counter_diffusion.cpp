@@ -22,22 +22,5 @@
  * SOFTWARE.
  */
 
-#ifndef GRID_DEFAULTTYPES_H_
-#define GRID_DEFAULTTYPES_H_
-#include <Tpetra_Map_decl.hpp>
-
-namespace dare::Grid::details {
-using LocalOrdinalType = Tpetra::Map<>::local_ordinal_type;
-using GlobalOrdinalType = Tpetra::Map<>::global_ordinal_type;
-using ExecutionSpace = Tpetra::Map<>::execution_space;
-using MemorySpace = Tpetra::Map<>::memory_space;
-using NodeType = Tpetra::Map<>::node_type;
-}  // namespace dare::Grid::details
-
-namespace dare::defaults {
-using LocalOrdinalType = Grid::details::LocalOrdinalType;
-using GlobalOrdinalType = Grid::details::GlobalOrdinalType;
-using ScalarType = double;
-}  // end namespace dare::defaults
-
-#endif  // GRID_DEFAULTTYPES_H_
+#include "ScopeGuard/ScopeGuard.h"
+#include "Grid/Cartesian.h"

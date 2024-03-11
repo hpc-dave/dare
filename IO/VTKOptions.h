@@ -33,7 +33,7 @@
 #include <vtkXMLStructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
-#include "Grid/DefaultTypes.h"
+#include "Data/DefaultTypes.h"
 #include "Utilities/Vector.h"
 #include "VTKTypes.h"
 #include "VTKPXMLStructuredGridWriter.h"

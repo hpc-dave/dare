@@ -24,8 +24,8 @@
 
 #include <gtest/gtest.h>
 
-#include "Grid/DefaultTypes.h"
-#include "IO/VTKOptions_Cartesian.h"
+#include "Data/DefaultTypes.h"
+#include "Grid/Cartesian.h"
 #include "IO/VTKWriter.h"
 #include "IO/FileSystemManager.h"
 #include "Math/Interpolation_Cartesian.h"

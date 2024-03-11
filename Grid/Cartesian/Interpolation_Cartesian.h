@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-#ifndef MATH_INTERPOLATION_CARTESIAN_H_
-#define MATH_INTERPOLATION_CARTESIAN_H_
+#ifndef GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_
+#define GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_
 
 #include <limits>
 
-#include "Interpolation.h"
-#include "Divisors.h"
+#include "Math/Interpolation.h"
+#include "Math/Divisors.h"
 #include "Grid/Cartesian.h"
 #include "Utilities/Errors.h"
 
@@ -503,4 +503,4 @@ dare::utils::Vector<N, SC> InterpolateToPoint(const typename dare::utils::Vector
 }
 }  // end namespace dare::math
 
-#endif  // MATH_INTERPOLATION_CARTESIAN_H_
+#endif  // GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_

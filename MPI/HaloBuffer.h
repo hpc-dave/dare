@@ -30,8 +30,8 @@
 #include <sstream>
 #include <vector>
 
-#include "../Utilities/InitializationTracker.h"
-#include "../Grid/DefaultTypes.h"
+#include "Utilities/InitializationTracker.h"
+#include "Data/DefaultTypes.h"
 #include "SingleHaloBuffer.h"
 namespace dare::mpi {
 

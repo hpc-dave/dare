@@ -6,6 +6,7 @@ set(DaRe_HEADER_FILES
     "Stencil.h"
     "Stencils_Cartesian.h"
     "Stencils_Cartesian.inl"
+    "DefaultTypes.h"
 )
 
 target_sources(dare

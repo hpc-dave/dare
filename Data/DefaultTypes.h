@@ -22,33 +22,22 @@
  * SOFTWARE.
  */
 
-#include "Cartesian.h"
+#ifndef DATA_DEFAULTTYPES_H_
+#define DATA_DEFAULTTYPES_H_
+#include <Tpetra_Map_decl.hpp>
 
-namespace dare::Grid::details::Cartesian {
-std::list<std::string> AllocationManager::reg;
-bool AllocationManager::RegisterGrid(const std::string& gname) {
-    // test if grid with same name was already allocated and register this one
-    auto it = std::find(reg.begin(),
-                        reg.end(),
-                        gname);
-    if (it != reg.end()) {
-        ERROR << "The requested grid name '" << gname << "'is already registered, chose an alternative!" << ERROR_CLOSE;
-        return false;
-    }
-    reg.push_back(gname);
-    return true;
-}
+namespace dare::Grid::details {
+using LocalOrdinalType = Tpetra::Map<>::local_ordinal_type;
+using GlobalOrdinalType = Tpetra::Map<>::global_ordinal_type;
+using ExecutionSpace = Tpetra::Map<>::execution_space;
+using MemorySpace = Tpetra::Map<>::memory_space;
+using NodeType = Tpetra::Map<>::node_type;
+}  // namespace dare::Grid::details
 
-bool AllocationManager::DeregisterGrid(const std::string& gname) {
-    auto it = std::find(reg.begin(),
-                        reg.end(),
-                        gname);
-    if (it == reg.end()) {
-        ERROR << "The grid " << gname << " could not be found during deallocation in the registry" << ERROR_CLOSE;
-        return false;
-    }
-    reg.erase(it);
-    return true;
-}
+namespace dare::defaults {
+using LocalOrdinalType = Grid::details::LocalOrdinalType;
+using GlobalOrdinalType = Grid::details::GlobalOrdinalType;
+using ScalarType = double;
+}  // end namespace dare::defaults
 
-}  // end namespace dare::Grid::details::Cartesian
+#endif  // DATA_DEFAULTTYPES_H_

@@ -48,7 +48,7 @@
 #include <Amesos2.hpp>
 
 #include "Utilities/Errors.h"
-#include "Grid/DefaultTypes.h"
+#include "Data/DefaultTypes.h"
 #include "BiCGStab2.h"
 namespace dare::Matrix {
 

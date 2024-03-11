@@ -33,7 +33,7 @@
 #include <vector>
 
 #include "Utilities/InitializationTracker.h"
-#include "Grid/DefaultTypes.h"
+#include "Data/DefaultTypes.h"
 #include "ExecutionManager.h"
 
 namespace dare::mpi {

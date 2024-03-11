@@ -26,7 +26,7 @@
 
 #include "Data/GridVector.h"
 #include "Data/Stencils_Cartesian.h"
-#include "Math/Interpolation_Cartesian.h"
+#include "Grid/Cartesian/Interpolation_Cartesian.h"
 #include "MatrixSystem/MatrixBlock_Cartesian.h"
 #include "Operators.h"
 
