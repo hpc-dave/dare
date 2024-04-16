@@ -25,6 +25,7 @@
 #include "ScopeGuard/ScopeGuard.h"
 
 int main(int argc, char* argv[]) {
+    std::cout << "test" << std::endl;
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
         if (scope_guard.AmIRoot()) {
