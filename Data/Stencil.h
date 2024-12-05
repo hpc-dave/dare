@@ -120,4 +120,60 @@ FaceValueStencil<Grid, SC, N> operator*(SC v, const FaceValueStencil<Grid, SC, N
 
 }  // namespace dare::Data
 
+
+namespace dare {
+
+template<typename T>
+struct is_face_matrix_stencil_helper : std::false_type {
+};
+template <typename GridType, typename SC, std::size_t N>
+struct is_face_matrix_stencil_helper<Data::FaceMatrixStencil<GridType, SC, N>> : std::true_type {
+};
+template <typename T>
+struct is_face_matrix_stencil : is_face_matrix_stencil_helper<std::remove_cv_t<T>> {
+};
+template <typename T>
+static const bool is_face_matrix_stencil_v = is_face_matrix_stencil<T>::value;
+
+template <typename T>
+struct is_center_matrix_stencil_helper : std::false_type {
+};
+template <typename GridType, typename SC, std::size_t N>
+struct is_center_matrix_stencil_helper<Data::CenterMatrixStencil<GridType, SC, N>> : std::true_type {
+};
+template <typename T>
+struct is_center_matrix_stencil : is_center_matrix_stencil_helper<std::remove_cv_t<T>> {
+};
+template <typename T>
+static const bool is_center_matrix_stencil_v = is_center_matrix_stencil<T>::value;
+
+template <typename T>
+struct is_face_value_stencil_helper : std::false_type {
+};
+template <typename GridType, typename SC, std::size_t N>
+struct is_face_value_stencil_helper<Data::FaceValueStencil<GridType, SC, N>> : std::true_type {
+};
+template <typename T>
+struct is_face_value_stencil : is_face_value_stencil_helper<std::remove_cv_t<T>> {
+};
+template <typename T>
+static const bool is_face_value_stencil_v = is_face_value_stencil<T>::value;
+
+template <typename T>
+struct is_center_value_stencil_helper : std::false_type {
+};
+template <typename GridType, typename SC, std::size_t N>
+struct is_center_value_stencil_helper<Data::CenterValueStencil<GridType, SC, N>> : std::true_type {
+};
+template <typename T>
+struct is_center_value_stencil : is_center_value_stencil_helper<std::remove_cv_t<T>> {
+};
+template <typename T>
+static const bool is_center_value_stencil_v = is_center_value_stencil<T>::value;
+
+template <typename T>
+static const bool is_matrix_stencil_v = is_face_matrix_stencil_v<T> || is_center_matrix_stencil_v<T>;
+template <typename T>
+static const bool is_value_stencil_v = is_face_value_stencil_v<T> || is_center_value_stencil_v<T>;
+}  // end namespace dare
 #endif  // DATA_STENCIL_H_

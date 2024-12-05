@@ -164,6 +164,19 @@ void Trilinos<SC>::SetInitialGuess(const SC value) {
 }
 
 template <typename SC>
+template<typename Grid, std::size_t N>
+void Trilinos<SC>::CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const {
+    auto grid = gvec->GetGridRepresentation();
+    const LO num_cells{grid.GetNumberLocalCellsInternal()};
+    for (LO node = 0; node < num_cells; node++) {
+        LO node_loc = grid.MapInternalToLocal(node);
+        LO offset = node * N;
+        for (std::size_t n{0}; n < N; n++)
+            gvec->At(node_loc, n) = x->getData()[offset + n];
+    }
+}
+
+template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
 void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
                                     const dare::Data::GridVector<Grid, SC, N>& field,
@@ -198,6 +211,7 @@ void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
             matrix_block->SetInitialGuess(n, field.At(node_full, n));
         //  call functor
         functor(matrix_block);
+        matrix_block->Finalize();
         //  replace initial guess and rhs
         for (std::size_t n{0}; n < N; n++) {
             ptr_B->replaceGlobalValue(matrix_block->GetRow(n),
@@ -248,20 +262,19 @@ void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
 
     A = Teuchos::rcp(new MatrixType(map, num_entries_per_row()));
     Teuchos::Ptr<MatrixType> ptr_A = A.ptr();
-// #pragma omp parallel for
+
     for (LO node = 0; node < num_cells; node++) {
         GO row = grid.MapLocalToGlobalInternal(node) * N;
+        list_matrix_blocks[node].Finalize();
         for (std::size_t n{0}; n < N; n++) {
             const auto& columns = list_matrix_blocks[node].GetColumnOrdinals(n);
             const auto& values = list_matrix_blocks[node].GetColumnValues(n);
             Teuchos::ArrayView<GO> cview(columns.data(), columns.size());
             Teuchos::ArrayView<SC> vview(values.data(), values.size());
-// #pragma omp critical
             ptr_A->insertGlobalValues(row, cview, vview);
             ++row;
         }
     }
-
     A->fillComplete();
 }
 
@@ -294,6 +307,7 @@ void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
                 matrix_block.SetInitialGuess(n, field.At(local_full, n));
             // call functor
             functor(&matrix_block);
+            matrix_block.Finalize();
             // replace matrix values
             for (std::size_t n{0}; n < N; n++) {
                 ptr_A->replaceLocalValues(matrix_block.GetRow(n),
@@ -319,6 +333,7 @@ void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
                 matrix_block.SetInitialGuess(n, field.At(local_full, n));
             // call functor
             functor(&matrix_block);
+            matrix_block.Finalize();
             // replace matrix values
             for (std::size_t n{0}; n < N; n++) {
                 ptr_A->replaceGlobalValues(matrix_block.GetRow(n),

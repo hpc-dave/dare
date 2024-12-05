@@ -71,7 +71,9 @@ auto DDT<Grid, TimeDiscretization>::operator()(const Args&... args) {
     for (std::size_t n{0}; n < NUM_COMPONENTS; n++) {
         stencil.Center(n) = transient_terms[n][0];
         for (std::size_t t{1}; t < NUM_TFIELDS; t++) {
-            stencil.GetRHS(n) -= transient_terms[n][t];
+            SC phi_loc = std::get<LAST_POS>(tuple_val).GetDataVector(t).At(ordinal, n);
+            SC v_trans = transient_terms[n][t];
+            stencil.GetRHS(n) += v_trans * phi_loc;
         }
     }
     return stencil;
@@ -94,7 +96,8 @@ void DDT<Grid, TimeDiscretization>::Iterate(
         // apply values
         for (std::size_t n{0}; n < NUM_COMPONENTS; n++) {
             for (std::size_t t{0}; t < NUM_TFIELDS; t++) {
-                transient_terms[n][t] *= field.GetDataVector(t).At(ordinal, n);
+                SC v = field.GetDataVector(t).At(ordinal, n);
+                transient_terms[n][t] *= v;
             }
         }
 

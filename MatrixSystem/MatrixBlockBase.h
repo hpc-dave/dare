@@ -297,6 +297,7 @@ public:
      * @param size number of elements in the arrays
      * @param id_col array of column ordinals
      * @param values array of coefficients
+     * @param allow_resize identifier, if resizing is allowed
      * 
      * The arrays' sizes need to be greater or equal to the provided size
      * parameter. Additionally, the elements in the arrays need to be accessible
@@ -305,7 +306,9 @@ public:
      * arrays.
      */
     template <typename Array1, typename Array2>
-    void SetCoefficients(std::size_t n_row, std::size_t size, const Array1& id_col, const Array2& values);
+    void SetCoefficients(std::size_t n_row, std::size_t size,
+                         const Array1& id_col, const Array2& values,
+                         bool allow_resize = true);
 
     /*!
      * @brief removes coefficient from array

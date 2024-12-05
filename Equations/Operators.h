@@ -24,6 +24,9 @@
 #ifndef EQUATIONS_OPERATORS_H_
 #define EQUATIONS_OPERATORS_H_
 
+#include "Equations/TimeDiscretizationSchemes.h"
+#include "Equations/DDT.h"
+
 namespace dare::Matrix {
 
 /*!
@@ -60,6 +63,7 @@ class Gradient {
 /*!
  * @brief basic dummy for SFINAE for a divergence operator
  * @tparam Grid type of grid
+ * @tparam TimeDiscretization time discretization scheme
  *
  * The purpose of this class is to enable easy translation of mathematical formulae and
  * equations into any matrix building procedure. Any specialization of this class should allow
@@ -89,7 +93,7 @@ class Gradient {
  *
  * @endcode
  */
-template<typename Grid>
+template<typename Grid, typename TimeDiscretization>
 class Divergence {
 };
 

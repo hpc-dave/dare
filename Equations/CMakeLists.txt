@@ -3,6 +3,7 @@ set(DaRe_HEADER_FILES
     "DDT.inl"
     "Operators.h"
     "FluxLimiter.h"
+    "TimeDiscretizationSchemes.h"
 )
 
 target_sources(dare

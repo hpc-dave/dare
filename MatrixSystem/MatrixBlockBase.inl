@@ -147,7 +147,11 @@ SC& MatrixBlockBase<O, SC, N>::GetInitialGuess(std::size_t n) {
 
 template <typename O, typename SC, std::size_t N>
 std::size_t MatrixBlockBase<O, SC, N>::GetNumEntries(std::size_t n) const {
-    return ordinals[n].h_view.size();
+    std::size_t s{0};
+    for (std::size_t i{0}; i < ordinals[n].h_view.size(); i++) {
+        s += ordinals[n].h_view[i] > -1;
+    }
+    return s;
 }
 
 template <typename O, typename SC, std::size_t N>
@@ -276,7 +280,11 @@ template <typename Array1, typename Array2>
 void MatrixBlockBase<O, SC, N>::SetCoefficients(std::size_t n_row,
                                                 std::size_t size,
                                                 const Array1& id_col,
-                                                const Array2& values) {
+                                                const Array2& values,
+                                                bool allow_resize) {
+    if (allow_resize) {
+        this->Resize(n_row, this->GetNumEntries(n_row) + size);
+    }
     bool is_empty{ordinals[n_row].h_view[0] < 0};
 #ifndef DARE_NDEBUG
     if (size > ordinals[n_row].h_view.size())
@@ -306,6 +314,10 @@ void MatrixBlockBase<O, SC, N>::SetCoefficients(std::size_t n_row,
         for (std::size_t n{0}; n < size; n++) {
             SetCoefficient(n_row, id_col[n], values[n]);
         }
+    }
+
+    if (allow_resize) {
+        this->Resize(n_row, this->GetNumEntries(n_row));
     }
 }
 

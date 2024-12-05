@@ -86,8 +86,9 @@ TrilinosSolver<SC>::Solve(SolverPackage solver_pack,
 
         problem->setProblem();
         solver->setProblem(problem);
-
-        return solver->solve();
+        auto ret = solver->solve();
+        num_iter = solver->getNumIters();
+        return ret;
     }
 }
 
@@ -257,4 +258,10 @@ TrilinosSolver<SC>::SolveWithAmesos2(const std::string& type,
     solver->solve();
     return Belos::ReturnType::Converged;
 }
+
+template <typename SC>
+int TrilinosSolver<SC>::GetNumIterations() const {
+    return num_iter;
+}
+
 }  // end namespace dare::Matrix

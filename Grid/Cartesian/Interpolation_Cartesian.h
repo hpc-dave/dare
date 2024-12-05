@@ -228,8 +228,9 @@ dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWei
     const std::size_t NUM_VALUES{details::Cartesian::THelper<Dim, Dim>::NUM_VALUES};
     using GridType = dare::Grid::Cartesian<Dim>;
     using WList = dare::utils::Vector<NUM_VALUES, SC>;
-#ifndef DARE_NDEBUG
     using Index = typename GridType::Index;
+
+#ifndef DARE_NDEBUG
     // check for requirements on the indices
     Index ind_center = grid.GetCell(point_center);
     Index ind_far = grid.GetCell(point_far);
@@ -273,7 +274,7 @@ dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWei
 }  // end namespace details::Cartesian
 
 /*!
- * @brief interolates one component to the face of the target from the source field
+ * @brief interpolates one component to the face of the target from the source field
  * @tparam SC type of scalar to interpolate
  * @tparam Dim dimension of the grid
  * @tparam N number of components

@@ -46,6 +46,8 @@ public:
     using LocalOrdinalType = typename Grid::LocalOrdinalType;
     using GlobalOrdinalType = typename Grid::GlobalOrdinalType;
     using SelfType = MatrixBlock<Grid, O, SC, N>;
+    using GO = GlobalOrdinalType;
+    using LO = LocalOrdinalType;
 
     /*!
      * @brief default constructor
@@ -117,6 +119,22 @@ public:
      * @brief tests if all ordinals are local
      */
     bool IsStencilLocal() const;
+
+    /*!
+     * @brief provides local internal ordinal
+     */
+    LO GetLocalOrdinal() const;
+
+    /*!
+     * @brief provides global internal ordinal
+      */
+    GO GetGlobalOrdinal() const;
+
+    /*!
+     * @brief post assembly step
+     * \note can be used for sorting and so on
+     */
+    void Finalize();
 
 private:
     const GridRepresentation* g_rep;  //!< reference to grid representation

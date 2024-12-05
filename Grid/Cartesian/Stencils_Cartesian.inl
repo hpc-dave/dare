@@ -27,6 +27,7 @@ namespace dare::Data {
 template <std::size_t Dim, typename SC, std::size_t N>
 CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::CenterMatrixStencil() {
     static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
+    SetAll(0);
     rhs.SetAllValues(0);
 }
 
@@ -265,6 +266,7 @@ void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
 template <std::size_t Dim, typename SC, std::size_t N>
 FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::FaceMatrixStencil() {
     static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
+    SetAll(0);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
@@ -561,6 +563,7 @@ void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
 template <std::size_t Dim, typename SC, std::size_t N>
 FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::FaceValueStencil() {
     static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
+    SetAll(0);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>

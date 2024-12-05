@@ -32,65 +32,27 @@
 #include "Utilities/Errors.h"
 #include "Data/Stencil.h"
 #include "Data/Field.h"
+#include "TimeDiscretizationSchemes.h"
 
 namespace dare::Matrix {
 
-
-struct EULER_BACKWARD {
+namespace timeschemes {
+struct IMPLICIT {
     static const std::size_t NUM_TIMESTEPS{1};
 
     template <typename SC>
     static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(1.), static_cast<SC>(0.));
+        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(1.), static_cast<SC>(1.));
     }
 };
-
-struct EULER_FORWARD {
-    static const std::size_t NUM_TIMESTEPS{1};
-
-    template <typename SC>
-    static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.), static_cast<SC>(1.));
-    }
-};
-
-struct CRANK_NICHOLSON {
-    static const std::size_t NUM_TIMESTEPS{1};
-
-    template <typename SC>
-    static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.5), static_cast<SC>(0.5));
-    }
-};
-
-struct ADAMS_BASHFORT {
-    static const std::size_t NUM_TIMESTEPS{2};
-
-    template <typename SC>
-    static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.),
-                                                          static_cast<SC>(1.5),
-                                                          static_cast<SC>(-0.5));
-    }
-};
-
-struct ADAMS_MOULTON {
-    static const std::size_t NUM_TIMESTEPS{2};
-
-    template <typename SC>
-    constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(5. / 12.),
-                                                          static_cast<SC>(8. / 12.),
-                                                          static_cast<SC>(-1. / 12.));
-    }
-};
+}  // namespace timeschemes
 
 /*!
  * \brief computes time derivative
  * @tparam Grid type of grid
- * @tparam TimeDiscretization type of time discretization
+ * @tparam TimeDiscretization discretization scheme for the time derivative
  */
-template< typename Grid, typename TimeDiscretization>
+template<typename Grid, typename TimeDiscretization = dare::Matrix::timeschemes::IMPLICIT>
 class DDT {
 public:
     using LO = typename Grid::LocalOrdinalType;

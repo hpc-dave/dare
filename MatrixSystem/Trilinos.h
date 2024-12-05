@@ -190,6 +190,13 @@ public:
      */
     Teuchos::RCP<const MapType> GetMap() const;
 
+    /*!
+     * @brief copies the data from the solution vector to the provided gridvector
+     * @param gvec grid vector
+     */
+    template <typename Grid, std::size_t N>
+    void CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const;
+
 private:
     /*!
      * @brief constructs new matrix from scratch and overwrites

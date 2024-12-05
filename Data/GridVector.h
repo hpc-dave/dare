@@ -29,6 +29,7 @@
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>
 #include "Utilities/Vector.h"
+#include "Utilities/Errors.h"
 
 namespace dare::Data {
 

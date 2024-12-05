@@ -117,7 +117,8 @@ template <typename GridType, typename SC, std::size_t N>
 template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] dare::utils::Vector<N, SC> InterpolateToPoint(const typename GridType::VecSC& point,
                                                             const Data::GridVector<GridType, SC, N>& field) {
-    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
+    // static_assert(true);
+    static_assert(dare::always_false<>, "This function is not implemeted for the GridType");
     return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
 
