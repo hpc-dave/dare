@@ -76,9 +76,10 @@ private:
     void Iterate(dare::utils::Vector<NUM_COMPONENTS, dare::utils::Vector<NUM_TFIELDS, SC>>& v,  // NOLINT
                  const std::tuple<const Args&...>& args);
 
-    SC dt;
-    LO ordinal;
-    SC volume;
+    SC dt;              //!< discrete timestep
+    LO ordinal;         //!< internal ordinal
+    LO local_ordinal;   //!< local ordinal
+    SC volume;          //!< discrete volume
 };
 
 }  // end namespace dare::Matrix
