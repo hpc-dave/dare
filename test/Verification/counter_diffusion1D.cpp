@@ -83,6 +83,10 @@ int main(int argc, char* argv[]) {
         dare::io::FileSystemManager fman(&exman, "verification");
         fman.CheckWithUser(false);
 
+        if (exman.GetNumberProcesses() > 1) {
+            exman.Terminate(__func__, "Trilinos has issues with distributed 1D, use the 2D test instead");
+        }
+
         Grid grid("scalar",
                   &exman,
                   resolution_global,
