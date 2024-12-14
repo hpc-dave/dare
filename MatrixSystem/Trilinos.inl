@@ -177,6 +177,112 @@ void Trilinos<SC>::CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const {
 }
 
 template <typename SC>
+void Trilinos<SC>::PrintRowLocal(LO row) const {
+    GO row_global = this->map->getGlobalElement(row);
+    PrintRow(row_global);
+}
+
+template <typename SC>
+void Trilinos<SC>::PrintRow(GO row) const {
+    std::size_t num_entries = this->GetA()->getNumEntriesInGlobalRow(row);
+    GOViewType indices("ind", num_entries);
+    SViewType values("coef", num_entries);
+    this->GetA()->getGlobalRowCopy(row, indices, values, num_entries);
+    std::vector<GO> ind_sorted(num_entries);
+    std::vector<SC> val_sorted(num_entries);
+    for (std::size_t n{0}; n < num_entries; n++) {
+        ind_sorted[n] = indices[n];
+        val_sorted[n] = values[n];
+    }
+    for (std::size_t n{0}; n < num_entries; n++) {
+        std::size_t lowest_id_pos = n;
+        for (std::size_t pos{n + 1}; pos < num_entries; pos++) {
+            if (ind_sorted[pos] < ind_sorted[lowest_id_pos])
+                lowest_id_pos = pos;
+        }
+        if (lowest_id_pos != n) {
+            std::swap(ind_sorted[n], ind_sorted[lowest_id_pos]);
+            std::swap(val_sorted[n], val_sorted[lowest_id_pos]);
+        }
+    }
+    std::cout << row << " - ";
+    for (std::size_t n{0}; n < num_entries; n++)
+        std::cout << '(' << ind_sorted[n] << ": " << val_sorted[n] << ") ";
+    std::cout << std::endl;
+}
+
+template <typename SC>
+void Trilinos<SC>::PrintMatrixLocal() const {
+    LO num_rows = this->map->getLocalNumElements();
+    for (LO row{0}; row < num_rows; row++) {
+        PrintRowLocal(row);
+    }
+}
+
+template <typename SC>
+void Trilinos<SC>::PrintMatrix() const {
+    int rank = exec_man->GetRank();
+    int num_procs = exec_man->GetNumberProcesses();
+    for (int n{0}; n < num_procs; n++) {
+        if (n == rank) {
+            std::cout << "Matrix on rank " << rank << " in the format Row: (Col | Value)" << std::endl;
+            PrintMatrixLocal();
+        }
+        std::cout << std::endl;
+        exec_man->Barrier();
+    }
+}
+
+template <typename SC>
+void Trilinos<SC>::PrintBLocal() const {
+    LO num_rows = this->map->getLocalNumElements();
+    for (LO row{0}; row < num_rows; row++) {
+        GO row_global = this->map->getGlobalElement(row);
+        SC value = this->GetB()->getData()[row];
+        std::cout << row_global << ": " << value << std::endl;
+    }
+}
+
+template <typename SC>
+void Trilinos<SC>::PrintB() const {
+    int rank = exec_man->GetRank();
+    int num_procs = exec_man->GetNumberProcesses();
+    for (int n{0}; n < num_procs; n++) {
+        if (n == rank) {
+            std::cout << "Vector B (right hand side) on rank " << rank << " in the format Row: Value" << std::endl;
+            PrintBLocal();
+            std::cout << std::endl;
+        }
+        exec_man->Barrier();
+    }
+}
+
+template <typename SC>
+void Trilinos<SC>::PrintXLocal() const {
+    LO num_rows = this->map->getLocalNumElements();
+    for (LO row{0}; row < num_rows; row++) {
+        GO row_global = this->map->getGlobalElement(row);
+        SC value = this->GetX()->getData()[row];
+        std::cout << row_global << ": " << value << std::endl;
+    }
+}
+
+template <typename SC>
+void Trilinos<SC>::PrintX() const {
+    int rank = exec_man->GetRank();
+    int num_procs = exec_man->GetNumberProcesses();
+    for (int n{0}; n < num_procs; n++) {
+        if (n == rank) {
+            std::cout << "Vector X (solution vector) on rank " << rank << " in the format Row: Value" << std::endl;
+            PrintXLocal();
+            std::cout << std::endl;
+        }
+        exec_man->Barrier();
+    }
+}
+
+
+template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
 void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
                                     const dare::Data::GridVector<Grid, SC, N>& field,

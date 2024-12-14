@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
-        GO nx = 100;
+        GO nx = 10;
         SC L = 1;
         LO num_ghost = 2;
         int freq_write = 10;
@@ -192,17 +192,17 @@ int main(int argc, char* argv[]) {
             SC err_f{0.}, err_b{0.};
             for (LO i{0}; i < grep.GetNumberLocalCellsInternal(); i++) {
                 LO i_loc = grep.MapInternalToLocal(i);
-                err_f += analytical.At(i_loc, 0) - field.GetDataVector().At(i_loc, 0);
-                err_b += analytical.At(i_loc, 1) - field.GetDataVector().At(i_loc, 1);
+                SC phi_af = analytical.At(i_loc, 0);
+                SC phi_ab = analytical.At(i_loc, 1);
+                SC phi_ff = field.GetDataVector().At(i_loc, 0);
+                SC phi_fb = field.GetDataVector().At(i_loc, 1);
+                err_f += phi_af - phi_ff;
+                err_b += phi_ab - phi_fb;
             }
             err_f = exman.Allsum(err_f) / nx;
             err_b = exman.Allsum(err_b) / nx;
             exman(dare::mpi::Verbosity::Low)
                 << "error (f | b): " << err_f << " | " << err_b << '\n';
-            // for (int i = 0; i < nx + 2*num_ghost; i++) {
-            //     std::cout << std::scientific
-            //               << field.GetDataVector().At(i, 0) << " | " << field.GetDataVector(1).At(i, 0) << std::endl;
-            // }
 
             field.CopyDataVectorsToOldTimeStep();
 

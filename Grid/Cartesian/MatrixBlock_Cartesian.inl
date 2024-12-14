@@ -552,18 +552,18 @@ template <std::size_t Dim, typename O, typename SC, std::size_t N>
 typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GO
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetGlobalOrdinal() const {
     if constexpr (std::is_same_v<O, GlobalOrdinalType>)
-        return g_rep->MapGlobalToLocalInternal(this->GetNode());
-    else
         return this->GetNode();
+    else
+        return g_rep->MapLocalToGlobalInternal(this->GetNode());
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::LO
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetLocalOrdinal() const {
-    if constexpr (std::is_same_v<O, GlobalOrdinalType>)
+    if constexpr (std::is_same_v<O, LocalOrdinalType>)
         return this->GetNode();
     else
-        return g_rep->MapLocalToGlobalInternal(this->GetNode());
+        return g_rep->MapGlobalToLocalInternal(this->GetNode());
 }
 
 // template <typename OS, std::size_t Dim, typename O, typename SC, std::size_t N>
