@@ -29,7 +29,7 @@ DDT<Grid, TimeDiscretization>::DDT(const GridRepresentation& grep,
          LO lo,
          SC _dt)
          : dt(_dt), ordinal(lo), local_ordinal(grep.MapInternalToLocal(lo)), volume(grep.GetCellVolume(lo)) {
-    // TODO: Find a better solution thatn using the mapping, that is very specific to the cartisian grid!
+    // TODO(Dave): Find a better solution thatn using the mapping, that is very specific to the cartesian grid!
 }
 
 template <typename Grid, typename TimeDiscretization>

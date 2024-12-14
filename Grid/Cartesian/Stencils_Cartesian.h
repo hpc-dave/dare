@@ -259,9 +259,9 @@ template <std::size_t Dim, typename SC, std::size_t N>
 class CenterValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
     : public CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;                //!< grid type
-    using ScalarType = SC;                                      //!< scalar type
-    using MatrixStencil = CenterMatrixStencil<GridType, SC, N>; //!< matrix stencil type
+    using GridType = dare::Grid::Cartesian<Dim>;                 //!< grid type
+    using ScalarType = SC;                                       //!< scalar type
+    using MatrixStencil = CenterMatrixStencil<GridType, SC, N>;  //!< matrix stencil type
     /*!
      * @brief default constructor
      */
