@@ -26,10 +26,25 @@
 #define UTILITIES_ERRORS_H_
 
 #include <iostream>
+#include <type_traits>
 
 #define ERROR \
     std::cerr << "ERROR! In " << __FILE__ << ": " << __LINE__ << " -> "
 
 #define ERROR_CLOSE ""<< std::endl
+
+namespace dare {
+
+/*!
+ * @brief a workaround to allow for compile time false values
+ * @tparam ...Ts Any type of template argument
+ * 
+ * \note The variable cannot be named 'AlwaysFalse', as it conflicts with
+ * a function definition of google test
+ */
+template <typename... Ts>
+static const bool always_false = std::false_type::value;
+
+}  // end namespace dare
 
 #endif  // UTILITIES_ERRORS_H_

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(DaRe
-	VERSION 0.3.0
-	DESCRIPTION "Dave's repository"
-	LANGUAGES C CXX
+    VERSION 0.3.1
+    DESCRIPTION "Dave's repository"
+    LANGUAGES C CXX
 )
 
 option(DEBUG
@@ -33,8 +33,8 @@ set(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
 
 # set the properties of the target (might be moved to another file)
 set_target_properties(exec
-	       PROPERTIES CXX_STANDARD 17
-		   CXX_STANDARD_REQUIRED TRUE
+           PROPERTIES CXX_STANDARD 17
+           CXX_STANDARD_REQUIRED TRUE
 )
 
 set_target_properties(dare
@@ -58,25 +58,25 @@ set(PACKAGE_VERSION_DIR     "${CMAKE_PROJECT_NAME}")
 
 # set compilation flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-	target_compile_options(dare
-		PRIVATE -march=native
-		PRIVATE -Wall
-		PRIVATE -faligned-new
-		PRIVATE -fmessage-length=0
-	)
+    target_compile_options(dare
+        PRIVATE -march=native
+        PRIVATE -Wall
+        PRIVATE -faligned-new
+        PRIVATE -fmessage-length=0
+    )
     target_compile_options(exec
-		PRIVATE -march=native
-		PRIVATE -Wall
-		PRIVATE -faligned-new
-		PRIVATE -fmessage-length=0
-	)
+        PRIVATE -march=native
+        PRIVATE -Wall
+        PRIVATE -faligned-new
+        PRIVATE -fmessage-length=0
+    )
     if(USE_GTEST)
         target_compile_options(unit_test
-		PRIVATE -march=native
-		PRIVATE -Wall
-		PRIVATE -faligned-new
-		PRIVATE -fmessage-length=0
-	    )
+        PRIVATE -march=native
+        PRIVATE -Wall
+        PRIVATE -faligned-new
+        PRIVATE -fmessage-length=0
+        )
     endif()
     if(DEBUG)
         target_compile_options(dare
@@ -99,22 +99,22 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         endif()
     endif()
 else()
-	message(WARNING "DaRe: Flags have not been implemented for the current compiler! (${CMAKE_CXX_COMPILER_ID})")
+    message(WARNING "DaRe: Flags have not been implemented for the current compiler! (${CMAKE_CXX_COMPILER_ID})")
 endif()
 
 # locate packages
 find_package(OpenMP REQUIRED)
 if(OpenMP_CXX_FOUND)
-	set_target_properties(OpenMP::OpenMP_CXX
-		PROPERTIES IMPORTED_GLOBAL TRUE
-	)
+    set_target_properties(OpenMP::OpenMP_CXX
+        PROPERTIES IMPORTED_GLOBAL TRUE
+    )
 endif()
 
 find_package(MPI REQUIRED)
 if(MPI_CXX_FOUND)
-	set_target_properties(MPI::MPI_CXX
-		PROPERTIES IMPORTED_GLOBAL TRUE
-	)
+    set_target_properties(MPI::MPI_CXX
+        PROPERTIES IMPORTED_GLOBAL TRUE
+    )
 endif()
 
 find_package(VTK REQUIRED)
@@ -195,6 +195,7 @@ if(USE_GTEST)
     endif()
 endif()
 
+add_subdirectory(AnalyticalSolutions                                  )
 add_subdirectory(Data                                                 )
 add_subdirectory(Equations                                            )
 add_subdirectory(FileFormats                                          )

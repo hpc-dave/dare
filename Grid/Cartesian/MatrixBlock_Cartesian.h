@@ -59,6 +59,8 @@ public:
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
     using GlobalOrdinalType = typename GridType::GlobalOrdinalType;
     using OrdinalType = O;
+    using GO = GlobalOrdinalType;
+    using LO = LocalOrdinalType;
     using SelfType = MatrixBlock<GridType, O, SC, N>;
     using HostSpace = typename MatrixBlockBase<O, SC, N>::HostSpace;
     using ExecutionSpace = typename MatrixBlockBase<O, SC, N>::ExecutionSpace;
@@ -179,6 +181,21 @@ public:
     SC Get(std::size_t n, CartesianNeighbor cnb) const;
 
     /*!
+     * @brief removes a neighbor from the stencil
+     * @tparam CNB cartesian neighbor
+     * @param n component ID
+     */
+    template <CartesianNeighbor CNB>
+    void Remove(std::size_t n);
+
+    /*!
+     * @brief removes a neighbor from the stencil
+     * @param n component ID
+     * @param cnb cartesian neighbor ID
+     */
+    void Remove(std::size_t n, CartesianNeighbor cnb);
+
+    /*!
      * @brief Inquiry, if a value was set
      * @tparam CNB neighbor ID
      * @param n component ID
@@ -208,6 +225,48 @@ public:
      * @param s center stencil with matrix values
      */
     SelfType& operator-=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+
+    /*!
+     * @brief returns global internal ordinal
+     */
+    GO GetGlobalOrdinal() const;
+
+    /*!
+     * @brief returns local internal ordinal
+     */
+    LO GetLocalOrdinal() const;
+
+    template <typename OS>
+    friend OS& operator<<(OS& os, const MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>& m) {
+        os << "GO: " << m.GetGlobalOrdinal() << "\tLO: " << m.GetLocalOrdinal() << '\n';
+        for (std::size_t n{0}; n < N; n++) {
+            if (N > 1)
+                os << "[" << n << "] ";
+            if (m.IsSet<CartesianNeighbor::WEST>(n))
+                os << "\tW: " << m.Get(n, CartesianNeighbor::WEST);
+
+            if (Dim > 1 && m.IsSet<CartesianNeighbor::SOUTH>(n))
+                os << "\tS: " << m.Get(n, CartesianNeighbor::SOUTH);
+
+            if (Dim > 2 && m.IsSet<CartesianNeighbor::BOTTOM>(n))
+                os << "\tB: " << m.Get(n, CartesianNeighbor::BOTTOM);
+
+            if (m.IsSet<CartesianNeighbor::CENTER>(n))
+                os << "\tC: " << m.Get(n, CartesianNeighbor::CENTER);
+
+            if (Dim > 1 && m.IsSet<CartesianNeighbor::NORTH>(n))
+                os << "\tN: " << m.Get(n, CartesianNeighbor::NORTH);
+
+            if (Dim > 2 && m.IsSet<CartesianNeighbor::TOP>(n))
+                os << "\tT: " << m.Get(n, CartesianNeighbor::TOP);
+
+            if (m.IsSet<CartesianNeighbor::EAST>(n))
+                os << "\tE: " << m.Get(n, CartesianNeighbor::EAST);
+
+            os << "\tRHS: " << m.GetRhs(n) << '\n';
+        }
+        return os;
+    }
 
 private:
     template <typename Space>

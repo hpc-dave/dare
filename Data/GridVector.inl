@@ -184,6 +184,10 @@ std::size_t GridVector<Grid, T, N>::GetNumComponents() const {
 
 template <typename Grid, typename T, std::size_t N>
 void GridVector<Grid, T, N>::SetComponentName(std::size_t n, const std::string& name) {
+    if (name.empty()) {
+        ERROR << "Component name may not be emtpy!" << ERROR_CLOSE;
+        return;
+    }
     component_names[n] = name;
 }
 template <typename Grid, typename T, std::size_t N>

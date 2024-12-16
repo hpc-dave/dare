@@ -30,6 +30,29 @@
 
 namespace dare::utils {
 
+/*! \struct VectorDefaultInitializer
+ * @tparam T type of the variable
+ * @tparam Enable SFINAE variable
+ * This allows the definition of a default value for the Vector
+ */
+template<typename T, typename Enable = void>
+struct VectorDefaultInitializer {
+    static constexpr T get_value(){
+        return T{};
+    }
+};
+
+/*! \struct VectorDefaultInitializer
+ * @tparam T type of the variable
+ * Specialization for arithmetic values
+ */
+template<typename T>
+struct VectorDefaultInitializer<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
+    static constexpr T get_value(){
+        return 0;
+    }
+};
+
 /*! \class VectorBase
  * @tparam N number of elements in the data set
  * @tparam T type of variables

@@ -30,7 +30,7 @@ template <typename... Ts,
           typename A,
           typename B>
 Vector<N, T>::Vector(const Ts&... args) : VectorDecorator<N, N, T>() {
-    SetValues<0>(args...);
+        SetValues<0>(args...);
 }
 
 template <std::size_t N, typename T>
@@ -365,14 +365,14 @@ void Vector<N, T>::SetValues(const Tin& arg, const Ts&... args) {
         if constexpr (sizeof...(args) > 0 && (I + 1 < N))
             SetValues<I + 1>(args...);
         else if constexpr (I + 1 < N)
-            SetValues<I + 1>(static_cast<T>(0));
+            SetValues<I + 1> (VectorDefaultInitializer<T>::get_value());
     }
 }
 
 template <std::size_t N, typename T>
 template <std::size_t I>
 void Vector<N, T>::SetValues() {
-    SetValues<0>(static_cast<T>(0));
+    SetValues<0>(VectorDefaultInitializer<T>::get_value());
 }
 
 template <std::size_t N, typename T>

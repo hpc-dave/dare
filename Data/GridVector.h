@@ -29,6 +29,7 @@
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>
 #include "Utilities/Vector.h"
+#include "Utilities/Errors.h"
 
 namespace dare::Data {
 
@@ -48,6 +49,7 @@ public:
     using GO = typename Grid::GlobalOrdinalType;
     using Index = typename Grid::Index;
     using IndexGlobal = typename Grid::IndexGlobal;
+    using DataType = T;
     using DualViewType = Kokkos::DualView<T*>;
     using DeviceViewType = typename DualViewType::t_dev;
     using HostViewType = typename DualViewType::t_dev;

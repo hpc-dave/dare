@@ -42,6 +42,7 @@ template <std::size_t Dim, typename SC, std::size_t N>
 class CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
     using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
+    using ScalarType = SC;                                                  //!< scalar type
     static const std::size_t NUM_ENTRIES{GridType::STENCIL_SIZE};           //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion
@@ -258,8 +259,9 @@ template <std::size_t Dim, typename SC, std::size_t N>
 class CenterValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
     : public CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;
-    using MatrixStencil = CenterMatrixStencil<GridType, SC, N>;
+    using GridType = dare::Grid::Cartesian<Dim>;                 //!< grid type
+    using ScalarType = SC;                                       //!< scalar type
+    using MatrixStencil = CenterMatrixStencil<GridType, SC, N>;  //!< matrix stencil type
     /*!
      * @brief default constructor
      */
@@ -301,6 +303,7 @@ template <std::size_t Dim, typename SC, std::size_t N>
 class FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
     using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
+    using ScalarType = SC;                                                  //!< scalar type
     static const std::size_t NUM_FACES{GridType::NUM_FACES};                //!< faces in stencil
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion
@@ -560,6 +563,7 @@ template <std::size_t Dim, typename SC, std::size_t N>
 class FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N> {
 public:
     using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
+    using ScalarType = SC;                                                  //!< scalar type
     static const std::size_t NUM_FACES{GridType::NUM_FACES};                //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion

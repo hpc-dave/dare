@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 
 #include "Grid/Cartesian/Operators_Cartesian.h"
+#include "Equations/TimeDiscretizationSchemes.h"
 
 namespace dare::test {
 
@@ -53,13 +54,14 @@ public:
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
+    using TimeDisc = dare::Matrix::EULER_BACKWARD;
     using Index = typename GridType::Index;
     using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, SC, N>;
     using CenterValueStencil = dare::Data::CenterValueStencil<GridType, SC, N>;
     using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, SC, N>;
     using FaceValueStencil = dare::Data::FaceValueStencil<GridType, SC, N>;
     using Gradient = dare::Matrix::Gradient<GridType>;
-    using Divergence = dare::Matrix::Divergence<GridType>;
+    using Divergence = dare::Matrix::Divergence<GridType, TimeDisc>;
     template <typename FluxLimiter>
     using TVD = dare::Matrix::TVD<GridType, SC, FluxLimiter>;
     using MatrixBlock = dare::Matrix::MatrixBlock<GridType, LO, SC, N>;
@@ -82,6 +84,72 @@ public:
 using IntegrationTestCartesianOperators1D = IntegrationTestCartesianOperators<1>;
 using IntegrationTestCartesianOperators2D = IntegrationTestCartesianOperators<2>;
 using IntegrationTestCartesianOperators3D = IntegrationTestCartesianOperators<3>;
+
+TEST_F(IntegrationTestCartesianOperators1D, TypeTraitTest) {
+    static_assert(dare::is_center_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterMatrixStencil>);
+
+    static_assert(dare::is_face_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceMatrixStencil>);
+
+    static_assert(dare::is_center_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterValueStencil>);
+
+    static_assert(dare::is_face_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceValueStencil>);
+}
+
+TEST_F(IntegrationTestCartesianOperators2D, TypeTraitTest) {
+    static_assert(dare::is_center_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterMatrixStencil>);
+
+    static_assert(dare::is_face_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceMatrixStencil>);
+
+    static_assert(dare::is_center_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterValueStencil>);
+
+    static_assert(dare::is_face_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceValueStencil>);
+}
+
+TEST_F(IntegrationTestCartesianOperators3D, TypeTraitTest) {
+    static_assert(dare::is_center_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterMatrixStencil>);
+
+    static_assert(dare::is_face_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceMatrixStencil>);
+
+    static_assert(dare::is_center_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterValueStencil>);
+
+    static_assert(dare::is_face_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceValueStencil>);
+}
 
 TEST_F(IntegrationTestCartesianOperators1D, GradientMatrixValues) {
     GridType::Options opt{0};   // not staggered

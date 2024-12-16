@@ -52,8 +52,7 @@ template <typename Grid, typename SC, std::size_t N>
 const typename Field<Grid, SC, N>::VectorType& Field<Grid, SC, N>::GetDataVector(std::size_t time_level) const {
 #ifndef DARE_NDEBUG
     if (time_level >= data.size()) {
-        GetExecutionManager()->Terminate(
-            __func__, "time level is too high!");
+        ERROR << "the time level exceeds the number of timesteps, expect segmentation fault!" << ERROR_CLOSE;
     }
 #endif
     return data[time_level];
@@ -126,4 +125,11 @@ void Field<Grid, SC, N>::SetValues(SC v, std::size_t time_step) {
             data[time_step][n] = v;
     }
 }
+
+template <typename Grid, typename SC, std::size_t N>
+void Field<Grid, SC, N>::SetComponentName(std::size_t n, const std::string& name) {
+    for (auto& d : data)
+        d.SetComponentName(n, name);
+}
+
 }  // end namespace dare::Data

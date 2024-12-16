@@ -57,9 +57,12 @@ TEST_F(MatrixBlockBaseTest, Initialization) {
 
     // check if allocated sizes are consistent
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mblock_default_construct.GetNumEntries(n), size_hint[n]);
-        EXPECT_EQ(mblock_init_construct.GetNumEntries(n), size_hint[n]);
-        EXPECT_EQ(mblock_copy_construct.GetNumEntries(n), size_hint[n]);
+        EXPECT_EQ(mblock_default_construct.GetSize(n), size_hint[n]);
+        EXPECT_EQ(mblock_init_construct.GetSize(n), size_hint[n]);
+        EXPECT_EQ(mblock_copy_construct.GetSize(n), size_hint[n]);
+        EXPECT_EQ(mblock_default_construct.GetNumEntries(n), 0);
+        EXPECT_EQ(mblock_init_construct.GetNumEntries(n), 0);
+        EXPECT_EQ(mblock_copy_construct.GetNumEntries(n), 0);
     }
 }
 
@@ -71,7 +74,7 @@ TEST_F(MatrixBlockBaseTest, SizeHint) {
     dare::Matrix::MatrixBlockBase<O, SC, N> mblock(node, size_hint);
 
     for (std::size_t n{0}; n < N; n++) {
-        ASSERT_EQ(mblock.GetNumEntries(n), n);
+        ASSERT_EQ(mblock.GetSize(n), n);
     }
 }
 
@@ -195,7 +198,7 @@ TEST_F(MatrixBlockBaseTest, RemoveEntries) {
     std::vector<SC> cmp_coef[N];
     std::vector<SC> cmp_rhs, cmp_init;
     for (std::size_t n{0}; n < N; n++) {
-        for (std::size_t col_id{0}; col_id < mblock.GetNumEntries(n); col_id++) {
+        for (std::size_t col_id{0}; col_id < mblock.GetSize(n); col_id++) {
             mblock.SetCoefficient(n, col_count, val_count);
             cmp_col[n].push_back(col_count);
             cmp_coef[n].push_back(val_count);

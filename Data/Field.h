@@ -117,7 +117,20 @@ public:
      */
     std::size_t GetNumberTimesteps() const;
 
+    /*!
+     * @brief sets the whole field to a certain value
+     * @param v value to set the field to
+     * @param time_step time-step to which to apply
+     * \note By default, ALL timesteps are set to this value!
+     */
     void SetValues(SC v, std::size_t time_step = std::numeric_limits<std::size_t>::max());
+
+    /*!
+     * @brief Sets the name of a certain component
+     * @param n component ID
+     * @param name name of the component
+     */
+    void SetComponentName(std::size_t n, const std::string& name);
 
 private:
     std::string identifier;         //!< name of the field
