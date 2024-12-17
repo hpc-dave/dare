@@ -133,6 +133,7 @@ bool MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::IsSet(std::size_t n) con
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
     using CN = CartesianNeighbor;
+    const bool map_periodic{true};
     Index ind = ind_internal;
     for (std::size_t n{0}; n < N; n++) {
         std::size_t num_entries{0};
@@ -147,7 +148,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
             O col{0};
             ind.i()--;
             if constexpr (this->IsGlobal()) {
-                col = g_rep->MapIndexToOrdinalGlobalInternal(ind) * N + n;
+                col = g_rep->MapIndexToOrdinalGlobalInternal(ind, map_periodic) * N + n;
             } else {
                 col = g_rep->MapIndexToOrdinalLocalInternal(ind) * N + n;
             }
@@ -161,7 +162,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
                 O col{0};
                 ind.j()--;
                 if constexpr (this->IsGlobal()) {
-                    col = g_rep->MapIndexToOrdinalGlobalInternal(ind) * N + n;
+                    col = g_rep->MapIndexToOrdinalGlobalInternal(ind, map_periodic) * N + n;
                 } else {
                     col = g_rep->MapIndexToOrdinalLocalInternal(ind) * N + n;
                 }
@@ -176,7 +177,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
                 O col{0};
                 ind.k()--;
                 if constexpr (this->IsGlobal()) {
-                    col = g_rep->MapIndexToOrdinalGlobalInternal(ind) * N + n;
+                    col = g_rep->MapIndexToOrdinalGlobalInternal(ind, map_periodic) * N + n;
                 } else {
                     col = g_rep->MapIndexToOrdinalLocalInternal(ind) * N + n;
                 }
@@ -189,7 +190,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
         if (IsSet<CN::CENTER>(n)) {
             O col{0};
             if constexpr (this->IsGlobal()) {
-                col = g_rep->MapIndexToOrdinalGlobalInternal(ind) * N + n;
+                col = g_rep->MapIndexToOrdinalGlobalInternal(ind, map_periodic) * N + n;
             } else {
                 col = g_rep->MapIndexToOrdinalLocalInternal(ind) * N + n;
             }
@@ -202,7 +203,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
                 O col{0};
                 ind.k()++;
                 if constexpr (this->IsGlobal()) {
-                    col = g_rep->MapIndexToOrdinalGlobalInternal(ind) * N + n;
+                    col = g_rep->MapIndexToOrdinalGlobalInternal(ind, map_periodic) * N + n;
                 } else {
                     col = g_rep->MapIndexToOrdinalLocalInternal(ind) * N + n;
                 }
@@ -217,7 +218,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
                 O col{0};
                 ind.j()++;
                 if constexpr (this->IsGlobal()) {
-                    col = g_rep->MapIndexToOrdinalGlobalInternal(ind) * N + n;
+                    col = g_rep->MapIndexToOrdinalGlobalInternal(ind, map_periodic) * N + n;
                 } else {
                     col = g_rep->MapIndexToOrdinalLocalInternal(ind) * N + n;
                 }
@@ -231,7 +232,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
             O col{0};
             ind.i()++;
             if constexpr (this->IsGlobal()) {
-                col = g_rep->MapIndexToOrdinalGlobalInternal(ind) * N + n;
+                col = g_rep->MapIndexToOrdinalGlobalInternal(ind, map_periodic) * N + n;
             } else {
                 col = g_rep->MapIndexToOrdinalLocalInternal(ind) * N + n;
             }

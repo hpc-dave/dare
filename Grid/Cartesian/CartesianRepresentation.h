@@ -184,7 +184,7 @@ public:
     LO MapIndexToOrdinalLocal(const Index& ind) const;
     LO MapIndexToOrdinalLocalInternal(const Index& ind) const;
     GO MapIndexToOrdinalGlobal(const IndexGlobal& ind) const;
-    GO MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind) const;
+    GO MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind, bool map_periodic = false) const;
 
     LO MapGlobalToLocal(GO id_glob) const;
     Index MapGlobalToLocal(const IndexGlobal& ind_glob) const;

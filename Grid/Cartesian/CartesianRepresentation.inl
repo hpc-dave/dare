@@ -373,14 +373,35 @@ CartesianRepresentation<Dim>::MapIndexToOrdinalGlobal(const IndexGlobal& ind) co
 
 template <std::size_t Dim>
 typename CartesianRepresentation<Dim>::GO
-CartesianRepresentation<Dim>::MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind) const {
+CartesianRepresentation<Dim>::MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind, bool map_periodic) const {
     TestIfInitialized(__func__);
     if constexpr (Dim == 1) {
-        return ind[0];
+        GO o = ind[0];
+        if (map_periodic && this->grid->IsPeriodic()) {
+            GO o_max = this->GetGlobalResolutionInternal()[0];
+            if (o < 0) {
+                o = o_max + o;
+            } else if (o >= o_max) {
+                o = o - o_max;
+            }
+        }
+        return o;
     } else {
-        LO index{0};
+        VecGO ind_manip{ind};
+        if (map_periodic && this->grid->IsPeriodic()) {
+            VecGO res{this->GetGlobalResolutionInternal()};
+            for (std::size_t d{0}; d < Dim; d++) {
+                GO o_max = res[d];
+                if (ind[d] < 0) {
+                    ind_manip[d] = o_max + ind[d];
+                } else if (ind[d] >= o_max) {
+                    ind_manip[d] = ind[d] - o_max;
+                }
+            }
+        }
+        GO index{0};
         for (std::size_t dim{0}; dim < Dim; dim++)
-            index += hierarchic_sum_glob_internal[dim] * ind[dim];
+            index += hierarchic_sum_glob_internal[dim] * ind_manip[dim];
 
         return index;
     }
