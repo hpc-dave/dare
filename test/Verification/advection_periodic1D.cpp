@@ -73,19 +73,19 @@ int main(int argc, char* argv[]) {
 
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
-        GO nx = 100;
+        GO nx = 50;
         SC L = 1;
         LO num_ghost = 2;
         int freq_write = 10;
         double dt = 1e-3;
         VecLO periodic(1);
-        VecSC velocity(1.);
+        VecSC velocity_0(1.), velocity_1(-1.);
 
         IndexGlobal resolution_global(nx);
         VecSC size_global(L);
 
         dare::mpi::ExecutionManager exman;
-        dare::io::FileSystemManager fman(&exman, "verification");
+        dare::io::FileSystemManager fman(&exman, "dancing_waves");
         fman.CheckWithUser(false);
 
         if (exman.GetNumberProcesses() > 1) {
@@ -101,16 +101,14 @@ int main(int argc, char* argv[]) {
         IndexLocal staggered(0);  // grid is not staggered
         auto grep = grid.GetRepresentation(staggered);
 
-        Field field("concentration", grep, 2);
-        field.SetComponentName(0, "forward");
-        field.SetComponentName(1, "backward");
+        Field field("dancers", grep, 2);
+        field.SetComponentName(0, "first");
+        field.SetComponentName(1, "second");
         field.SetValues(0.);
         for (LO i{0}; i < grep.GetNumberLocalCells(); i++) {
             SC x = grep.GetCoordinatesCenter(IndexLocal(i)).x();
-            if (x > 0.25 && x < 0.5) {
+            if (x > 0.35 && x < 0.65) {
                 field.GetDataVector().At(IndexLocal(i), 0) = 1.;
-            }
-            if (x > 0.5 && x < 0.75) {
                 field.GetDataVector().At(IndexLocal(i), 1) = 1.;
             }
         }
@@ -133,12 +131,15 @@ int main(int argc, char* argv[]) {
             auto g_r = mblock->GetRepresentation();
             LO loc_o{mblock->GetLocalOrdinal()};
 
-            TVD u(*g_r, loc_o, velocity);
+            TVD u_0(*g_r, loc_o, velocity_0);
+            TVD u_1(*g_r, loc_o, velocity_1);
             Divergence div(*g_r, loc_o);
             DDT ddt(*g_r, loc_o, dt);
 
             (*mblock) = ddt(field);
-            (*mblock) += div(u * field.GetDataVector());
+            // (*mblock) += div(u * field.GetDataVector());
+            mblock->Add(0, div(u_0 * field.GetDataVector()).GetSlice(0));
+            mblock->Add(1, div(u_1 * field.GetDataVector()).GetSlice(1));
         };
 
         dare::Matrix::Trilinos<SC> msystem(&exman);
@@ -151,7 +152,7 @@ int main(int argc, char* argv[]) {
         p_solver->set("Convergence Tolerance", 1e-14);
         p_solver->set("Maximum Iterations", 5000);
 
-        SC t_end = 2.;
+        SC t_end = 4.;
         SC time = 0.;
         int timestep = 0;
 
@@ -165,9 +166,9 @@ int main(int argc, char* argv[]) {
             timestep++;
             time += dt;
 
-            if (time > 1.) {
-                velocity.x() = -1.;
-            }
+            double base_velocity = static_cast<int>(time) % 2 == 1 ? -1. : 1.;
+            velocity_0.x() = -base_velocity;
+            velocity_1.x() = base_velocity;
 
             msystem.Build(grep, field.GetDataVector(), build_coef, false);
 

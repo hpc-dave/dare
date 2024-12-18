@@ -247,6 +247,15 @@ SC CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS(std::size_t n)
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, 1>
+CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetSlice(std::size_t n) const {
+    CenterMatrixStencil<GridType, SC, 1> s;
+    s.GetData()[0] = this->GetData()[n];
+    s.GetRHS(0) = this->GetRHS(n);
+    return s;
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
 void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
     std::string func, Positions pos, std::size_t n) const {
 #ifndef DARE_NDEBUG
@@ -540,6 +549,16 @@ template <std::size_t Dim, typename SC, std::size_t N>
 const typename FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RHSType&
 FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS() const {
     return rhs;
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, 1>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetSlice(std::size_t n) const {
+    FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, 1> s;
+    s.GetDataNeighbor(0) = this->GetDataNeighbor(n);
+    s.GetDataCenter(0) = this->GetDataCenter(n);
+    s.GetRHS(0) = this->GetRHS(n);
+    return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>

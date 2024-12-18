@@ -235,6 +235,8 @@ public:
      */
     SC GetRHS(std::size_t n) const;
 
+    CenterMatrixStencil<GridType, SC, 1> GetSlice(std::size_t n) const;
+
 private:
     /*!
      * @brief internal range check, disabled with DARE_NDEBUG
@@ -536,6 +538,8 @@ public:
      * @brief const getter for right hand side
      */
     const RHSType& GetRHS() const;
+
+    FaceMatrixStencil<GridType, SC, 1> GetSlice(std::size_t n) const;
 
 private:
     /*!
