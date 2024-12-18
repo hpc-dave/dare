@@ -212,16 +212,55 @@ public:
      * @brief assigns values from a stencil
      * @param s center stencil with matrix values
      */
+    SelfType& Set(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+
+    /*!
+     * @brief assigns values from a single component stencil to single component
+     * @param n component ID to which the value is assigned
+     * @param s center stencil with matrix values
+     */
+    SelfType& Set(std::size_t n, const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s);
+
+    /*!
+     * @brief operator for assigning values from a stencil
+     * @param s center stencil with matrix values
+     */
     SelfType& operator=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief adds values from stencil
      * @param s center stencil with matrix values
      */
+    SelfType& Add(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+
+    /*!
+     * @brief adds values from single component stencil to single component
+     * @param component ID to which the values are added
+     * @param s center stencil with matrix values
+     */
+    SelfType& Add(std::size_t n, const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s);
+
+    /*!
+     * @brief operator for adding values from stencil
+     * @param s center stencil with matrix values
+     */
     SelfType& operator+=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief subtracts values of stencil
+     * @param s center stencil with matrix values
+     */
+    SelfType& Subtract(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+
+    /*!
+     * @brief subtracts values of single component stencil from single component
+     * @param n component ID from which the values will be subtracted
+     * @param s center stencil with matrix values
+     */
+    SelfType& Subtract(std::size_t n, const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s);
+
+    /*!
+     * @brief operator for subtracting values of stencil
      * @param s center stencil with matrix values
      */
     SelfType& operator-=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
