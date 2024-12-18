@@ -31,6 +31,9 @@ template <typename... Ts,
           typename B>
 Vector<N, T>::Vector(const Ts&... args) : VectorDecorator<N, N, T>() {
         SetValues<0>(args...);
+#ifndef NDEBUG
+        base = this;
+#endif
 }
 
 template <std::size_t N, typename T>
@@ -38,6 +41,9 @@ template <typename A, typename B>
 Vector<N, T>::Vector(const Vector<N, A>& other) : VectorDecorator<N, N, T>() {
     for (std::size_t n{0}; n < N; n++)
         this->_data[n] = static_cast<T>(other[n]);
+#ifndef NDEBUG
+    base = this;
+#endif
 }
 
 template <std::size_t N, typename T>
@@ -50,6 +56,9 @@ Vector<N, T>& Vector<N, T>::operator=(const Vector<N, A>& other) {
     for (std::size_t n{0}; n < N; n++)
         this->_data[n] = static_cast<T>(other[n]);
 
+#ifndef NDEBUG
+    base = this;
+#endif
     return *this;
 }
 

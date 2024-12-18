@@ -55,6 +55,9 @@ public:
     typedef T InternalType;
     typedef std::random_access_iterator_tag iterator_tag;
     typedef std::ptrdiff_t iterator_diff_type;
+#ifndef NDEBUG
+    typedef VectorBase<N, T> BaseType;      //!< this type is mainly used for simplified debugging with gdb
+#endif
 
     /*! \struct Iterator
      * \brief random access forward iterator
@@ -759,8 +762,9 @@ private:
      */
     template <std::size_t I = 0, typename Expr, typename Op>
     auto IterateValues(Expr lambda, Op op) const;
-
-    // T _data[N];  //!< internal data set
+#ifndef NDEBUG
+    BaseType* base;  //!< pointer to basic data set during for better debugging
+#endif
 };
 
 }  // namespace dare::utils
