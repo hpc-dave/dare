@@ -33,6 +33,7 @@
 
 #include "Hashes.h"
 #include "Vector_traits.h"
+#include "Errors.h"
 
 namespace dare::utils {
 
@@ -762,9 +763,7 @@ private:
      */
     template <std::size_t I = 0, typename Expr, typename Op>
     auto IterateValues(Expr lambda, Op op) const;
-#ifndef NDEBUG
-    BaseType* base;  //!< pointer to basic data set during for better debugging
-#endif
+
 };
 
 }  // namespace dare::utils
