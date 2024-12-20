@@ -62,10 +62,13 @@ TEST(HaloBufferTest, Exchange) {
     auto is_local = [&](GO id) {
         return id >= ID_low && id < ID_high;
     };
+    auto is_internal = [&](GO id) {
+        return id >= (ID_low+num_ghost) && id < (ID_high - num_ghost);
+    };
     auto map_global_local = [&](GO id) {
         return id - ID_low;
     };
-    buffer.Initialize(&exman, list_required_IDs, map_periodic, is_local, map_global_local);
+    buffer.Initialize(&exman, list_required_IDs, map_periodic, is_local, is_internal, map_global_local);
 
     // Initializing field with default value
     for (std::size_t n{0}; n < (cell_per_domain + 2 * num_ghost); n++) {

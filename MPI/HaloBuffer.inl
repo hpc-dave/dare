@@ -28,12 +28,13 @@ template <typename SC>
 HaloBuffer<SC>::HaloBuffer() : exec_man(nullptr) {}
 
 template <typename SC>
-template <typename Lambda1, typename Lambda2>
+template <typename Lambda1, typename Lambda2, typename Lambda3>
 void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
                                         const std::vector<GO>& list_required_IDs,
                                         const std::unordered_map<GO, GO> map_periodic,
-                                        Lambda1 is_local,
-                                        Lambda2 map_global_to_local) {
+                                        Lambda1 is_internal_glob,
+                                        Lambda2 is_internal_loc,
+                                        Lambda3 map_global_to_local) {
     exec_man = execution_manager;
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
         buffers[n] = SingleHaloBuffer<SC>(exec_man, n);
@@ -44,10 +45,13 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
     std::vector<std::size_t> num_recv(exec_man->GetNumberProcesses(), 0);
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
         buffers[n].CommunicateNumCellIDs(num_send[n], &num_recv[n],
-                                                        &requests[2 * n], &requests[2 * n + 1]);
+                                         &requests[2 * n], &requests[2 * n + 1]);
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
+
+    // Send around all the grid IDs that the local process requires to every process, later
+    // we will sort out which ones really belong to which rank
     std::vector<std::vector<GO>> list_required_IDs_partner(exec_man->GetNumberProcesses());
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
         list_required_IDs_partner[n].resize(num_recv[n]);
@@ -56,6 +60,7 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
+    // Filter the received IDs from all other ranks and check, which ones this rank can provide
     std::vector<std::vector<GO>> list_filtered_IDs_local(exec_man->GetNumberProcesses());
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
         for (std::size_t m{0}; m < list_required_IDs_partner[n].size(); m++) {
@@ -64,7 +69,8 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
             if (map_periodic.find(id) != map_periodic.end()) {
                 id_loc = map_periodic.find(id)->second;
             }
-            if (is_local(id_loc)) {
+            if (is_internal_glob(id_loc)) {
+                // Note, that we add here the original and not the mapped id!
                 list_filtered_IDs_local[n].push_back(id);
             }
         }
@@ -74,7 +80,7 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
         num_send[n] = list_filtered_IDs_local[n].size();
     for (int n{0}; n < exec_man->GetNumberProcesses(); n++) {
         buffers[n].CommunicateNumCellIDs(num_send[n], &num_recv[n],
-                                                        &requests[2 * n], &requests[2 * n + 1]);
+                                         &requests[2 * n], &requests[2 * n + 1]);
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
@@ -92,7 +98,7 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
             buffers.erase(n);
         }
     }
-
+    // Now communicate with the other ranks, who owns which ID and can send it later
     std::vector<std::vector<GO>> list_filtered_IDs_remote(exec_man->GetNumberProcesses());
     requests.resize(buffers.size() * 2);
     int count{0};
@@ -105,6 +111,9 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
     }
     MPI_Waitall(requests.size(), requests.data(), MPI_STATUSES_IGNORE);
 
+    // Now post process all that communicated information in such a way,
+    // that we only need to send values based on the local grid ids and
+    // can directly map the received values to the local places
     std::vector<LO> list_IDs_recv, list_IDs_send;
     bool remove_self_communication{false};  // in case of empty buffer, remove it
     for (auto& entry : buffers) {
@@ -137,12 +146,20 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
         // nice race condition.
         if (proc == exec_man->GetRank()) {
             std::vector<std::size_t> remove_pos;
-            std::size_t loop_size = std::min(list_IDs_send.size(), list_IDs_recv.size());
+            std::size_t loop_size = list_IDs_send.size();
             remove_pos.reserve(list_IDs_send.size() / 4);
-            // remove_recv.reserve(list_IDs_recv.size() / 4);
             for (std::size_t n{0}; n < loop_size; n++) {
-                if (list_IDs_recv[n] == list_IDs_send[n])
+                LO id_send = list_IDs_send[n];
+                LO id_recv = list_IDs_recv[n];
+                if (id_recv == id_send) {
                     remove_pos.push_back(n);
+                } else {
+                    bool send_internal{is_internal_loc(id_send)};
+                    bool recv_internal{is_internal_loc(id_recv)};
+                    if (!send_internal || recv_internal) {
+                        remove_pos.push_back(n);
+                    }
+                }
             }
             if (!remove_pos.empty()) {
                 std::vector<LO> list_IDs_send_temp(list_IDs_send.size() - remove_pos.size());
@@ -177,6 +194,7 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
 template <typename SC>
 template <typename Field>
 void HaloBuffer<SC>::Exchange(Field* field) {
+
     std::vector<MPI_Request> requests(buffers.size() * 2);
     std::size_t count{0};
     for (auto& entry : buffers) {

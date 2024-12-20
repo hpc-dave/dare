@@ -132,56 +132,98 @@ CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
     std::unordered_map<GO, GO> map_periodic;
     for (LO n{0}; n < GetNumberLocalCells(); n++) {
         Index ind = MapOrdinalToIndexLocal(n);
-        if (!IsInternal(ind)) {
-            IndexGlobal ind_glob = MapLocalToGlobal(ind);
-            GO id_glob = MapIndexToOrdinalGlobal(ind_glob);
-            if (IsInternal(ind_glob)) {
+        IndexGlobal ind_glob = MapLocalToGlobal(ind);
+        GO id_glob = MapIndexToOrdinalGlobal(ind_glob);
+        if (!IsInternal(ind) && IsInternal(ind_glob)) {
+                // The cell is locally not internal but globally it is an internal cell
+                // -> classic halo cell
                 required_halo_IDs.push_back(id_glob);
-            } else if (grid->IsPeriodic()) {
-                // counts the number of met conditions
-                // if more than 1 condition is met, the cell is on an edge or face
-                // or whatever that would be in 4D
-                // Those do not have any counterpart which it could be mapped to and
-                // need to be ignored
-                std::size_t count{0};
-                Index periodicity = grid->GetPeriodicity();
-                for (std::size_t dim{0}; dim < Dim; dim++) {
-                        count += ind_glob[dim] < grid->GetNumGhost();
-                        count += ind_glob[dim] >= (resolution_global[dim] - grid->GetNumGhost());
-                }
-                if (count != 1)
-                    continue;
-                for (std::size_t dim{0}; dim < Dim; dim++) {
-                    if (periodicity[dim] != 0) {
-                        bool low_period{ind_glob[dim] < grid->GetNumGhost()};
-                        bool high_period{ind_glob[dim] >= (resolution_global[dim] - grid->GetNumGhost())};
-                        if (low_period || high_period) {
-                            IndexGlobal ind_period = ind_glob;
-                            if (low_period) {
-                                ind_period[dim] += resolution_global_internal[dim];
-                            } else {
-                                ind_period[dim] -= resolution_global_internal[dim];
-                            }
-                            GO id_glob_period = MapIndexToOrdinalGlobal(ind_period);
-                            required_halo_IDs.push_back(id_glob);
-                            map_periodic[id_glob_period] = id_glob;
-                            map_periodic[id_glob] = id_glob_period;
-                            break;
+        }
+        if (grid->IsPeriodic()) {
+            // In the periodic case, we need to check if the cells is potentially
+            // one that in absolute counting is outside of the global grid, but
+            // with the periodic mapping actually reflects an internal cell.
+            // Additionally, we have to check that the cells are also located at
+            // a location, that can be mapped to an internal cell, to do so
+            // we count the number of dimensions where the cell exceeds internal region:
+            // if more than 1 condition is met, the cell is on an edge or face
+            // or whatever that would be in 4D
+            // Those do not have any counterpart which it could be mapped to and
+            // need to be ignored
+            //
+            // Especially in the periodic case, we need to take into account, that the
+            // periodic cells at the opposing end (potentially on another rank) need to be mapped
+            // to internal cells e.g.
+            //      rank 0                                      rank 1
+            // ---------------------               ----------------------------------
+            //| 0 | 1 || 2 | 3 |                       | n-4 | n-3 || n-2 | n-1 |
+            // Here, cells 2 & 3 have to be mapped with n-2 & n-1, as well as
+            // n-4 & n-3 to 0 & 1. However, due to the conditional above, the cells
+            // 2, 3, n-4 and n-3 won't be mapped in if those are located on different ranks.
+            // So we need to add those additionally to the map
+
+            std::size_t count{0};
+            Index periodicity = grid->GetPeriodicity();
+            Index offset_periodic = periodicity * grid->GetNumGhost();
+            for (std::size_t dim{0}; dim < Dim; dim++) {
+                count += ind_glob[dim] < grid->GetNumGhost();
+                count += ind_glob[dim] >= (resolution_global[dim] - grid->GetNumGhost());
+            }
+
+            if (count > 1)
+                continue;
+
+            bool low_period[Dim], high_period[Dim];
+            bool is_internal = IsInternal(ind);
+            bool is_not_receiving_cell{is_internal};
+            for (std::size_t dim{0}; dim < Dim; dim++) {
+                low_period[dim] = false;
+                high_period[dim] = false;
+                if (periodicity[dim] != 0) {
+                    // Determine, if the periodic boundary is at lower or upper boundary
+                    low_period[dim] = ind_glob[dim] < (grid->GetNumGhost() + offset_periodic[dim]);
+                    high_period[dim] = ind_glob[dim] >= (resolution_global[dim]
+                                                         - grid->GetNumGhost()
+                                                         - offset_periodic[dim]);
+                    if (low_period[dim] || high_period[dim]) {
+                        IndexGlobal ind_period = ind_glob;
+                        if (low_period[dim]) {
+                            ind_period[dim] += resolution_global_internal[dim];
+                        } else {
+                            ind_period[dim] -= resolution_global_internal[dim];
                         }
+                        GO id_glob_period = MapIndexToOrdinalGlobal(ind_period);
+                        map_periodic[id_glob_period] = id_glob;
                     }
                 }
+                // is_not_receiving_cell &= !low_period[dim] || !high_period[dim];
+                // is_not_receiving_cell &= !high_period[dim];
             }
+            if (!is_not_receiving_cell && !IsInternal(ind_glob))
+                required_halo_IDs.push_back(id_glob);
         }
     }
 
-    auto is_local = [&](GO id) {
-        return IsLocal(id);
+    auto is_internal_global = [&](GO id) {
+        bool is_local_internal{IsLocal(id)};
+        if (is_local_internal) {
+            IndexGlobal ind_glob = MapOrdinalToIndexGlobal(id);
+            Index ind_loc = MapGlobalToLocal(ind_glob);
+            is_local_internal &= IsInternal(ind_loc);
+        }
+        return is_local_internal;
     };
+
+    auto is_internal_local = [&](LO id) {
+        auto ind = MapOrdinalToIndexLocal(id);
+        return IsInternal(ind);
+    };
+
     auto map_global_to_local = [&](GO id) {
         return MapGlobalToLocal(id);
     };
     halo_buffer.Initialize(grid->GetExecutionManager(), required_halo_IDs, map_periodic,
-                           is_local, map_global_to_local);
+                           is_internal_global, is_internal_local, map_global_to_local);
 }
 
 template <std::size_t Dim>

@@ -24,6 +24,7 @@
 
 #include <iostream>
 
+#include <cmath>
 #include "AnalyticalSolutions/Diffusion.h"
 #include "Data/DefaultTypes.h"
 #include "Data/Field.h"
@@ -41,7 +42,7 @@ int main(int argc, char* argv[]) {
     using SC = dare::defaults::ScalarType;
     using GO = dare::defaults::GlobalOrdinalType;
     using LO = dare::defaults::LocalOrdinalType;
-    using Grid = dare::Grid::Cartesian<1>;
+    using Grid = dare::Grid::Cartesian<2>;
     // using GridVector = dare::Data::GridVector<Grid, SC, 2>;
     using Field = dare::Data::Field<Grid, SC, 2>;
     using Writer = dare::io::VTKWriter<Grid>;
@@ -54,16 +55,16 @@ int main(int argc, char* argv[]) {
 
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
-        GO nx = 50;
-        SC L = 1;
+        GO nx = 50, ny = 50;
+        SC L = 1., H = 1.;
         LO num_ghost = 2;
         int freq_write = 10;
         double dt = 1e-3;
-        VecLO periodic(1);
-        VecSC velocity_0(1.), velocity_1(-1.);
+        VecLO periodic(1, 1);
+        VecSC velocity_0(1., 0.), velocity_1(0., 1.);
 
-        IndexGlobal resolution_global(nx);
-        VecSC size_global(L);
+        IndexGlobal resolution_global(nx, ny);
+        VecSC size_global(L, H);
 
         dare::mpi::ExecutionManager exman;
         dare::io::FileSystemManager fman(&exman, "dancing_waves");
@@ -73,7 +74,7 @@ int main(int argc, char* argv[]) {
             exman.Terminate(__func__, "Trilinos has issues with distributed 1D, use the 2D test instead");
         }
 
-        Grid grid("scalar",
+        Grid grid("scalar_2D",
                   &exman,
                   resolution_global,
                   size_global,
@@ -86,19 +87,26 @@ int main(int argc, char* argv[]) {
         field.SetComponentName(0, "first");
         field.SetComponentName(1, "second");
         field.SetValues(0.);
-        for (LO i{0}; i < grep.GetNumberLocalCells(); i++) {
-            SC x = grep.GetCoordinatesCenter(IndexLocal(i)).x();
-            if (x > 0.35 && x < 0.65) {
-                field.GetDataVector().At(IndexLocal(i), 0) = 1.;
-                field.GetDataVector().At(IndexLocal(i), 1) = 1.;
+        for (LO i{0}; i < grep.GetLocalResolution().i(); i++) {
+            for (LO j{0}; j < grep.GetLocalResolution().j(); j++) {
+                IndexLocal ind(i, j);
+                SC x = grep.GetCoordinatesCenter(ind).x() - 0.5;
+                SC y = grep.GetCoordinatesCenter(ind).y()-0.5;
+                SC dist = std::sqrt(x * x + y * y);
+                if (dist < 0.25) {
+                    field.GetDataVector().At(ind, 0) = 1.;
+                    field.GetDataVector().At(ind, 1) = 1.;
+                }
             }
         }
         field.CopyDataVectorsToOldTimeStep();
 
         VecSC2 mass_init(0., 0.);
-        for (LO i{0}; i < grep.GetNumberLocalCellsInternal(); i++) {
-            mass_init[0] += field.GetDataVector().At(IndexLocal(i), 0);
-            mass_init[1] += field.GetDataVector().At(IndexLocal(i), 1);
+        for (LO n{0}; n < grep.GetNumberLocalCellsInternal(); n++) {
+            IndexLocal ind = grep.MapOrdinalToIndexLocalInternal(n);
+            ind = grep.MapInternalToLocal(ind);
+            mass_init[0] += field.GetDataVector().At(ind, 0);
+            mass_init[1] += field.GetDataVector().At(ind, 1);
         }
         mass_init[0] = exman.Allsum(mass_init[0]);
         mass_init[1] = exman.Allsum(mass_init[1]);
@@ -148,8 +156,8 @@ int main(int argc, char* argv[]) {
             time += dt;
 
             double base_velocity = static_cast<int>(time) % 2 == 1 ? -1. : 1.;
-            velocity_0.x() = -base_velocity;
-            velocity_1.x() = base_velocity;
+            velocity_0.x() = base_velocity;
+            velocity_1.y() = base_velocity;
 
             msystem.Build(grep, field.GetDataVector(), build_coef, false);
 
@@ -172,9 +180,11 @@ int main(int argc, char* argv[]) {
             field.ExchangeHaloCells();
 
             VecSC2 mass(0., 0.);
-            for (LO i{0}; i < grep.GetNumberLocalCellsInternal(); i++) {
-                mass[0] += field.GetDataVector().At(IndexLocal(i), 0);
-                mass[1] += field.GetDataVector().At(IndexLocal(i), 1);
+            for (LO n{0}; n < grep.GetNumberLocalCellsInternal(); n++) {
+                IndexLocal ind = grep.MapOrdinalToIndexLocalInternal(n);
+                ind = grep.MapInternalToLocal(ind);
+                mass[0] += field.GetDataVector().At(ind, 0);
+                mass[1] += field.GetDataVector().At(ind, 1);
             }
             mass[0] = exman.Allsum(mass[0]);
             mass[1] = exman.Allsum(mass[1]);
