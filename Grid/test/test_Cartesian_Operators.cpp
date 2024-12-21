@@ -24,7 +24,8 @@
 
 #include <gtest/gtest.h>
 
-#include "Equations/Operators_Cartesian.h"
+#include "Grid/Cartesian/Operators_Cartesian.h"
+#include "Equations/TimeDiscretizationSchemes.h"
 
 namespace dare::test {
 
@@ -53,13 +54,15 @@ public:
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
+    using TimeDisc = dare::Matrix::EULER_BACKWARD;
     using Index = typename GridType::Index;
     using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, SC, N>;
+    using CenterMatrixStencil1C = dare::Data::CenterMatrixStencil<GridType, SC, 1>;
     using CenterValueStencil = dare::Data::CenterValueStencil<GridType, SC, N>;
     using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, SC, N>;
     using FaceValueStencil = dare::Data::FaceValueStencil<GridType, SC, N>;
     using Gradient = dare::Matrix::Gradient<GridType>;
-    using Divergence = dare::Matrix::Divergence<GridType>;
+    using Divergence = dare::Matrix::Divergence<GridType, TimeDisc>;
     template <typename FluxLimiter>
     using TVD = dare::Matrix::TVD<GridType, SC, FluxLimiter>;
     using MatrixBlock = dare::Matrix::MatrixBlock<GridType, LO, SC, N>;
@@ -82,6 +85,72 @@ public:
 using IntegrationTestCartesianOperators1D = IntegrationTestCartesianOperators<1>;
 using IntegrationTestCartesianOperators2D = IntegrationTestCartesianOperators<2>;
 using IntegrationTestCartesianOperators3D = IntegrationTestCartesianOperators<3>;
+
+TEST_F(IntegrationTestCartesianOperators1D, TypeTraitTest) {
+    static_assert(dare::is_center_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterMatrixStencil>);
+
+    static_assert(dare::is_face_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceMatrixStencil>);
+
+    static_assert(dare::is_center_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterValueStencil>);
+
+    static_assert(dare::is_face_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceValueStencil>);
+}
+
+TEST_F(IntegrationTestCartesianOperators2D, TypeTraitTest) {
+    static_assert(dare::is_center_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterMatrixStencil>);
+
+    static_assert(dare::is_face_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceMatrixStencil>);
+
+    static_assert(dare::is_center_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterValueStencil>);
+
+    static_assert(dare::is_face_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceValueStencil>);
+}
+
+TEST_F(IntegrationTestCartesianOperators3D, TypeTraitTest) {
+    static_assert(dare::is_center_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<CenterMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterMatrixStencil>);
+
+    static_assert(dare::is_face_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_face_value_stencil_v<FaceMatrixStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceMatrixStencil>);
+
+    static_assert(dare::is_center_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_value_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<CenterValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<CenterValueStencil>);
+
+    static_assert(dare::is_face_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_face_matrix_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_value_stencil_v<FaceValueStencil>);
+    static_assert(!dare::is_center_matrix_stencil_v<FaceValueStencil>);
+}
 
 TEST_F(IntegrationTestCartesianOperators1D, GradientMatrixValues) {
     GridType::Options opt{0};   // not staggered
@@ -688,6 +757,182 @@ TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockIntegration) {
         EXPECT_EQ(mb.Get(n, Positions::SOUTH), -A[1] * dn_r[1]);
         EXPECT_EQ(mb.Get(n, Positions::NORTH), -A[1] * dn_r[1]);
         EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * A[0] * dn_r[0] + 2. * A[1] * dn_r[1]);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockSet) {
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    LO ordinal_internal = 0;
+    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
+    SC v_center = 2., v_west = -1., v_east = -2., v_rhs = 1.5;
+    CenterMatrixStencil1C comp;
+    for (std::size_t n{0}; n < N; n++) {
+        comp.SetValue(Positions::CENTER, 0, v_center + n);
+        comp.SetValue(Positions::WEST, 0, v_west + n);
+        comp.SetValue(Positions::EAST, 0, v_east + n);
+        comp.SetRHS(0, v_rhs + n);
+        mb.Set(n, comp);
+    }
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(mb.Get(n, Positions::WEST), v_west + n);
+        EXPECT_EQ(mb.Get(n, Positions::EAST), v_east + n);
+        EXPECT_EQ(mb.Get(n, Positions::CENTER), v_center + n);
+        EXPECT_EQ(mb.GetRhs(n), v_rhs + n);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockSet) {
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    LO ordinal_internal = 0;
+    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
+    SC v_center = 2., v_west = -1., v_east = -2., v_south = -3., v_north = -4., v_rhs = 1.5;
+    CenterMatrixStencil1C comp;
+    for (std::size_t n{0}; n < N; n++) {
+        comp.SetValue(Positions::CENTER, 0, v_center + n);
+        comp.SetValue(Positions::WEST, 0, v_west + n);
+        comp.SetValue(Positions::EAST, 0, v_east + n);
+        comp.SetValue(Positions::SOUTH, 0, v_south + n);
+        comp.SetValue(Positions::NORTH, 0, v_north + n);
+        comp.SetRHS(0, v_rhs + n);
+        mb.Set(n, comp);
+    }
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(mb.Get(n, Positions::WEST), v_west + n);
+        EXPECT_EQ(mb.Get(n, Positions::EAST), v_east + n);
+        EXPECT_EQ(mb.Get(n, Positions::SOUTH), v_south + n);
+        EXPECT_EQ(mb.Get(n, Positions::NORTH), v_north + n);
+        EXPECT_EQ(mb.Get(n, Positions::CENTER), v_center + n);
+        EXPECT_EQ(mb.GetRhs(n), v_rhs + n);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockSet) {
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    LO ordinal_internal = 0;
+    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
+    SC v_center = 2., v_west = -1., v_east = -2.,
+       v_south = -3., v_north = -4.,
+       v_bottom = -5., v_top = -6., v_rhs = 1.5;
+    CenterMatrixStencil1C comp;
+    for (std::size_t n{0}; n < N; n++) {
+        comp.SetValue(Positions::CENTER, 0, v_center + n);
+        comp.SetValue(Positions::WEST, 0, v_west + n);
+        comp.SetValue(Positions::EAST, 0, v_east + n);
+        comp.SetValue(Positions::SOUTH, 0, v_south + n);
+        comp.SetValue(Positions::NORTH, 0, v_north + n);
+        comp.SetValue(Positions::BOTTOM, 0, v_bottom + n);
+        comp.SetValue(Positions::TOP, 0, v_top + n);
+        comp.SetRHS(0, v_rhs + n);
+        mb.Set(n, comp);
+    }
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(mb.Get(n, Positions::WEST), v_west + n);
+        EXPECT_EQ(mb.Get(n, Positions::EAST), v_east + n);
+        EXPECT_EQ(mb.Get(n, Positions::SOUTH), v_south + n);
+        EXPECT_EQ(mb.Get(n, Positions::NORTH), v_north + n);
+        EXPECT_EQ(mb.Get(n, Positions::BOTTOM), v_bottom + n);
+        EXPECT_EQ(mb.Get(n, Positions::TOP), v_top + n);
+        EXPECT_EQ(mb.Get(n, Positions::CENTER), v_center + n);
+        EXPECT_EQ(mb.GetRhs(n), v_rhs + n);
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockAdd) {
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    LO ordinal_internal = 0;
+    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
+    SC v_center = 2., v_west = -1., v_east = -2., v_rhs = 1.5;
+    CenterMatrixStencil1C comp;
+    for (std::size_t n{0}; n < N; n++) {
+        comp.SetValue(Positions::CENTER, 0, v_center + n);
+        comp.SetValue(Positions::WEST, 0, v_west + n);
+        comp.SetValue(Positions::EAST, 0, v_east + n);
+        comp.SetRHS(0, v_rhs + n);
+        mb.Set(n, comp);
+        mb.Add(n, comp);
+    }
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(mb.Get(n, Positions::WEST), 2.*(v_west + n));
+        EXPECT_EQ(mb.Get(n, Positions::EAST), 2. * (v_east + n));
+        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * (v_center + n));
+        EXPECT_EQ(mb.GetRhs(n), 2.*(v_rhs + n));
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockAdd) {
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    LO ordinal_internal = 0;
+    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
+    SC v_center = 2., v_west = -1., v_east = -2.,
+       v_south = -3., v_north = -4., v_rhs = 1.5;
+    CenterMatrixStencil1C comp;
+    for (std::size_t n{0}; n < N; n++) {
+        comp.SetValue(Positions::CENTER, 0, v_center + n);
+        comp.SetValue(Positions::WEST, 0, v_west + n);
+        comp.SetValue(Positions::EAST, 0, v_east + n);
+        comp.SetValue(Positions::SOUTH, 0, v_south + n);
+        comp.SetValue(Positions::NORTH, 0, v_north + n);
+        comp.SetRHS(0, v_rhs + n);
+        mb.Set(n, comp);
+        mb.Add(n, comp);
+    }
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(mb.Get(n, Positions::WEST), 2. * (v_west + n));
+        EXPECT_EQ(mb.Get(n, Positions::EAST), 2. * (v_east + n));
+        EXPECT_EQ(mb.Get(n, Positions::SOUTH), 2. * (v_south + n));
+        EXPECT_EQ(mb.Get(n, Positions::NORTH), 2. * (v_north + n));
+        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * (v_center + n));
+        EXPECT_EQ(mb.GetRhs(n), 2. * (v_rhs + n));
+    }
+}
+
+TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockAdd) {
+    GridType::Options opt{0};  // not staggered
+    auto grid_rep = grid->GetRepresentation(opt);
+    LO ordinal_internal = 0;
+    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
+    SC v_center = 2., v_west = -1., v_east = -2.,
+       v_south = -3., v_north = -4.,
+       v_bottom = -5., v_top = -6., v_rhs = 1.5;
+    CenterMatrixStencil1C comp;
+    for (std::size_t n{0}; n < N; n++) {
+        comp.SetValue(Positions::CENTER, 0, v_center + n);
+        comp.SetValue(Positions::WEST, 0, v_west + n);
+        comp.SetValue(Positions::EAST, 0, v_east + n);
+        comp.SetValue(Positions::SOUTH, 0, v_south + n);
+        comp.SetValue(Positions::NORTH, 0, v_north + n);
+        comp.SetValue(Positions::BOTTOM, 0, v_bottom + n);
+        comp.SetValue(Positions::TOP, 0, v_top + n);
+        comp.SetRHS(0, v_rhs + n);
+        mb.Set(n, comp);
+        mb.Add(n, comp);
+    }
+
+    for (std::size_t n{0}; n < N; n++) {
+        EXPECT_EQ(mb.Get(n, Positions::WEST), 2. * (v_west + n));
+        EXPECT_EQ(mb.Get(n, Positions::EAST), 2. * (v_east + n));
+        EXPECT_EQ(mb.Get(n, Positions::SOUTH), 2. * (v_south + n));
+        EXPECT_EQ(mb.Get(n, Positions::NORTH), 2. * (v_north + n));
+        EXPECT_EQ(mb.Get(n, Positions::BOTTOM), 2. * (v_bottom + n));
+        EXPECT_EQ(mb.Get(n, Positions::TOP), 2. * (v_top + n));
+        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * (v_center + n));
+        EXPECT_EQ(mb.GetRhs(n), 2. * (v_rhs + n));
     }
 }
 

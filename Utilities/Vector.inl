@@ -30,26 +30,29 @@ template <typename... Ts,
           typename A,
           typename B>
 Vector<N, T>::Vector(const Ts&... args) : VectorDecorator<N, N, T>() {
-    SetValues<0>(args...);
+        SetValues<0>(args...);
 }
 
 template <std::size_t N, typename T>
 template <typename A, typename B>
 Vector<N, T>::Vector(const Vector<N, A>& other) : VectorDecorator<N, N, T>() {
-    for (std::size_t n{0}; n < N; n++)
+    for (std::size_t n{0}; n < N; n++) {
         this->_data[n] = static_cast<T>(other[n]);
+    }
 }
 
 template <std::size_t N, typename T>
 template <typename A, typename B>
 Vector<N, T>& Vector<N, T>::operator=(const Vector<N, A>& other) {
-    if constexpr (std::is_same_v<A, T>)
-        if (&other == this)
-            return *this;
-
+    if constexpr (std::is_same_v<A, T>) {
+        // Vector<N, T> tmp(other);
+        // swap(*this, tmp);
+        if (this == &other) {
+            return this;
+        }
+    }
     for (std::size_t n{0}; n < N; n++)
         this->_data[n] = static_cast<T>(other[n]);
-
     return *this;
 }
 
@@ -67,7 +70,7 @@ template <std::size_t N, typename T>
 T& Vector<N, T>::operator[](std::size_t n) {
 #ifndef NDEBUG
     if (n >= N) {
-        std::cerr << __func__ << ": access @" << n << " out of bounds, size is " << N << std::endl;
+        ERROR << "access @" << n << " out of bounds, size is " << N << ERROR_CLOSE;
     }
 #endif
     return this->_data[n];
@@ -77,7 +80,7 @@ template <std::size_t N, typename T>
 const T& Vector<N, T>::operator[](std::size_t n) const {
 #ifndef NDEBUG
     if (n >= N) {
-        std::cerr << __func__ << ": access @" << n << " out of bounds, size is " << N << std::endl;
+        ERROR << "access @" << n << " out of bounds, size is " << N << ERROR_CLOSE;
     }
 #endif
     return this->_data[n];
@@ -365,14 +368,14 @@ void Vector<N, T>::SetValues(const Tin& arg, const Ts&... args) {
         if constexpr (sizeof...(args) > 0 && (I + 1 < N))
             SetValues<I + 1>(args...);
         else if constexpr (I + 1 < N)
-            SetValues<I + 1>(static_cast<T>(0));
+            SetValues<I + 1> (VectorDefaultInitializer<T>::get_value());
     }
 }
 
 template <std::size_t N, typename T>
 template <std::size_t I>
 void Vector<N, T>::SetValues() {
-    SetValues<0>(static_cast<T>(0));
+    SetValues<0>(VectorDefaultInitializer<T>::get_value());
 }
 
 template <std::size_t N, typename T>
@@ -403,3 +406,8 @@ auto Vector<N, T>::IterateValues(Expr lambda, Op op) const {
 }
 
 }  // namespace dare::utils
+
+// template <std::size_t N, typename T>
+// void std::swap(dare::utils::Vector<N, T>& v1, dare::utils::Vector<N, T>& v2) {
+//     std::swap(v1._data, v2._data);
+// }

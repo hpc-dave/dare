@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef GRID_CARTESIANREPRESENTATION_H_
-#define GRID_CARTESIANREPRESENTATION_H_
+#ifndef GRID_CARTESIAN_CARTESIANREPRESENTATION_H_
+#define GRID_CARTESIAN_CARTESIANREPRESENTATION_H_
 
 #include <map>
 #include <unordered_map>
@@ -184,7 +184,7 @@ public:
     LO MapIndexToOrdinalLocal(const Index& ind) const;
     LO MapIndexToOrdinalLocalInternal(const Index& ind) const;
     GO MapIndexToOrdinalGlobal(const IndexGlobal& ind) const;
-    GO MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind) const;
+    GO MapIndexToOrdinalGlobalInternal(const IndexGlobal& ind, bool map_periodic = false) const;
 
     LO MapGlobalToLocal(GO id_glob) const;
     Index MapGlobalToLocal(const IndexGlobal& ind_glob) const;
@@ -331,4 +331,4 @@ private:
 
 #include "CartesianRepresentation.inl"
 
-#endif  // GRID_CARTESIANREPRESENTATION_H_
+#endif  // GRID_CARTESIAN_CARTESIANREPRESENTATION_H_

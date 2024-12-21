@@ -21,34 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#ifndef GRID_CARTESIAN_OPERATORS_CARTESIAN_H_
+#define GRID_CARTESIAN_OPERATORS_CARTESIAN_H_
 
-#include "Cartesian.h"
+#include "Divergence_Cartesian.h"
+#include "Equations/FluxLimiter.h"
+#include "Equations/Operators.h"
+#include "Gradient_Cartesian.h"
+#include "TVD_Cartesian.h"
 
-namespace dare::Grid::details::Cartesian {
-std::list<std::string> AllocationManager::reg;
-bool AllocationManager::RegisterGrid(const std::string& gname) {
-    // test if grid with same name was already allocated and register this one
-    auto it = std::find(reg.begin(),
-                        reg.end(),
-                        gname);
-    if (it != reg.end()) {
-        ERROR << "The requested grid name '" << gname << "'is already registered, chose an alternative!" << ERROR_CLOSE;
-        return false;
-    }
-    reg.push_back(gname);
-    return true;
-}
-
-bool AllocationManager::DeregisterGrid(const std::string& gname) {
-    auto it = std::find(reg.begin(),
-                        reg.end(),
-                        gname);
-    if (it == reg.end()) {
-        ERROR << "The grid " << gname << " could not be found during deallocation in the registry" << ERROR_CLOSE;
-        return false;
-    }
-    reg.erase(it);
-    return true;
-}
-
-}  // end namespace dare::Grid::details::Cartesian
+#endif  // GRID_CARTESIAN_OPERATORS_CARTESIAN_H_

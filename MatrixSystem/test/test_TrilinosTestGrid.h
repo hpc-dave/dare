@@ -25,9 +25,9 @@
 #ifndef MATRIXSYSTEM_TEST_TEST_TRILINOSTESTGRID_H_
 #define MATRIXSYSTEM_TEST_TEST_TRILINOSTESTGRID_H_
 
-#include "../../Grid/DefaultTypes.h"
-#include "../../Utilities/Vector.h"
-#include "../../MPI/ExecutionManager.h"
+#include "Data/DefaultTypes.h"
+#include "Utilities/Vector.h"
+#include "MPI/ExecutionManager.h"
 
 namespace dare::Matrix::test {
 class TrilinosTestGrid {

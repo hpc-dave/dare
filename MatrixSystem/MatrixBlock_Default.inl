@@ -89,6 +89,24 @@ bool MatrixBlock<Grid, O, SC, N>::IsGlobal() const {
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
+typename MatrixBlock<Grid, O, SC, N>::LO
+MatrixBlock<Grid, O, SC, N>::GetLocalOrdinal() const {
+    if constexpr (std::is_same_v<O, GlobalOrdinalType>)
+        return g_rep->MapGlobalToLocalInternal(this->GetNode());
+    else
+        return this->GetNode();
+}
+
+template <typename Grid, typename O, typename SC, std::size_t N>
+typename MatrixBlock<Grid, O, SC, N>::GO
+MatrixBlock<Grid, O, SC, N>::GetGlobalOrdinal() const {
+    if constexpr (std::is_same_v<O, GlobalOrdinalType>)
+        return this->GetNode();
+    else
+        return g_rep->MapLocalToGlobalInternal(this->GetNode());
+}
+
+template <typename Grid, typename O, typename SC, std::size_t N>
 bool MatrixBlock<Grid, O, SC, N>::IsStencilLocal() const {
     if constexpr (std::is_same_v<LocalOrdinalType, O>) {
         return true;
@@ -101,6 +119,10 @@ bool MatrixBlock<Grid, O, SC, N>::IsStencilLocal() const {
         }
         return is_local;
     }
+}
+
+template <typename Grid, typename O, typename SC, std::size_t N>
+void MatrixBlock<Grid, O, SC, N>::Finalize() {
 }
 
 }  // end namespace dare::Matrix

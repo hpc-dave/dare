@@ -25,12 +25,15 @@
 #ifndef MATRIXSYSTEM_MATRIXBLOCKBASE_H_
 #define MATRIXSYSTEM_MATRIXBLOCKBASE_H_
 
+#include <utility>
 #include <type_traits>
+#include <vector>
 
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>
 
 #include "Utilities/Vector.h"
+#include "Utilities/Errors.h"
 
 namespace dare::Matrix {
 
@@ -50,26 +53,9 @@ class MatrixBlockBase {
 public:
     using OrdinalType = O;
     using ScalarType = SC;
-    using DualViewOrdinalArrayType = Kokkos::DualView<O*>;
-    using DualViewScalarArrayType = Kokkos::DualView<SC*>;
-    using OrdinalArray = typename DualViewOrdinalArrayType::t_host;
-    using ScalarArray = typename DualViewScalarArrayType::t_host;
-    using OrdinalArrayDevice = typename DualViewOrdinalArrayType::t_dev;
-    using ScalarArrayDevice = typename DualViewScalarArrayType::t_dev;
-    using HostSpace = typename DualViewOrdinalArrayType::host_mirror_space;
-    using ExecutionSpace = typename DualViewOrdinalArrayType::execution_space;
-
-    template <typename DView, typename Space>
-    struct ReturnTypeDV {
-    };
-    template <typename DView>
-    struct ReturnTypeDV<DView, HostSpace> {
-        using type = typename DView::t_host;
-    };
-    template <typename DView>
-    struct ReturnTypeDV<DView, ExecutionSpace> {
-        using type = typename DView::t_dev;
-    };
+    using OrdinalArray = std::vector<OrdinalType>;
+    using ScalarArray = std::vector<ScalarType>;
+    using ScalarArrayN = dare::utils::Vector<N, SC>;
 
     /*!
      * @brief default constructor
@@ -92,14 +78,22 @@ public:
     /*!
      * @brief copy assignment operator
      * @param other instance to copy from
-     * @return 
      */
     MatrixBlockBase<O, SC, N>& operator=(const MatrixBlockBase<O, SC, N>& other);
+
 
     /*!
      * @brief destructor
      */
     virtual ~MatrixBlockBase();
+
+    // /*!
+    //  * @brief swap function for exloiting the copy and swap idiom
+    //  * @param obj1 first object
+    //  * @param obj2 second object
+    //  */
+    // template <typename Os, typename SCs, std::size_t Ns>
+    // friend void swap(MatrixBlockBase<Os, SCs, Ns>& obj1, MatrixBlockBase<Os, SCs, Ns>& obj2);
 
     /*!
      * @brief Initializes matrix block and precomputes required values
@@ -128,7 +122,6 @@ public:
      * @tparam Space execution space
      * @param n component ID
      */
-    template<typename Space = HostSpace>
     std::size_t GetSize(std::size_t n) const;
 
     /*!
@@ -184,22 +177,10 @@ public:
     const OrdinalArray& GetColumnOrdinals(std::size_t n) const;
 
     /*!
-     * @brief returns device-array with columns ordinal of the row
-     * @param n ID of associated component
-     */
-    const OrdinalArrayDevice& GetColumnOrdinalsDevice(std::size_t n) const;
-
-    /*!
      * @brief returns host-array with column values of the row
      * @param n ID of associated component
      */
     const ScalarArray& GetColumnValues(std::size_t n) const;
-
-    /*!
-     * @brief returns device-array with column values of the row
-     * @param n ID of associated component
-     */
-    const ScalarArrayDevice& GetColumnValuesDevice(std::size_t n) const;
 
     /*!
      * @brief returns reference ordinal according to specified position in array
@@ -297,6 +278,7 @@ public:
      * @param size number of elements in the arrays
      * @param id_col array of column ordinals
      * @param values array of coefficients
+     * @param allow_resize identifier, if resizing is allowed
      * 
      * The arrays' sizes need to be greater or equal to the provided size
      * parameter. Additionally, the elements in the arrays need to be accessible
@@ -305,7 +287,9 @@ public:
      * arrays.
      */
     template <typename Array1, typename Array2>
-    void SetCoefficients(std::size_t n_row, std::size_t size, const Array1& id_col, const Array2& values);
+    void SetCoefficients(std::size_t n_row, std::size_t size,
+                         const Array1& id_col, const Array2& values,
+                         bool allow_resize = true);
 
     /*!
      * @brief removes coefficient from array
@@ -343,19 +327,13 @@ public:
     template <typename Array>
     void RemoveCoefficientsByOrdinals(std::size_t n, const Array& ordinals, std::size_t num_entries);
 
-    /*!
-     * @brief synchronizes the data on the different devices
-     * @tparam TargetSpace identifier of the space that data should be copied to
-     */
-    template <typename TargetSpace>
-    void Synchronize();
 
 private:
-    DualViewOrdinalArrayType ordinals[N];       //!< arrays with columns indices
-    DualViewScalarArrayType coefficients[N];    //!< arrays with column coefficients
-    DualViewScalarArrayType initial_guess;      //!< array with initial guess
-    DualViewScalarArrayType rhs;                //!< array with rhs
-    OrdinalType node;                      //!< node associated with this matrix block
+    OrdinalArray ordinals[N];       //!< arrays with columns indices
+    ScalarArray coefficients[N];    //!< arrays with column coefficients
+    ScalarArrayN initial_guess;     //!< array with initial guess
+    ScalarArrayN rhs;               //!< array with rhs
+    OrdinalType node;               //!< node associated with this matrix block
 };
 
 }  // namespace dare::Matrix

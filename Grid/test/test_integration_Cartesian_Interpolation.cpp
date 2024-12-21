@@ -26,8 +26,8 @@
 
 #include <random>
 
-#include "Grid/DefaultTypes.h"
-#include "Math/Interpolation_Cartesian.h"
+#include "Data/DefaultTypes.h"
+#include "Grid/Cartesian/Interpolation_Cartesian.h"
 
 namespace dare::test {
 

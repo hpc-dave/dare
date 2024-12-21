@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Grid/DefaultTypes.h"
+#include "Data/DefaultTypes.h"
 #include "Math/Pow.h"
 #include "Math/Divisors.h"
 

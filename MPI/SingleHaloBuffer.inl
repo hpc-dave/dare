@@ -102,7 +102,7 @@ void SingleHaloBuffer<SC>::Exchange(const Field& field,
     if (num_send > buffer_send.size())
         buffer_send.resize(num_send);
     if (num_recv > buffer_recv.size())
-        buffer_recv.resize(num_send);
+        buffer_recv.resize(num_recv);
 
     for (std::size_t n{0}; n < list_local_IDs_send.size(); n++) {
         LO id = list_local_IDs_send[n] * num_eq;

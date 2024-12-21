@@ -28,7 +28,8 @@ template <typename Grid, typename TimeDiscretization>
 DDT<Grid, TimeDiscretization>::DDT(const GridRepresentation& grep,
          LO lo,
          SC _dt)
-         : dt(_dt), ordinal(lo), volume(grep.GetCellVolume(lo)) {
+         : dt(_dt), ordinal(lo), local_ordinal(grep.MapInternalToLocal(lo)), volume(grep.GetCellVolume(lo)) {
+    // TODO(Dave): Find a better solution thatn using the mapping, that is very specific to the cartesian grid!
 }
 
 template <typename Grid, typename TimeDiscretization>
@@ -71,7 +72,9 @@ auto DDT<Grid, TimeDiscretization>::operator()(const Args&... args) {
     for (std::size_t n{0}; n < NUM_COMPONENTS; n++) {
         stencil.Center(n) = transient_terms[n][0];
         for (std::size_t t{1}; t < NUM_TFIELDS; t++) {
-            stencil.GetRHS(n) -= transient_terms[n][t];
+            SC phi_loc = std::get<LAST_POS>(tuple_val).GetDataVector(t).At(local_ordinal, n);
+            SC v_trans = transient_terms[n][t];
+            stencil.GetRHS(n) += v_trans * phi_loc;
         }
     }
     return stencil;
@@ -94,7 +97,8 @@ void DDT<Grid, TimeDiscretization>::Iterate(
         // apply values
         for (std::size_t n{0}; n < NUM_COMPONENTS; n++) {
             for (std::size_t t{0}; t < NUM_TFIELDS; t++) {
-                transient_terms[n][t] *= field.GetDataVector(t).At(ordinal, n);
+                SC v = field.GetDataVector(t).At(ordinal, n);
+                transient_terms[n][t] *= v;
             }
         }
 

@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef GRID_DEFAULTTYPES_H_
-#define GRID_DEFAULTTYPES_H_
+#ifndef DATA_DEFAULTTYPES_H_
+#define DATA_DEFAULTTYPES_H_
 #include <Tpetra_Map_decl.hpp>
 
 namespace dare::Grid::details {
@@ -40,4 +40,4 @@ using GlobalOrdinalType = Grid::details::GlobalOrdinalType;
 using ScalarType = double;
 }  // end namespace dare::defaults
 
-#endif  // GRID_DEFAULTTYPES_H_
+#endif  // DATA_DEFAULTTYPES_H_

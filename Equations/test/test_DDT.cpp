@@ -26,7 +26,6 @@
 
 #include "Equations/DDT.h"
 #include "Grid/Cartesian.h"
-#include "Data/Stencils_Cartesian.h"
 
 namespace dare::test {
 
@@ -72,8 +71,7 @@ public:
 };
 
 TEST_F(DDTTest, EulerBackward) {
-    using TimeDiscretization = dare::Matrix::EULER_BACKWARD;
-    const std::size_t NUM_TFIELD{TimeDiscretization::NUM_TIMESTEPS + 1};
+    const std::size_t NUM_TFIELD{2};
     GridType::Options opt(0, 0, 0);
     GridType::Representation grep = grid->GetRepresentation(opt);
     SC phi_base{0.3};
@@ -91,7 +89,7 @@ TEST_F(DDTTest, EulerBackward) {
     }
     LO ordinal = 0;
     SC dt = 0.1;
-    dare::Matrix::DDT<GridType, TimeDiscretization> ddt(grep, ordinal, dt);
+    dare::Matrix::DDT<GridType> ddt(grep, ordinal, dt);
     SC dV_dt = grep.GetCellVolume(ordinal) / dt;
     auto s_1 = ddt(field_phi);
     auto s_2 = ddt(field_p1, field_phi);
@@ -99,14 +97,14 @@ TEST_F(DDTTest, EulerBackward) {
 
     for (std::size_t n{0}; n < N; n++) {
         EXPECT_NEAR(s_1.Center(n), dV_dt , std::numeric_limits<SC>::epsilon());
-        EXPECT_NEAR(s_1.GetRHS(n), 0., std::numeric_limits<SC>::epsilon());
+        EXPECT_NEAR(s_1.GetRHS(n), dV_dt * 2. * phi_base, std::numeric_limits<SC>::epsilon());
     }
     for (std::size_t n{0}; n < N; n++) {
         EXPECT_NEAR(s_2.Center(n), p1_base  * dV_dt, std::numeric_limits<SC>::epsilon());
-        EXPECT_NEAR(s_2.GetRHS(n), 0., std::numeric_limits<SC>::epsilon());
+        EXPECT_NEAR(s_2.GetRHS(n), dV_dt * p1_base * 4. * phi_base, std::numeric_limits<SC>::epsilon());
     }
     for (std::size_t n{0}; n < N; n++) {
         EXPECT_NEAR(s_3.Center(n), p2_base * p1_base * dV_dt, std::numeric_limits<SC>::epsilon());
-        EXPECT_NEAR(s_3.GetRHS(n), 0., std::numeric_limits<SC>::epsilon());
+        EXPECT_NEAR(s_3.GetRHS(n), dV_dt * p2_base * p1_base * 8. * phi_base, std::numeric_limits<SC>::epsilon());
     }
 }

@@ -1,7 +1,6 @@
 set(DaRe_HEADER_FILES
     "Divisors.h"
     "Interpolation.h"
-    "Interpolation_Cartesian.h"
     "Pow.h"
     "Random.h"
 )

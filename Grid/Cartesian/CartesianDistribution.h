@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef GRID_CARTESIANDISTRIBUTION_H_
-#define GRID_CARTESIANDISTRIBUTION_H_
+#ifndef GRID_CARTESIAN_CARTESIANDISTRIBUTION_H_
+#define GRID_CARTESIAN_CARTESIANDISTRIBUTION_H_
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -405,4 +405,4 @@ void CartesianDistribution_MPI_Dims_create(mpi::ExecutionManager* exec_man,
 
 }  // namespace dare::Grid
 
-#endif  // GRID_CARTESIANDISTRIBUTION_H_
+#endif  // GRID_CARTESIAN_CARTESIANDISTRIBUTION_H_

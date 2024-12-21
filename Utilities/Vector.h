@@ -30,9 +30,11 @@
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
+#include <utility>
 
 #include "Hashes.h"
 #include "Vector_traits.h"
+#include "Errors.h"
 
 namespace dare::utils {
 
@@ -55,6 +57,9 @@ public:
     typedef T InternalType;
     typedef std::random_access_iterator_tag iterator_tag;
     typedef std::ptrdiff_t iterator_diff_type;
+#ifndef NDEBUG
+    typedef VectorBase<N, T> BaseType;      //!< this type is mainly used for simplified debugging with gdb
+#endif
 
     /*! \struct Iterator
      * \brief random access forward iterator
@@ -463,6 +468,14 @@ public:
               typename = std::enable_if_t<std::is_convertible_v<A, T>> >
     Vector(const Vector<N, A>& other);
 
+    // /*!
+    //  * @brief swap operation
+    //  * @param v1 first vector
+    //  * @param v2 second vector
+    //  */
+    // template <std::size_t Ns, typename Ts>
+    // friend void std::swap(Vector<Ns, Ts>& v1, Vector<Ns, Ts>& v2);
+
     /*!
      * \brief provides direct access to the data
      */
@@ -759,8 +772,6 @@ private:
      */
     template <std::size_t I = 0, typename Expr, typename Op>
     auto IterateValues(Expr lambda, Op op) const;
-
-    // T _data[N];  //!< internal data set
 };
 
 }  // namespace dare::utils

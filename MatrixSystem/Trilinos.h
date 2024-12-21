@@ -34,7 +34,7 @@
 #include <Tpetra_CrsMatrix.hpp>
 #include <Tpetra_Version.hpp>
 
-#include "Grid/DefaultTypes.h"
+#include "Data/DefaultTypes.h"
 #include "Data/GridVector.h"
 #include "MPI/ExecutionManager.h"
 #include "Utilities/InitializationTracker.h"
@@ -189,6 +189,58 @@ public:
      * @return const Tpetra::Map
      */
     Teuchos::RCP<const MapType> GetMap() const;
+
+    /*!
+     * @brief copies the data from the solution vector to the provided gridvector
+     * @param gvec grid vector
+     */
+    template <typename Grid, std::size_t N>
+    void CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const;
+
+    /*!
+     * @brief prints the local row of the stored matrix to the terminal
+     * @param row local row ordinal
+     * \note the printed row ordinals are given in global ordinals
+     */
+    void PrintRowLocal(LO row) const;
+
+    /*!
+     * @brief prints the local row of the stored matrix to the terminal using the global ordinal
+     * @param row global row ordinal
+     * \warning there is no internal check, if the row is really local, behavior in that case is
+     * dependent on Tpetra
+     */
+    void PrintRow(GO row) const;
+
+    /*!
+     * @brief prints the local matrix in global coordinates
+     */
+    void PrintMatrixLocal() const;
+
+    /*!
+     * @brief prints the the whole matrix in global coordinates
+     */
+    void PrintMatrix() const;
+
+    /*!
+     * @brief prints the local B vector
+     */
+    void PrintBLocal() const;
+
+    /*!
+     * @brief prints the complete B vector
+     */
+    void PrintB() const;
+
+    /*!
+     * @brief prints the local X vector
+     */
+    void PrintXLocal() const;
+
+    /*!
+     * @brief prints the complete B vector
+     */
+    void PrintX() const;
 
 private:
     /*!

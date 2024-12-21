@@ -48,7 +48,7 @@
 #include <Amesos2.hpp>
 
 #include "Utilities/Errors.h"
-#include "Grid/DefaultTypes.h"
+#include "Data/DefaultTypes.h"
 #include "BiCGStab2.h"
 namespace dare::Matrix {
 
@@ -125,6 +125,8 @@ public:
                                                    Teuchos::RCP<ParameterList> param,
                                                    Teuchos::RCP<MatrixType> A);
 
+    int GetNumIterations() const;
+
 private:
     Teuchos::RCP<SolverManager> CreateSolver(SolverPackage solver_pack,
                                              const std::string& type,
@@ -143,6 +145,7 @@ private:
                                 Teuchos::RCP<MultiVectorType> x,
                                 Teuchos::RCP<MultiVectorType> B,
                                 Teuchos::RCP<ParameterList> param);
+    int num_iter{-1};
 };
 
 }  // namespace dare::Matrix
