@@ -375,8 +375,8 @@ void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
         for (std::size_t n{0}; n < N; n++) {
             const auto& columns = list_matrix_blocks[node].GetColumnOrdinals(n);
             const auto& values = list_matrix_blocks[node].GetColumnValues(n);
-            Teuchos::ArrayView<GO> cview(columns.data(), columns.size());
-            Teuchos::ArrayView<SC> vview(values.data(), values.size());
+            Teuchos::ArrayView<const GO> cview(columns.data(), columns.size());
+            Teuchos::ArrayView<const SC> vview(values.data(), values.size());
             ptr_A->insertGlobalValues(row, cview, vview);
             ++row;
         }

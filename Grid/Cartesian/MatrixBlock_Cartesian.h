@@ -26,6 +26,7 @@
 #define GRID_CARTESIAN_MATRIXBLOCK_CARTESIAN_H_
 
 #include <vector>
+#include <utility>
 
 #include "MatrixSystem/MatrixBlock_Default.h"
 #include "Grid/Cartesian/CartesianMesh.h"
@@ -62,11 +63,8 @@ public:
     using GO = GlobalOrdinalType;
     using LO = LocalOrdinalType;
     using SelfType = MatrixBlock<GridType, O, SC, N>;
-    using HostSpace = typename MatrixBlockBase<O, SC, N>::HostSpace;
-    using ExecutionSpace = typename MatrixBlockBase<O, SC, N>::ExecutionSpace;
-    template <typename DView, typename Space>
-    using ReturnTypeDV = typename MatrixBlockBase<O, SC, N>::ReturnTypeDV<DView, Space>;
     using Index = typename GridType::GetIndexType<O>::type;
+    using ScalarArray = std::vector<SC>;
 
     /*!
      * @brief default constructor
@@ -105,7 +103,16 @@ public:
      * @brief copy operator
      * @param other instance to copy from
      */
-    SelfType& operator=(const SelfType& other);
+    SelfType& operator=(SelfType other);
+
+    /*!
+     * @brief swap operator for the copy and swap idiom
+     * @param m1 first block
+     * @param m2 second block
+     */
+    template <std::size_t Dims, typename Os, typename SCs, std::size_t Ns>
+    friend void swap(MatrixBlock<dare::Grid::Cartesian<Dims>, Os, SCs, Ns>& m1,
+                     MatrixBlock<dare::Grid::Cartesian<Dims>, Os, SCs, Ns>& m2);
 
     /*!
      * @brief initialize the matrix block
@@ -308,25 +315,19 @@ public:
     }
 
 private:
-    template <typename Space>
-    typename Kokkos::DualView<SC**>::t_host& GetNeighbors();
+    dare::utils::Vector<N, ScalarArray>& GetNeighbors();
 
-    template <typename Space>
-    const typename Kokkos::DualView<SC**>::t_host& GetNeighbors() const;
+    const dare::utils::Vector<N, ScalarArray>& GetNeighbors() const;
 
-    template <typename Space>
-    std::vector<char>& GetNeighborBitSet();
+    dare::utils::Vector<N, char>& GetNeighborBitSet();
 
-    template <typename Space>
-    const std::vector<char>& GetNeighborBitSet() const;
-    // const typename Kokkos::DualView<char*>::t_host& GetNeighborBitSet() const;
+    const dare::utils::Vector<N, char>& GetNeighborBitSet() const;
 
-    const GridRepresentation* g_rep;   //!< reference to grid representation
-    Kokkos::DualView<SC**> neighbors;  //!< holds values referencing to neighbor coefficients
-    std::vector<char> neighbor_set;  //!< identifiers, if the neighbors were set
-    // Kokkos::DualView<char*> neighbor_set;  //!< identifiers, if the neighbors were set
-    Index ind_internal;                //!< indices of internal grid
-    Index ind_full;                    //!< indices of grid including halo/ghost cells
+    const GridRepresentation* g_rep;                      //!< reference to grid representation
+    dare::utils::Vector<N, ScalarArray> neighbors;        //!< holds values referencing to neighbor coefficients
+    dare::utils::Vector<N, char> neighbor_set;            //!< identifiers, if the neighbors were set
+    Index ind_internal;                                   //!< indices of internal grid
+    Index ind_full;                                       //!< indices of grid including halo/ghost cells
 };
 }  // end namespace dare::Matrix
 

@@ -44,13 +44,15 @@ Vector<N, T>::Vector(const Vector<N, A>& other) : VectorDecorator<N, N, T>() {
 template <std::size_t N, typename T>
 template <typename A, typename B>
 Vector<N, T>& Vector<N, T>::operator=(const Vector<N, A>& other) {
-    if constexpr (std::is_same_v<A, T>)
-        if (&other == this)
-            return *this;
-
+    if constexpr (std::is_same_v<A, T>) {
+        // Vector<N, T> tmp(other);
+        // swap(*this, tmp);
+        if (this == &other) {
+            return this;
+        }
+    }
     for (std::size_t n{0}; n < N; n++)
         this->_data[n] = static_cast<T>(other[n]);
-
     return *this;
 }
 
@@ -404,3 +406,8 @@ auto Vector<N, T>::IterateValues(Expr lambda, Op op) const {
 }
 
 }  // namespace dare::utils
+
+// template <std::size_t N, typename T>
+// void std::swap(dare::utils::Vector<N, T>& v1, dare::utils::Vector<N, T>& v2) {
+//     std::swap(v1._data, v2._data);
+// }

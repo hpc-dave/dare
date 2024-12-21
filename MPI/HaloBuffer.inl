@@ -194,7 +194,6 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
 template <typename SC>
 template <typename Field>
 void HaloBuffer<SC>::Exchange(Field* field) {
-
     std::vector<MPI_Request> requests(buffers.size() * 2);
     std::size_t count{0};
     for (auto& entry : buffers) {

@@ -30,6 +30,7 @@
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
+#include <utility>
 
 #include "Hashes.h"
 #include "Vector_traits.h"
@@ -467,6 +468,14 @@ public:
               typename = std::enable_if_t<std::is_convertible_v<A, T>> >
     Vector(const Vector<N, A>& other);
 
+    // /*!
+    //  * @brief swap operation
+    //  * @param v1 first vector
+    //  * @param v2 second vector
+    //  */
+    // template <std::size_t Ns, typename Ts>
+    // friend void std::swap(Vector<Ns, Ts>& v1, Vector<Ns, Ts>& v2);
+
     /*!
      * \brief provides direct access to the data
      */
@@ -763,7 +772,6 @@ private:
      */
     template <std::size_t I = 0, typename Expr, typename Op>
     auto IterateValues(Expr lambda, Op op) const;
-
 };
 
 }  // namespace dare::utils
