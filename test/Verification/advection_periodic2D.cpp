@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
+#include <cmath>
 #include <iostream>
 
-#include <cmath>
 #include "AnalyticalSolutions/Diffusion.h"
 #include "Data/DefaultTypes.h"
 #include "Data/Field.h"
@@ -37,13 +37,11 @@
 #include "MatrixSystem/TrilinosSolver.h"
 #include "ScopeGuard/ScopeGuard.h"
 
-
 int main(int argc, char* argv[]) {
     using SC = dare::defaults::ScalarType;
     using GO = dare::defaults::GlobalOrdinalType;
     using LO = dare::defaults::LocalOrdinalType;
     using Grid = dare::Grid::Cartesian<2>;
-    // using GridVector = dare::Data::GridVector<Grid, SC, 2>;
     using Field = dare::Data::Field<Grid, SC, 2>;
     using Writer = dare::io::VTKWriter<Grid>;
     using IndexGlobal = typename Grid::IndexGlobal;
@@ -67,12 +65,8 @@ int main(int argc, char* argv[]) {
         VecSC size_global(L, H);
 
         dare::mpi::ExecutionManager exman;
-        dare::io::FileSystemManager fman(&exman, "dancing_waves");
+        dare::io::FileSystemManager fman(&exman, "dancing_spots");
         fman.CheckWithUser(false);
-
-        if (exman.GetNumberProcesses() > 1) {
-            exman.Terminate(__func__, "Trilinos has issues with distributed 1D, use the 2D test instead");
-        }
 
         Grid grid("scalar_2D",
                   &exman,
@@ -91,7 +85,7 @@ int main(int argc, char* argv[]) {
             for (LO j{0}; j < grep.GetLocalResolution().j(); j++) {
                 IndexLocal ind(i, j);
                 SC x = grep.GetCoordinatesCenter(ind).x() - 0.5;
-                SC y = grep.GetCoordinatesCenter(ind).y()-0.5;
+                SC y = grep.GetCoordinatesCenter(ind).y() - 0.5;
                 SC dist = std::sqrt(x * x + y * y);
                 if (dist < 0.25) {
                     field.GetDataVector().At(ind, 0) = 1.;
@@ -166,11 +160,13 @@ int main(int argc, char* argv[]) {
                                                         "ILUT",
                                                         p_ilu,
                                                         msystem.GetA());
+
             auto ret = solver.Solve(dare::Matrix::SolverPackage::Belos,
                                     "BICGSTAB",
                                     msystem.GetM(),
                                     msystem.GetA(), msystem.GetX(), msystem.GetB(),
                                     p_solver);
+
             msystem.CopyTo(&field.GetDataVector());
             if (ret != Belos::ReturnType::Converged) {
                 exman.Terminate(__func__, "solver did not converge");
@@ -186,6 +182,7 @@ int main(int argc, char* argv[]) {
                 mass[0] += field.GetDataVector().At(ind, 0);
                 mass[1] += field.GetDataVector().At(ind, 1);
             }
+
             mass[0] = exman.Allsum(mass[0]);
             mass[1] = exman.Allsum(mass[1]);
 
