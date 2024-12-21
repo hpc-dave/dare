@@ -317,7 +317,6 @@ public:
     }
 
 private:
-
     /*!
      * @brief Getter for raw neighbor array
      */
