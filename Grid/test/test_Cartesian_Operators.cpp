@@ -728,9 +728,9 @@ TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockIntegration) {
     dn_r /= grid_rep.GetDistances();
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), -A[0] * dn_r[0]);
-        EXPECT_EQ(mb.Get(n, Positions::EAST), -A[0] * dn_r[0]);
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2.* A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), 2.* A[0] * dn_r[0]);
     }
 }
 
@@ -752,11 +752,11 @@ TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockIntegration) {
     dn_r /= grid_rep.GetDistances();
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), -A[0] * dn_r[0]);
-        EXPECT_EQ(mb.Get(n, Positions::EAST), -A[0] * dn_r[0]);
-        EXPECT_EQ(mb.Get(n, Positions::SOUTH), -A[1] * dn_r[1]);
-        EXPECT_EQ(mb.Get(n, Positions::NORTH), -A[1] * dn_r[1]);
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * A[0] * dn_r[0] + 2. * A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, n, Positions::SOUTH), -A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, n, Positions::NORTH), -A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), 2. * A[0] * dn_r[0] + 2. * A[1] * dn_r[1]);
     }
 }
 
@@ -777,9 +777,9 @@ TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockSet) {
     }
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), v_west + n);
-        EXPECT_EQ(mb.Get(n, Positions::EAST), v_east + n);
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), v_center + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), v_west + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), v_east + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), v_center + n);
         EXPECT_EQ(mb.GetRhs(n), v_rhs + n);
     }
 }
@@ -803,11 +803,11 @@ TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockSet) {
     }
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), v_west + n);
-        EXPECT_EQ(mb.Get(n, Positions::EAST), v_east + n);
-        EXPECT_EQ(mb.Get(n, Positions::SOUTH), v_south + n);
-        EXPECT_EQ(mb.Get(n, Positions::NORTH), v_north + n);
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), v_center + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), v_west + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), v_east + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::SOUTH), v_south + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::NORTH), v_north + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), v_center + n);
         EXPECT_EQ(mb.GetRhs(n), v_rhs + n);
     }
 }
@@ -835,13 +835,13 @@ TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockSet) {
     }
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), v_west + n);
-        EXPECT_EQ(mb.Get(n, Positions::EAST), v_east + n);
-        EXPECT_EQ(mb.Get(n, Positions::SOUTH), v_south + n);
-        EXPECT_EQ(mb.Get(n, Positions::NORTH), v_north + n);
-        EXPECT_EQ(mb.Get(n, Positions::BOTTOM), v_bottom + n);
-        EXPECT_EQ(mb.Get(n, Positions::TOP), v_top + n);
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), v_center + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), v_west + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), v_east + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::SOUTH), v_south + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::NORTH), v_north + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::BOTTOM), v_bottom + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::TOP), v_top + n);
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), v_center + n);
         EXPECT_EQ(mb.GetRhs(n), v_rhs + n);
     }
 }
@@ -864,9 +864,9 @@ TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockAdd) {
     }
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), 2.*(v_west + n));
-        EXPECT_EQ(mb.Get(n, Positions::EAST), 2. * (v_east + n));
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * (v_center + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), 2. * (v_west + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), 2. * (v_east + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), 2. * (v_center + n));
         EXPECT_EQ(mb.GetRhs(n), 2.*(v_rhs + n));
     }
 }
@@ -892,11 +892,11 @@ TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockAdd) {
     }
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), 2. * (v_west + n));
-        EXPECT_EQ(mb.Get(n, Positions::EAST), 2. * (v_east + n));
-        EXPECT_EQ(mb.Get(n, Positions::SOUTH), 2. * (v_south + n));
-        EXPECT_EQ(mb.Get(n, Positions::NORTH), 2. * (v_north + n));
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * (v_center + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), 2. * (v_west + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), 2. * (v_east + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::SOUTH), 2. * (v_south + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::NORTH), 2. * (v_north + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), 2. * (v_center + n));
         EXPECT_EQ(mb.GetRhs(n), 2. * (v_rhs + n));
     }
 }
@@ -925,13 +925,13 @@ TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockAdd) {
     }
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), 2. * (v_west + n));
-        EXPECT_EQ(mb.Get(n, Positions::EAST), 2. * (v_east + n));
-        EXPECT_EQ(mb.Get(n, Positions::SOUTH), 2. * (v_south + n));
-        EXPECT_EQ(mb.Get(n, Positions::NORTH), 2. * (v_north + n));
-        EXPECT_EQ(mb.Get(n, Positions::BOTTOM), 2. * (v_bottom + n));
-        EXPECT_EQ(mb.Get(n, Positions::TOP), 2. * (v_top + n));
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * (v_center + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), 2. * (v_west + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), 2. * (v_east + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::SOUTH), 2. * (v_south + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::NORTH), 2. * (v_north + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::BOTTOM), 2. * (v_bottom + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::TOP), 2. * (v_top + n));
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), 2. * (v_center + n));
         EXPECT_EQ(mb.GetRhs(n), 2. * (v_rhs + n));
     }
 }
@@ -954,13 +954,13 @@ TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockIntegration) {
     dn_r /= grid_rep.GetDistances();
 
     for (std::size_t n{0}; n < N; n++) {
-        EXPECT_EQ(mb.Get(n, Positions::WEST), -A[0] * dn_r[0]);
-        EXPECT_EQ(mb.Get(n, Positions::EAST), -A[0] * dn_r[0]);
-        EXPECT_EQ(mb.Get(n, Positions::SOUTH), -A[1] * dn_r[1]);
-        EXPECT_EQ(mb.Get(n, Positions::NORTH), -A[1] * dn_r[1]);
-        EXPECT_EQ(mb.Get(n, Positions::BOTTOM), -A[2] * dn_r[2]);
-        EXPECT_EQ(mb.Get(n, Positions::TOP),    -A[2] * dn_r[2]);
-        EXPECT_EQ(mb.Get(n, Positions::CENTER), 2. * A[0] * dn_r[0] + 2. * A[1] * dn_r[1]+ 2. * A[2] * dn_r[2]);
+        EXPECT_EQ(mb.Get(n, n, Positions::WEST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, n, Positions::EAST), -A[0] * dn_r[0]);
+        EXPECT_EQ(mb.Get(n, n, Positions::SOUTH), -A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, n, Positions::NORTH), -A[1] * dn_r[1]);
+        EXPECT_EQ(mb.Get(n, n, Positions::BOTTOM), -A[2] * dn_r[2]);
+        EXPECT_EQ(mb.Get(n, n, Positions::TOP), -A[2] * dn_r[2]);
+        EXPECT_EQ(mb.Get(n, n, Positions::CENTER), 2. * A[0] * dn_r[0] + 2. * A[1] * dn_r[1] + 2. * A[2] * dn_r[2]);
     }
 }
 

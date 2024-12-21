@@ -110,19 +110,19 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             mblock->GetRhs(n) = 0.;
-            mblock->template Get<CN::CENTER>(n) = 2.;
+            mblock->template Get<CN::CENTER>(n, n) = 2.;
             if (!is_west_edge) {
-                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_west;
                 mblock->SetInitialGuess(n, value_west);
             }
 
             if (!is_east_edge) {
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_east;
                 mblock->SetInitialGuess(n, value_east);
             }
@@ -183,17 +183,17 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             if (is_west_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_west;
                 mblock->SetInitialGuess(n, value_west);
             } else if (is_east_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_east;
                 mblock->SetInitialGuess(n, value_east);
             } else {
-                mblock->template Get<CN::CENTER>(n) = 2.;
-                mblock->template Get<CN::WEST>(n) = -1.;
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::CENTER>(n, n) = 2.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
                 mblock->GetRhs(n) = 0.;
             }
         }
@@ -256,38 +256,38 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             mblock->GetRhs(n) = 0.;
-            mblock->template Get<CN::CENTER>(n) = 4.;
+            mblock->template Get<CN::CENTER>(n, n) = 4.;
 
             // Dirichlet condition
             if (!is_west_edge) {
-                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_west;
                 mblock->SetInitialGuess(n, value_west);
             }
 
             // Dirichlet condition
             if (!is_east_edge) {
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_east;
                 mblock->SetInitialGuess(n, value_east);
             }
 
             // Neumann condition
             if (!is_south_edge) {
-                mblock->template Get<CN::SOUTH>(n) = -1.;
+                mblock->template Get<CN::SOUTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_north_edge) {
-                mblock->template Get<CN::NORTH>(n) = -1.;
+                mblock->template Get<CN::NORTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
         }
         mblock->Finalize();
@@ -349,38 +349,38 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             mblock->GetRhs(n) = 0.;
-            mblock->template Get<CN::CENTER>(n) = 4.;
+            mblock->template Get<CN::CENTER>(n, n) = 4.;
 
             // Dirichlet condition
             if (!is_south_edge) {
-                mblock->template Get<CN::SOUTH>(n) = -1.;
+                mblock->template Get<CN::SOUTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_south;
                 mblock->SetInitialGuess(n, value_south);
             }
 
             // Dirichlet condition
             if (!is_north_edge) {
-                mblock->template Get<CN::NORTH>(n) = -1.;
+                mblock->template Get<CN::NORTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_north;
                 mblock->SetInitialGuess(n, value_north);
             }
 
             // Neumann condition
             if (!is_west_edge) {
-                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_east_edge) {
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
         }
         mblock->Finalize();
@@ -442,30 +442,30 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             if (is_west_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_west;
                 mblock->SetInitialGuess(n, value_west);
             } else if (is_east_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_east;
                 mblock->SetInitialGuess(n, value_east);
             } else {
                 if (is_south_edge) {
-                    mblock->template Get<CN::CENTER>(n) = 3.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 3.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 } else if (is_north_edge) {
-                    mblock->template Get<CN::CENTER>(n) = 3.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 3.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
                 } else {
-                    mblock->template Get<CN::CENTER>(n) = 4.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 4.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 }
                 mblock->GetRhs(n) = 0.;
             }
@@ -529,30 +529,30 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             if (is_south_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_south;
                 mblock->SetInitialGuess(n, value_south);
             } else if (is_north_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_north;
                 mblock->SetInitialGuess(n, value_north);
             } else {
                 if (is_west_edge) {
-                    mblock->template Get<CN::CENTER>(n) = 3.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 3.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 } else if (is_east_edge) {
-                    mblock->template Get<CN::CENTER>(n) = 3.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 3.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 } else {
-                    mblock->template Get<CN::CENTER>(n) = 4.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 4.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 }
                 mblock->GetRhs(n) = 0.;
             }
@@ -620,52 +620,52 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             mblock->GetRhs(n) = 0.;
-            mblock->template Get<CN::CENTER>(n) = 6.;
+            mblock->template Get<CN::CENTER>(n, n) = 6.;
 
             // Dirichlet condition
             if (!is_west_edge) {
-                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_west;
                 mblock->SetInitialGuess(n, value_west);
             }
 
             // Dirichlet condition
             if (!is_east_edge) {
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_east;
                 mblock->SetInitialGuess(n, value_east);
             }
 
             // Neumann condition
             if (!is_south_edge) {
-                mblock->template Get<CN::SOUTH>(n) = -1.;
+                mblock->template Get<CN::SOUTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_north_edge) {
-                mblock->template Get<CN::NORTH>(n) = -1.;
+                mblock->template Get<CN::NORTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_bottom_edge) {
-                mblock->template Get<CN::BOTTOM>(n) = -1.;
+                mblock->template Get<CN::BOTTOM>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_top_edge) {
-                mblock->template Get<CN::TOP>(n) = -1.;
+                mblock->template Get<CN::TOP>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
         }
         mblock->Finalize();
@@ -733,37 +733,37 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveStaggeredZ) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             if (is_bottom_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_bottom;
                 mblock->SetInitialGuess(n, value_bottom);
             } else if (is_top_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_top;
                 mblock->SetInitialGuess(n, value_top);
             } else {
-                mblock->template Get<CN::CENTER>(n) = 6.;
+                mblock->template Get<CN::CENTER>(n, n) = 6.;
                 if (is_west_edge)
-                    mblock->template Get<CN::CENTER>(n) -= 1.;
+                    mblock->template Get<CN::CENTER>(n, n) -= 1.;
                 else
-                    mblock->template Get<CN::WEST>(n) = -1.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
 
                 if (is_east_edge)
-                    mblock->template Get<CN::CENTER>(n) -= 1.;
+                    mblock->template Get<CN::CENTER>(n, n) -= 1.;
                 else
-                    mblock->template Get<CN::EAST>(n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
 
                 if (is_south_edge)
-                    mblock->template Get<CN::CENTER>(n) -= 1.;
+                    mblock->template Get<CN::CENTER>(n, n) -= 1.;
                 else
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
 
                 if (is_north_edge)
-                    mblock->template Get<CN::CENTER>(n) -= 1.;
+                    mblock->template Get<CN::CENTER>(n, n) -= 1.;
                 else
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
 
-                mblock->template Get<CN::BOTTOM>(n) = -1.;
-                mblock->template Get<CN::TOP>(n) = -1.;
+                mblock->template Get<CN::BOTTOM>(n, n) = -1.;
+                mblock->template Get<CN::TOP>(n, n) = -1.;
                 mblock->GetRhs(n) = 0.;
             }
         }

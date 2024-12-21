@@ -32,6 +32,7 @@
 #include "Grid/Cartesian/CartesianMesh.h"
 #include "Grid/Cartesian/Stencils_Cartesian.h"
 #include "Utilities/Errors.h"
+#include "Utilities/Array.h"
 
 namespace dare::Matrix {
 
@@ -55,6 +56,7 @@ constexpr bool IsSame() { return A == B; }
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 class MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N> : public MatrixBlockBase<O, SC, N> {
 public:
+    static const std::size_t STENCIL_SIZE = 2 * Dim + 1;
     using GridType = dare::Grid::Cartesian<Dim>;
     using GridRepresentation = typename GridType::Representation;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
@@ -64,7 +66,7 @@ public:
     using LO = LocalOrdinalType;
     using SelfType = MatrixBlock<GridType, O, SC, N>;
     using Index = typename GridType::GetIndexType<O>::type;
-    using ScalarArray = std::vector<SC>;
+    using ScalarArray = dare::utils::Vector<STENCIL_SIZE, SC>;
 
     /*!
      * @brief default constructor
@@ -105,14 +107,14 @@ public:
      */
     SelfType& operator=(SelfType other);
 
-    /*!
-     * @brief swap operator for the copy and swap idiom
-     * @param m1 first block
-     * @param m2 second block
-     */
-    template <std::size_t Dims, typename Os, typename SCs, std::size_t Ns>
-    friend void swap(MatrixBlock<dare::Grid::Cartesian<Dims>, Os, SCs, Ns>& m1,
-                     MatrixBlock<dare::Grid::Cartesian<Dims>, Os, SCs, Ns>& m2);
+    // /*!
+    //  * @brief swap operator for the copy and swap idiom
+    //  * @param m1 first block
+    //  * @param m2 second block
+    //  */
+    // template <std::size_t Dims, typename Os, typename SCs, std::size_t Ns>
+    // friend void swap(MatrixBlock<dare::Grid::Cartesian<Dims>, Os, SCs, Ns>& m1,
+    //                  MatrixBlock<dare::Grid::Cartesian<Dims>, Os, SCs, Ns>& m2);
 
     /*!
      * @brief initialize the matrix block
@@ -163,14 +165,14 @@ public:
      * @param n component id
      */
     template <CartesianNeighbor CNB>
-    SC& Get(std::size_t n);
+    SC& Get(std::size_t nr, std::size_t nc = N);
 
     /*!
      * @brief non-templated access to value of neighbor
      * @tparam CNB neighbor ID
      * @param n component id
      */
-    SC& Get(std::size_t n, CartesianNeighbor cnb);
+    SC& Get(std::size_t nr, std::size_t nc, CartesianNeighbor cnb);
 
     /*!
      * @brief const access to value of neighbor
@@ -178,14 +180,14 @@ public:
      * @param n component id
      */
     template <CartesianNeighbor CNB>
-    SC Get(std::size_t n) const;
+    SC Get(std::size_t nr, std::size_t nc = N) const;
 
     /*!
      * @brief non-templated const access to value of neighbor
      * @tparam CNB neighbor ID
      * @param n component id
      */
-    SC Get(std::size_t n, CartesianNeighbor cnb) const;
+    SC Get(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) const;
 
     /*!
      * @brief removes a neighbor from the stencil
@@ -193,14 +195,14 @@ public:
      * @param n component ID
      */
     template <CartesianNeighbor CNB>
-    void Remove(std::size_t n);
+    void Remove(std::size_t nc, std::size_t nr);
 
     /*!
      * @brief removes a neighbor from the stencil
      * @param n component ID
      * @param cnb cartesian neighbor ID
      */
-    void Remove(std::size_t n, CartesianNeighbor cnb);
+    void Remove(std::size_t nr, std::size_t nc, CartesianNeighbor cnb);
 
     /*!
      * @brief Inquiry, if a value was set
@@ -208,7 +210,7 @@ public:
      * @param n component ID
      */
     template <CartesianNeighbor CNB>
-    bool IsSet(std::size_t n) const;
+    bool IsSet(std::size_t nr, std::size_t nc) const;
 
     /*!
      * @brief moves intermediate values to final ordinal & coefficient array
@@ -315,17 +317,27 @@ public:
     }
 
 private:
-    dare::utils::Vector<N, ScalarArray>& GetNeighbors();
+    dare::utils::Array<N, N, ScalarArray>& GetNeighbors();
+    const dare::utils::Array<N, N, ScalarArray>& GetNeighbors() const;
 
-    const dare::utils::Vector<N, ScalarArray>& GetNeighbors() const;
+    dare::utils::Vector<N, ScalarArray>& GetNeighbors(std::size_t nr);
+    const dare::utils::Vector<N, ScalarArray>& GetNeighbors(std::size_t nr) const;
 
-    dare::utils::Vector<N, char>& GetNeighborBitSet();
+    ScalarArray& GetNeighbors(std::size_t nr, std::size_t nc);
+    const ScalarArray& GetNeighbors(std::size_t nr, std::size_t nc) const;
 
-    const dare::utils::Vector<N, char>& GetNeighborBitSet() const;
+    dare::utils::Array<N, N, char>& GetNeighborBitSet();
+    const dare::utils::Array<N, N, char>& GetNeighborBitSet() const;
+
+    dare::utils::Vector<N, char>& GetNeighborBitSet(std::size_t nr);
+    const dare::utils::Vector<N, char>& GetNeighborBitSet(std::size_t nr) const;
+
+    char& GetNeighborBitSet(std::size_t nr, std::size_t nc);
+    char GetNeighborBitSet(std::size_t nr, std::size_t nc) const;
 
     const GridRepresentation* g_rep;                      //!< reference to grid representation
-    dare::utils::Vector<N, ScalarArray> neighbors;        //!< holds values referencing to neighbor coefficients
-    dare::utils::Vector<N, char> neighbor_set;            //!< identifiers, if the neighbors were set
+    dare::utils::Array<N, N, ScalarArray> neighbors;      //!< holds values referencing to neighbor coefficients
+    dare::utils::Array<N, N, char> neighbor_set;          //!< identifiers, if the neighbors were set
     Index ind_internal;                                   //!< indices of internal grid
     Index ind_full;                                       //!< indices of grid including halo/ghost cells
 };
