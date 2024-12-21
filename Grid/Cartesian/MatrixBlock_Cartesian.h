@@ -317,22 +317,77 @@ public:
     }
 
 private:
+
+    /*!
+     * @brief Getter for raw neighbor array
+     */
     dare::utils::Array<N, N, ScalarArray>& GetNeighbors();
+
+    /*!
+     * @brief const getter for raw neighbor array
+     */
     const dare::utils::Array<N, N, ScalarArray>& GetNeighbors() const;
 
+    /*!
+     * @brief Getter for partial neighbor array of component nr
+     * @param nr component id
+     */
     dare::utils::Vector<N, ScalarArray>& GetNeighbors(std::size_t nr);
+
+    /*!
+     * @brief const getter for partial neighbor array of component nr
+     * @param nr component id
+     */
     const dare::utils::Vector<N, ScalarArray>& GetNeighbors(std::size_t nr) const;
 
+    /*!
+     * @brief Get the neighbor array for a component nr with respect to the component nc
+     * @param nr component id associated with the row
+     * @param nc component id associated with the column
+     */
     ScalarArray& GetNeighbors(std::size_t nr, std::size_t nc);
+
+    /*!
+     * @brief const getter the neighbor array for a component nr with respect to the component nc
+     * @param nr component id associated with the row
+     * @param nc component id associated with the column
+     */
     const ScalarArray& GetNeighbors(std::size_t nr, std::size_t nc) const;
 
+    /*!
+     * @brief Getter for the raw bitset array
+     */
     dare::utils::Array<N, N, char>& GetNeighborBitSet();
+
+    /*!
+     * @brief const getter for the raw bitset array
+     */
     const dare::utils::Array<N, N, char>& GetNeighborBitSet() const;
 
+    /*!
+     * @brief getter for the bitset array associated with the component id nr
+     * @param nr component id associated with the row
+     */
     dare::utils::Vector<N, char>& GetNeighborBitSet(std::size_t nr);
+
+    /*!
+     * @brief const getter for the bitset array associated with the component id nr
+     * @param nr component id associated with the row
+     */
     const dare::utils::Vector<N, char>& GetNeighborBitSet(std::size_t nr) const;
 
+    /*!
+     * @brief getter for the stencil-bitset associated with the row-relative and column-relative component
+     * @param nr component id associated with the row
+     * @param nc component id associated with the column
+     */
     char& GetNeighborBitSet(std::size_t nr, std::size_t nc);
+
+    /*!
+     * @brief const getter for the stencil-bitset associated with the row-relative and column-relative component
+     * @param nr component id associated with the row
+     * @param nc component id associated with the column
+     */
     char GetNeighborBitSet(std::size_t nr, std::size_t nc) const;
 
     const GridRepresentation* g_rep;                      //!< reference to grid representation
