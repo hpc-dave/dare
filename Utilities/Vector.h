@@ -26,12 +26,14 @@
 #define UTILITIES_VECTOR_H_
 
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
 #include <utility>
 #include <array>
+#include <string>
 
 #include "Hashes.h"
 #include "Vector_traits.h"
@@ -56,7 +58,7 @@ template <std::size_t N, typename T = double>
 class Vector : public VectorDecorator<N, N, T>{
 public:
     using InternalType = T;
-    using ContainerType = VectorBase<N, T>::ContainerType;
+    using ContainerType = typename VectorBase<N, T>::ContainerType;
     using difference_type = typename ContainerType::difference_type;
     using iterator = typename ContainerType::iterator;
     using const_iterator = typename ContainerType::const_iterator;
@@ -355,6 +357,12 @@ public:
             os << ' ' << v[i];
 
         return os;
+    }
+
+    std::string ToString() const {
+        std::ostringstream os;
+        os << *this;
+        return os.str();
     }
 
     /*

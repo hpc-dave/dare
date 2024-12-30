@@ -118,7 +118,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // EAST
@@ -136,7 +136,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // SOUTH
@@ -154,7 +154,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // NORTH
@@ -172,7 +172,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // BOTTOM
@@ -190,7 +190,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // TOP
@@ -208,7 +208,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 }
 
@@ -244,7 +244,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // NORTH-WEST
@@ -268,7 +268,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // NORTH-EAST
@@ -292,7 +292,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // SOUTH-EAST
@@ -316,7 +316,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // BOTTOM-WEST
@@ -340,7 +340,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // TOP-EAST
@@ -364,7 +364,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // BOTTOM-SOUTH
@@ -388,7 +388,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // TOP-NORTH
@@ -412,7 +412,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 }
 
@@ -459,7 +459,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 8; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // TOP-NORTH-EAST
@@ -493,7 +493,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 8; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // BOTTOM-NORTH-EAST
@@ -527,7 +527,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 8; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 }
 

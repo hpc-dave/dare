@@ -327,7 +327,7 @@ Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFro
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-typename Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::TFaceValueStencil<SC, N>
+typename Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::template TFaceValueStencil<SC, N>
 Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFromField(
     const dare::Data::Field<GridType, SC, N>& f) const {
     static_assert(dare::always_false<>, "need to include temporal information");

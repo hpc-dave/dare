@@ -221,8 +221,8 @@ public:
     bool IsInternal(const IndexGlobal& ind_glob) const;
     bool IsInternal(LO n) const;
 
-    Index MapOrdinalToIndexLocal(const LO n_loc) const;
-    Index MapOrdinalToIndexLocalInternal(const LO n_loc) const;
+    Index MapOrdinalToIndexLocal(LO n_loc) const;
+    Index MapOrdinalToIndexLocalInternal(LO n_loc) const;
     IndexGlobal MapOrdinalToIndexGlobal(GO n_loc) const;
     IndexGlobal MapOrdinalToIndexGlobalInternal(GO n_loc) const;
 

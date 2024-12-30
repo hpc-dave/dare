@@ -110,7 +110,7 @@ public:
     /// sense for some solvers.  It also serves as a gradual upgrade
     /// path (since this method is a later addition to the \c
     /// SolverManager interface).
-    virtual typename Teuchos::ScalarTraits<ScalarType>::magnitudeType achievedTol() const;
+    typename Teuchos::ScalarTraits<ScalarType>::magnitudeType achievedTol() const override;
 
     //! Get the iteration count for the most recent call to \c solve().
     int getNumIters() const override;
@@ -141,13 +141,13 @@ public:
     void setParameters(const Teuchos::RCP<Teuchos::ParameterList>& params) override;
 
     //! Set user-defined convergence status test.
-    virtual void setUserConvStatusTest(
+    void setUserConvStatusTest(
         const Teuchos::RCP<Belos::StatusTest<SC, MV, OP> >& userConvStatusTest,
         const typename Belos::StatusTestCombo<SC, MV, OP>::ComboType& comboType =
-            Belos::StatusTestCombo<SC, MV, OP>::SEQ);
+            Belos::StatusTestCombo<SC, MV, OP>::SEQ) override;
 
     //! Set user-defined debug status test.
-    virtual void setDebugStatusTest(const Teuchos::RCP<Belos::StatusTest<ScalarType, MV, OP> >& debugStatusTest);
+    void setDebugStatusTest(const Teuchos::RCP<Belos::StatusTest<ScalarType, MV, OP> >& debugStatusTest) override;
 
     //@}
 

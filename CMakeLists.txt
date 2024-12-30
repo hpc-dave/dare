@@ -33,18 +33,18 @@ set(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
 
 # set the properties of the target (might be moved to another file)
 set_target_properties(exec
-           PROPERTIES CXX_STANDARD 17
+           PROPERTIES CXX_STANDARD 20
            CXX_STANDARD_REQUIRED TRUE
 )
 
 set_target_properties(dare
-           PROPERTIES CXX_STANDARD 17
+           PROPERTIES CXX_STANDARD 20
            VERSION 0.1
 )
 
 if(USE_GTEST)
     set_target_properties(unit_test
-           PROPERTIES CXX_STANDARD 17
+           PROPERTIES CXX_STANDARD 20
 )
 endif()
 

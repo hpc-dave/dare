@@ -65,7 +65,7 @@ public:
     using GO = GlobalOrdinalType;
     using LO = LocalOrdinalType;
     using SelfType = MatrixBlock<GridType, O, SC, N>;
-    using Index = typename GridType::GetIndexType<O>::type;
+    using Index = typename GridType::template GetIndexType<O>::type;
     using ScalarArray = dare::utils::Vector<STENCIL_SIZE, SC>;
 
     /*!
