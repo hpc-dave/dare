@@ -31,6 +31,7 @@
 #include <iterator>
 #include <type_traits>
 #include <utility>
+#include <array>
 
 #include "Hashes.h"
 #include "Vector_traits.h"
@@ -54,398 +55,13 @@ using AllConvertible = std::enable_if_t<std::conjunction_v<std::is_convertible<T
 template <std::size_t N, typename T = double>
 class Vector : public VectorDecorator<N, N, T>{
 public:
-    typedef T InternalType;
-    typedef std::random_access_iterator_tag iterator_tag;
-    typedef std::ptrdiff_t iterator_diff_type;
-#ifndef NDEBUG
-    typedef VectorBase<N, T> BaseType;      //!< this type is mainly used for simplified debugging with gdb
-#endif
-
-    /*! \struct Iterator
-     * \brief random access forward iterator
-     */
-    struct Iterator {
-        using iterator_category = iterator_tag;
-        using difference_type = iterator_diff_type;
-        using value_type = T;
-        using pointer = T*;
-        using reference = T&;
-
-        /*!
-         * \brief constructor
-         * @param _ptr Pointer to data
-         */
-        explicit Iterator(pointer _ptr) : ptr(_ptr) {}
-        reference operator*() const {
-            return *ptr;
-        }
-
-        /*!
-         * \brief arrow access operator
-         */
-        pointer operator->() {
-            return ptr;
-        }
-
-        /*!
-         * \brief prefix increment operator
-         */
-        Iterator& operator++() {
-            ptr++;
-            return *this;
-        }
-
-        /*!
-         * \brief postfix increment operator
-         */
-        Iterator operator++(int) {
-            Iterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        /*!
-         * \brief prefix decrement operator
-         */
-        Iterator& operator--() {
-            ptr--;
-            return *this;
-        }
-
-        /*!
-         * \brief postfix increment operator
-         */
-        Iterator operator--(int) {
-            Iterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        /*!
-         * \brief equal comparison operator
-         */
-        bool operator==(const Iterator& a) const {
-            return ptr == a.ptr;
-        }
-
-        /*!
-         * \brief non-equal comparison operator
-         */
-        bool operator!=(const Iterator& a) const {
-            return ptr != a.ptr;
-        }
-
-        bool operator<=(const Iterator& a) const {
-            return ptr <= a.ptr;
-        }
-
-        bool operator>=(const Iterator& a) const {
-            return ptr >= a.ptr;
-        }
-
-        bool operator<(const Iterator& a) const {
-            return ptr < a.ptr;
-        }
-
-        bool operator>(const Iterator& a) const {
-            return ptr > a.ptr;
-        }
-
-        /*!
-         * \brief random increment operator
-         */
-        Iterator operator+(int n) const {
-            return Iterator(ptr + n);
-        }
-
-        /*!
-         * \brief random decrement operator
-         */
-        Iterator operator-(int n) const {
-            return Iterator(ptr - n);
-        }
-
-        /*!
-         * \brief distance operator
-         */
-        int operator-(const Iterator& other) {
-            return ptr - other.ptr;
-        }
-
-        /*!
-         * \brief relative access operator
-         */
-        reference operator[](int n) {
-            return *(ptr + n);
-        }
-
-    private:
-        pointer ptr;  // pointer to data
-    };
-
-    /*! \struct Iterator
-     * \brief random access constant forward iterator
-     */
-    struct ConstIterator {
-        using iterator_category = iterator_tag;
-        using difference_type = iterator_diff_type;
-        using value_type = T;
-        using pointer = const T*;
-        using reference = const T&;
-        explicit ConstIterator(pointer _ptr) : ptr(_ptr) {}
-        reference operator*() const {
-            return *ptr;
-        }
-        pointer operator->() {
-            return ptr;
-        }
-        // Prefix increment
-        ConstIterator& operator++() {
-            ptr++;
-            return *this;
-        }
-
-        // Postfix increment
-        ConstIterator operator++(int) {
-            Iterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        // Prefix decrement
-        ConstIterator& operator--() {
-            ptr--;
-            return *this;
-        }
-
-        // Postfix decrement
-        ConstIterator operator--(int) {
-            ConstIterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        bool operator==(const ConstIterator& a) {
-            return ptr == a.ptr;
-        }
-
-        bool operator!=(const ConstIterator& a) {
-            return ptr != a.ptr;
-        }
-
-        bool operator<=(const ConstIterator& a) {
-            return ptr <= a.ptr;
-        }
-
-        bool operator>=(const ConstIterator& a) const {
-            return ptr >= a.ptr;
-        }
-
-        bool operator<(const ConstIterator& a) const {
-            return ptr < a.ptr;
-        }
-
-        bool operator>(const ConstIterator& a) const {
-            return ptr > a.ptr;
-        }
-
-        ConstIterator operator+(int n) const {
-            return ConstIterator(ptr + n);
-        }
-
-        ConstIterator operator-(int n) const {
-            return ConstIterator(ptr - n);
-        }
-
-        int operator-(const ConstIterator& other) {
-            return ptr - other.ptr;
-        }
-
-        reference operator[](int n) {
-            return *(ptr + n);
-        }
-
-    private:
-        pointer ptr;  // pointer to data
-    };
-
-    /*!
-     * \brief reverse iterator
-     */
-    struct ReverseIterator {
-        using iterator_category = iterator_tag;
-        using difference_type = iterator_diff_type;
-        using value_type = T;
-        using pointer = T*;
-        using reference = T&;
-        explicit ReverseIterator(pointer _ptr) : ptr(_ptr) {}
-        /*!
-         * @brief dereferencing operator
-         */
-        reference operator*() const {
-            return *ptr;
-        }
-        /*!
-         * @brief dereferencing operator
-         */
-        pointer operator->() {
-            return ptr;
-        }
-        // Prefix increment
-        ReverseIterator& operator++() {
-            ptr--;
-            return *this;
-        }
-
-        // Postfix increment
-        ReverseIterator operator++(int) {
-            ReverseIterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        // Prefix decrement
-        ReverseIterator& operator--() {
-            ptr++;
-            return *this;
-        }
-
-        // Postfix decrement
-        ReverseIterator operator--(int) {
-            ReverseIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        bool operator==(const ReverseIterator& a) {
-            return ptr == a.ptr;
-        }
-
-        bool operator!=(const ReverseIterator& a) {
-            return ptr != a.ptr;
-        }
-
-        bool operator<=(const ReverseIterator& a) {
-            return ptr >= a.ptr;
-        }
-
-        bool operator>=(const ReverseIterator& a) const {
-            return ptr <= a.ptr;
-        }
-
-        bool operator<(const ReverseIterator& a) const {
-            return ptr > a.ptr;
-        }
-
-        bool operator>(const ReverseIterator& a) const {
-            return ptr < a.ptr;
-        }
-
-        ReverseIterator operator+(int n) const {
-            return ReverseIterator(ptr - n);
-        }
-
-        ReverseIterator operator-(int n) const {
-            return ReverseIterator(ptr + n);
-        }
-
-        int operator-(const ReverseIterator& other) {
-            return other.ptr - ptr;
-        }
-
-        reference operator[](int n) {
-            return *(ptr - n);
-        }
-
-    private:
-        pointer ptr;  // pointer to data
-    };
-
-    /*!
-     * \brief constant reverse iterator
-     */
-    struct ConstReverseIterator {
-        using iterator_category = iterator_tag;
-        using difference_type = iterator_diff_type;
-        using value_type = T;
-        using pointer = const T*;
-        using reference = const T&;
-        explicit ConstReverseIterator(pointer _ptr) : ptr(_ptr) {}
-        reference operator*() const {
-            return *ptr;
-        }
-        pointer operator->() {
-            return ptr;
-        }
-        // Prefix increment
-        ConstReverseIterator& operator++() {
-            ptr--;
-            return *this;
-        }
-
-        // Postfix increment
-        ConstReverseIterator operator++(int) {
-            ConstReverseIterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        // Prefix decrement
-        ConstReverseIterator& operator--() {
-            ptr++;
-            return *this;
-        }
-
-        // Postfix decrement
-        ConstReverseIterator operator--(int) {
-            ConstReverseIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        bool operator==(const ConstReverseIterator& a) {
-            return ptr == a.ptr;
-        }
-
-        bool operator!=(const ConstReverseIterator& a) {
-            return ptr != a.ptr;
-        }
-
-        bool operator<=(const ConstReverseIterator& a) {
-            return ptr >= a.ptr;
-        }
-
-        bool operator>=(const ConstReverseIterator& a) const {
-            return ptr <= a.ptr;
-        }
-
-        bool operator<(const ConstReverseIterator& a) const {
-            return ptr > a.ptr;
-        }
-
-        bool operator>(const ConstReverseIterator& a) const {
-            return ptr < a.ptr;
-        }
-
-        ConstReverseIterator operator+(int n) const {
-            return ConstReverseIterator(ptr - n);
-        }
-
-        ConstReverseIterator operator-(int n) const {
-            return ConstReverseIterator(ptr + n);
-        }
-
-        int operator-(const ConstReverseIterator& other) {
-            return other.ptr - ptr;
-        }
-
-        reference operator[](int n) {
-            return *(ptr - n);
-        }
-
-    private:
-        pointer ptr;  // pointer to data
-    };
+    using InternalType = T;
+    using ContainerType = VectorBase<N, T>::ContainerType;
+    using difference_type = typename ContainerType::difference_type;
+    using iterator = typename ContainerType::iterator;
+    using const_iterator = typename ContainerType::const_iterator;
+    using reverse_iterator = typename ContainerType::reverse_iterator;
+    using const_reverse_iterator = typename ContainerType::const_reverse_iterator;
 
     /*!
      * \brief constructor
@@ -630,62 +246,62 @@ public:
     /*!
      * \brief return forward iterator to first object
      */
-    Iterator begin();
+    iterator begin();
 
     /*!
      * \brief returns constant forward iterator
      */
-    ConstIterator begin() const;
+    const_iterator begin() const;
 
     /*!
      * \brief returns constant forward iterator
      */
-    ConstIterator cbegin() const;
+    const_iterator cbegin() const;
 
     /*!
      * \brief return reverse iterator to first object
      */
-    ReverseIterator rbegin();
+    reverse_iterator rbegin();
 
     /*!
      * \brief returns constant reverse iterator
      */
-    ConstReverseIterator rbegin() const;
+    const_reverse_iterator rbegin() const;
 
     /*!
      * \brief returns constant reverse iterator
      */
-    ConstReverseIterator crbegin() const;
+    const_reverse_iterator crbegin() const;
 
     /*!
      * \brief returns iterator to end of data
      */
-    Iterator end();
+    iterator end();
 
     /*!
      * \brief constant iterator to end of data
      */
-    ConstIterator end() const;
+    const_iterator end() const;
 
     /*!
      * \brief constant iterator to end of data
      */
-    ConstIterator cend() const;
+    const_iterator cend() const;
 
     /*!
      * \brief returns iterator to end of data
      */
-    ReverseIterator rend();
+    reverse_iterator rend();
 
     /*!
      * \brief constant iterator to end of data
      */
-    ConstReverseIterator rend() const;
+    const_reverse_iterator rend() const;
 
     /*!
      * \brief constant iterator to end of data
      */
-    ConstReverseIterator crend() const;
+    const_reverse_iterator crend() const;
 
     /*!
      * \tparam I value to access in the data set

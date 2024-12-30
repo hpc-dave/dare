@@ -27,6 +27,7 @@
 
 #include <cstddef>
 #include <type_traits>
+#include <array>
 
 namespace dare::utils {
 
@@ -63,12 +64,15 @@ struct VectorDefaultInitializer<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
 template <std::size_t N, typename T>
 class VectorBase {
 public:
+    using ContainerType = std::array<T, N>;
+
     /*!
      * @brief default constructor
      */
     VectorBase() {}
+
 protected:
-    T _data[N];
+    ContainerType _data;
 };
 
 /*! \class VectorDecorator
