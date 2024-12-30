@@ -559,7 +559,7 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr, 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 const typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::ScalarArray&
 MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr, std::size_t nc) const {
-    return neighbors[nr, nc];
+    return neighbors[nr][nc];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
