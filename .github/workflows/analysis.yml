@@ -30,7 +30,7 @@ jobs:
           doxygen_junit --input DoxygenWarnings.txt --output DoxygenWarnings_junit.xml
           if [[ $num_warnings -gt 900 ]]; then
             echo Doxygen check failed!
-            exit $1
+            exit $num_warnings
           fi
           echo Doxygen succeeded
     - name: Archive Reports
