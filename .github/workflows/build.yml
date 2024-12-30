@@ -21,12 +21,12 @@ jobs:
 
     - name: Configure CMake Release
       run: |
-          mkdir build_release && cd build_release
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF -DCMAKE_CXX_STANDARD=20
+          mkdir build_gcc_release && cd build_gcc_release
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
           
     - name: Build Release
       run: |
-          cd build_release
+          cd build_gcc_release
           ninja -j 4
 
   build_gcc_debug:
@@ -37,12 +37,12 @@ jobs:
     steps:
     - name: Configure CMake Debug
       run: |
-          mkdir build_debug && cd build_debug
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -GNinja -DUSE_GTEST=OFF -DDEBUG=ON -DCMAKE_CXX_STANDARD=20
+          mkdir build_gcc_debug && cd build_gcc_debug
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -GNinja -DUSE_GTEST=OFF -DDEBUG=ON
           
     - name: Build Debug
       run: |
-          cd build_debug
+          cd build_gcc_debug
           ninja -j 4
 
   build_clang_debug:
@@ -53,12 +53,12 @@ jobs:
     steps:
     - name: Configure CMake Debug
       run: |
-          mkdir build_debug && cd build_debug
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -GNinja -DUSE_GTEST=OFF -DDEBUG=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18
+          mkdir build_clang_debug && cd build_clang_debug
+          cmake .. -DCMAKE_BUILD_TYPE=Debug -GNinja -DUSE_GTEST=OFF -DDEBUG=ON -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18
           
     - name: Build Debug
       run: |
-          cd build_debug
+          cd build_clang_debug
           ninja -j 4
 
   build_clang_release:
@@ -69,10 +69,10 @@ jobs:
     steps:
     - name: Configure CMake Release
       run: |
-          mkdir build_release && cd build_release
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18
+          mkdir build_clang_release && cd build_clang_release
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18
           
     - name: Build Release
       run: |
-          cd build_release
+          cd build_clang_release
           ninja -j 4
