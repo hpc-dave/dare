@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+#include <iostream>  // stupid cpplint bug
+#include <limits>    // stupid cpplint bug
+
 namespace dare::Data {
 template <typename Grid, typename SC, std::size_t N>
 Field<Grid, SC, N>::Field(std::string _identifier, GridRepresentation grid_rep, std::size_t num_time_levels)

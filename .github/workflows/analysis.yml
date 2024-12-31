@@ -35,7 +35,7 @@ jobs:
           echo Doxygen succeeded
     - name: Archive Reports
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: analysis_Doxygen
         path: ./DoxygenWarnings*
@@ -67,7 +67,7 @@ jobs:
         cpplint_junit CPPLINT_ERRORS.out CPPLINT_junit.xml
 
     - name: Archive Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: analysis_CPPLINT
@@ -95,7 +95,7 @@ jobs:
       run: cppcheck_junit CPPCHECK_ERRORS.xml CPPCHECK_junit.xml
 
     - name: Archive Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: analysis_CPPCHECK

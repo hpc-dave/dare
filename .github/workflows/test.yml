@@ -1,4 +1,4 @@
-name: Testing
+name: Verification
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
           mv *xml ../
 
     - name: Archive Testing Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test_reports_${{matrix.procs}}

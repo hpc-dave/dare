@@ -1,0 +1,115 @@
+name: Testing
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+    
+jobs:
+
+  VerificationAdvection1D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.1
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/advection_periodic1D.cpp main.cpp
+          mkdir build_adv1D && cd build_adv1D
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+
+    - name: Build Test
+      run: |
+          cd build_adv1D
+          ninja -j 4
+
+    - name: Run Test
+      run: |
+          cd build_adv1D
+          mpirun -n 1 exec -t 1
+
+  VerificationDiffusion1D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.1
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/counter_diffusion1D.cpp main.cpp
+          mkdir build_diff1D && cd build_diff1D
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+
+    - name: Build Test
+      run: |
+          cd build_diff1D
+          ninja -j 4
+
+    - name: Run Test
+      run: |
+          cd build_diff1D
+          mpirun -n 1 exec -t 1
+
+  VerificationAdvection2D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.1
+
+    strategy:
+      matrix:
+        procs: [1, 2, 3, 4]
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/advection_periodic2D.cpp main.cpp
+          mkdir build_adv2D && cd build_adv2D
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+
+    - name: Build Test
+      run: |
+          cd build_adv2D
+          ninja -j 4
+
+    - name: Run Test
+      run: |
+          cd build_adv2D
+          mpirun -n ${{matrix.procs}} exec -t 1
+
+  VerificationDiffusion2D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.1
+
+    strategy:
+      matrix:
+        procs: [1, 2, 3, 4]
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/counter_diffusion2D.cpp main.cpp
+          mkdir build_diff2D && cd build_diff2D
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+
+    - name: Build Test
+      run: |
+          cd build_diff2D
+          ninja -j 4
+
+    - name: Run Test
+      run: |
+          cd build_diff2D
+          mpirun -n ${{matrix.procs}} exec -t 1

@@ -28,6 +28,7 @@
 #include <vector>
 #include <string>
 #include <limits>
+#include <iostream>
 
 #include "GridVector.h"
 #include "MPI/HaloBuffer.h"
