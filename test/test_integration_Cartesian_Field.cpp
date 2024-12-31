@@ -48,6 +48,10 @@ dare::utils::Vector<Dim, SC> GetSizeIntegrationTestCartesianField() {
 
 }  // namespace dare::test
 
+/*!
+ * @brief Fixture for testing the Field on the Cartesian grid
+ * @tparam Dimension dimension of the Cartesian grid
+ */
 template <std::size_t Dimension>
 class IntegrationCartesianField
     : public testing::TestWithParam<typename dare::Grid::Cartesian<Dimension>::Options> {

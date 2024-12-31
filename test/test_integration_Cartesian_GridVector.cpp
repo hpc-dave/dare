@@ -47,6 +47,11 @@ dare::utils::Vector<Dim, SC> GetSizeTestCartesianGrid() {
 }
 }  // namespace dare::test
 
+
+/*!
+ * @brief Fixture for testing the integration of a grid vector with Cartesian Grid
+ * @tparam Dim dimension of the Cartesian grid
+ */
 template <std::size_t Dim>
 class IntegrationTestCartesianGridVector : public testing::Test {
 public:

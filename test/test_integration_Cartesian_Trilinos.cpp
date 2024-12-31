@@ -49,6 +49,10 @@ dare::utils::Vector<Dim, SC> GetSizeIntegrationTestCartesianTrilinos() {
 
 }  // namespace dare::test
 
+/*!
+ * @brief Fixture for testing Trilinos with the Cartesian grid
+ * @tparam Dimension dimension of the Cartesian grid
+ */
 template <std::size_t Dimension>
 class IntegrationCartesianTrilinos
     : public testing::TestWithParam<typename dare::Grid::Cartesian<Dimension>::Options> {

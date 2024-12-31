@@ -50,6 +50,10 @@ dare::utils::Vector<Dim, defaults::ScalarType> GetSizeTestVTKWriterCart() {
 
 }  // namespace dare::test
 
+/*!
+ * @brief Fixture for testing VTK writer with Cartesian grid
+ * @tparam Dim dimension of the Cartesian Grid
+ */
 template<std::size_t Dim>
 class VTKWriterTestsCartesian : public testing::Test {
 public:

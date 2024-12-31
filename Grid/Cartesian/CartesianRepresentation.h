@@ -35,7 +35,7 @@
 #include "Utilities/InitializationTracker.h"
 namespace dare::Grid {
 
-// forward declaration for the grid
+// forward declaration of the Grid
 template <std::size_t Dim>
 class Cartesian;
 

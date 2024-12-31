@@ -26,6 +26,10 @@
 
 #include "Grid/Cartesian/Stencils_Cartesian.h"
 
+/*!
+ * @brief Fixture for testing Stencils on the Cartesian grid
+ * @tparam Dim dimension of the grid
+ */
 template <std::size_t Dim>
 class IntegrationTestCartesianStencils : public testing::Test {
 public:

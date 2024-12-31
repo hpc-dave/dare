@@ -2,8 +2,8 @@
 # This Dockerfile can be used to create an image which can be used as an environment for FoxBerry.
 # The final image features:
 # - OS: debian bookworm
-# - libraries: gcc, cmake, ninja, boost, eigen3, OpenMPI, sqlite 3, doxygen, python, cpplint, cppcheck, Trilinos
-# - Trilinos: 14.4.0 - compiled with release optimization
+# - libraries: gcc, cmake, llvm, clang, ninja, boost, eigen3, OpenMPI, sqlite 3, doxygen, python, cpplint, cppcheck, Trilinos
+# - Trilinos: master - compiled with release optimization
 # - default entrypoint: /home/user
 #
 # Note, that this image only contains a root-user and therefore certain libraries may complain, e.g. OpenMPI. 
@@ -29,7 +29,7 @@ RUN apt-get -y upgrade
 RUN apt-get install -y apt-utils
 RUN apt-get -y update
 RUN apt-get -y upgrade
-RUN apt-get install -y build-essential git cmake libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz mesa-common-dev mesa-utils freeglut3-dev ninja-build
+RUN apt-get install -y build-essential git cmake wget software-properties-common libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz mesa-common-dev mesa-utils freeglut3-dev ninja-build
 RUN pip install --break-system-packages cpplint virtualenv cppcheck-junit cpplint-junit doxygen-junit
 RUN virtualenv mynotebookenv
 RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel
@@ -37,6 +37,14 @@ RUN python -m bash_kernel.install
 
 # create a directory for the user
 WORKDIR /home/user
+
+# install clang
+#RUN wget https://apt.llvm.org/llvm.sh
+# RUN chmod +x llvm.sh
+# RUN ./llvm.sh 18
+RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+RUN clang-18 --version
+RUN apt-get install -y libomp-18-dev
 
 # clone and install google test
 RUN git clone https://github.com/google/googletest.git
@@ -50,39 +58,32 @@ WORKDIR /home/user
 RUN git clone https://github.com/trilinos/Trilinos.git TrilinosGit
 WORKDIR ./TrilinosGit
 RUN git pull
-RUN git checkout trilinos-release-15-0-0
+# RUN git checkout trilinos-release-15-0-0
 WORKDIR ./build
 RUN cmake ..\
     -GNinja \
     -DCMAKE_CXX_COMPILER=mpic++ \
     -DCMAKE_C_COMPILER=mpicc \
     -DCMAKE_Fortran_COMPILER=gfortran \
+    -DCMAKE_CXX_STANDARD=20 \
     -DTrilinos_USE_GNUINSTALLDIRS=TRUE \
     -DTrilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
     -DBUILD_SHARED_LIBS:BOOL=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_EXTENSIONS=OFF \
-    -DCMAKE_CXX_FLAGS_RELEASE_OVERRIDE="-std=c++17 -O3 -funroll-loops" \
-    -DCMAKE_C_FLAGS_RELEASE_OVERRIDE="-O3 -funroll-loops" \
-    -DCMAKE_Fortran_FLAGS_RELEASE_OVERRIDE="-O5 -funroll-all-loops -malign-double" \
     -DTPL_ENABLE_MPI=ON \
     -DTPL_ENABLE_gtest=OFF \
     -DTrilinos_ENABLE_OpenMP=ON \
     -DTrilinos_ENABLE_Gtest=OFF \
-    -DTrilinos_ENABLE_Epetra=ON \
     -DTrilinos_ENABLE_Tpetra=ON \
     -DTrilinos_ENABLE_Xpetra=ON \
-    -DTrilinos_ENABLE_AztecOO=ON \
-    -DTrilinos_ENABLE_Amesos=ON \
+    -DTrilinos_ENABLE_Amesos2=ON \
     -DTrilinos_ENABLE_Belos=ON \
     -DTrilinos_ENABLE_Kokkos=ON \
-    -DTrilinos_ENABLE_Ifpack=ON \
     -DTrilinos_ENABLE_Ifpack2=ON \
-    -DTrilinos_ENABLE_Isorropia=ON \
     -DTrilinos_ENABLE_Zoltan=ON \
     -DTrilinos_ENABLE_Zoltan2=ON \
     -DTrilinos_ENABLE_Teuchos=ON \
-    -DTrilinos_ENABLE_ML=ON \
     -DTrilinos_ENABLE_MueLu=ON \
     -DTpetra_ASSUME_GPU_AWARE_MPI:BOOL=0 \
     -DMueLu_ENABLE_Tutorial=OFF \

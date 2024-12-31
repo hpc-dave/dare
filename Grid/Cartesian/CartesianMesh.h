@@ -174,6 +174,13 @@ template <char ID>
         return CNB::FOURD_UP;
 }
 
+/*!
+ * @brief A distributed Cartesian grid
+ * @tparam Dim dimension of the grid: 1, 2 or 3
+ * This grid features an optimized way of querying information for a distributed
+ * Cartesian Grid. The cells may be varying in size along each axis, however the
+ * side lengths are constant along each axis.
+ */
 template <std::size_t Dim>
 class Cartesian : public dare::utils::InitializationTracker {
 public:
@@ -211,6 +218,10 @@ public:
     using IndexGlobal = VecGO;
     using NeighborID = CartesianNeighbor;
 
+    /*!
+     * @brief provides the Index type
+     * @tparam O ordinal type
+     */
     template <typename O>
     struct GetIndexType {
         using type = utils::Vector<Dim, O>;

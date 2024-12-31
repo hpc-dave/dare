@@ -48,6 +48,9 @@ dare::utils::Vector<Dim, defaults::ScalarType> GetSizeTestCartesianInterpolation
 
 }  // namespace dare::test
 
+/*!
+ * @brief Fixture for testing the interpolation functions with the Cartesian Grid
+ */
 class IntegrationTestCartesianInterpolation : public testing::Test {
 public:
     static const std::size_t Dim{3};

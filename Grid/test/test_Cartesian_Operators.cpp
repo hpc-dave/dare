@@ -46,6 +46,10 @@ dare::utils::Vector<Dim, SC> GetSizeTestCartesianOperators() {
 
 }  // namespace dare::test
 
+/*!
+ * @brief Fixture for testing the Cartesian operator with the Cartesian grid
+ * @tparam Dim dimension of the grid
+ */
 template <std::size_t Dim>
 class IntegrationTestCartesianOperators : public testing::Test {
 public:

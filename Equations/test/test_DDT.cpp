@@ -46,6 +46,9 @@ dare::utils::Vector<Dim, SC> GetSizeTestDDT() {
 
 }  // namespace dare::test
 
+/*!
+ * @brief fixture for testing time partial derivative with Cartesian grid
+ */
 class DDTTest : public testing::Test {
 public:
     static const std::size_t N{3};

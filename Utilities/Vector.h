@@ -67,6 +67,7 @@ public:
 
     /*!
      * \brief constructor
+     * @param args variable number of initialization arguments
      * Takes a variable amount of input values for construction. Those values
      * have to be the same type as the specified template type T and a maximum
      * of N values can be provided, missing values will be given the value 0
@@ -79,34 +80,26 @@ public:
     explicit Vector(const Ts&... args);
 
     /*!
-     * \brief copy constructor
+     * copy constructor
      * @param other object to copy from
      */
     template <typename A,
               typename = std::enable_if_t<std::is_convertible_v<A, T>> >
     Vector(const Vector<N, A>& other);
 
-    // /*!
-    //  * @brief swap operation
-    //  * @param v1 first vector
-    //  * @param v2 second vector
-    //  */
-    // template <std::size_t Ns, typename Ts>
-    // friend void std::swap(Vector<Ns, Ts>& v1, Vector<Ns, Ts>& v2);
-
     /*!
-     * \brief provides direct access to the data
-     *
+     * returns direct access to raw data
+     * @return Value type pointer
      */
     T* data();
 
     /*!
-     * \brief provides direct access to the data
+     * provides direct access to the data
      */
     const T* data() const;
 
     /*!
-     * \brief assignment constructor
+     * assignment constructor
      *
      * @param other object to copy from
      */
@@ -115,7 +108,7 @@ public:
     Vector<N, T>& operator=(const Vector<N, A>& other);
 
     /*!
-     * \brief access operator
+     * access operator
      *
      * @param n position to access
      * \note without NDEBUG, a bounds check will be conducted
@@ -123,7 +116,7 @@ public:
     T& operator[](std::size_t n);
 
     /*!
-     * \brief access operator
+     *  access operator
      *
      * @param n position to access
      * \note without NDEBUG, a bounds check will be conducted
@@ -131,185 +124,185 @@ public:
     const T& operator[](std::size_t n) const;
 
     /*!
-     * \brief addition of other vector
+     * addition of other vector
      *
      * @param other addition partner
      */
     Vector<N, T> operator+(const Vector<N, T>& other) const;
 
     /*!
-     * \brief addition of a single value to all internal values
+     * addition of a single value to all internal values
      *
      * @param other addition partner
      */
     Vector<N, T> operator+(const T& val) const;
 
     /*!
-     * \brief addition of another vector to the current instance
+     * addition of another vector to the current instance
      *
      * @param other addition partner
      */
     void operator+=(const Vector<N, T>& other);
 
     /*!
-     * \brief addition of a single value to all internal values
+     * addition of a single value to all internal values
      *
      * @param other addition partner
      */
     void operator+=(const T& val);
 
     /*!
-     * \brief subtraction of other vector
+     * subtraction of other vector
      * @param other addition partner
      */
     Vector<N, T> operator-(const Vector<N, T>& other) const;
 
     /*!
-     * \brief subtraction of single value from all components
+     * subtraction of single value from all components
      * @param val value to subtract
      */
     Vector<N, T> operator-(const T& val) const;
 
     /*!
-     * \brief -= operator
+     * -= operator
      * @param other other vector
      */
     void operator-=(const Vector<N, T>& other);
 
     /*!
-     * \brief subtraction of single value from all components
+     * subtraction of single value from all components
      * @param val value to subtract
      */
     void operator-=(const T& val);
 
     /*!
-     * \brief multiplication
+     * multiplication
      * @param other vector to mulitply with
      */
     Vector<N, T> operator*(const Vector<N, T>& other) const;
 
     /*!
-     * \brief elementwise multiplication
+     * elementwise multiplication
      * @param val value to multiply with
      */
     Vector<N, T> operator*(const T& val) const;
 
     /*!
-     * \brief multiplication
+     * multiplication
      * @param other vector for multiplication
      */
     void operator*=(const Vector<N, T>& other);
 
     /*!
-     * \brief elementwise multiplication
+     * elementwise multiplication
      * @param val value to multiply with
      */
     void operator*=(const T& val);
 
     /*!
-     * \brief division
+     * division
      * @param other vector to divide with
      */
     Vector<N, T> operator/(const Vector<N, T>& other) const;
 
     /*!
-     * \brief elementwise division
+     * elementwise division
      * @param val value to divide with
      */
     Vector<N, T> operator/(const T& val) const;
 
     /*!
-     * \brief division
+     * division
      * @param other vector to divide with
      */
     void operator/=(const Vector<N, T>& other);
 
     /*!
-     * \brief division
+     * division
      * @param val value to divide with
      */
     void operator/=(const T& val);
 
     /*!
-     * \brief comparison operator
+     * comparison operator
      * @param other vector to compare with
      */
     bool operator==(const Vector<N, T>& other) const;
 
     /*!
-     * \brief non-equal operator
+     * non-equal operator
      * @param other vector to compare with
      */
     bool operator!=(const Vector<N, T>& other) const;
 
     /*!
-     * \brief returns number of elements
+     * returns number of elements
      */
     constexpr std::size_t size() const;
 
     /*!
-     * \brief returns length of the vector
+     * returns length of the vector
      * \note only sensible for floating point data, but also enabled for other types
      */
     T length() const;
 
     /*!
-     * \brief return forward iterator to first object
+     * return forward iterator to first object
      */
     iterator begin();
 
     /*!
-     * \brief returns constant forward iterator
+     * returns constant forward iterator
      */
     const_iterator begin() const;
 
     /*!
-     * \brief returns constant forward iterator
+     * returns constant forward iterator
      */
     const_iterator cbegin() const;
 
     /*!
-     * \brief return reverse iterator to first object
+     * return reverse iterator to first object
      */
     reverse_iterator rbegin();
 
     /*!
-     * \brief returns constant reverse iterator
+     * returns constant reverse iterator
      */
     const_reverse_iterator rbegin() const;
 
     /*!
-     * \brief returns constant reverse iterator
+     * returns constant reverse iterator
      */
     const_reverse_iterator crbegin() const;
 
     /*!
-     * \brief returns iterator to end of data
+     * returns iterator to end of data
      */
     iterator end();
 
     /*!
-     * \brief constant iterator to end of data
+     * constant iterator to end of data
      */
     const_iterator end() const;
 
     /*!
-     * \brief constant iterator to end of data
+     * constant iterator to end of data
      */
     const_iterator cend() const;
 
     /*!
-     * \brief returns iterator to end of data
+     * returns iterator to end of data
      */
     reverse_iterator rend();
 
     /*!
-     * \brief constant iterator to end of data
+     * constant iterator to end of data
      */
     const_reverse_iterator rend() const;
 
     /*!
-     * \brief constant iterator to end of data
+     * constant iterator to end of data
      */
     const_reverse_iterator crend() const;
 
@@ -328,7 +321,7 @@ public:
     void SetValues(const A& arg, const Ts&... args);
 
     /*!
-     * \brief sets all values to default values
+     * sets all values to default values
      * \tparam I value to start with setting the default values
      */
     template <std::size_t I>
@@ -342,13 +335,13 @@ public:
     void SetAllValues(const A& val);
 
     /*!
-     * \brief computes dot product with another vector
+     * computes dot product with another vector
      * @param other vector to compute the dot product with
      */
     T dot(const Vector<N, T>& other) const;
 
     /*!
-     * \brief computes cross product
+     * computes cross product
      * @param other vector to compute the cross product with
      * \note only enabled for 3D vectors, for higher dimensions a more general algorithm is required
      */
@@ -356,7 +349,7 @@ public:
     typename std::enable_if<(Ns == 3), Vector<N, T>>::type cross(const Vector<N, T>& other) const;
 
     /*!
-     * \brief outputs the vector
+     * outputs the vector
      */
     template <typename OS>
     friend OS& operator<<(OS& os, const Vector<N, T>& v) {
@@ -374,7 +367,7 @@ public:
     }
 
     /*
-     * \brief calculates hash for hash-maps
+     * calculates hash for hash-maps
      */
     std::size_t GetHash() const;
 
@@ -390,7 +383,7 @@ public:
 
 private:
     /*!
-     * \brief iterates over the internal values and executes arbitrary manipulation
+     * iterates over the internal values and executes arbitrary manipulation
      * @param lambda operation to execute per data entry
      * @param op join operation for reduction
      */
@@ -398,7 +391,7 @@ private:
     auto IterateValues(Expr lambda, Op op);
 
     /*!
-     * \brief iterates over the internal values and executes arbitrary manipulation
+     * iterates over the internal values and executes arbitrary manipulation
      * @param lambda operation to execute per data entry
      * @param op join operation for reduction
      */
