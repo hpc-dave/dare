@@ -96,6 +96,7 @@ public:
 
     /*!
      * \brief provides direct access to the data
+     *
      */
     T* data();
 
@@ -106,6 +107,7 @@ public:
 
     /*!
      * \brief assignment constructor
+     *
      * @param other object to copy from
      */
     template <typename A,
@@ -114,6 +116,7 @@ public:
 
     /*!
      * \brief access operator
+     *
      * @param n position to access
      * \note without NDEBUG, a bounds check will be conducted
      */
@@ -121,6 +124,7 @@ public:
 
     /*!
      * \brief access operator
+     *
      * @param n position to access
      * \note without NDEBUG, a bounds check will be conducted
      */
@@ -128,24 +132,28 @@ public:
 
     /*!
      * \brief addition of other vector
+     *
      * @param other addition partner
      */
     Vector<N, T> operator+(const Vector<N, T>& other) const;
 
     /*!
      * \brief addition of a single value to all internal values
+     *
      * @param other addition partner
      */
     Vector<N, T> operator+(const T& val) const;
 
     /*!
      * \brief addition of another vector to the current instance
+     *
      * @param other addition partner
      */
     void operator+=(const Vector<N, T>& other);
 
     /*!
      * \brief addition of a single value to all internal values
+     *
      * @param other addition partner
      */
     void operator+=(const T& val);
