@@ -127,37 +127,37 @@ int main(int argc, char* argv[]) {
                 // Dirichlet for component 0
                 // std::cout << *mblock;
                 SC bc_0 = 1.;
-                mblock->Get(0, CNB::CENTER) -= mblock->Get(0, CNB::WEST);
-                mblock->GetRhs(0) -= 2. * bc_0 * mblock->Get(0, CNB::WEST);
-                mblock->Remove(0, CNB::WEST);
+                mblock->Get(0, 0, CNB::CENTER) -= mblock->Get(0, 0, CNB::WEST);
+                mblock->GetRhs(0) -= 2. * bc_0 * mblock->Get(0, 0, CNB::WEST);
+                mblock->Remove(0, 0, CNB::WEST);
                 // Neumann for component 1
-                mblock->Get(1, CNB::CENTER) += mblock->Get(1, CNB::WEST);
-                mblock->Remove(1, CNB::WEST);
+                mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::WEST);
+                mblock->Remove(1, 1, CNB::WEST);
             } else if (ind_g.i() == (nx - 1)) {
                 // EAST boundary
                 // Dirichlet for component 1
                 SC bc_1 = 1.;
-                mblock->Get(1, CNB::CENTER) -= mblock->Get(1, CNB::EAST);
-                mblock->GetRhs(1) -= 2. * bc_1 * mblock->Get(1, CNB::EAST);
-                mblock->Remove(1, CNB::EAST);
+                mblock->Get(1, 1, CNB::CENTER) -= mblock->Get(1, 1, CNB::EAST);
+                mblock->GetRhs(1) -= 2. * bc_1 * mblock->Get(1, 1, CNB::EAST);
+                mblock->Remove(1, 1, CNB::EAST);
                 // Neumann for component 0
-                mblock->Get(0, CNB::CENTER) += mblock->Get(0, CNB::EAST);
-                mblock->Remove(0, CNB::EAST);
+                mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::EAST);
+                mblock->Remove(0, 0, CNB::EAST);
             }
             if (ind_g.j() == 0) {
                 // SOUTH boundary
                 // Neumann for both components
-                mblock->Get(0, CNB::CENTER) += mblock->Get(0, CNB::SOUTH);
-                mblock->Remove(0, CNB::SOUTH);
-                mblock->Get(1, CNB::CENTER) += mblock->Get(1, CNB::SOUTH);
-                mblock->Remove(1, CNB::SOUTH);
+                mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::SOUTH);
+                mblock->Remove(0, 0, CNB::SOUTH);
+                mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::SOUTH);
+                mblock->Remove(1, 1, CNB::SOUTH);
             } else if (ind_g.j() == (ny - 1)) {
                 // SOUTH boundary
                 // Neumann for both components
-                mblock->Get(0, CNB::CENTER) += mblock->Get(0, CNB::NORTH);
-                mblock->Remove(0, CNB::NORTH);
-                mblock->Get(1, CNB::CENTER) += mblock->Get(1, CNB::NORTH);
-                mblock->Remove(1, CNB::NORTH);
+                mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::NORTH);
+                mblock->Remove(0, 0, CNB::NORTH);
+                mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::NORTH);
+                mblock->Remove(1, 1, CNB::NORTH);
             }
         };
 
