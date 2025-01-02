@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 namespace dare::Matrix {
 template <typename O, typename SC, std::size_t N>
 MatrixBlockBase<O, SC, N>::MatrixBlockBase()

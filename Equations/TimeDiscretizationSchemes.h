@@ -26,6 +26,12 @@
 #define EQUATIONS_TIMEDISCRETIZATIONSCHEMES_H_
 
 namespace dare::Matrix {
+
+/*! \struct EULER_BACKWARD
+ * \brief EULER-backward time discretization
+ * 
+ * Fully implicit treatment of the components
+ */
 struct EULER_BACKWARD {
     static const std::size_t NUM_TIMESTEPS{0};
 
@@ -35,6 +41,11 @@ struct EULER_BACKWARD {
     }
 };
 
+/*! \struct EULER_FORWARD
+ * \brief EULER-forward time discretization
+ *
+ * Fully explicit treatment of the components based on previous timestep
+ */
 struct EULER_FORWARD {
     static const std::size_t NUM_TIMESTEPS{1};
 
@@ -44,6 +55,11 @@ struct EULER_FORWARD {
     }
 };
 
+/*! \struct CRANK_NICHOLSON
+ * \brief Crank-Nicholson scheme
+ *
+ * Semi-implicit time discretization scheme
+ */
 struct CRANK_NICHOLSON {
     static const std::size_t NUM_TIMESTEPS{1};
 
@@ -53,6 +69,11 @@ struct CRANK_NICHOLSON {
     }
 };
 
+/*! \struct ADAMS_BASHFORT
+ * \brief Adams-Bashfort scheme
+ * 
+ * Explicit time discretization scheme
+ */
 struct ADAMS_BASHFORT {
     static const std::size_t NUM_TIMESTEPS{2};
 
@@ -64,6 +85,11 @@ struct ADAMS_BASHFORT {
     }
 };
 
+/*! \struct ADAMS-MOULTON
+ * \brief Adams-Moulton scheme
+ * 
+ * Semi-implicity time discretization
+ */
 struct ADAMS_MOULTON {
     static const std::size_t NUM_TIMESTEPS{2};
 
