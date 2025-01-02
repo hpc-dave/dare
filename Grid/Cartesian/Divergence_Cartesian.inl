@@ -24,6 +24,8 @@
 #ifndef MATRIXSYSTEM_OPERATORS_CARTESIAN_H_
 #define MATRIXSYSTEM_OPERATORS_CARTESIAN_H_
 
+#include <tuple>
+
 namespace dare::Matrix {
 
 template <std::size_t Dim, typename TimeDiscretization>

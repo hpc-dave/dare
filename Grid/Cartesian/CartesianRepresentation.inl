@@ -22,6 +22,12 @@
  * SOFTWARE.
  */
 
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <string>
+#include <unordered_map>
+
 namespace dare::Grid {
 
 template <std::size_t Dim>

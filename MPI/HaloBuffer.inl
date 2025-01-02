@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+#include <map>
+#include <sstream>
+#include <unordered_map>
+#include <vector>
+
 namespace dare::mpi {
 
 template <typename SC>

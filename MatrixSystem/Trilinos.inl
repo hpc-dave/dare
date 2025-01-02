@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include <vector>
+
 namespace dare::Matrix {
 template <typename SC>
 Trilinos<SC>::Trilinos()

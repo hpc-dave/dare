@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include <string>
+
 namespace dare::Data {
 
 template <typename Grid, typename T, std::size_t N>

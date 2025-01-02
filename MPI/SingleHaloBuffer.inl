@@ -22,6 +22,13 @@
  * SOFTWARE.
  */
 
+#include <mpi.h>
+
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
 namespace dare::mpi {
 
 template<typename SC>

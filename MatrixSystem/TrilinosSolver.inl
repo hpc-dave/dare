@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include <string>
+
 namespace dare::Matrix {
 
 template <typename SC>

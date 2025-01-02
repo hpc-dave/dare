@@ -22,6 +22,12 @@
  * SOFTWARE.
  */
 
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+
 namespace dare::ff {
 
 template <typename VT>

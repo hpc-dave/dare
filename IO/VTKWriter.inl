@@ -22,11 +22,19 @@
  * SOFTWARE.
  */
 
-#include "VTKPXMLStructuredGridWriter.h"
 #include <vtkInformation.h>
 #include <vtkMPIController.h>
 #include <vtkProgrammableFilter.h>
 #include <vtkXMLPStructuredGridWriter.h>
+
+#include <iomanip>
+#include <list>
+#include <map>
+#include <string>
+#include <tuple>
+#include <type_traits>
+
+#include "VTKPXMLStructuredGridWriter.h"
 
 namespace dare::io {
 

@@ -24,6 +24,15 @@
 
 #ifndef MPI_EXECUTIONMANAGER_MPI_INL_
 #define MPI_EXECUTIONMANAGER_MPI_INL_
+
+#include <mpi.h>
+#include <omp.h>
+
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <vector>
+
 namespace dare::mpi {
 
 template <typename T>

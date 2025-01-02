@@ -22,7 +22,17 @@
  * SOFTWARE.
  */
 
+#include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstddef>
+#include <iostream>
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <utility>
+
 namespace dare::utils {
 
 template <std::size_t N, typename T>

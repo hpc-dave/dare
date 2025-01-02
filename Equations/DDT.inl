@@ -21,7 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <tuple>    // stupid cpplint bug
+#include <tuple>
+#include <type_traits>
+
 namespace dare::Matrix {
 
 template <typename Grid, typename TimeDiscretization>

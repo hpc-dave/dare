@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include <string>
+
 namespace dare::Data {
 
 template <std::size_t Dim, typename SC, std::size_t N>

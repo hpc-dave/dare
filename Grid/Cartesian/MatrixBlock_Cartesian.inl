@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+#include <utility>
+#include <vector>
+
 namespace dare::Matrix {
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
