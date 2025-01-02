@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include <type_traits>
+
 namespace dare::Matrix {
 template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::MatrixBlock()
