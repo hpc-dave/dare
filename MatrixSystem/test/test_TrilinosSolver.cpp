@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 
+#include <string>
+
 #include "Data/GridVector.h"
 #include "Data/DefaultTypes.h"
 #include "MatrixSystem/Trilinos.h"

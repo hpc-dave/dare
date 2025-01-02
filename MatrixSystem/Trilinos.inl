@@ -23,6 +23,8 @@
  */
 
 #include <vector>
+#include <iostream>
+#include <utility>
 
 namespace dare::Matrix {
 template <typename SC>

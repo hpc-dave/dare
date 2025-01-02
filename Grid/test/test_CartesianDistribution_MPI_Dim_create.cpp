@@ -24,8 +24,10 @@
 
 #include <gtest/gtest.h>
 
-#include "test_DistributionFunctions.h"
+#include <vector>
+
 #include "Grid/Cartesian.h"
+#include "test_DistributionFunctions.h"
 
 TEST_P(ConsistencyTest, MPIDimscreateOneDim) {
     dare::mpi::ExecutionManager exman;

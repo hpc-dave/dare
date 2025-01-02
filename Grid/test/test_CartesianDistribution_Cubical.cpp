@@ -23,9 +23,12 @@
  */
 
 #include <gtest/gtest.h>
-#include "test_DistributionFunctions.h"
-#include "Utilities/Vector.h"
+
+#include <vector>
+
 #include "Grid/Cartesian.h"
+#include "Utilities/Vector.h"
+#include "test_DistributionFunctions.h"
 
 TEST_P(ConsistencyTest, CubicalOneDim) {
     dare::mpi::ExecutionManager exman;

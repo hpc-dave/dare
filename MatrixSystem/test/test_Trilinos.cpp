@@ -23,6 +23,8 @@
  */
 
 #include <gtest/gtest.h>
+#include <vector>
+#include <utility>
 #include "../Trilinos.h"
 #include "../TrilinosSolver.h"
 #include "test_TrilinosTestGrid.h"

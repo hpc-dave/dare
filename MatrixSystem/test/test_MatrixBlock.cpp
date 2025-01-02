@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../MatrixBlock.h"
+#include "MatrixSystem/MatrixBlock.h"
 
 namespace dare::Matrix::test {
 class Grid {

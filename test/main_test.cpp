@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 #include <mpi.h>
+#include <string>
+#include <iostream>
 
 #include <boost/algorithm/string/predicate.hpp>
 

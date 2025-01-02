@@ -23,6 +23,7 @@
  */
 
 #include <string>
+#include <iostream>
 
 namespace dare::Matrix {
 

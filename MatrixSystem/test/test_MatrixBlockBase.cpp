@@ -23,7 +23,9 @@
  */
 
 #include <gtest/gtest.h>
-#include "../MatrixBlockBase.h"
+
+#include <vector>
+#include "MatrixSystem/MatrixBlockBase.h"
 
 /*!
  * @brief Fixture for testing MatrixBlockBase
