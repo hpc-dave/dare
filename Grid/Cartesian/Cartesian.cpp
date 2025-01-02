@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+#include <list>
+#include <string>
+
 #include "CartesianMesh.h"
 
 namespace dare::Grid::details::Cartesian {

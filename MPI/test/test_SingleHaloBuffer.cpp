@@ -24,6 +24,8 @@
 
 #include <float.h>
 #include <gtest/gtest.h>
+#include <vector>
+
 #include "TestField.h"
 #include "MPI/SingleHaloBuffer.h"
 

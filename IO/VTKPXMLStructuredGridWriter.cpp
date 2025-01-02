@@ -29,6 +29,7 @@
 #include <fstream>
 #include <iomanip>
 #include <type_traits>
+#include <string>
 
 namespace dare::io {
 

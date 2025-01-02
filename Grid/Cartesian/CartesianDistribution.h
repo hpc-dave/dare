@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 #include "MPI/ExecutionManager.h"
 #include "Utilities/Vector.h"

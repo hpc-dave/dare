@@ -33,6 +33,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <vector>
 
 #include "VTKPXMLStructuredGridWriter.h"
 

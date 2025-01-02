@@ -28,6 +28,7 @@
 #include <list>
 #include <string>
 #include <unordered_map>
+#include <iostream>
 
 #include "MPI/ExecutionManager.h"
 #include "Utilities/Vector.h"

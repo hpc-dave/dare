@@ -24,6 +24,8 @@
 
 #include "VTKWriter.h"
 
+#include <string>
+
 namespace dare::io::details {
 
 std::string VTKGetParallelOutputFileName(dare::mpi::ExecutionManager* exman,

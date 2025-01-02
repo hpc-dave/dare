@@ -24,6 +24,7 @@
 
 #include <utility>
 #include <vector>
+#include <limits>
 
 namespace dare::Matrix {
 

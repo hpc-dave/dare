@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+#include <string>
+#include <iostream>
+#include <vector>
+
 #include "ExecutionManager.h"
 
 namespace dare::mpi {

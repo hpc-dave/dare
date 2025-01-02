@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+#include <string>
+#include <map>
+#include <vector>
+#include <iostream>
+
 namespace dare::Matrix {
 
 template <class ST, class MV, class OP>

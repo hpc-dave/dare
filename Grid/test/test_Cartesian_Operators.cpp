@@ -23,6 +23,9 @@
  */
 
 #include <gtest/gtest.h>
+#include <algorithm>
+#include <memory>
+#include <limits>
 
 #include "Grid/Cartesian/Operators_Cartesian.h"
 #include "Equations/TimeDiscretizationSchemes.h"

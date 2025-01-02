@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 #include <float.h>
 #include <unordered_map>
+#include <vector>
 
 #include "MPI/ExecutionManager.h"
 #include "MPI/HaloBuffer.h"

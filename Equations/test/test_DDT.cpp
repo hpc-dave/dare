@@ -24,6 +24,9 @@
 
 #include <gtest/gtest.h>
 
+#include <memory>
+#include <limits>
+
 #include "Equations/DDT.h"
 #include "Grid/Cartesian.h"
 

@@ -23,6 +23,9 @@
  */
 
 #include "FileSystemManager.h"
+#include <iostream>
+#include <string>
+
 namespace dare::io {
 
 namespace details {

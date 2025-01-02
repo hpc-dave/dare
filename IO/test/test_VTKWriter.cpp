@@ -23,6 +23,8 @@
  */
 
 #include <gtest/gtest.h>
+#include <string>
+#include <memory>
 
 #include "Data/DefaultTypes.h"
 #include "Grid/Cartesian.h"

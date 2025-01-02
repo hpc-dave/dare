@@ -25,6 +25,8 @@
 #include <gtest/gtest.h>
 
 #include <random>
+#include <memory>
+#include <limits>
 
 #include "Data/DefaultTypes.h"
 #include "Grid/Cartesian/Interpolation_Cartesian.h"

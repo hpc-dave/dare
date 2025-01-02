@@ -22,8 +22,10 @@
  * SOFTWARE.
  */
 
-#include <iostream>  // stupid cpplint bug
-#include <limits>    // stupid cpplint bug
+#include <iostream>
+#include <limits>
+#include <string>
+#include <vector>
 
 namespace dare::Data {
 template <typename Grid, typename SC, std::size_t N>
