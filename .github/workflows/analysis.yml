@@ -105,7 +105,7 @@ jobs:
     # For details checkout https://github.com/marketplace/actions/publish-test-results
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.2
+      image: davevader/dare_test:3.2
     name: Publish Tests Results
     needs: [Doxygen, cppcheck, cpplint]
     permissions:
