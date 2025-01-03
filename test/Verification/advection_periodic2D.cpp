@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
         GO nx = 50, ny = 50;
         SC L = 1., H = 1.;
         LO num_ghost = 2;
-        int freq_write = 10;
+        int freq_write = 1000;
         double dt = 1e-3;
         VecLO periodic(1, 1);
         VecSC velocity_0(1., 0.), velocity_1(0., 1.);

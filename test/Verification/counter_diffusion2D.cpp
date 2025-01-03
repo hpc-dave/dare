@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
         GO nx{20}, ny{20};
         SC L{1}, H{1};
         LO num_ghost = 2;
-        int freq_write = 10;
+        int freq_write = 1000;
         double dt = 1e-3;
 
         IndexGlobal resolution_global(nx, ny);
