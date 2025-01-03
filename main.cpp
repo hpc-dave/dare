@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <iostream>
 #include "ScopeGuard/ScopeGuard.h"
 
 int main(int argc, char* argv[]) {
