@@ -56,7 +56,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test_reports_${{matrix.procs}}
+        name: test_reports_${{matrix.procs}}_${{matrix.compiler.cc}}
         path: ./*.xml
 
   publish-test-results:
@@ -86,7 +86,11 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
-            artifacts/test_reports_1/*.xml
-            artifacts/test_reports_2/*.xml
-            artifacts/test_reports_3/*.xml
-            artifacts/test_reports_4/*.xml
+            artifacts/test_reports_1_gcc/*.xml
+            artifacts/test_reports_2_gcc/*.xml
+            artifacts/test_reports_3_gcc/*.xml
+            artifacts/test_reports_4_gcc/*.xml
+            artifacts/test_reports_1_clang-18/*.xml
+            artifacts/test_reports_2_clang-18/*.xml
+            artifacts/test_reports_3_clang-18/*.xml
+            artifacts/test_reports_4_clang-18/*.xml
