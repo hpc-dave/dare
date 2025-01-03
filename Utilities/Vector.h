@@ -360,6 +360,11 @@ public:
         return os;
     }
 
+    /*!
+     * @brief provides pretty printing as a string value
+     * 
+     * \note mostly required for clang
+     */
     std::string ToString() const {
         std::ostringstream os;
         os << *this;
