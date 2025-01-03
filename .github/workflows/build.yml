@@ -20,7 +20,7 @@ jobs:
         matrix:
             build: [Debug, Release]
             compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
-            fail-fast: false
+        fail-fast: false
 
     steps:
     - uses: actions/checkout@v3
