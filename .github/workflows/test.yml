@@ -12,7 +12,7 @@ on:
     
 jobs:
 
-  GoogleTest_gcc:
+  GoogleTest:
     runs-on: self-hosted
     container:
       image: davevader/dare_test:3.2
@@ -20,67 +20,30 @@ jobs:
     strategy:
       matrix:
         procs: [1, 2, 3, 4]
+        compiler: [{cc: gcc, cxx: g++}, {cc: clang-18, cxx: clang++-18}]
     steps:
     - uses: actions/checkout@v3
 
     - name: Configure CMake Test
       run: |
-          mkdir build_test_gcc && cd build_test_gcc
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=ON -DDEBUG=ON
+          rm -rf build_test
+          mkdir build_test && cd build_test
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=ON -DDEBUG=ON -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}}
 
     - name: Build Test
       run: |
-          cd build_test_gcc
+          cd build_test
           ninja -j 4
 
     - name: Run Test
       run: |
-          cd build_test_gcc
-          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_gcc_P${{matrix.procs}}.xml" -T 1
+          cd build_test
+          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_${{matrix.compiler.cc}}_P${{matrix.procs}}.xml" -T 1
 
     - name: Move reports
       if: always()
       run: |
-          cd build_test_gcc
-          mv *xml ../
-
-    - name: Archive Testing Reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test_reports_${{matrix.procs}}
-        path: ./*.xml
-
-  GoogleTest_clang:
-    runs-on: self-hosted
-    container:
-      image: davevader/dare_test:3.2
-
-    strategy:
-      matrix:
-        procs: [1, 2, 3, 4]
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Configure CMake Test
-      run: |
-          mkdir build_test_clang && cd build_test_clang
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=ON -DDEBUG=ON -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_COMPILER=clang-18
-
-    - name: Build Test
-      run: |
-          cd build_test_clang
-          ninja -j 4
-
-    - name: Run Test
-      run: |
-          cd build_test_clang
-          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_clang_P${{matrix.procs}}.xml" -T 1
-
-    - name: Move reports
-      if: always()
-      run: |
-          cd build_test_clang
+          cd build_test
           mv *xml ../
 
     - name: Archive Testing Reports
@@ -96,7 +59,7 @@ jobs:
     container:
       image: davevader/dare_test:3.2
     name: Publish Tests Results
-    needs: [ GoogleTest_gcc, GoogleTest_clang]
+    needs: GoogleTest
     permissions:
       checks: write
       # only needed unless run with comment_mode: off
@@ -105,10 +68,7 @@ jobs:
       contents: read
       # only needed for private repository
       issues: read
-    if: |
-      always()
-      && contains(needs.*.result, 'success')
-      && !contains(needs.*.result, 'failure')
+    if: always()
 
     steps:
       - name: Download Artifacts
