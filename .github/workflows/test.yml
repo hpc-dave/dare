@@ -33,7 +33,7 @@ jobs:
                    -DDEBUG=ON \
                    -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
                    -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
-                   -DCMAKE_PREFIX_PATH=${{matrix.compiler.trilinos}}
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
 
     - name: Build Test
       run: |
