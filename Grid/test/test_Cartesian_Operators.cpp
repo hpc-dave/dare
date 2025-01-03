@@ -1502,7 +1502,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAMatrixTest) {
             r_e = 0.;
         r_e = (r_e + r_e * r_e) / (1. + r_e * r_e);
         SC v_ex_e = -0.5 * r_e * (phi_c - phi_e) * velocity[0];
-        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex_w);
-        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex_e);
+        EXPECT_NEAR(v.GetRHS(CNB::WEST, n), v_ex_w, 1e-14);
+        EXPECT_NEAR(v.GetRHS(CNB::EAST, n), v_ex_e, 1e-14);
     }
 }

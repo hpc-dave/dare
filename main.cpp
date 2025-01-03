@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,28 +35,7 @@
 #include "MatrixSystem/TrilinosSolver.h"
 #include "ScopeGuard/ScopeGuard.h"
 
-template <typename GridVector, typename GridRepresentation>
-void ComputeAnalyticalSolution(GridVector* field, typename GridVector::DataType tau, const GridRepresentation& grep) {
-    using LO = typename GridRepresentation::LocalOrdinalType;
-    using SC = typename GridVector::DataType;
-    using Index = typename GridRepresentation::Index;
-    auto res = grep.GetLocalResolution();
-    for (LO i{0}; i < res.i(); i++) {
-        Index ind(i, 0);
-        SC zeta_b = grep.GetCoordinatesCenter(ind).x();
-        SC zeta_f = 1 - zeta_b;
-        if (zeta_f <= 0. || zeta_f > 1.)
-            continue;
 
-        SC phi_f = dare::analytical::Diffusion_N0D1(tau, zeta_f);
-        SC phi_b = dare::analytical::Diffusion_N0D1(tau, zeta_b);
-        for (LO j{0}; j < res.j(); j++) {
-            ind.j() = j;
-            field->At(ind, 0) = phi_f;
-            field->At(ind, 1) = phi_b;
-        }
-    }
-}
 
 int main(int argc, char* argv[]) {
     using SC = dare::defaults::ScalarType;
@@ -73,167 +52,198 @@ int main(int argc, char* argv[]) {
 
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
-        GO nx{20}, ny{20};
-        SC L{1}, H{1};
-        LO num_ghost = 2;
-        int freq_write = 10;
-        double dt = 1e-3;
+    //     GO nx{20};
+    //     SC L{1};
+    //     LO num_ghost = 2;
+    //     int freq_write = 10;
+    //     double dt = 1e-3;
 
-        IndexGlobal resolution_global(nx, ny);
-        VecSC size_global(L, H);
+    //     IndexGlobal resolution_global(nx);
+    //     VecSC size_global(L);
 
-        dare::mpi::ExecutionManager exman;
-        dare::io::FileSystemManager fman(&exman, "verification");
-        fman.CheckWithUser(false);
+    //     dare::mpi::ExecutionManager exman;
+    //     dare::io::FileSystemManager fman(&exman, "verification");
+    //     fman.CheckWithUser(false);
 
-        Grid grid("scalar_2D",
-                  &exman,
-                  resolution_global,
-                  size_global,
-                  num_ghost);
-        IndexLocal staggered(0, 0);  // grid is not staggered
-        auto grep = grid.GetRepresentation(staggered);
+    //     Grid grid("scalar_1D",
+    //               &exman,
+    //               resolution_global,
+    //               size_global,
+    //               num_ghost);
+    //     IndexLocal scalar(0), staggered_x(1);  // grid is not staggered
+    //     auto grid_s = grid.GetRepresentation(scalar);
+    //     auto grid_x = grid.GetRepresentation(staggered_x);
 
-        Field field("concentration", grep, 2);
-        field.SetComponentName(0, "forward");
-        field.SetComponentName(1, "backward");
-        field.SetValues(0.);
+    //     Field pressure("pressure", grid_s, 1);
+    //     pressure.SetValues(0.);
 
-        GridVector analytical("analytical", grep);
-        analytical.SetComponentName(0, "forward");
-        analytical.SetComponentName(1, "backward");
+    //     Field mom_x("momentum_x", grid_x, 1);
+    //     mom_x.SetValues(0.);
+    //     GridVector analytical("analytical", grep);
 
-        auto build_coef = [&](auto mblock) {
-            using Gradient = dare::Matrix::Gradient<Grid>;
-            using TimeScheme = dare::Matrix::EULER_BACKWARD;
-            using Divergence = dare::Matrix::Divergence<Grid, TimeScheme>;
-            using DDT = dare::Matrix::DDT<Grid>;
+    //     auto build_coef_x = [&](auto mblock) {
+    //         using Gradient = dare::Matrix::Gradient<Grid>;
+    //         using TimeScheme = dare::Matrix::EULER_BACKWARD;
+    //         using Divergence = dare::Matrix::Divergence<Grid, TimeScheme>;
+    //         using DDT = dare::Matrix::DDT<Grid>;
+    //         using FluxLimiter = dare::Matrix::MINMOD;
+    //         using TVD = dare::Matrix::TVD<Grid, SC, FluxLimiter>;
 
-            auto g_r = mblock->GetRepresentation();
-            LO loc_o{mblock->GetLocalOrdinal()};
+    //         auto g_r = mblock->GetRepresentation();
+    //         LO loc_o{mblock->GetLocalOrdinal()};
 
-            Gradient grad(*g_r, loc_o);
-            Divergence div(*g_r, loc_o);
-            DDT ddt(*g_r, loc_o, dt);
+    //         Gradient grad(*g_r, loc_o);
+    //         Divergence div(*g_r, loc_o);
+    //         DDT ddt(*g_r, loc_o, dt);
+    //         TVD u(*g_r, loc_o, mom_x.GetDataVector())
 
-            (*mblock) = ddt(field);
-            (*mblock) -= div(grad(*mblock));
+    //         (*mblock) = ddt(field);
+    //         (*mblock) += div(u * mom_x.GetDataVector());
+    //         (*mblock) -= div(grad(pressure.GetDataVector()));
 
-            // Apply BC
-            IndexLocal ind_l = g_r->MapOrdinalToIndexLocalInternal(loc_o);
-            IndexGlobal ind_g = g_r->MapLocalToGlobal(ind_l);
-            if (ind_g.i() == 0) {
-                // WEST boundary
-                // Dirichlet for component 0
-                // std::cout << *mblock;
-                SC bc_0 = 1.;
-                mblock->Get(0, 0, CNB::CENTER) -= mblock->Get(0, 0, CNB::WEST);
-                mblock->GetRhs(0) -= 2. * bc_0 * mblock->Get(0, 0, CNB::WEST);
-                mblock->Remove(0, 0, CNB::WEST);
-                // Neumann for component 1
-                mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::WEST);
-                mblock->Remove(1, 1, CNB::WEST);
-            } else if (ind_g.i() == (nx - 1)) {
-                // EAST boundary
-                // Dirichlet for component 1
-                SC bc_1 = 1.;
-                mblock->Get(1, 1, CNB::CENTER) -= mblock->Get(1, 1, CNB::EAST);
-                mblock->GetRhs(1) -= 2. * bc_1 * mblock->Get(1, 1, CNB::EAST);
-                mblock->Remove(1, 1, CNB::EAST);
-                // Neumann for component 0
-                mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::EAST);
-                mblock->Remove(0, 0, CNB::EAST);
-            }
-            if (ind_g.j() == 0) {
-                // SOUTH boundary
-                // Neumann for both components
-                mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::SOUTH);
-                mblock->Remove(0, 0, CNB::SOUTH);
-                mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::SOUTH);
-                mblock->Remove(1, 1, CNB::SOUTH);
-            } else if (ind_g.j() == (ny - 1)) {
-                // SOUTH boundary
-                // Neumann for both components
-                mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::NORTH);
-                mblock->Remove(0, 0, CNB::NORTH);
-                mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::NORTH);
-                mblock->Remove(1, 1, CNB::NORTH);
-            }
-        };
+    //         // Apply BC
+    //         IndexLocal ind_l = g_r->MapOrdinalToIndexLocalInternal(loc_o);
+    //         IndexGlobal ind_g = g_r->MapLocalToGlobal(ind_l);
+    //         if (ind_g.i() == 0) {
+    //             // WEST boundary
+    //             // Dirichlet for component 0
+    //             // std::cout << *mblock;
+    //             SC bc_0 = 1.;
+    //             mblock->Get(0, 0, CNB::CENTER) -= mblock->Get(0, 0, CNB::WEST);
+    //             mblock->GetRhs(0) -= 2. * bc_0 * mblock->Get(0, 0, CNB::WEST);
+    //             mblock->Remove(0, 0, CNB::WEST);
+    //             // Neumann for component 1
+    //             mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::WEST);
+    //             mblock->Remove(1, 1, CNB::WEST);
+    //         } else if (ind_g.i() == (nx - 1)) {
+    //             // EAST boundary
+    //             // Dirichlet for component 1
+    //             SC bc_1 = 1.;
+    //             mblock->Get(1, 1, CNB::CENTER) -= mblock->Get(1, 1, CNB::EAST);
+    //             mblock->GetRhs(1) -= 2. * bc_1 * mblock->Get(1, 1, CNB::EAST);
+    //             mblock->Remove(1, 1, CNB::EAST);
+    //             // Neumann for component 0
+    //             mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::EAST);
+    //             mblock->Remove(0, 0, CNB::EAST);
+    //         }
+    //     };
 
-        dare::Matrix::Trilinos<SC> msystem(&exman);
-        Teuchos::RCP<Teuchos::ParameterList> p_ilu = Teuchos::rcp(new Teuchos::ParameterList());
-        // parameters for ILU
-        p_ilu->set("fact: drop tolerance", 1e-9);
-        p_ilu->set("fact: level of fill", 1);
-        p_ilu->set("schwarz: combine mode", "Add");
-        Teuchos::RCP<Teuchos::ParameterList> p_solver = Teuchos::rcp(new Teuchos::ParameterList());
-        p_solver->set("Convergence Tolerance", 1e-14);
-        p_solver->set("Maximum Iterations", 5000);
+    //     auto build_coef_p = [&](auto mblock) {
+    //         using Gradient = dare::Matrix::Gradient<Grid>;
+    //         using TimeScheme = dare::Matrix::EULER_BACKWARD;
+    //         using Divergence = dare::Matrix::Divergence<Grid, TimeScheme>;
+    //         using DDT = dare::Matrix::DDT<Grid>;
 
-        SC t_end = 1;
-        SC time = 0.;
-        int timestep = 0;
+    //         auto g_r = mblock->GetRepresentation();
+    //         LO loc_o{mblock->GetLocalOrdinal()};
 
-        {
-            // in a scope, so it won't persist longer than required
-            Writer writer(&exman, time, timestep);
-            writer.Write(fman, &field.GetDataVector(), &analytical);
-        }
+    //         Gradient grad(*g_r, loc_o);
+    //         Divergence div(*g_r, loc_o);
+    //         DDT ddt(*g_r, loc_o, dt);
 
-        while (time < t_end) {
-            timestep++;
-            time += dt;
+    //         (*mblock) = ddt(field);
+    //         (*mblock) -= div(grad(*mblock));
 
-            msystem.Build(grep, field.GetDataVector(), build_coef, false);
+    //         // Apply BC
+    //         IndexLocal ind_l = g_r->MapOrdinalToIndexLocalInternal(loc_o);
+    //         IndexGlobal ind_g = g_r->MapLocalToGlobal(ind_l);
+    //         if (ind_g.i() == 0) {
+    //             // WEST boundary
+    //             // Dirichlet for component 0
+    //             // std::cout << *mblock;
+    //             SC bc_0 = 1.;
+    //             mblock->Get(0, 0, CNB::CENTER) -= mblock->Get(0, 0, CNB::WEST);
+    //             mblock->GetRhs(0) -= 2. * bc_0 * mblock->Get(0, 0, CNB::WEST);
+    //             mblock->Remove(0, 0, CNB::WEST);
+    //             // Neumann for component 1
+    //             mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::WEST);
+    //             mblock->Remove(1, 1, CNB::WEST);
+    //         } else if (ind_g.i() == (nx - 1)) {
+    //             // EAST boundary
+    //             // Dirichlet for component 1
+    //             SC bc_1 = 1.;
+    //             mblock->Get(1, 1, CNB::CENTER) -= mblock->Get(1, 1, CNB::EAST);
+    //             mblock->GetRhs(1) -= 2. * bc_1 * mblock->Get(1, 1, CNB::EAST);
+    //             mblock->Remove(1, 1, CNB::EAST);
+    //             // Neumann for component 0
+    //             mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::EAST);
+    //             mblock->Remove(0, 0, CNB::EAST);
+    //         }
+    //     };
 
-            // msystem.PrintMatrix();
-            // msystem.PrintX();
-            // msystem.PrintB();
+    //     dare::Matrix::Trilinos<SC> msystem(&exman);
+    //     Teuchos::RCP<Teuchos::ParameterList> p_ilu = Teuchos::rcp(new Teuchos::ParameterList());
+    //     // parameters for ILU
+    //     p_ilu->set("fact: drop tolerance", 1e-9);
+    //     p_ilu->set("fact: level of fill", 1);
+    //     p_ilu->set("schwarz: combine mode", "Add");
+    //     Teuchos::RCP<Teuchos::ParameterList> p_solver = Teuchos::rcp(new Teuchos::ParameterList());
+    //     p_solver->set("Convergence Tolerance", 1e-14);
+    //     p_solver->set("Maximum Iterations", 5000);
 
-            dare::Matrix::TrilinosSolver<SC> solver;
-            msystem.GetM() = solver.BuildPreconditioner(dare::Matrix::PreCondPackage::Ifpack2,
-                                                        "ILUT",
-                                                        p_ilu,
-                                                        msystem.GetA());
-            auto ret = solver.Solve(dare::Matrix::SolverPackage::Belos,
-                                    "BICGSTAB",
-                                    msystem.GetM(),
-                                    msystem.GetA(), msystem.GetX(), msystem.GetB(),
-                                    p_solver);
-            msystem.CopyTo(&field.GetDataVector());
-            if (ret != Belos::ReturnType::Converged) {
-                exman.Terminate(__func__, "solver did not converge");
-            }
-            exman.Print(dare::mpi::Verbosity::Low)
-                << "t: " << time << "\tstep: " << timestep << "\tit: " << solver.GetNumIterations() << '\n';
+    //     SC t_end = 1;
+    //     SC time = 0.;
+    //     int timestep = 0;
 
-            // Verification
-            ComputeAnalyticalSolution(&analytical, time, grep);
+    //     {
+    //         // in a scope, so it won't persist longer than required
+    //         Writer writer(&exman, time, timestep);
+    //         writer.Write(fman, &field.GetDataVector(), &analytical);
+    //     }
 
-            SC err_f{0.}, err_b{0.};
-            for (LO i{0}; i < grep.GetNumberLocalCellsInternal(); i++) {
-                LO i_loc = grep.MapInternalToLocal(i);
-                IndexLocal ind = grep.MapOrdinalToIndexLocal(i_loc);
-                SC phi_af = analytical.At(ind, 0);
-                SC phi_ab = analytical.At(ind, 1);
-                SC phi_ff = field.GetDataVector().At(ind, 0);
-                SC phi_fb = field.GetDataVector().At(ind, 1);
-                err_f += phi_af - phi_ff;
-                err_b += phi_ab - phi_fb;
-            }
-            err_f = exman.Allsum(err_f) / (nx * ny);
-            err_b = exman.Allsum(err_b) / (nx * ny);
-            exman(dare::mpi::Verbosity::Low)
-                << "error (f | b): " << err_f << " | " << err_b << '\n';
+    //     while (time < t_end) {
+    //         timestep++;
+    //         time += dt;
 
-            field.CopyDataVectorsToOldTimeStep();
+    //         msystem.Build(grep, field.GetDataVector(), build_coef, false);
 
-            if ((timestep % freq_write) == 0) {
-                Writer writer(&exman, time, timestep);
-                writer.Write(fman, &field.GetDataVector(), &analytical);
-            }
-        }
+    //         // msystem.PrintMatrix();
+    //         // msystem.PrintX();
+    //         // msystem.PrintB();
+
+    //         dare::Matrix::TrilinosSolver<SC> solver;
+    //         msystem.GetM() = solver.BuildPreconditioner(dare::Matrix::PreCondPackage::Ifpack2,
+    //                                                     "ILUT",
+    //                                                     p_ilu,
+    //                                                     msystem.GetA());
+    //         auto ret = solver.Solve(dare::Matrix::SolverPackage::Belos,
+    //                                 "BICGSTAB",
+    //                                 msystem.GetM(),
+    //                                 msystem.GetA(), msystem.GetX(), msystem.GetB(),
+    //                                 p_solver);
+    //         msystem.CopyTo(&field.GetDataVector());
+    //         if (ret != Belos::ReturnType::Converged) {
+    //             exman.Terminate(__func__, "solver did not converge");
+    //         }
+    //         exman.Print(dare::mpi::Verbosity::Low)
+    //             << "t: " << time << "\tstep: " << timestep << "\tit: " << solver.GetNumIterations() << '\n';
+
+    //         // Verification
+    //         ComputeAnalyticalSolution(&analytical, time, grep);
+
+    //         SC err_f{0.}, err_b{0.};
+    //         for (LO i{0}; i < grep.GetNumberLocalCellsInternal(); i++) {
+    //             LO i_loc = grep.MapInternalToLocal(i);
+    //             IndexLocal ind = grep.MapOrdinalToIndexLocal(i_loc);
+    //             SC phi_af = analytical.At(ind, 0);
+    //             SC phi_ab = analytical.At(ind, 1);
+    //             SC phi_ff = field.GetDataVector().At(ind, 0);
+    //             SC phi_fb = field.GetDataVector().At(ind, 1);
+    //             err_f += phi_af - phi_ff;
+    //             err_b += phi_ab - phi_fb;
+    //         }
+    //         err_f = exman.Allsum(err_f) / (nx * ny);
+    //         err_b = exman.Allsum(err_b) / (nx * ny);
+    //         exman(dare::mpi::Verbosity::Low)
+    //             << "error (f | b): " << err_f << " | " << err_b << '\n';
+
+    //         field.CopyDataVectorsToOldTimeStep();
+
+    //         if ((timestep % freq_write) == 0) {
+    //             Writer writer(&exman, time, timestep);
+    //             writer.Write(fman, &field.GetDataVector(), &analytical);
+    //         }
+    //     }
     }
     return 0;
 }

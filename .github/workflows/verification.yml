@@ -15,7 +15,7 @@ jobs:
   VerificationAdvection1D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.1
+      image: davevader/dare_test:3.2
 
     steps:
     - uses: actions/checkout@v3
@@ -39,7 +39,7 @@ jobs:
   VerificationDiffusion1D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.1
+      image: davevader/dare_test:3.2
 
     steps:
     - uses: actions/checkout@v3
@@ -63,7 +63,7 @@ jobs:
   VerificationAdvection2D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.1
+      image: davevader/dare_test:3.2
 
     strategy:
       matrix:
@@ -90,7 +90,7 @@ jobs:
   VerificationDiffusion2D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.1
+      image: davevader/dare_test:3.2
 
     strategy:
       matrix:

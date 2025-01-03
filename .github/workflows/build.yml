@@ -14,7 +14,7 @@ jobs:
   build_gcc_release:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.1
+      image: davevader/dare_test:3.2
 
     steps:
     - uses: actions/checkout@v3
@@ -32,7 +32,7 @@ jobs:
   build_gcc_debug:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.1
+      image: davevader/dare_test:3.2
 
     steps:
     - name: Configure CMake Debug
@@ -48,7 +48,7 @@ jobs:
   build_clang_debug:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.1
+      image: davevader/dare_test:3.2
 
     steps:
     - name: Configure CMake Debug
@@ -64,7 +64,7 @@ jobs:
   build_clang_release:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.1
+      image: davevader/dare_test:3.2
 
     steps:
     - name: Configure CMake Release

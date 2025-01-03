@@ -54,12 +54,12 @@ RUN make install -j 4
 
 WORKDIR /home/user
 
-# clone and install Trilinos
+# clone and install Trilinos with gcc
 RUN git clone https://github.com/trilinos/Trilinos.git TrilinosGit
 WORKDIR ./TrilinosGit
 RUN git pull
 # RUN git checkout trilinos-release-15-0-0
-WORKDIR ./build
+WORKDIR ./build_gcc
 RUN cmake ..\
     -GNinja \
     -DCMAKE_CXX_COMPILER=mpic++ \
@@ -89,9 +89,50 @@ RUN cmake ..\
     -DMueLu_ENABLE_Tutorial=OFF \
     -DTrilinos_SHOW_DEPRECATED_WARNINGS=OFF \
     -DTrilinos_HIDE_DEPRECATED_CODE=ON \
-    -DCMAKE_INSTALL_PREFIX="/usr/local"
+    -DCMAKE_INSTALL_PREFIX="/usr/local/trilinos_gcc"
 
 RUN ninja install -j 6
+
+# building trilinos with clang
+WORKDIR /home/user/TrilinosGit/build_clang
+ENV OMPI_CC=clang-18
+ENV OMPI_CXX=clang++-18
+RUN cmake ..\
+    -GNinja \
+    -DCMAKE_CXX_COMPILER=mpic++ \
+    -DCMAKE_C_COMPILER=mpicc \
+    -DCMAKE_Fortran_COMPILER=gfortran \
+    -DCMAKE_CXX_STANDARD=20 \
+    -DTrilinos_USE_GNUINSTALLDIRS=TRUE \
+    -DTrilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON \
+    -DBUILD_SHARED_LIBS:BOOL=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_EXTENSIONS=OFF \
+    -DTPL_ENABLE_MPI=ON \
+    -DTPL_ENABLE_gtest=OFF \
+    -DTrilinos_ENABLE_OpenMP=ON \
+    -DTrilinos_ENABLE_Gtest=OFF \
+    -DTrilinos_ENABLE_Tpetra=ON \
+    -DTrilinos_ENABLE_Xpetra=ON \
+    -DTrilinos_ENABLE_Amesos2=ON \
+    -DTrilinos_ENABLE_Belos=ON \
+    -DTrilinos_ENABLE_Kokkos=ON \
+    -DTrilinos_ENABLE_Ifpack2=ON \
+    -DTrilinos_ENABLE_Zoltan=ON \
+    -DTrilinos_ENABLE_Zoltan2=ON \
+    -DTrilinos_ENABLE_Teuchos=ON \
+    -DTrilinos_ENABLE_MueLu=ON \
+    -DTpetra_ASSUME_GPU_AWARE_MPI:BOOL=0 \
+    -DMueLu_ENABLE_Tutorial=OFF \
+    -DTrilinos_SHOW_DEPRECATED_WARNINGS=OFF \
+    -DTrilinos_HIDE_DEPRECATED_CODE=ON \
+    -DCMAKE_INSTALL_PREFIX="/usr/local/trilinos_clang"
+
+RUN ninja install -j 6
+
+#resetting environment variables
+ENV OMPI_CC=gcc
+ENV OMPI_CXX=g++
 
 # install vtk
 WORKDIR /home/user
