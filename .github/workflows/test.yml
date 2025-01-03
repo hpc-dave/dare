@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         procs: [1, 2, 3, 4]
-        compiler: [{cc: gcc, cxx: g++}, {cc: clang-18, cxx: clang++-18}]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
     steps:
     - uses: actions/checkout@v3
 
@@ -28,7 +28,12 @@ jobs:
       run: |
           rm -rf build_test
           mkdir build_test && cd build_test
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=ON -DDEBUG=ON -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}}
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja -DUSE_GTEST=ON \
+                   -DDEBUG=ON \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=${{matrix.compiler.trilinos}}
 
     - name: Build Test
       run: |

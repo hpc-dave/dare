@@ -24,7 +24,7 @@ jobs:
       run: |
           cp test/Verification/advection_periodic1D.cpp main.cpp
           mkdir build_adv1D && cd build_adv1D
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF -DCMAKE_PREFIX_PATH=/usr/local/trilinos_gcc
 
     - name: Build Test
       run: |
@@ -48,7 +48,7 @@ jobs:
       run: |
           cp test/Verification/counter_diffusion1D.cpp main.cpp
           mkdir build_diff1D && cd build_diff1D
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF -DCMAKE_PREFIX_PATH=/usr/local/trilinos_gcc
 
     - name: Build Test
       run: |
@@ -75,7 +75,7 @@ jobs:
       run: |
           cp test/Verification/advection_periodic2D.cpp main.cpp
           mkdir build_adv2D && cd build_adv2D
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF -DCMAKE_PREFIX_PATH=/usr/local/trilinos_gcc
 
     - name: Build Test
       run: |
@@ -102,7 +102,7 @@ jobs:
       run: |
           cp test/Verification/counter_diffusion2D.cpp main.cpp
           mkdir build_diff2D && cd build_diff2D
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF -DCMAKE_PREFIX_PATH=/usr/local/trilinos_gcc
 
     - name: Build Test
       run: |
