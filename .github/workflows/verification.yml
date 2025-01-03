@@ -28,7 +28,7 @@ jobs:
           cp test/Verification/advection_periodic1D.cpp main.cpp
           rm -rf build_adv1D
           mkdir build_adv1D && cd build_adv1D
-          cmake .. -DCMAKE_BUILD_TYPE=Release \ 
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
                    -GNinja \
                    -DUSE_GTEST=OFF \
                    -DDEBUG=OFF \
