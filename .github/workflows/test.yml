@@ -46,7 +46,8 @@ jobs:
     - name: Run Test
       run: |
           cd build_test
-          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_${{matrix.compiler.cc}}_P${{matrix.procs}}.xml" -T 1
+          echo "The output is dumped into a log file to avoid issues of github actions with large terminal output"
+          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_${{matrix.compiler.cc}}_P${{matrix.procs}}.xml" -t 1 > gtest.log
 
     - name: Move reports
       if: always()

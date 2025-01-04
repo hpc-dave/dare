@@ -40,7 +40,8 @@ jobs:
     - name: Build Test
       run: |
           cd build_adv1D
-          ninja -j 4
+          echo "The output is dumped into a log file to avoid issues of github actions with large terminal output"
+          ninja -j 4 > adv1D_${{matrix.compiler.gcc}}.log
 
     - name: Run Test
       timeout-minutes: 2
@@ -82,7 +83,8 @@ jobs:
       timeout-minutes: 2
       run: |
           cd build_diff1D
-          mpirun -n 1 exec -t 1
+          echo "The output is dumped into a log file to avoid issues of github actions with large terminal output"
+          mpirun -n 1 exec -t 1 > diff1D_${{matrix.compiler.gcc}}.log
 
   VerificationAdvection2D:
     runs-on: self-hosted
@@ -120,7 +122,8 @@ jobs:
       timeout-minutes: 2
       run: |
           cd build_adv2D
-          mpirun -n ${{matrix.procs}} exec -t 1
+          echo "The output is dumped into a log file to avoid issues of github actions with large terminal output"
+          mpirun -n ${{matrix.procs}} exec -t 1 > adv2D_${{matrix.compiler.gcc}}_p${{matrix.procs}}.log
 
   VerificationDiffusion2D:
     runs-on: self-hosted
@@ -158,4 +161,5 @@ jobs:
       timeout-minutes: 2
       run: |
           cd build_diff2D
-          mpirun -n ${{matrix.procs}} exec -t 1
+          echo "The output is dumped into a log file to avoid issues of github actions with large terminal output"
+          mpirun -n ${{matrix.procs}} exec -t 1 > diff2D_${{matrix.compiler.gcc}}_p${{matrix.procs}}.log
