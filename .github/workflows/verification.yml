@@ -111,6 +111,7 @@ jobs:
           ninja -j 4
 
     - name: Run Test
+      timeout-minutes: 2
       run: |
           cd build_adv2D
           mpirun -n ${{matrix.procs}} exec -t 1
