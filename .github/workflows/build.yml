@@ -30,7 +30,7 @@ jobs:
           rm -rf build
           mkdir build && cd build
           cmake .. -GNinja \
-                   -GUSE_GTEST=OFF \
+                   -DUSE_GTEST=OFF \
                    -DDEBUG=OFF \
                    -DCMAKE_BUILD_TYPE=${{matrix.build}} \
                    -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
