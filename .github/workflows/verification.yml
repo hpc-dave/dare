@@ -20,6 +20,7 @@ jobs:
     strategy:
       matrix:
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+      fail-fast: false
     steps:
     - uses: actions/checkout@v3
 
@@ -42,6 +43,7 @@ jobs:
           ninja -j 4
 
     - name: Run Test
+      timeout-minutes: 2
       run: |
           cd build_adv1D
           mpirun -n 1 exec -t 1
@@ -54,6 +56,7 @@ jobs:
     strategy:
       matrix:
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+      fail-fast: false
 
     steps:
     - uses: actions/checkout@v3
@@ -76,6 +79,7 @@ jobs:
           ninja -j 4
 
     - name: Run Test
+      timeout-minutes: 2
       run: |
           cd build_diff1D
           mpirun -n 1 exec -t 1
@@ -89,6 +93,8 @@ jobs:
       matrix:
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
         procs: [1, 2, 3, 4]
+      fail-fast: false
+
     steps:
     - uses: actions/checkout@v3
 
@@ -125,6 +131,8 @@ jobs:
       matrix:
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
         procs: [1, 2, 3, 4]
+      fail-fast: false
+
     steps:
     - uses: actions/checkout@v3
 
@@ -147,6 +155,7 @@ jobs:
           ninja -j 4
 
     - name: Run Test
+      timeout-minutes: 2
       run: |
           cd build_diff2D
           mpirun -n ${{matrix.procs}} exec -t 1
