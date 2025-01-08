@@ -766,7 +766,7 @@ template <std::size_t Dim, typename SC, std::size_t N>
 FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> operator*(
     const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& s_m,
     const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& s_f) {
-    FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& s;
+    FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> s(s_m);
     s *= s_f;
     return s;
 }
