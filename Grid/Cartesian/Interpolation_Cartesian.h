@@ -538,6 +538,7 @@ InterpolateToCenterStencil(const typename dare::Grid::Cartesian<Dim>::Representa
                            typename dare::Grid::Cartesian<Dim>::LocalOrdinalType distance = 0) {
     const auto STENCIL_SIZE = dare::Grid::Cartesian<Dim>::STENCIL_SIZE;
     dare::Data::CenterValueStencil<dare::Grid::Cartesian<Dim>, T, N> s;
+    ERROR << "This function is not appicable at the moment" << ERROR_CLOSE;
     for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
         typename dare::Grid::Cartesian<Dim>::Index ind(ind_target);
         // This little black magic here is actually quite simple

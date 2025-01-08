@@ -1,6 +1,7 @@
 set(DaRe_HEADER_FILES
     "Array.h"
     "Array.inl"
+    "CompileTimeFunctions.h"
     "Vector.h"
     "Vector.inl"
     "Vector_traits.h"

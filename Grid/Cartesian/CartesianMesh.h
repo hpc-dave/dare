@@ -25,7 +25,6 @@
 #ifndef GRID_CARTESIAN_CARTESIANMESH_H_
 #define GRID_CARTESIAN_CARTESIANMESH_H_
 
-#include <list>
 #include <string>
 #include <unordered_map>
 #include <iostream>
@@ -34,146 +33,12 @@
 #include "Utilities/Vector.h"
 #include "Utilities/InitializationTracker.h"
 #include "Utilities/Errors.h"
+
 #include "Data/DefaultTypes.h"
 #include "CartesianDistribution.h"
 #include "CartesianRepresentation.h"
 
 namespace dare::Grid {
-namespace details::Cartesian {
-/*!
- * @brief A small object to avoid double definition of grids of same names
- */
-class AllocationManager {
-    static std::list<std::string> reg;  //!< register for grid names
-public:
-    /*!
-     * @brief registering a name 
-     * @param gname name of the grid to register
-     * @return true, if not registered before, false if another grid exists
-     */
-    static bool RegisterGrid(const std::string& gname);
-
-    /*!
-     * @brief removing grid from register
-     * @param gname name of the grid to deregister
-     * @return true, if successful, false if gridname unknown
-     */
-    static bool DeregisterGrid(const std::string& gname);
-};
-}  // end namespace details::Cartesian
-
-/*!
- * @brief identifiers for neighbor IDs of a Cartesian cell
- */
-enum class CartesianNeighbor : char {
-    CENTER = 0,
-    WEST = 1,
-    EAST = 2,
-    SOUTH = 3,
-    NORTH = 4,
-    BOTTOM = 5,
-    TOP = 6,
-    FOURD_LOW = 7,
-    FOURD_UP = 8,
-};
-
-/*!
- * @brief converts enum to char
- * @param pos Neighbor enum
- */
-[[nodiscard]] inline char ToNum(CartesianNeighbor pos) {
-    return static_cast<char>(pos);
-}
-
-/*!
- * @brief converts enum to char excluding center
- * @param face enum of face
- * This is mainly meant for array access of faces!
- */
-[[nodiscard]] inline char ToFace(CartesianNeighbor face) {
-#ifndef DARE_NDEBUG
-    if (face == CartesianNeighbor::CENTER) {
-        std::cerr << "In " << __func__ << ": Center is not a face!\n";
-    }
-#endif
-    return ToNum(face) - 1;
-}
-
-/*!
- * @brief Converts enum to normal
- * @param nb neighbor id
- */
-[[nodiscard]] inline char ToNormal(CartesianNeighbor nb) {
-    char n = (ToNum(nb) % 2 == 0) - (ToNum(nb) % 2 > 0) - (nb == CartesianNeighbor::CENTER);
-    return n;
-}
-
-/*!
- * \brief converts numerical id to CartesianNeighbor enum
- * @param id numerical identifier
- */
-[[nodiscard]] inline CartesianNeighbor ToCartesianNeighbor(char id) {
-    using CNB = CartesianNeighbor;
-    switch (id) {
-    case 0:
-        return CNB::CENTER;
-        break;
-    case 1:
-        return CNB::WEST;
-        break;
-    case 2:
-        return CNB::EAST;
-        break;
-    case 3:
-        return CNB::SOUTH;
-        break;
-    case 4:
-        return CNB::NORTH;
-        break;
-    case 5:
-        return CNB::BOTTOM;
-        break;
-    case 6:
-        return CNB::TOP;
-        break;
-    case 7:
-        return CNB::FOURD_LOW;
-        break;
-    case 8:
-        return CNB::FOURD_UP;
-        break;
-    }
-    ERROR << "invalid ID provided (" << id << ")" << ERROR_CLOSE;
-    return CNB::FOURD_UP;  // most unlikely to be ever used
-}
-
-/*!
- * @brief converts an integer to enum
- * @tparam ID signed 8 bit integer
- */
-template <char ID>
-[[nodiscard]] constexpr CartesianNeighbor ToCartesianNeighbor() {
-    static_assert(ID >= 0 && ID < 9);
-    using CNB = CartesianNeighbor;
-    if constexpr (ID == 0)
-        return CNB::CENTER;
-    else if constexpr(1)
-        return CNB::WEST;
-    else if constexpr (2)
-        return CNB::EAST;
-    else if constexpr (3)
-        return CNB::SOUTH;
-    else if constexpr (4)
-        return CNB::NORTH;
-    else if constexpr (5)
-        return CNB::BOTTOM;
-    else if constexpr (6)
-        return CNB::TOP;
-    else if constexpr (7)
-        return CNB::FOURD_LOW;
-    else if constexpr (8)
-        return CNB::FOURD_UP;
-}
 
 /*!
  * @brief A distributed Cartesian grid
@@ -365,6 +230,14 @@ public:
      * @brief provides unique name of this grid
      */
     std::string GetName() const;
+
+    [[nodiscard]] constexpr CartesianRangeType<STENCIL_SIZE> GetPositions() const {
+        return GetCartesianPositionRange<Dim>();
+    }
+
+    [[nodiscard]] constexpr CartesianRangeType<NUM_FACES> GetFaces() const {
+        return GetCartesianFaceRange<Dim>();
+    }
 
 private:
     std::string name;         //!< name of the grid

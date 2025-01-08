@@ -33,17 +33,13 @@
 
 #include "MPI/HaloBuffer.h"
 #include "Utilities/InitializationTracker.h"
+#include "CartesianMeshUtils.h"
+
 namespace dare::Grid {
 
 // forward declaration of the Grid
 template <std::size_t Dim>
 class Cartesian;
-
-// forward declarations for CartesianNeighbor
-enum class CartesianNeighbor : char;
-char ToNum(CartesianNeighbor pos);
-char ToFace(CartesianNeighbor face);
-char ToNormal(CartesianNeighbor nb);
 
 /*!
  * @brief Representation of Cartesian grid
@@ -93,6 +89,14 @@ public:
      */
     CartesianRepresentation<Dim>&
     operator=(const CartesianRepresentation<Dim>& other) = default;
+
+    [[nodiscard]] constexpr CartesianRangeType<GridType::STENCIL_SIZE> GetPositions(LO = 0) const {
+        return grid->GetPositions();
+    }
+
+    [[nodiscard]] constexpr CartesianRangeType<GridType::NUM_FACES> GetFaces(LO = 0) const {
+        return grid->GetFaces();
+    }
 
     /*!
      * @brief query if grid is staggered

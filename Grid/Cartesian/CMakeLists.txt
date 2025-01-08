@@ -1,5 +1,6 @@
 set(DaRe_HEADER_FILES
     "CartesianMesh.h"
+    "CartesianMeshUtils.h"
     "CartesianDistribution.h"
     "CartesianRepresentation.h"
     "CartesianMesh.inl"

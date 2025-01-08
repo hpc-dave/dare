@@ -598,6 +598,20 @@ public:
     operator=(const FaceValueStencil<GridType, SC, N>& other);
 
     /*!
+     * @brief getter for face values
+     * @param face position of value (e.g. CENTER)
+     * @param n component ID
+     */
+    SC& operator()(Positions face, std::size_t n);
+
+    /*!
+     * @brief const getter for face values
+     * @param face position of value (e.g. CENTER)
+     * @param n component ID
+     */
+    SC operator()(Positions face, std::size_t n) const;
+
+    /*!
      * @brief multiplication assignment operator for scalar
      * @param v scalar value
      */

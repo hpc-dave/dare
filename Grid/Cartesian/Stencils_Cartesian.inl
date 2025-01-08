@@ -609,6 +609,16 @@ FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator=(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
+SC& FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator()(Positions face, std::size_t n) {
+    return GetValue(face, n);
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+SC FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator()(Positions face, std::size_t n) const {
+    return GetValue(face, n);
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
 FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>&
 FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(SC v) {
     for (auto& c : coefficients)
