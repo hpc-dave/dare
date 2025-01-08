@@ -181,6 +181,19 @@ void Trilinos<SC>::CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const {
 }
 
 template <typename SC>
+template <typename Grid, std::size_t N>
+void Trilinos<SC>::AddTo(dare::Data::GridVector<Grid, SC, N>* gvec) const {
+    auto grid = gvec->GetGridRepresentation();
+    const LO num_cells{grid.GetNumberLocalCellsInternal()};
+    for (LO node = 0; node < num_cells; node++) {
+        LO node_loc = grid.MapInternalToLocal(node);
+        LO offset = node * N;
+        for (std::size_t n{0}; n < N; n++)
+            gvec->At(node_loc, n) += x->getData()[offset + n];
+    }
+}
+
+template <typename SC>
 void Trilinos<SC>::PrintRowLocal(LO row) const {
     GO row_global = this->map->getGlobalElement(row);
     PrintRow(row_global);

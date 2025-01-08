@@ -198,6 +198,13 @@ public:
     void CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const;
 
     /*!
+     * @brief adds the data from the solution vector to the provided gridvector
+     * @param gvec grid vector
+     */
+    template <typename Grid, std::size_t N>
+    void AddTo(dare::Data::GridVector<Grid, SC, N>* gvec) const;
+
+    /*!
      * @brief prints the local row of the stored matrix to the terminal
      * @param row local row ordinal
      * \note the printed row ordinals are given in global ordinals

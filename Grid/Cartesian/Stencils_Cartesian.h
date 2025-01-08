@@ -731,6 +731,33 @@ private:
     DataArray coefficients;  //!< raw data array with stencil data
 };
 
+// free functions to create coupled operators
+template <std::size_t Dim, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& operator*=(
+    FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& s_m,              // NOLINT
+    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& s_f) {
+    const auto STENCIL_SIZE = dare::Grid::Cartesian<Dim>::STENCIL_SIZE;
+    for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
+        const auto face = dare::Grid::ToCartesianNeighbor(face_id);
+        for (std::size_t n{0}; n < N; n++) {
+            SC v = s_f.GetValue(face, n);
+            s_m.GetValueNeighbor(face, n) *= v;
+            s_m.GetValueCenter(face, n) *= v;
+        }
+    }
+    return s_m;
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> operator*(
+    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& s_m,
+    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& s_f) {
+    FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& s;
+    s *= s_f;
+    return s;
+}
+
+
 }  // end namespace dare::Data
 
 #include "Stencils_Cartesian.inl"

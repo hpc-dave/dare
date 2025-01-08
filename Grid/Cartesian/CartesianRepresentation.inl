@@ -234,6 +234,11 @@ CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
 }
 
 template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsStaggered() const {
+    return options.AllAbsSum() > 0;
+}
+
+template <std::size_t Dim>
 typename CartesianRepresentation<Dim>::VecSC
 CartesianRepresentation<Dim>::GetCoordinatesCenter(const Index& ind) const {
     TestIfInitialized(__func__);

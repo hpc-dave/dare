@@ -31,10 +31,13 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::TVD(
     : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))) {
     for (std::size_t id{0}; id < (Dim * 2); id++) {
         const Grid::CartesianNeighbor cnb = Grid::ToCartesianNeighbor(id + 1);
-        const SC value = math::InterpolateToFace(grid, ind, cnb, *v[id / 2]);
+        const SC value = math::InterpolateToFace(grid, ind, cnb, *v[id / 2], 0);
         velocity.SetValue(cnb, 0, value);
         upwind[id] = value >= static_cast<SC>(0.);
     }
+#ifndef DARE_NDEBUG
+    grep_debug = &grid;
+#endif
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
@@ -74,11 +77,11 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
          * 4) Determine face values
          */
         // 1) determine directions
-        SC vel_pos{upwind[d * 2]};
-        SC vel_neg{!upwind[d * 2]};
+        SC vel_pos{static_cast<SC>(upwind[d * 2])};
+        SC vel_neg{static_cast<SC>(!upwind[d * 2])};
         const Grid::CartesianNeighbor center = Grid::CartesianNeighbor::CENTER;
         Grid::CartesianNeighbor cnb_low = Grid::ToCartesianNeighbor(d * 2 + 1);
-        Grid::CartesianNeighbor cnb_up = Grid::ToCartesianNeighbor(d * 2 + 1);
+        Grid::CartesianNeighbor cnb_up = Grid::ToCartesianNeighbor(d * 2 + 2);
 
         // 2) Get values from stencil
         phi_UU = vel_pos * s_far.GetValues(cnb_low) + vel_neg * s_close.GetValues(cnb_up);
@@ -97,8 +100,8 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
          * The same is happening at the upper face, just one cell further
          */
         // 1) determine directions
-        vel_pos = upwind[d * 2 + 1];
-        vel_neg = !upwind[d * 2 + 1];
+        vel_pos = static_cast<SC>(upwind[d * 2 + 1]);
+        vel_neg = static_cast<SC>(!upwind[d * 2 + 1]);
 
         // 2) Get values from stencil
         phi_UU = vel_pos * s_close.GetValues(cnb_low) + vel_neg * s_far.GetValues(cnb_up);
@@ -122,6 +125,15 @@ template <std::size_t N>
 dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
 TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
     const dare::Data::GridVector<GridType, SC, N>& field) const {
+#ifndef DARE_NDEBUG
+    if (field.GetGridRepresentation().IsStaggered()) {
+        if (grep_debug->GetOptions() != field.GetGridRepresentation().GetOptions()) {
+            ERROR << "Interpolation from the field is not supported for non-equally staggered fields!"
+                  << "For self convection, please provide the appropriate stencils directly!"
+                  << ERROR_CLOSE;
+        }
+    }
+#endif
     dare::Data::FaceValueStencil<GridType, SC, N> face_values;
     dare::utils::Vector<N, SC> phi_UU, phi_U, phi_D, r_f, flux_lim;
     Index ind_UU, ind_U, ind_D;

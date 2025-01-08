@@ -27,9 +27,10 @@
 
 #include <limits>
 
-#include "Math/Interpolation.h"
+#include "Grid/Cartesian/CartesianMesh.h"
+// #include "Grid/Cartesian/Stencils_Cartesian.h"
 #include "Math/Divisors.h"
-#include "Grid/Cartesian.h"
+#include "Math/Interpolation.h"
 #include "Utilities/Errors.h"
 
 namespace dare::math {
@@ -502,6 +503,59 @@ dare::utils::Vector<N, SC> InterpolateToPoint(const typename dare::utils::Vector
 
     return Interpolate(field, vlist, weights);
 }
+
+template <std::size_t Dim, typename T, std::size_t N>
+[[nodiscard]] dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, T, N>
+InterpolateToFaceStencil(const typename dare::Grid::Cartesian<Dim>::Representation& grid_target,
+                         typename dare::Grid::Cartesian<Dim>::Index ind_target,
+                         const dare::Data::GridVector<dare::Grid::Cartesian<Dim>, T, N>& field,
+                         typename dare::Grid::Cartesian<Dim>::LocalOrdinalType distance = 0) {
+    const auto STENCIL_SIZE = dare::Grid::Cartesian<Dim>::STENCIL_SIZE;
+    dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, T, N> s;
+    for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
+        typename dare::Grid::Cartesian<Dim>::Index ind(ind_target);
+        // This little black magic here is actually quite simple
+        // We need to map the face id to plus or minus the distance
+        // id(WEST) = 1 --> (id-1)/2 = 0/2 => 0; (id+1) % 2 => 0; -(id % 2) => -1
+        // id(EAST) = 2 --> (id-1)/2 = 1/2 => 0 (integer division!); (id+1) % 2 => 1; -(id % 2) => 0
+        // To be sure for the future, we test here the compliance with this method at compile time
+        static_assert(static_cast<char>(dare::Grid::CartesianNeighbor::WEST) == 1, "The west neighbor needs to be 1!");
+        static_assert(static_cast<char>(dare::Grid::CartesianNeighbor::EAST) == 2, "The east neighbor needs to be 2!");
+        ind[(face_id - 1) / 2] += (((face_id + 1) % 2) - (face_id % 2)) * distance;
+        for (std::size_t n{0}; n < N; n++) {
+            const auto face = dare::Grid::ToCartesianNeighbor(face_id);
+            s.SetValue(face, n, dare::math::InterpolateToFace(grid_target, ind, face, field, n));
+        }
+    }
+    return s;
+}
+
+template <std::size_t Dim, typename T, std::size_t N>
+[[nodiscard]] dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, T, N>
+InterpolateToCenterStencil(const typename dare::Grid::Cartesian<Dim>::Representation& grid_target,
+                           typename dare::Grid::Cartesian<Dim>::Index ind_target,
+                           const dare::Data::GridVector<dare::Grid::Cartesian<Dim>, T, N>& field,
+                           typename dare::Grid::Cartesian<Dim>::LocalOrdinalType distance = 0) {
+    const auto STENCIL_SIZE = dare::Grid::Cartesian<Dim>::STENCIL_SIZE;
+    dare::Data::CenterValueStencil<dare::Grid::Cartesian<Dim>, T, N> s;
+    for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
+        typename dare::Grid::Cartesian<Dim>::Index ind(ind_target);
+        // This little black magic here is actually quite simple
+        // We need to map the face id to plus or minus the distance
+        // id(WEST) = 1 --> (id-1)/2 = 0/2 => 0; (id+1) % 2 => 0; -(id % 2) => -1
+        // id(EAST) = 2 --> (id-1)/2 = 1/2 => 0 (integer division!); (id+1) % 2 => 1; -(id % 2) => 0
+        // To be sure for the future, we test here the compliance with this method at compile time
+        static_assert(static_cast<char>(dare::Grid::CartesianNeighbor::WEST) == 1, "The west neighbor needs to be 1!");
+        static_assert(static_cast<char>(dare::Grid::CartesianNeighbor::EAST) == 2, "The east neighbor needs to be 2!");
+        ind[(face_id - 1) / 2] += (((face_id + 1) % 2) - (face_id % 2)) * distance;
+        for (std::size_t n{0}; n < N; n++) {
+            const auto face = dare::Grid::ToCartesianNeighbor(face_id);
+            s.SetValue(face, n, dare::math::InterpolateToFace(grid_target, ind, face, field, n));
+        }
+    }
+    return s;
+}
+
 }  // end namespace dare::math
 
 #endif  // GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_

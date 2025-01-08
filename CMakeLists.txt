@@ -6,6 +6,9 @@ project(DaRe
     LANGUAGES C CXX
 )
 
+# setting it here generates teh compile_commands.json at first invokation
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 option(DEBUG
     "Enables debugging statements for the repository"
     OFF
@@ -27,7 +30,7 @@ if(USE_GTEST)
 endif()
 
 # exports compile_command.json with relevant parths
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 set(CMAKE_FIND_PACKAGE_SORT_ORDER NATURAL)
 set(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
 

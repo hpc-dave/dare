@@ -95,6 +95,12 @@ public:
     operator=(const CartesianRepresentation<Dim>& other) = default;
 
     /*!
+     * @brief query if grid is staggered
+     * @return true, if staggered
+     */
+    [[nodiscard]] bool IsStaggered() const;
+
+    /*!
      * @brief provides spatial position of the specified cell
      * @param ind local index
      * @return vector of size Dim with coordinates

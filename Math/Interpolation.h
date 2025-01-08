@@ -29,6 +29,7 @@
 #include <typeinfo>
 
 #include "Data/GridVector.h"
+#include "Data/Stencil.h"
 #include "Pow.h"
 #include "Utilities/Errors.h"
 
@@ -77,7 +78,8 @@ template <typename GridType, typename SC, std::size_t N>
                                                            const typename GridType::Index& ind_target,
                                                            const typename GridType::NeighborID face,
                                                            const Data::GridVector<GridType, SC, N>& field) {
-    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
+    static_assert(dare::always_false<>,
+                  "This function is not implemented in a general fashion, check for specializations!");
     return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
 
@@ -98,7 +100,8 @@ template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] SC InterpolateToPoint(const typename GridType::VecSC& point,
                       const Data::GridVector<GridType, SC, N>& field,
                       std::size_t n) {
-    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
+    static_assert(dare::always_false<>,
+                  "This function is not implemented in a general fashion, check for specializations!");
     return std::numeric_limits<SC>::signaling_NaN();
 }
 
@@ -117,8 +120,8 @@ template <typename GridType, typename SC, std::size_t N>
 template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] dare::utils::Vector<N, SC> InterpolateToPoint(const typename GridType::VecSC& point,
                                                             const Data::GridVector<GridType, SC, N>& field) {
-    // static_assert(true);
-    static_assert(dare::always_false<>, "This function is not implemeted for the GridType");
+    static_assert(dare::always_false<>,
+                  "This function is not implemented in a general fashion, check for specializations!");
     return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
 
@@ -177,7 +180,16 @@ template <typename GridType, typename T, std::size_t N, std::size_t NUM_VALUES>
     return v;
 }
 
-
+template <typename GridType, typename T, std::size_t N>
+[[nodiscard]] dare::Data::FaceValueStencil<GridType, T, N>
+InterpolateToFaceStencil(const typename GridType::Representation& grid_target,
+                         typename GridType::Index ind_target,
+                         const dare::Data::GridVector<GridType, T, N>& field,
+                         typename GridType::LocalOrdinal distance = 0) {
+    static_assert(dare::always_false<>,
+                  "This function is not implemented in a general fashion, check for specializations!");
+    return dare::Data::FaceValueStencil<GridType, T, N>();
+}
 
 }  // end namespace dare::math
 

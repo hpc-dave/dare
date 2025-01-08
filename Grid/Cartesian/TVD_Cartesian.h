@@ -124,6 +124,9 @@ private:
     Index ind;                                               //!< triplet of indices
     dare::Data::FaceValueStencil<GridType, SC, 1> velocity;  //!< stencil with velocity
     dare::utils::Vector<NUM_FACES, bool> upwind;             //!< identifier for upwind at each face
+#ifndef DARE_NDEBUG
+    const GridRepresentation* grep_debug;                           //!< debugging helper with grid information
+#endif
 };
 
 }  // end namespace dare::Matrix

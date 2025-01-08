@@ -21,8 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef MATRIXSYSTEM_OPERATORS_CARTESIAN_H_
-#define MATRIXSYSTEM_OPERATORS_CARTESIAN_H_
 
 #include <tuple>
 
@@ -133,7 +131,7 @@ template <typename SC, std::size_t N>
 void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
     const dare::Data::Field<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const {
     for (std::size_t n{0}; n < NUM_TIMESTEPS; n++) {
-        s->At(n) *= PopulateFaceValueFromField(f.GetDataVector(n));
+        (*s)[n] *= PopulateFaceValueFromField(f.GetDataVector(n));
     }
 }
 
@@ -294,37 +292,39 @@ template <typename SC, std::size_t N>
 dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
 Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFromField(
     const dare::Data::GridVector<GridType, SC, N>& f) const {
-    static_assert(dare::always_false<>, "need to interpolated those values!");
-    using Pos = typename dare::Grid::Cartesian<Dim>::NeighborID;
-    Index ind_nb{ind};
-    dare::Data::FaceValueStencil<GridType, SC, N> s;
+    return dare::math::InterpolateToFaceStencil(*grep, ind, f);
 
-    ind_nb.i()--;
-    auto v = dare::math::InterpolateToFace(*grep, ind, Pos::WEST, f);
-    for (std::size_t n{0}; n < N; n++)
-        s.SetValue(Pos::WEST, v[n]);
-    ind_nb.i() += 2;
-    for (std::size_t n{0}; n < N; n++)
-        s.SetValue(Pos::EAST, f.At(ind_nb, n));
-    if constexpr (Dim > 1) {
-        ind_nb.i()--;
-        ind_nb.j()--;
-        for (std::size_t n{0}; n < N; n++)
-            s.SetValue(Pos::SOUTH, f.At(ind_nb, n));
-        ind_nb.j() += 2;
-        for (std::size_t n{0}; n < N; n++)
-            s.SetValue(Pos::NORTH, f.At(ind_nb, n));
-    }
-    if constexpr (Dim > 2) {
-        ind_nb.j()--;
-        ind_nb.k()--;
-        for (std::size_t n{0}; n < N; n++)
-            s.SetValue(Pos::BOTTOM, f.At(ind_nb, n));
-        ind_nb.k() += 2;
-        for (std::size_t n{0}; n < N; n++)
-            s.SetValue(Pos::TOP, f.At(ind_nb, n));
-    }
-    return s;
+    // static_assert(dare::always_false<>, "need to interpolated those values!");
+    // using Pos = typename dare::Grid::Cartesian<Dim>::NeighborID;
+    // Index ind_nb{ind};
+    // dare::Data::FaceValueStencil<GridType, SC, N> s;
+
+    // ind_nb.i()--;
+    // auto v = dare::math::InterpolateToFace(*grep, ind, Pos::WEST, f);
+    // for (std::size_t n{0}; n < N; n++)
+    //     s.SetValue(Pos::WEST, v[n]);
+    // ind_nb.i() += 2;
+    // for (std::size_t n{0}; n < N; n++)
+    //     s.SetValue(Pos::EAST, f.At(ind_nb, n));
+    // if constexpr (Dim > 1) {
+    //     ind_nb.i()--;
+    //     ind_nb.j()--;
+    //     for (std::size_t n{0}; n < N; n++)
+    //         s.SetValue(Pos::SOUTH, f.At(ind_nb, n));
+    //     ind_nb.j() += 2;
+    //     for (std::size_t n{0}; n < N; n++)
+    //         s.SetValue(Pos::NORTH, f.At(ind_nb, n));
+    // }
+    // if constexpr (Dim > 2) {
+    //     ind_nb.j()--;
+    //     ind_nb.k()--;
+    //     for (std::size_t n{0}; n < N; n++)
+    //         s.SetValue(Pos::BOTTOM, f.At(ind_nb, n));
+    //     ind_nb.k() += 2;
+    //     for (std::size_t n{0}; n < N; n++)
+    //         s.SetValue(Pos::TOP, f.At(ind_nb, n));
+    // }
+    // return s;
 }
 
 template <std::size_t Dim, typename TimeDiscretization>
@@ -380,5 +380,3 @@ Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::GetFaceMatrixStencil
 }
 
 }  // end namespace dare::Matrix
-
-#endif  // MATRIXSYSTEM_OPERATORS_CARTESIAN_H_

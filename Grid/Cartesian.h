@@ -30,5 +30,6 @@
 #include "Cartesian/Operators_Cartesian.h"
 #include "Cartesian/Stencils_Cartesian.h"
 #include "Cartesian/VTKOptions_Cartesian.h"
+#include "Cartesian/Interpolation_Cartesian.h"
 
 #endif  // GRID_CARTESIAN_H_
