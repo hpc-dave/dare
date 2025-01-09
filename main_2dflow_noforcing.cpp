@@ -86,16 +86,16 @@ int main(int argc, char* argv[]) {
             mom_y.SetValues(0.);
 
             Field rho("density", grid_s, 2);
-            rho.SetValues(1000);
+            rho.SetValues(1);
 
             Field mu("viscosity", grid_s, 2);
             mu.SetValues(1e-3);
 
             Field beta("beta", grid_s, 1);
-            beta.SetValues(1.);
+            beta.SetValues(0.);
 
             Field epsilon("porosity", grid_s, 2);
-            epsilon.SetValues(0.5);
+            epsilon.SetValues(1.);
             // beta.GetDataVector().At(0, 0) = 0.;
             // beta.GetDataVector().At(1, 0) = 0.;
             // beta.GetDataVector().At(2, 0) = 0.;
