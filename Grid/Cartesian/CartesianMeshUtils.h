@@ -209,6 +209,41 @@ template <char ID>
         return CNB::FOURD_UP;
 }
 
+/*!
+ * \brief maps a Cartesian face identifier to a dimension
+ * @param face face to refer to
+ * 
+ * this maps the faces of a Cartesian grid to a dimension, e.g.
+ * EAST/WEST -> 0
+ * SOUTH/NORTH -> 1
+ * BOTTOM/TOP -> 2
+ */
+[[nodiscard]] inline std::size_t MapCartesianFaceToDim(CartesianNeighbor face) {
+    using size_t = std::size_t;
+#ifndef DARE_NDEBUG
+    if (face == CartesianNeighbor::CENTER) {
+        ERROR << "The input has to be a Cartesian face and may not be CENTER!" << ERROR_CLOSE;
+    }
+#endif
+    return (static_cast<size_t>(face) - static_cast <size_t>(1)) / static_cast<size_t>(2);
+}
+
+/*!
+ * \brief maps a Cartesian face identifier to a dimension at compile time
+ * @param face face to refer to
+ *
+ * this maps the faces of a Cartesian grid to a dimension, e.g.
+ * EAST/WEST -> 0
+ * SOUTH/NORTH -> 1
+ * BOTTOM/TOP -> 2
+ */
+template<CartesianNeighbor CNB>
+constexpr std::size_t MapCartesianFaceToDim() {
+    using size_t = std::size_t;
+    static_assert(CNB != CartesianNeighbor::CENTER, "The input has to be a Cartesian face and may not be CENTER!");
+    return (static_cast<size_t>(CNB) - static_cast<size_t>(1)) / static_cast<size_t>(2);
+}
+
 }  // namespace dare::Grid
 
 #endif  // GRID_CARTESIAN_CARTESIANMESHUTILS_H_

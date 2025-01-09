@@ -88,6 +88,18 @@ T GridVector<Grid, T, N>::At(LO n, std::size_t c) const {
 }
 
 template <typename Grid, typename T, std::size_t N>
+template<typename... Args>
+T& GridVector<Grid, T, N>::operator()(Args&&... args) {
+    return At(args...);
+}
+
+template <typename Grid, typename T, std::size_t N>
+template <typename... Args>
+T GridVector<Grid, T, N>::operator()(Args&&... args) const {
+    return At(args...);
+}
+
+template <typename Grid, typename T, std::size_t N>
 T GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) const {
     return At(grid.MapIndexToOrdinalLocal(ind), c);
 }

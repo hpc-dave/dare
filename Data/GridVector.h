@@ -140,6 +140,28 @@ public:
     T At(const Index& ind, std::size_t c) const;
 
     /*!
+     * @brief an overload for the At-method
+     * @tparam ...Args input parameter types
+     * @param ...args input parameters
+     * @return reference to internal value
+     * 
+     * This operator will forward all the arguments to the At-method
+     */
+    template <typename... Args>
+    T& operator()(Args&&... args);
+
+    /*!
+     * @brief a const overload for the At-method
+     * @tparam ...Args input parameter types
+     * @param ...args input parameters
+     * @return reference to internal value
+     *
+     * This operator will forward all the arguments to the At-method
+     */
+    template <typename... Args>
+    T operator()(Args&&... args) const;
+
+    /*!
      * @brief returns vector with all components
      * @param n local ordinal
      */
