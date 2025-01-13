@@ -140,6 +140,8 @@ template <typename SC, std::size_t N>
 dare::Data::CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
 Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
     const TFaceMatrixStencil<SC, N>& s) const {
+    // This whole function is quite verbose, helps during debugging and
+    // maybe optimizes the whole thing...
     dare::Data::CenterMatrixStencil<GridType, SC, N> s_c;
     // at timestep 0, we deal with the implicit components
     for (std::size_t n{0}; n < N; n++) {

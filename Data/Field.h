@@ -25,16 +25,27 @@
 #ifndef DATA_FIELD_H_
 #define DATA_FIELD_H_
 
-#include <vector>
-#include <string>
-#include <limits>
+#include <concepts>
 #include <iostream>
+#include <limits>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 #include "GridVector.h"
 #include "MPI/HaloBuffer.h"
 #include "Utilities/Errors.h"
 
 namespace dare::Data {
+
+namespace detail {
+/*!
+ * \brief a tagging class for easier concept handling
+ */
+struct FieldTag {
+};
+
+}  // namespace detail
 
 /*!
  * @brief manages field related data and stores time steps
@@ -46,7 +57,7 @@ namespace dare::Data {
  * timesteps at levels 1, 2, ...
  */
 template <typename Grid, typename SC, std::size_t N>
-class Field {
+class Field : detail::FieldTag {
 public:
     using GridType = Grid;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
@@ -143,12 +154,19 @@ private:
 namespace dare {
 
 /*!
+ * \brief concept to determine a Field
+ */
+template <typename T>
+concept FieldType = std::is_base_of_v<Data::detail::FieldTag, std::remove_cv_t<T>>;
+
+
+/*!
  * @brief type trait to determine if type is a Field
  * @tparam T type to test
  * This is the SFINAE option for false
  */
 template <typename T>
-struct is_field : std::false_type{
+struct is_field : std::false_type {
 };
 
 /*!
@@ -156,12 +174,8 @@ struct is_field : std::false_type{
  * @tparam T type to test
  * This is the SFINAE option for true
  */
-template<typename Grid, typename SC, std::size_t N>
-struct is_field<Data::Field<Grid, SC, N>> : std::true_type{
-};
-
-template <typename Grid, typename SC, std::size_t N>
-struct is_field<const Data::Field<Grid, SC, N>> : std::true_type {
+template<FieldType T>
+struct is_field<T> : std::true_type{
 };
 
 template <typename T>

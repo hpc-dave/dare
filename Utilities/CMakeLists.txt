@@ -7,6 +7,7 @@ set(DaRe_HEADER_FILES
     "Vector_traits.h"
     "Hashes.h"
     "InitializationTracker.h"
+    "Observer.h"
     "Errors.h"
 )
 
