@@ -200,6 +200,7 @@ if(USE_GTEST)
     endif()
 endif()
 
+add_subdirectory(Algorithm                                            )
 add_subdirectory(AnalyticalSolutions                                  )
 add_subdirectory(Data                                                 )
 add_subdirectory(Equations                                            )
