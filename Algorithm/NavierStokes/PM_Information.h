@@ -108,7 +108,7 @@ struct PMMomentumIterationInfo : PMNumericsInfo<Type, PMNumerics::MomentumIterat
 template <typename Type>
 struct PMContinuityIterationInfo : PMNumericsInfo<Type, PMNumerics::ContinuityIterations> {};
 
-template <TimeDiscretizationScheme Type>
+template <typename Type>
 struct PMTimeSchemeConvectiveInfo : PMNumericsInfo<Type, PMNumerics::TimeSchemeConvective> {};
 
 /*!

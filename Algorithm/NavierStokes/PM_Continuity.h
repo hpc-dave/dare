@@ -40,6 +40,7 @@ namespace dare::algorithm {
 template<typename Grid, typename BoundaryStrategy, typename CustomMember>
 class PMContinuity {
     using GridType = Grid;
+    using GridRepresentation = typename GridType::Representation;
     using BoundaryStrategyType = BoundaryStrategy;
     using SC = typename Grid::ScalarType;
     using LO = typename Grid::LocalOrdinalType;
@@ -102,12 +103,12 @@ private:
     BoundaryStrategyType boundary_strategy;
     FieldType pressure;
     FieldType defect;
-    FieldType dp;
+    FieldType dP;
     CustomMemberType custom_member;
     std::set<std::function<void(SelfType*)>> pre_step_strategy;
     std::set<std::function<void(SelfType*)>> post_step_strategy;
     MatrixSystemType matrix_system;
-}
+};
 
 }  // namespace dare::algorithm
 

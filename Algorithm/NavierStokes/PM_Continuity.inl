@@ -56,8 +56,8 @@ std::pair<bool, int> PMContinuity<Grid, BS, CM>::Solve(SolverPropertyType sprop,
 
 template <typename Grid, typename BS, typename CM>
 void PMContinuity<Grid, BS, CM>::UpdateBoundaries() {
-    boundary_strategy(&data);
-    data.ExchangeHaloCells();
+    boundary_strategy(&pressure);
+    pressure.ExchangeHaloCells();
 }
 
 template <typename Grid, typename BS, typename CM>

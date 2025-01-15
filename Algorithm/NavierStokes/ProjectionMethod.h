@@ -88,7 +88,7 @@ public:
         epsilon_init = 0b0000100,
         beta_im_init = 0b0001000,
         beta_ex_init = 0b0010000
-    }
+    };
     // general types based on the grid
     using GridType = Grid;
     using BoundaryStrategyType = BoundaryStrategy;
@@ -141,6 +141,7 @@ public:
         ExplicitForceMemberType beta_im;
     };
     using MomentumType = PMMomentum<GridType, BoundaryStrategyType, MomentumMembers>;
+    using ContinuityType = PMContinuity<GridType, BoundaryStrategyType, ContinuityMembers>;
 
     ProjectionMethod()
         : ex_man(nullptr),
@@ -156,7 +157,7 @@ public:
     template<typename... Args>
     void Initialize(const GridType& grid, Args&&... bc_args) {
         ex_man = grid.GetExecutionManager();
-        free_pm_initialize(this, grid, bc_args);
+        free_pm_initialize(this, grid, bc_args...);
         this->Initialize();
     }
 
@@ -179,8 +180,8 @@ public:
     std::unique_ptr<MomentumType>& GetMomentum(std::size_t dim) { return momentum[dim]; }
     const std::unique_ptr<MomentumType>& GetMomentum(std::size_t dim) const { return momentum[dim]; }
 
-    PMContinuity* GetContinuity() { return &continuity; }
-    const PMContinuity& GetContinuity() const { return continuity; }
+    ContinuityType* GetContinuity() { return &continuity; }
+    const ContinuityType& GetContinuity() const { return continuity; }
 
     void SetDensity(DensityVariableType d) {
         rho = d;
@@ -236,11 +237,11 @@ private:
     ViscosityVariableType mu;
     PorosityVariableType epsilon;
 
-    PMContinuity continuity;
+    ContinuityType continuity;
     std::array<std::unique_ptr<MomentumType>, dimension> momentum;
 
-    uchar status;
-    uchar status_finalized;
+    char status;
+    char status_finalized;
 };
 
 }  // namespace dare::algorithm

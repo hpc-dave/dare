@@ -26,13 +26,14 @@
 #define EQUATIONS_TIMEDISCRETIZATIONSCHEMES_H_
 
 #include <concepts>
+#include "Utilities/Vector.h"
 
 namespace dare {
 
 template <typename T, typename SC>
 concept TimeDiscretizationScheme =
-    std::unsigned_integral<T::NUM_TIMESTEPS> && requires(T s) {
-        { s.GetWeights<SC>() } -> dare::utils::Vector<T::NUM_TIMESTEPS + 1, SC>;
+    std::unsigned_integral<typename T::NUM_TIMESTEPS> && requires(T s) {
+        { s.template GetWeights<SC>() } -> std::same_as<dare::utils::Vector<T::NUM_TIMESTEPS + 1, SC>>;
     };  // NOLINT
 }  // namespace dare
 

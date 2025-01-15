@@ -25,8 +25,7 @@
 
 namespace dare::algorithm {
 
-template <typename PM, std::size_t Dim>
-template <typename... Args>
+template <typename PM, std::size_t Dim, typename... Args>
 void free_pm_initialize(PM* pm, const dare::Grid::Cartesian<Dim>& grid, Args&&... bc_args) {
     static_assert(PM::dimension == Dim, "The projection method and grid do not have the same dimension!");  // NOLINT
     static_assert(PM::Dimension < 3, "Not equipped for higher dimensions");
@@ -51,6 +50,12 @@ void free_pm_initialize(PM* pm, const dare::Grid::Cartesian<Dim>& grid, Args&&..
                                     grid.GetExecutionManager(),
                                     2,
                                     bc_args...);
+}
+
+template <typename PM>
+    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>>)
+void free_pm_solve(PM* pm) {
+    static_assert(dare::always_false<PM>, "not yet implemented");
 }
 
 }  // namespace dare::algorithm

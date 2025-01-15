@@ -25,8 +25,7 @@
 
 namespace dare::algorithm {
 
-template <typename PM, typename Grid>
-template <typename... Args>
+template <typename PM, typename Grid, typename... Args>
 void free_pm_initialize(PM* pm, const Grid& grid, Args&&... args) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method and grid");   // NOLINT
 }
