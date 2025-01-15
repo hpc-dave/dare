@@ -25,11 +25,22 @@
 #ifndef EQUATIONS_TIMEDISCRETIZATIONSCHEMES_H_
 #define EQUATIONS_TIMEDISCRETIZATIONSCHEMES_H_
 
+#include <concepts>
+
+namespace dare {
+
+template <typename T, typename SC>
+concept TimeDiscretizationScheme =
+    std::unsigned_integral<T::NUM_TIMESTEPS> && requires(T s) {
+        { s.GetWeights<SC>() } -> dare::utils::Vector<T::NUM_TIMESTEPS + 1, SC>;
+    };  // NOLINT
+}  // namespace dare
+
 namespace dare::Matrix {
 
 /*! \struct EULER_BACKWARD
  * \brief EULER-backward time discretization
- * 
+ *
  * Fully implicit treatment of the components
  */
 struct EULER_BACKWARD {

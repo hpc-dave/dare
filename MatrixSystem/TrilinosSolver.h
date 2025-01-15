@@ -76,6 +76,7 @@ public:
     using VectorType = Tpetra::Vector<SC, LO, GO>;
     using MultiVectorType = Tpetra::MultiVector<SC, LO, GO>;
     using ParameterList = Teuchos::ParameterList;
+    using PropertyType = Teuchos::RCP<ParameterList>;
     using ReturnType = Belos::ReturnType;
     using SolverManager = Belos::SolverManager<ScalarType, MultiVectorType, OperatorType>;
     using ProblemType = Belos::LinearProblem<ScalarType, MultiVectorType, OperatorType>;
