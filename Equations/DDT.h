@@ -80,6 +80,9 @@ private:
     LO ordinal;         //!< internal ordinal
     LO local_ordinal;   //!< local ordinal
     SC volume;          //!< discrete volume
+#ifndef DARE_NDEBUG
+    typename Grid::Options debug_grid_options;
+#endif
 };
 
 }  // end namespace dare::Matrix

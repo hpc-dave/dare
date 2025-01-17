@@ -32,27 +32,18 @@
 
 #include "Data/Field.h"
 #include "MPI/ExecutionManager.h"
-#include "MatrixSystem/Trilinos.h"
-#include "MatrixSystem/TrilinosSolver.h"
+#include "Equations/GenericEquation.h"
 
 namespace dare::algorithm {
 
 template<typename Grid, typename BoundaryStrategy, typename CustomMember>
-class PMContinuity {
-    using GridType = Grid;
-    using GridRepresentation = typename GridType::Representation;
-    using BoundaryStrategyType = BoundaryStrategy;
-    using SC = typename Grid::ScalarType;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
-    using Index = typename Grid::Index;
-    using IndexGlobal = typename Grid::IndexGlobal;
-    using FieldType = Data::Field<GridType, SC, 1>;
-    using CustomMemberType = CustomMember;
-    using MatrixSystemType = dare::Matrix::Trilinos<SC>;
-    using MatrixSolverType = dare::Matrix::TrilinosSolver<SC>;
-    using PreconditionerPropertyType = typename MatrixSolverType::PropertyType;
-    using SolverPropertyType = typename MatrixSolverType::PropertyType;
+class PMContinuity : public dare::Matrix::GenericEquation<Grid, BoundaryStrategy, CustomMember> {
+public:
+    using BaseType = dare::Matrix::GenericEquation<Grid, BoundaryStrategy, CustomMember>;
+    using GridRepresentation = typename BaseType::GridRepresentation;
+    using FieldType = typename BaseType::FieldType;
+    // using BoundaryStrategyType = typename BaseType::BoundaryStrategy;
+
     using SelfType = PMContinuity<Grid, BoundaryStrategy, CustomMember>;
 
     PMContinuity(const std::string& name,
@@ -64,20 +55,6 @@ class PMContinuity {
     explicit PMContinuity(const SelfType&) = delete;
     SelfType& operator=(const SelfType&) = delete;
 
-    void PreStep();
-
-    template <typename BuildStrategy>
-    void Build(BuildStrategy build);
-
-    std::pair<bool, int> Solve(SolverPropertyType sprop, PreconditionerPropertyType mprop);
-
-    void UpdateBoundaries();
-
-    void PostStep();
-
-    BoundaryStrategyType* GetBoundaryStrategy();
-    const BoundaryStrategyType& GetBoundaryStrategy() const;
-
     FieldType* GetPressure();
     const FieldType& GetPressure() const;
 
@@ -87,27 +64,9 @@ class PMContinuity {
     FieldType* GetdP();
     const FieldType& GetdP() const;
 
-    CustomMemberType* GetCustomMember();
-    const CustomMemberType& GetCustomMember() const;
-
-    void AddPreStepStrategy(std::function<void(SelfType*)> f);
-    void SetPreStepStrategy(std::function<void(SelfType*)> f);
-    void ClearPreStepStrategy();
-    void AddPostStepStrategy(std::function<void(SelfType*)> f);
-    void SetPostStepStrategy(std::function<void(SelfType*)> f);
-    void ClearPostStepStrategy();
-
 private:
-    GridRepresentation grep;
-    dare::mpi::ExecutionManager* exec_man;
-    BoundaryStrategyType boundary_strategy;
-    FieldType pressure;
     FieldType defect;
     FieldType dP;
-    CustomMemberType custom_member;
-    std::set<std::function<void(SelfType*)>> pre_step_strategy;
-    std::set<std::function<void(SelfType*)>> post_step_strategy;
-    MatrixSystemType matrix_system;
 };
 
 }  // namespace dare::algorithm

@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-#ifndef ALGORITHM_NAVIERSTOKES_PM_MOMENTUM_H_
-#define ALGORITHM_NAVIERSTOKES_PM_MOMENTUM_H_
+#ifndef EQUATIONS_GENERICEQUATION_H_
+#define EQUATIONS_GENERICEQUATION_H_
 
-#include <string>
-#include <set>
 #include <functional>
+#include <set>
+#include <string>
 #include <utility>
 
 #include "Data/Field.h"
@@ -35,31 +35,47 @@
 #include "MatrixSystem/Trilinos.h"
 #include "MatrixSystem/TrilinosSolver.h"
 
-namespace dare::algorithm {
+namespace dare::Matrix {
 
-// consider upgrading this class to a general momentum class
-template<typename Grid, typename BoundaryStrategy, typename CustomMember>
-class PMMomentum {
+struct UpdateFieldCopy {
+    template<typename EQ, typename MS>
+    void operator()(EQ& eq, const MS& ms) const {   // NOLINT
+        ms.CopyTo(eq.GetField()->GetDataVector());
+    }
+};
+
+struct UpdateFieldAddInto {
+    template <typename EQ, typename MS>
+    void operator()(EQ& eq, const MS& ms) const {  // NOLINT
+        ms.AddTo(eq.GetField()->GetDataVector());
+    }
+};
+
+template <typename Grid, typename BoundaryStrategy, typename CustomMember>
+class GenericEquation {
 public:
     using GridType = Grid;
     using GridRepresentation = typename GridType::Representation;
-    using SC = typename GridType::ScalarType;
-    using FieldType = dare::Data::Field<GridType, SC, 1>;
     using BoundaryStrategyType = BoundaryStrategy;
+    using SC = typename Grid::ScalarType;
+    using LO = typename Grid::LocalOrdinalType;
+    using GO = typename Grid::GlobalOrdinalType;
+    using Index = typename Grid::Index;
+    using IndexGlobal = typename Grid::IndexGlobal;
+    using FieldType = Data::Field<GridType, SC, 1>;
     using CustomMemberType = CustomMember;
-    using MatrixSystemType = dare::Matrix::Trilinos<SC>;
-    using MatrixSolverType = dare::Matrix::TrilinosSolver<SC>;
-    using PreconditionerPropertyType = typename MatrixSolverType::PropertyType;
-    using SolverPropertyType = typename MatrixSolverType::PropertyType;
-    using SelfType = PMMomentum<Grid, BoundaryStrategy, CustomMember>;
+    using MatrixSystemType = dare::Matrix::Trilinos<SC>;            // could be made a template parameter
+    using MatrixSolverType = dare::Matrix::TrilinosSolver<SC>;      // could be made a template parameter
+    using SolverNumericalPropertiesType = typename MatrixSolverType::NumericalPropertiesType;
+    using SelfType = GenericEquation<Grid, BoundaryStrategy, CustomMember>;
 
-    PMMomentum(const std::string& name,
-               GridRepresentation grid,
-               dare::mpi::ExecutionManager* ex_man,
-               std::size_t num_tsteps,
-               BoundaryStrategy bc_strat);
+    GenericEquation(const std::string& name,
+                    GridRepresentation grid,
+                    dare::mpi::ExecutionManager* ex_man,
+                    std::size_t num_tsteps,
+                    BoundaryStrategy bc_strat);
 
-    explicit PMMomentum(const SelfType&) = delete;
+    explicit GenericEquation(const SelfType&) = delete;
     SelfType& operator=(const SelfType&) = delete;
 
     void PreStep();
@@ -67,7 +83,9 @@ public:
     template <typename BuildStrategy>
     void Build(BuildStrategy build);
 
-    std::pair<bool, int> Solve(SolverPropertyType sprop, PreconditionerPropertyType mprop);
+    template <typename Lambda>
+    std::pair<bool, int> Solve(Lambda UpdateStrategy =
+                                   UpdateFieldCopy{});
 
     void UpdateBoundaries();
 
@@ -82,6 +100,9 @@ public:
     CustomMemberType* GetCustomMember();
     const CustomMemberType& GetCustomMember() const;
 
+    void SetSolverNumericalProperties(const SolverNumericalPropertiesType& prop);
+    const SolverNumericalPropertiesType& GetSolverNumericalProperties() const;
+
     void AddPreStepStrategy(std::function<void(SelfType*)> f);
     void SetPreStepStrategy(std::function<void(SelfType*)> f);
     void ClearPreStepStrategy();
@@ -92,16 +113,17 @@ public:
 private:
     GridRepresentation grep;
     dare::mpi::ExecutionManager* exec_man;
-    FieldType data;
     BoundaryStrategyType boundary_strategy;
+    FieldType field;
     CustomMemberType custom_member;
     std::set<std::function<void(SelfType*)>> pre_step_strategy;
     std::set<std::function<void(SelfType*)>> post_step_strategy;
     MatrixSystemType matrix_system;
+    SolverNumericalPropertiesType solver_prop;
 };
 
-}  // namespace dare::algorithm
+}  // namespace dare::Matrix
 
-#include "PM_Momentum.inl"
+#include "GenericEquation.inl"
 
-#endif  // ALGORITHM_NAVIERSTOKES_PM_MOMENTUM_H_
+#endif  // EQUATIONS_GENERICEQUATION_H_

@@ -30,10 +30,10 @@
 #include <memory>
 #include <algorithm>
 #include <bitset>
+#include <utility>
 
 #include "PM_Information.h"
 #include "PM_details.h"
-#include "PM_Momentum.h"
 #include "PM_Continuity.h"
 #include "Algorithm/AlgorithmTraits.h"
 #include "Data/Field.h"
@@ -41,6 +41,7 @@
 #include "Utilities/Errors.h"
 #include "Equations/TimeDiscretizationSchemes.h"
 #include "Utilities/InitializationTracker.h"
+#include "Equations/GenericEquation.h"
 
 namespace dare::algorithm {
 
@@ -139,12 +140,14 @@ public:
     };
     struct ContinuityMembers {
         ExplicitForceMemberType beta_im;
+        SC defect_max;
     };
-    using MomentumType = PMMomentum<GridType, BoundaryStrategyType, MomentumMembers>;
+    using MomentumType = dare::Matrix::GenericEquation<GridType, BoundaryStrategyType, MomentumMembers>;
     using ContinuityType = PMContinuity<GridType, BoundaryStrategyType, ContinuityMembers>;
 
     ProjectionMethod()
         : ex_man(nullptr),
+          max_iterations(100),
           status(0), status_finalized(rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init) {
         if constexpr (dare::utils::is_none_v<PorosityVariableType>)
             status |= epsilon_init;
@@ -152,6 +155,9 @@ public:
             status |= beta_im_init;
         if constexpr (dare::utils::is_none_v<ExplicitForceVariableType>)
             status |= beta_ex_init;
+
+        // method specific check for consistent compile time information
+        free_check_compile_time_information(*this);
     }
 
     template<typename... Args>
@@ -168,10 +174,47 @@ public:
     }
 
     void SolveFlowField() {
+        // here we could add switch between different approaches, but
+        // for now there is only one
         if (!CheckStatus()) {
             ex_man->Terminate(__func__, "Projection method was not fully finalized!");
         }
-        free_pm_solve(this);
+        // build momentum and solve subsequently
+        // a bit more verbose, but easier to debug
+        BuildMomentum<0>();
+        auto [success, iter] = SolveMomentum(0);
+        // add some output here
+        if constexpr (dimension > 1) {
+            BuildMomentum<1>();
+            auto [success, iter] = SolveMomentum(1);
+            // add some output here
+        }
+        if constexpr (dimension > 2) {
+            BuildMomentum<2>();
+            auto [success, iter] = SolveMomentum(2);
+            // add some output here
+        }
+
+        // enforce continuity
+        // first iteration we add the implicit force term
+        // or in the case of no additional term this is just
+        // the very first iteration
+        int iteration = 0;
+        for (; iteration < max_iterations; iteration++) {
+            BuildContinuity(iteration);
+            auto [success, iter] = SolveContinuity(iteration);
+            UpdatePressure(iteration);
+            UpdateVelocity(iteration);
+            if (ContinuityConvergence(iteration))
+                break;
+        }
+
+        // check if iterations == max_iterations
+        if (iteration == (max_iterations - 1)) {
+            // add warning for unconverged solution
+        }
+
+        ERROR << "Implementation not finished" << ERROR_CLOSE;
     }
 
     constexpr bool IsCompressible() const { return compressible; }
@@ -194,6 +237,18 @@ public:
     void SetPorosity(PorosityVariableType p) {
         epsilon = p;
         status |= epsilon_init;
+    }
+
+    DensityVariableType GetDensity() const {
+        return rho;
+    }
+
+    ViscosityVariableType GetViscosity() const {
+        return rho;
+    }
+
+    PorosityVariableType GetPorosity() const {
+        return epsilon;
     }
 
     void AddImplicitForce(ImplicitForceVariableType f) {
@@ -231,7 +286,45 @@ public:
         return (status == status_finalized) && this->IsInitialized();
     }
 
+    void SetTimeStepSize(SC _dt) {
+        // This should be a callback
+        dt = _dt;
+    }
+
+    SC GetTimeStepSize() const {
+        return dt;
+    }
+
 private:
+    template <std::size_t dim>
+    void BuildMomentum() {
+        free_pm_build_momentum<dim>(this);
+    }
+
+    std::pair<bool, int> SolveMomentum(std::size_t dim) {
+        free_pm_solve_momentum(this, dim);
+    }
+
+    void BuildContinuity(int iteration) {
+        free_pm_build_continuity(this, iteration);
+    }
+
+    void SolveContinuity(int iteration) {
+        free_pm_solve_continuity(this, iteration);
+    }
+
+    void UpdatePressure(int iteration) {
+        free_pm_update_pressure(this, iteration);
+    }
+
+    void UpdateVelocity(int iteration) {
+        free_pm_update_velocity(this, iteration);
+    }
+
+    bool ContinuityConvergence(int iteration) {
+        return free_pm_continuity_convergence(this, iteration);
+    }
+
     dare::mpi::ExecutionManager* ex_man;
     DensityVariableType rho;
     ViscosityVariableType mu;
@@ -240,6 +333,8 @@ private:
     ContinuityType continuity;
     std::array<std::unique_ptr<MomentumType>, dimension> momentum;
 
+    SC dt;  // for now this is temporary, work with observer here!
+    int max_iterations;
     char status;
     char status_finalized;
 };

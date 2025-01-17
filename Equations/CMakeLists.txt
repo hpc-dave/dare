@@ -1,6 +1,8 @@
 set(DaRe_HEADER_FILES
     "DDT.h"
     "DDT.inl"
+    "GenericEquation.h"
+    "GenericEquation.inl"
     "Operators.h"
     "FluxLimiter.h"
     "TimeDiscretizationSchemes.h"

@@ -96,11 +96,30 @@ TrilinosSolver<SC>::Solve(SolverPackage solver_pack,
 }
 
 template <typename SC>
+typename TrilinosSolver<SC>::ReturnType
+TrilinosSolver<SC>::Solve(NumericalPropertiesType prop,
+                          Teuchos::RCP<OperatorType> M,
+                          Teuchos::RCP<MatrixType> A,
+                          Teuchos::RCP<MultiVectorType> x,
+                          Teuchos::RCP<MultiVectorType> B) {
+    return Solve(prop.solver_package, prop.solver_type, M, A, x, B, prop.solver_properties);
+}
+
+template <typename SC>
+typename TrilinosSolver<SC>::ReturnType
+TrilinosSolver<SC>::Solve(NumericalPropertiesType prop,
+                          Teuchos::RCP<MatrixType> A,
+                          Teuchos::RCP<MultiVectorType> x,
+                          Teuchos::RCP<MultiVectorType> B) {
+    return Solve(prop.solver_package, prop.solver_type, A, x, B, prop.solver_properties);
+}
+
+template <typename SC>
 Teuchos::RCP<typename TrilinosSolver<SC>::OperatorType>
 TrilinosSolver<SC>::BuildPreconditioner(PreCondPackage precond_package,
-                                                const std::string& type,
-                                                Teuchos::RCP<ParameterList> param,
-                                                Teuchos::RCP<MatrixType> A) {
+                                        const std::string& type,
+                                        Teuchos::RCP<ParameterList> param,
+                                        Teuchos::RCP<MatrixType> A) {
     Teuchos::RCP<OperatorType> M;
     if (precond_package == PreCondPackage::None)
         return M;
@@ -129,37 +148,42 @@ TrilinosSolver<SC>::BuildPreconditioner(PreCondPackage precond_package,
 }
 
 template <typename SC>
+Teuchos::RCP<typename TrilinosSolver<SC>::OperatorType>
+TrilinosSolver<SC>::BuildPreconditioner(NumericalPropertiesType prop,
+                                        Teuchos::RCP<MatrixType> A) {
+    return BuildPreconditioner(prop.precond_package, prop.precond_type, prop.precond_properties, A);
+}
+
+template <typename SC>
 Teuchos::RCP<typename TrilinosSolver<SC>::SolverManager>
 TrilinosSolver<SC>::CreateSolver(SolverPackage solver_pack,
-                                         const std::string& type,
-                                         Teuchos::RCP<ParameterList> param) {
+                                 const std::string& type,
+                                 Teuchos::RCP<ParameterList> param) {
     int rank{-1};
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     bool am_i_root{rank == 0};
 
     Teuchos::RCP<SolverManager> sm;
     switch (solver_pack) {
-        case SolverPackage::Amesos2:
+    case SolverPackage::Amesos2:
+        if (am_i_root)
+            std::cerr << "Amesos solver should not end up here!" << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, -5);
+        break;
+    case SolverPackage::Belos: {
+        Belos::SolverFactory<SC, MultiVectorType, OperatorType> factory;
+        sm = factory.create(type, param);
+    } break;
+    case SolverPackage::BumbleBee:
+        if (type.compare("BICGSTAB2") == 0) {
+            sm = Teuchos::rcp(new dare::Matrix::BiCGStab2<SC, MultiVectorType, OperatorType>(param));
+        } else {
             if (am_i_root)
-                std::cerr << "Amesos solver should not end up here!" << std::endl;
+                std::cerr << "Type: " << type << " is not recognized by BumbleBee!" << std::endl;
             MPI_Abort(MPI_COMM_WORLD, -5);
-            break;
-        case SolverPackage::Belos:
-        {
-            Belos::SolverFactory<SC, MultiVectorType, OperatorType> factory;
-            sm = factory.create(type, param);
         }
-            break;
-        case SolverPackage::BumbleBee:
-            if (type.compare("BICGSTAB2") == 0) {
-                sm = Teuchos::rcp(new dare::Matrix::BiCGStab2<SC, MultiVectorType, OperatorType>(param));
-            } else {
-                if (am_i_root)
-                    std::cerr << "Type: " << type << " is not recognized by BumbleBee!" << std::endl;
-                MPI_Abort(MPI_COMM_WORLD, -5);
-            }
-            break;
-        }
+        break;
+    }
 
     return sm;
 }
@@ -167,8 +191,8 @@ TrilinosSolver<SC>::CreateSolver(SolverPackage solver_pack,
 template <typename SC>
 Teuchos::RCP<typename TrilinosSolver<SC>::OperatorType>
 TrilinosSolver<SC>::CreatePreconditionerIfPack2(const std::string& type,
-                                                        Teuchos::RCP<ParameterList> param,
-                                                        Teuchos::RCP<const MatrixType> A) {
+                                                Teuchos::RCP<ParameterList> param,
+                                                Teuchos::RCP<const MatrixType> A) {
     using PrecType = Ifpack2::Preconditioner<SC>;
     Ifpack2::Factory factory;
     Teuchos::RCP<PrecType> prec = factory.create(type, A);
@@ -181,8 +205,8 @@ TrilinosSolver<SC>::CreatePreconditionerIfPack2(const std::string& type,
 template <typename SC>
 Teuchos::RCP<typename TrilinosSolver<SC>::OperatorType>
 TrilinosSolver<SC>::CreatePreconditionerMueLu(const std::string& type,
-                                                      Teuchos::RCP<ParameterList> param,
-                                                      Teuchos::RCP<MatrixType> A) {
+                                              Teuchos::RCP<ParameterList> param,
+                                              Teuchos::RCP<MatrixType> A) {
     using Teuchos::RCP;
     using Teuchos::rcp;
 
@@ -251,10 +275,10 @@ TrilinosSolver<SC>::CreatePreconditionerMueLu(const std::string& type,
 template <typename SC>
 typename TrilinosSolver<SC>::ReturnType
 TrilinosSolver<SC>::SolveWithAmesos2(const std::string& type,
-                                             Teuchos::RCP<MatrixType> A,
-                                             Teuchos::RCP<MultiVectorType> x,
-                                             Teuchos::RCP<MultiVectorType> B,
-                                             Teuchos::RCP<ParameterList> param) {
+                                     Teuchos::RCP<MatrixType> A,
+                                     Teuchos::RCP<MultiVectorType> x,
+                                     Teuchos::RCP<MultiVectorType> B,
+                                     Teuchos::RCP<ParameterList> param) {
     Teuchos::RCP<Amesos2::Solver<MatrixType, MultiVectorType>> solver;
     solver = Amesos2::create<MatrixType, MultiVectorType>(type, A, x, B);
     solver->setParameters(param);

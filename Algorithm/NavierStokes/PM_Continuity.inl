@@ -30,60 +30,19 @@ PMContinuity<Grid, BS, CM>::PMContinuity(const std::string& name,
                                          dare::mpi::ExecutionManager* ex_man,
                                          std::size_t num_tsteps,
                                          BS bc_strat)
-    : grep(grid),
-      exec_man(ex_man),
-      pressure(name, grid, num_tsteps),
+    : Matrix::GenericEquation<Grid, BS, CM>(name, std::move(grid), ex_man, num_tsteps, std::move(bc_strat)),
       defect("defect", grid, 1),
-      dP("dP", grid, 1),
-      boundary_strategy(std::move(bc_strat)) {
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::PreStep() {
-    for (auto it : pre_step_strategy)
-        (*it)(this);
-}
-
-template <typename Grid, typename BS, typename CM>
-template <typename BuildStrategy>
-void PMContinuity<Grid, BS, CM>::Build(BuildStrategy build) {}
-
-template <typename Grid, typename BS, typename CM>
-std::pair<bool, int> PMContinuity<Grid, BS, CM>::Solve(SolverPropertyType sprop,
-                                                       PreconditionerPropertyType mprop) {
-    return {false, -1};
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::UpdateBoundaries() {
-    boundary_strategy(&pressure);
-    pressure.ExchangeHaloCells();
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::PostStep() {
-    for (auto it : post_step_strategy)
-        (*it)(this);
-}
-
-template <typename Grid, typename BS, typename CM>
-BS* PMContinuity<Grid, BS, CM>::GetBoundaryStrategy() {
-    return &boundary_strategy;
-}
-
-template <typename Grid, typename BS, typename CM>
-const BS& PMContinuity<Grid, BS, CM>::GetBoundaryStrategy() const {
-    return boundary_strategy;
+      dP("dP", grid, 1) {
 }
 
 template <typename Grid, typename BS, typename CM>
 PMContinuity<Grid, BS, CM>::FieldType* PMContinuity<Grid, BS, CM>::GetPressure() {
-    return &pressure;
+    return this->GetField();
 }
 
 template <typename Grid, typename BS, typename CM>
 const PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetPressure() const {
-    return pressure;
+    return this->GetField();
 }
 
 template <typename Grid, typename BS, typename CM>
@@ -105,45 +64,5 @@ template <typename Grid, typename BS, typename CM>
 const PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetdP() const {
     return dP;
 }
-template <typename Grid, typename BS, typename CM>
-CM* PMContinuity<Grid, BS, CM>::GetCustomMember() {
-    return &custom_member;
-}
 
-template <typename Grid, typename BS, typename CM>
-const CM& PMContinuity<Grid, BS, CM>::GetCustomMember() const {
-    return custom_member;
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::AddPreStepStrategy(std::function<void(SelfType*)> f) {
-    pre_step_strategy.insert(std::move(f));
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::SetPreStepStrategy(std::function<void(SelfType*)> f) {
-    ClearPreStepStrategy();
-    AddPreStepStrategy(std::move(f));
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::ClearPreStepStrategy() {
-    pre_step_strategy.clear();
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::AddPostStepStrategy(std::function<void(SelfType*)> f) {
-    post_step_strategy.insert(std::move(f));
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::SetPostStepStrategy(std::function<void(SelfType*)> f) {
-    ClearPostStepStrategy();
-    AddPostStepStrategy(std::move(f));
-}
-
-template <typename Grid, typename BS, typename CM>
-void PMContinuity<Grid, BS, CM>::ClearPostStepStrategy() {
-    post_step_strategy.clear();
-}
 }  // namespace dare::algorithm
