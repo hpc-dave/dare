@@ -162,6 +162,54 @@ public:
     T operator()(Args&&... args) const;
 
     /*!
+     * @brief += operator
+     * @param other field to be added to
+     */
+    GridVector<Grid, T, N>& operator+=(const GridVector<Grid, T, N>& other);
+
+    /*!
+     * @brief addition operator
+     * @param other field to be added to
+     */
+    GridVector<Grid, T, N> operator+(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief -= operator
+     * @param other field to be subtracted from
+     */
+    GridVector<Grid, T, N>& operator-=(const GridVector<Grid, T, N>& other);
+
+    /*!
+     * @brief subtraction operator
+     * @param other field to be subtracted from
+     */
+    GridVector<Grid, T, N> operator-(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief *= operator
+     * @param other field to be mulitplied with
+     */
+    GridVector<Grid, T, N>& operator*=(const GridVector<Grid, T, N>& other);
+
+    /*!
+     * @brief multiplication operator
+     * @param other field to be multiplied with
+     */
+    GridVector<Grid, T, N> operator*(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief /= operator
+     * @param other field to be divided by
+     */
+    GridVector<Grid, T, N>& operator/=(const GridVector<Grid, T, N>& other);
+
+    /*!
+     * @brief division operator
+     * @param other field to be divided by
+     */
+    GridVector<Grid, T, N> operator/(const GridVector<Grid, T, N>& other) const;
+
+    /*!
      * @brief returns vector with all components
      * @param n local ordinal
      */

@@ -128,11 +128,12 @@ public:
     using ViscousStressInfo = typename NumericalTypeInfo::viscous_stress;
     using MomentumIterationInfo = typename NumericalTypeInfo::momentum_iterations;
     using ContinuityIterationInfo = typename NumericalTypeInfo::continuity_iterations;
+    using ConvectiveTimeSchemeInfo = typename NumericalTypeInfo::time_scheme_convective;
     using TVDScheme = typename TVDInfo::type;
     using ViscousStressTreatment = typename ViscousStressInfo::type;
     using MomentumIterationType = typename MomentumIterationInfo::type;
     using ContinuityIterationType = typename ContinuityIterationInfo::type;
-    using ConvectiveTimeSchemeType = typename ContinuityIterationInfo::type;
+    using ConvectiveTimeSchemeType = typename ConvectiveTimeSchemeInfo::type;
     static const std::size_t num_tsteps_momentum = std::max(ConvectiveTimeSchemeType::NUM_TSTEPS + 1, 2);
 
     struct MomentumMembers{
@@ -302,7 +303,7 @@ private:
     }
 
     std::pair<bool, int> SolveMomentum(std::size_t dim) {
-        free_pm_solve_momentum(this, dim);
+        return free_pm_solve_momentum(this, dim);
     }
 
     void BuildContinuity(int iteration) {

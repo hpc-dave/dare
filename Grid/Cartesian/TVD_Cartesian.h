@@ -94,6 +94,34 @@ public:
         const dare::Data::GridVector<GridType, SC, N>& field) const;
 
     /*!
+     * @brief When used for interpolation from a field
+     * @tparam N number of components
+     * @param value constant values
+     * Here, the face values are set to the values depending on the component
+     */
+    template <std::size_t N>
+    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, N> Interpolate(
+        const dare::utils::Vector<N, SC>& values) const;
+
+    /*!
+     * @brief When used for interpolation from a field
+     * @tparam N number of components
+     * @param value constant value
+     * Here, the face values are set to the value
+     */
+    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, 1> Interpolate(
+                    SC value) const;
+
+    /*!
+     * @brief When used for interpolation from a field
+     * @tparam N number of components
+     * @param v none type
+     * Here, the face values are set to 1
+     */
+    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, 1> Interpolate(
+        dare::utils::None v) const;
+
+    /*!
      * \brief when used for matrix assembly
      * @tparam N number of components
      * @param field reference to relevant field

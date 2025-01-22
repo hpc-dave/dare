@@ -100,6 +100,86 @@ T GridVector<Grid, T, N>::operator()(Args&&... args) const {
 }
 
 template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator+=(const GridVector<Grid, T, N>& other) {
+    if (this->GetSize() != other.GetSize()) {
+        grid.GetExecutionmanager->Terminate(__func__, "Incompatible size of grid vectors");
+    }
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) += other.At(o);
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator+(const GridVector<Grid, T, N>& other) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v += other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator-=(const GridVector<Grid, T, N>& other) {
+    if (this->GetSize() != other.GetSize()) {
+        grid.GetExecutionmanager->Terminate(__func__, "Incompatible size of grid vectors");
+    }
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) -= other.At(o);
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator-(const GridVector<Grid, T, N>& other) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v -= other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator*=(const GridVector<Grid, T, N>& other) {
+    if (this->GetSize() != other.GetSize()) {
+        grid.GetExecutionmanager->Terminate(__func__, "Incompatible size of grid vectors");
+    }
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) *= other.At(o);
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator*(const GridVector<Grid, T, N>& other) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v *= other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator/=(const GridVector<Grid, T, N>& other) {
+    if (this->GetSize() != other.GetSize()) {
+        grid.GetExecutionmanager->Terminate(__func__, "Incompatible size of grid vectors");
+    }
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) /= other.At(o);
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator/(const GridVector<Grid, T, N>& other) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v /= other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
 T GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) const {
     return At(grid.MapIndexToOrdinalLocal(ind), c);
 }

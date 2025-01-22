@@ -33,6 +33,8 @@
 #include "Data/Stencil.h"
 #include "Data/Field.h"
 #include "TimeDiscretizationSchemes.h"
+#include "Utilities/PropertyInformation.h"
+#include "Math/Interpolation.h"
 
 namespace dare::Matrix {
 
@@ -80,9 +82,7 @@ private:
     LO ordinal;         //!< internal ordinal
     LO local_ordinal;   //!< local ordinal
     SC volume;          //!< discrete volume
-#ifndef DARE_NDEBUG
-    typename Grid::Options debug_grid_options;
-#endif
+    const GridRepresentation* grep;  //!< pointer to grid representation
 };
 
 }  // end namespace dare::Matrix

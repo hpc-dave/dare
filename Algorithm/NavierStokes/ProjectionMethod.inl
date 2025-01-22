@@ -66,11 +66,11 @@ void free_pm_build_momentum(PM* pm) {
 template <typename PM>
 std::pair<bool, int> free_pm_solve_momentum(PM* pm, std::size_t dir) {
     using IterType = typename PM::MomentumIterationType;
-    std::pair<bool, int> = std::make_pair(false, static_cast<int>(-1));
+    std::pair<bool, int> ret = std::make_pair(false, static_cast<int>(-1));
     if constexpr (uses_fixed_point_iterations_v<IterType>) {
-        ret = continuity.Solve(dare::Matrix::UpdateFieldCopy{});
+        ret = pm->GetContinuity()->Solve(dare::Matrix::UpdateFieldCopy{});
     } else if constexpr (uses_newton_iterations_v<IterType>) {
-        ret = continuity.Solve(dare::Matrix::UpdateFieldAddInto{});
+        ret = pm->GetContinuity()->Solve(dare::Matrix::UpdateFieldAddInto{});
     } else {
         static_assert(dare::always_false<IterType>, "Solving the momentum equations is not implemented for the specified algorithm type");  // NOLINT
     }
@@ -85,12 +85,14 @@ void free_pm_build_continuity(PM* pm, int iteration) {
 template <typename PM>
 std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
     using IterType = typename PM::ContinuityIterationType;
-    std::pair<bool, int> = std::make_pair(false, static_cast<int>(-1));
+    using ContType = typename PM::ContinuityType;
+    using ContMSystem = typename ContType::MatrixSystemType;
+    std::pair<bool, int> ret = std::make_pair(false, static_cast<int>(-1));
     if constexpr (uses_newton_iterations_v<IterType>) {
-        auto UpdateStrategy = [](const typename Continuity::MatrixSystemType& m, typename PM::ContinuityType* c) {
-            m.CopyTo(&c->GetdP()->GetDataVector());
+        auto UpdateStrategy = [=](const ContMSystem& m, ContType* c) {
+            m.CopyTo(&pm->GetContinuity()->GetdP()->GetDataVector());
         };
-        ret = continuity.Solve(UpdateStrategy);
+        ret = pm->GetContinuity()->Solve(UpdateStrategy);
     } else {
         static_assert(dare::always_false<IterType>, "Updating the pressure is not implemented for anything except Newton iterations");  // NOLINT
     }
@@ -100,10 +102,7 @@ std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
 template <typename PM>
 void free_pm_update_pressure(PM* pm, int iteration) {
     if constexpr (uses_newton_iterations_v<typename PM::ContinuityIterationType>) {
-        auto UpdateStrategy = [](const typename Continuity::MatrixSystemType& m, typename PM::ContinuityType* c) {
-            m.AddTo(&c->GetField()->GetDataVector());
-        };
-        continuity.Solve(UpdateStrategy);
+        *(pm->GetContinuity()->GetPressure()) += *(pm->GetContinuity()->GetdP());
     } else {
         static_assert(dare::always_false<PM>, "Updating the pressure is not implemented for anything except Newton iterations");  // NOLINT
     }

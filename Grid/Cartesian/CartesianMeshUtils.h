@@ -96,6 +96,31 @@ enum class CartesianNeighbor : char {
 }
 
 /*!
+ * @brief converts char to face excluding center
+ * @param face enum of face
+ * This is mainly meant for array access of faces!
+ */
+[[nodiscard]] inline CartesianNeighbor ToFace(char n) {
+#ifndef DARE_NDEBUG
+    if (n == 0) {
+        std::cerr << "In " << __func__ << ": 0 is not a face!\n";
+    }
+#endif
+    return static_cast<CartesianNeighbor>(n + 1);
+}
+
+/*!
+ * @brief converts char to face excluding center
+ * @param face enum of face
+ * This is mainly meant for array access of faces!
+ */
+template<std::size_t n>
+[[nodiscard]] constexpr inline CartesianNeighbor ToFace() {
+    static_assert(n < 8, "cannot convert number to face");
+    return static_cast<CartesianNeighbor>(n + 1);
+}
+
+/*!
  * @brief Converts enum to normal
  * @param nb neighbor id
  */

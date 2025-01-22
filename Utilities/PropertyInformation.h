@@ -108,19 +108,6 @@ struct default_convert_to_tagged_info<T, TagType, Tag> {
 template <typename T, typename TagType, TagType Tag>
 using default_convert_to_tagged_info_t = typename default_convert_to_tagged_info<T, TagType, Tag>::type;
 
-// template <typename T, bool Flag, typename TagType, TagType Tag>
-//     requires std::is_same_v<T, bool>
-// struct default_convert_to_flagged_info {
-//     using type = FlaggedInfo<Flag, TagType, Tag>;
-// };
-
-// template <FlaggedInfoType T, bool Flag, typename TagType, TagType Tag>
-// struct default_convert_to_flagged_info<T, Flag, TagType, Tag> {
-//     using type = T;
-// };
-
-// template <bool Flag, typename TagType, TagType Tag>
-// using default_convert_to_flagged_info_t = typename default_convert_to_flagged_info<T, TagType, Tag>::type;
 
 /*!
  * \brief an tagging class for a None property

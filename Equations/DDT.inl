@@ -27,14 +27,15 @@
 namespace dare::Matrix {
 
 template <typename Grid, typename TimeDiscretization>
-DDT<Grid, TimeDiscretization>::DDT(const GridRepresentation& grep,
+DDT<Grid, TimeDiscretization>::DDT(const GridRepresentation& _grep,
          LO lo,
          SC _dt)
-         : dt(_dt), ordinal(lo), local_ordinal(grep.MapInternalToLocal(lo)), volume(grep.GetCellVolume(lo)) {
+         : dt(_dt),
+           ordinal(lo),
+           local_ordinal(_grep.MapInternalToLocal(lo)),
+           volume(_grep.GetCellVolume(lo)),
+           grep(&_grep) {
     // TODO(Dave): Find a better solution thatn using the mapping, that is very specific to the cartesian grid!
-#ifndef DARE_NDEBUG
-    debug_grid_options = grep.GetOptions();
-#endif
 }
 
 template <typename Grid, typename TimeDiscretization>
@@ -98,27 +99,17 @@ void DDT<Grid, TimeDiscretization>::Iterate(
         using Type = std::remove_reference_t<decltype(std::get<I>(args))>;
 
         auto arg = std::get<I>(args);
+        typename Grid::Index ind = grep->MapOrdinalToIndexLocal(local_ordinal);
         // apply values
         for (std::size_t n{0}; n < NUM_COMPONENTS; n++) {
             for (std::size_t t{0}; t < NUM_TFIELDS; t++) {
                 // maybe work with overloads here in future
                 SC v{0.};
                 if constexpr (dare::is_field_v<Type>) {
-                    // add debugging check for testing the grid options
-#ifndef DARE_NDEBUG
-                    if(debug_grid_options != arg.GetGridRepresentation().GetOptions()){
-                        ERROR << "The grids are not equal, interpolation compromised!" << ERROR_CLOSE;
-                    }
-#endif
-                    v = arg.GetDataVector(t).At(ordinal, n);
+                    v = dare::math::InterpolateToCenter(*grep, ind, arg.GetDataVector(t), n);
                 } else if constexpr (std::is_pointer_v<Type>                        // NOLINT
                                      && dare::is_field_v<std::remove_cv_t<Type>>) {
-#ifndef DARE_NDEBUG
-                    if (debug_grid_options != arg->GetGridRepresentation().GetOptions()) {
-                        ERROR << "The grids are not equal, interpolation compromised!" << ERROR_CLOSE;
-                    }
-#endif
-                    v = arg->GetDataVector(t).At(ordinal, n);
+                    v = dare::math::InterpolateToCenter(*grep, ind, arg->GetDataVector(t), n);
                 } else if constexpr (std::is_arithmetic_v<Type>) {
                     v = arg;
                 } else if constexpr (dare::utils::is_none_v<Type>) {

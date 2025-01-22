@@ -84,6 +84,54 @@ template <typename GridType, typename SC, std::size_t N>
 }
 
 /*!
+ * @brief Interpolates to a specified face of the target grid
+ * @tparam GridType type of grid
+ * @tparam SC type of scalar
+ * @tparam N number of components
+ * @param target target grid
+ * @param ind_target indices of the target cell
+ * @param field field with values
+ * @param n component ID
+ * For some grids, optimization can be gained, if a certain face ID is known, e.g. WEST or EAST
+ * on a Cartesian grid. In those cases, the weight determination is trivial.
+ * \note This is merely a placeholder, for which an overload should be defined by the grid,
+ * otherwise a NaN is returned
+ */
+template <typename GridType, typename SC, std::size_t N>
+[[nodiscard]] SC InterpolateToCenter(const typename GridType::Representation& target,
+                                     const typename GridType::Index& ind_target,
+                                     const Data::GridVector<GridType, SC, N>& field,
+                                     std::size_t n) {
+    static_assert(dare::always_false<GridType>, "Not implemented for this grid type, or wrong overload");
+    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
+    return std::numeric_limits<SC>::signaling_NaN();
+}
+
+/*!
+ * @brief Interpolates to a specified face of the target grid
+ * @tparam GridType type of grid
+ * @tparam SC type of scalar
+ * @tparam N number of components
+ * @param target target grid
+ * @param ind_target indices of the target cell
+ * @param field field with values
+ * @param n component ID
+ * For some grids, optimization can be gained, if a certain face ID is known, e.g. WEST or EAST
+ * on a Cartesian grid. In those cases, the weight determination is trivial.
+ * \note This is merely a placeholder, for which an overload should be defined by the grid,
+ * otherwise a NaN is returned
+ */
+template <typename GridType, typename SC, std::size_t N>
+[[nodiscard]] dare::utils::Vector<N, SC>
+InterpolateToCenter(const typename GridType::Representation& target,
+                    const typename GridType::Index& ind_target,
+                    const Data::GridVector<GridType, SC, N>& field) {
+    static_assert(dare::always_false<GridType>, "Not implemented for this grid type, or wrong overload");
+    ERROR << "This function is not implemeted for the GridType: " << typeid(GridType).name() << ERROR_CLOSE;
+    return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
+}
+
+/*!
  * @brief Interpolates to a specified point in the field
  * @tparam GridType type of grid
  * @tparam SC type of scalar

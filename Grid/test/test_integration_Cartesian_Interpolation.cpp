@@ -1265,6 +1265,85 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 }
 
+TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarCenterTest) {
+    Options opt_source_scalar{0, 0, 0};
+    Options opt_source_staggerX{1, 0, 0};
+    Options opt_source_staggerY{0, 1, 0};
+    Options opt_source_staggerZ{0, 0, 1};
+    Options opt_target{0, 0, 0};
+
+    using Representation = typename dare::Grid::Cartesian<Dim>::Representation;
+    Representation grep_source_scalar = grid->GetRepresentation(opt_source_scalar);
+    Representation grep_source_staggerX = grid->GetRepresentation(opt_source_staggerX);
+    Representation grep_source_staggerY = grid->GetRepresentation(opt_source_staggerY);
+    Representation grep_source_staggerZ = grid->GetRepresentation(opt_source_staggerZ);
+    Representation grep_target = grid->GetRepresentation(opt_target);
+
+    Field field_scalar("scalar_field", grep_source_scalar);
+    Field field_x("x_field", grep_source_staggerX);
+    Field field_y("y_field", grep_source_staggerY);
+    Field field_z("z_field", grep_source_staggerZ);
+
+    Index ind(2, 3, 4);
+    const double tol_eps{1e3};
+
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * distribution(generator); };
+
+    for (std::size_t n{0}; n < field_scalar.GetSize(); n++)
+        field_scalar[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_x.GetSize(); n++)
+        field_x[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_y.GetSize(); n++)
+        field_y[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_z.GetSize(); n++)
+        field_z[n] = GetRandValue();
+
+    // (Scalar -> Scalar)
+    dare::utils::Vector<N, SC> v_m =
+        dare::math::InterpolateToCenter(grep_target, ind, field_scalar);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToCenter(grep_target, ind, field_scalar, n);
+        SC v_ex = field_scalar.At(ind, n);
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Xstaggered -> Scalar
+    v_m = dare::math::InterpolateToCenter(grep_target, ind, field_x);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToCenter(grep_target, ind, field_x, n);
+        Index ind_l{ind};
+        ind_l.i() += 1;
+        SC v_ex = 0.5 * (field_x.At(ind_l, n) + field_x.At(ind, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Ystaggered -> Scalar
+    v_m = dare::math::InterpolateToCenter(grep_target, ind, field_y);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToCenter(grep_target, ind, field_y, n);
+        Index ind_l{ind};
+        ind_l.j() += 1;
+        SC v_ex = 0.5 * (field_y.At(ind_l, n) + field_y.At(ind, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Zstaggered -> Scalar
+    v_m = dare::math::InterpolateToCenter(grep_target, ind, field_z);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToCenter(grep_target, ind, field_z, n);
+        Index ind_l{ind};
+        ind_l.k() += 1;
+        SC v_ex = 0.5 * (field_z.At(ind_l, n) + field_z.At(ind, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+}
+
 TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     Options opt_source_scalar{0, 0, 0};
     Options opt_source_staggerX{1, 0, 0};
@@ -1448,6 +1527,100 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
         ind_l.i() -= 1;
         v_ex += field_z.At(ind_l, n);
         v_ex *= 0.5;
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+}
+
+TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredCenterTest) {
+    Options opt_source_scalar{0, 0, 0};
+    Options opt_source_staggerX{1, 0, 0};
+    Options opt_target{1, 0, 0};
+
+    using Representation = typename dare::Grid::Cartesian<Dim>::Representation;
+    Representation grep_source_scalar = grid->GetRepresentation(opt_source_scalar);
+    Representation grep_source_staggerX = grid->GetRepresentation(opt_source_staggerX);
+    Representation grep_target = grid->GetRepresentation(opt_target);
+
+    Field field_scalar("scalar_field", grep_source_scalar);
+    Field field_x("x_field", grep_source_staggerX);
+
+    Index ind(2, 3, 4);
+    const double tol_eps{1e2};
+
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * distribution(generator); };
+
+    for (std::size_t n{0}; n < field_scalar.GetSize(); n++)
+        field_scalar[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_x.GetSize(); n++)
+        field_x[n] = GetRandValue();
+
+    // Scalar -> XStagger
+    dare::utils::Vector<N, SC> v_m =
+        dare::math::InterpolateToCenter(grep_target, ind, field_scalar);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToCenter(grep_target, ind, field_scalar, n);
+        Index ind_l{ind};
+        ind_l.i() -= 1;
+        SC v_ex = 0.5 * (field_scalar.At(ind, n) + field_scalar.At(ind_l, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Xstaggered -> XStaggered
+    v_m = dare::math::InterpolateToCenter(grep_target, ind, field_x);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToCenter(grep_target, ind, field_x, n);
+        SC v_ex = field_x.At(ind, n);
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+}
+
+TEST_F(IntegrationTestCartesianInterpolation, InterpolateToYStaggeredCenterTest) {
+    Options opt_source_scalar{0, 0, 0};
+    Options opt_source_staggerY{0, 1, 0};
+    Options opt_target{0, 1, 0};
+
+    using Representation = typename dare::Grid::Cartesian<Dim>::Representation;
+    Representation grep_source_scalar = grid->GetRepresentation(opt_source_scalar);
+    Representation grep_source_staggerY = grid->GetRepresentation(opt_source_staggerY);
+    Representation grep_target = grid->GetRepresentation(opt_target);
+
+    Field field_scalar("scalar_field", grep_source_scalar);
+    Field field_y("y_field", grep_source_staggerY);
+
+    Index ind(2, 3, 4);
+    const double tol_eps{1e2};
+
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * distribution(generator); };
+
+    for (std::size_t n{0}; n < field_scalar.GetSize(); n++)
+        field_scalar[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_y.GetSize(); n++)
+        field_y[n] = GetRandValue();
+
+    // Scalar -> YStagger
+    dare::utils::Vector<N, SC> v_m =
+        dare::math::InterpolateToCenter(grep_target, ind, field_scalar);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToCenter(grep_target, ind, field_scalar, n);
+        Index ind_l{ind};
+        ind_l.j() -= 1;
+        SC v_ex = 0.5 * (field_scalar.At(ind, n) + field_scalar.At(ind_l, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Ystaggered -> YStaggered
+    v_m = dare::math::InterpolateToCenter(grep_target, ind, field_y);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::math::InterpolateToCenter(grep_target, ind, field_y, n);
+        SC v_ex = field_y.At(ind, n);
         EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
         EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
     }

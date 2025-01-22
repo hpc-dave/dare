@@ -58,4 +58,265 @@ void free_pm_initialize(PM* pm, const dare::Grid::Cartesian<Dim>& grid, Args&&..
                                     bc_args...);
 }
 
+template <typename PM, std::size_t dir>
+    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>)
+void free_pm_build_momentum(PM* pm) {
+    static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method");  // NOLINT
+    using GridType = typename PM::GridType;
+    using CNB = dare::Grid::CartesianNeighbor;
+    using LO = typename GridType::LocalOrdinalType;
+    using SC = typename GridType::ScalarType;
+    using DensityType = typename PM::DensityVariableType;
+    using ViscosityType = typename PM::ViscosityVariableType;
+    using PorosityType = typename PM::ViscosityVariableType;
+    using FluxLimiter = typename PM::TVDScheme;
+    using IndexLocal = typename GridType::Index;
+    using GridVectorType = dare::Data::GridVector<GridType, SC, 1>;
+    using DDT = dare::Matrix::DDT<GridType>;
+    using TVD = dare::Matrix::TVD<GridType, SC, FluxLimiter>;
+    template <dare::TimeDiscretizationScheme Scheme>
+    using Divergence = dare::Matrix::Divergence<GridType, Scheme>;
+    using DivergenceVStress = Divergence<dare::Matrix::EULER_BACKWARD>;
+    using DivergenceAdvection = Divergence<typename PM::ConvectiveTimeSchemeType>;
+    using FVType = dare::Data::FaceValueStencil<GridType, SC, 1>;
+
+    static const CNB f_low[] = {CNB::WEST, CNB::SOUTH, CNB::BOTTOM};
+    dare::utils::Vector<PM::dimension, const GridVectorType*> velocities;
+    for (std::size_t d{0}; d < PM::dimension; d++) {
+        velocities[d] = &pm->GetMomentum(d)->GetField().GetDataVector(1);
+    }
+
+    auto BuildStrategy = [=](auto mblock) {
+        auto g_r{mblock->GetRepresentation()};
+        LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
+        IndexLocal ind{mblock->GetIndex()};
+
+        DDT ddt(*g_r, o_loc, pm->GetTimeStepSize());
+        DivergenceAdvection div_a(*g_r, loc_o);
+        DivergenceVStress div_v(*g_r, o_loc);
+        // check here with is_pointer_v
+        TVD tvd(*g_r, loc_o, velocities);
+
+        const DensityType rho{pm->GetDensity()};
+        const ViscosityType mu{pm->GetViscosity()};
+        const PorosityType epsilon{pm->GetPorosity()};
+
+        // FVStencil rho_f = dare::math::InterpolateToFaceStencil(*g_r, ind, rho);
+        FVStencil mu_f = dare::math::InterpolateToFaceStencil(*g_r, ind, mu);
+        FVStencil epsilon_f = dare::math::InterpolateToFaceStencil(*g_r, ind, epsilon);
+        // accumulation
+        (*mblock) = ddt(epsilon, rho, *pm->GetMomentum(dir));
+
+        // advection
+        (*mblock) += div_a(tvd.Interpolate(epsilon),
+                           tvd.Interpolate(rho),
+                           tvd.interpolate(velocities[dir]->GetDataVector()),
+                           *velocities[dir]);
+
+        // pressure force
+        mblock->GetRhs(0) += pm_pressure_force_Cartesian<dir>(pm, ind, epsilon_f);
+
+        // viscous stress
+        auto [tau_im, tau_ex] = pm_viscious_stress_Cartesian<dir>(pm, *g_r, ind, epsilon_f * mu_f, velocities);
+        (*mblock) += div_v(tau_im + tau_ex);
+
+        // explicit forcing
+        mblock->GetRhs(0) += pm_explicit_force_Cartesian(pm, *pm->GetMomentum(dir), ind);
+    };
+
+    momentum[dir]->Build(BuildStrategy);
+}
+
+template<typename PM, std::size_t dir>
+    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>>)
+typename PM::SC pm_pressure_force_Cartesian(
+    PM* pm,
+    const typename PM::IndexLocal& ind,
+    const dare::Data::FaceValueStencil<typename PM::GridType, PM::SC, 1>& epsilon) {
+    using SC = typename PM::SC;
+    using CNB = typename dare::Grid::CartesianNeighbor;
+    ind_nb(ind);
+    ind_nb[dir] -= 1;
+    SC eps{0.};
+    if constexpr(dir == 0)
+        eps = epsilon.GetValue(CNB::WEST, 0);
+    else if constexpr(dir == 1)
+        eps = epsilon.GetValue(CNB::SOUTH, 0);
+    else if constexpr(dir == 2)
+        eps = epsilon.GetValue(CNB::BOTTOM, 0);
+    else
+        static_assert(dare::always_false<PM>, "ONLY UP TO 3D, STUPID!");
+
+    SC delta_p = pm->GetContinuity()->GetPressure().At(ind) - pm->GetContinuity()->GetPressure().At(ind_nb);
+    SC dV = pm->GetContinuity()->GetRepresentation()->GetCellVolume();
+    SC dx = pm->GetContinuity()->GetRepresentation()->GetDistances()[dir];
+    return -eps * delta_p / dx * dV;
+}
+
+template <typename PM, std::size_t dir>
+    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>>)
+std::pair<dare::Data::FaceMatrixStencil<typename PM::GridType, typename PM::SC, 1>,
+          dare::Data::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>>
+pm_viscious_stress_Cartesian<dir>(
+    PM* pm,
+    const PM::GridType::Representation& grep,
+    const typename PM::IndexLocal& ind,
+    const dare::Data::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>& eps_mu_f,
+    const dare::utils::Vector<PM::dimension, const dare::Data::GridVector<typename PM::GridType, SC, 1>>& v) {
+    static const dim = PM::dimension;
+    using Treatment = typename PM::ViscousStressTreatment;
+    using FMStencil = dare::Data::FaceMatrixStencil<typename PM::GridType, typename PM::SC, 1>;
+    using FVStencil = dare::Data::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>;
+    using CNB = dare::Grid::CartesianNeighbor;
+    using Index = typename PM::IndexLocal;
+
+    static_assert(dim < 4, "limited to 3 dimensions");
+
+    if constexpr(dim < 2) {
+        FMStencil m_empty;
+        FVStencil f_empty;
+        return std::make_pair(m_empty, f_empty);
+    } else {
+        auto dn_r = 1. / grep->GetDistances();
+
+        // implicit component
+        FVStencil coef_faces;
+
+        // here we do it really verbose, all the other versions don't improve readability
+        CNB f_low = ToFace<dir * 2>();     // lower face in momentum direction
+        CNB f_up = ToFace<dir * 2 + 1>();  // upper face in momentum direction
+        if constexpr (dare::algorithm::is_pm_dijkhuizen_stress_tensor_v<Treatment>) {
+            for (auto face : grep.GetFaces())
+                coef_faces(face, 0) = eps_mu_f(face, 0) * dn_r[dare::Grid::ToFace(face) / 2];
+        } else if constexpr (dare::algorithm::is_pm_default_stress_tensor_v<Treatment>) {
+            coef_faces(f_low, 0) = eps_mu_f(f_low, 0) * dn_r[dir];
+            coef_faces(f_up, 0) = eps_mu_f(f_up, 0) * dn_r[dir];
+        }
+        // and again for the main diagonal
+        coef_faces(f_low, 0) *= 2.;
+        coef_faces(f_up, 0) *= 2.;
+
+        FMStencil tau_im;
+        for (auto face : grep.GetFaces()) {
+            tau_im.SetValues(face, 0, -coef_faces(face, 0), coef_faces(face, 0));
+        }
+
+        // explicit components
+        FVStencil tau_ex;
+        Index ind_low(ind), ind_up(ind);
+        if constexpr (dir == 0) {
+            // x-direction
+            if constexpr (dare::algorithm::is_pm_default_stress_tensor_v<Treatment>) {
+                // du/dy
+                ind_low.j() -= 1;
+                tau_ex(CNB::SOUTH) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
+                ind_low.j() += 1;
+                ind_up.j() += 1;
+                tau_ex(CNB::NORTH) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
+                if constexpr(dim > 2) {
+                // du/dz
+                    ind_low = ind_up = ind;
+                    ind_low.k() -= 1;
+                    tau_ex(CNB::BOTTOM) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
+                    ind_low.k() += 1;
+                    ind_up.k() += 1;
+                    tau_ex(CNB::TOP) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
+                }
+                ind_low = ind_up = ind;
+            }
+            ind_low.i() -= 1;
+            // dv/dx
+            tau_ex(CNB::SOUTH) += v[1]->At(ind_up, 0) = v[1]->At(ind_low, 0);  // check sign
+            // dw/dx
+            if constexpr (dim > 2)
+                tau_ex(CNB::BOTTOM) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
+            ind_low.i() += 1;
+            ind_up.i() += 1;
+            tau_ex(CNB::NORTH) += v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);  // check sign
+            if constexpr(dim > 2)
+                tau_ex(CNB::TOP) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
+        }
+        if constexpr (dir == 1) {
+            // y-direction
+            if constexpr (dare::algorithm::is_pm_default_stress_tensor_v<Treatment>) {
+                // dv/dx
+                ind_low.i() -= 1;
+                tau_ex(CNB::WEST) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
+                ind_low.i() += 1;
+                ind_up.i() += 1;
+                tau_ex(CNB::EAST) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
+                if constexpr (dim > 2) {
+                    // dv/dz
+                    ind_low = ind_up = ind;
+                    ind_low.k() -= 1;
+                    tau_ex(CNB::BOTTOM) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
+                    ind_low.k() += 1;
+                    ind_up.k() += 1;
+                    tau_ex(CNB::TOP) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
+                }
+                ind_low = ind_up = ind;
+            }
+            ind_low.j() -= 1;
+            // du/dy
+            tau_ex(CNB::WEST) += v[0]->At(ind_up, 0) = v[0]->At(ind_low, 0);  // check sign
+            // dw/dy
+            if constexpr (dim > 2)
+                tau_ex(CNB::BOTTOM) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
+            ind_low.j() += 1;
+            ind_up.j() += 1;
+            tau_ex(CNB::EAST) += v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);  // check sign
+            if constexpr (dim > 2)
+                tau_ex(CNB::TOP) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
+        } if constexpr(dir > 2) {
+            // z-direction
+            if constexpr (dare::algorithm::is_pm_default_stress_tensor_v<Treatment>) {
+                // dw/dx
+                ind_low.i() -= 1;
+                tau_ex(CNB::WEST) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
+                ind_low.i() += 1;
+                ind_up.i() += 1;
+                tau_ex(CNB::EAST) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
+                // dw/dy
+                ind_low = ind_up = ind;
+                ind_low.j() -= 1;
+                tau_ex(CNB::SOUTH) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
+                ind_low.j() += 1;
+                ind_up.j() += 1;
+                tau_ex(CNB::NORTH) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
+                ind_low = ind_up = ind;
+            }
+            ind_low.k() -= 1;
+            // du/dz
+            tau_ex(CNB::WEST) += v[0]->At(ind_up, 0) = v[0]->At(ind_low, 0);  // check sign
+            // dv/dz
+            tau_ex(CNB::SOUTH) += v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);  // check sign
+            ind_low.k() += 1;
+            ind_up.k() += 1;
+            tau_ex(CNB::EAST) += v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);  // check sign
+            tau_ex(CNB::NORTH) += v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);  // check sign
+        }
+        for (auto face : grep.GetFaces()) {
+            tau_ex *= dn_r[dare::Grid::ToFace(face) / 2];
+        }
+        tau_ex *= eps_mu_f;
+        return std::make_pair(tau_im, tau_ex);
+    }
+}
+
+template<typename PM, std::size_t dir>
+    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>>)
+typename PM::SC pm_explicit_force_Cartesian(PM* pm, const typename PM::MomentumType& m, typename PM::IndexLocal ind) {
+    using VType = std::remove_cv_t<std::remove_pointer_t<PM::ExplicitForceVariableType>>;
+    if constexpr (is_none_v<VType>) {
+        return 0.;
+    } else {
+        static_assert(FieldType<VType>, "Can only work with fields!");
+        SC v{0.};
+        for (auto& it : m.GetCustomMember().beta_ex) {
+            v += it->GetDataVector().At(ind, 0);
+        }
+        return v;
+    }
+}
+
 }  // namespace dare::algorithm

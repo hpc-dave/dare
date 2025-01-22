@@ -195,6 +195,32 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
+template<std::size_t N>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    const dare::utils::Vector<N, SC>& values) const {
+    dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N> f;
+    f.SetValues(values);
+    return f;
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    SC value) const {
+    dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1> f;
+    f.SetAll(value);
+    return f;
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>
+TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    dare::utils::None value) const {
+    return Interpolate(1.);
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
 template <std::size_t N>
 dare::Data::FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
 TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::operator*(
@@ -272,10 +298,10 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::operator*(
     return s;
 }
 
-template <std::size_t Dim, typename SC, typename FluxLimiter>
-const dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>&
-TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::GetVelocities() const {
-    return velocity;
-}
+    template <std::size_t Dim, typename SC, typename FluxLimiter>
+    const dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>&
+    TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::GetVelocities() const {
+        return velocity;
+    }
 
 }  // end namespace dare::Matrix
