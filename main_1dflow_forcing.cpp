@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     using GO = dare::defaults::GlobalOrdinalType;
     using LO = dare::defaults::LocalOrdinalType;
     using Grid = dare::Cartesian<1>;
-    using GridVector = dareVector<Grid, SC, 1>;
+    using GridVector = dare::GridVector<Grid, SC, 1>;
     using Field = dare::Field<Grid, SC, 1>;
     using Writer = dare::VTKWriter<Grid>;
     using IndexGlobal = typename IndexGlobal;
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
             };
 
             auto compute_defect = [&](const auto& grep, LO loc_o, IndexLocal ind) {
-                using Divergence = dare::Divergence<Grid, dare::Matrix::EULER_BACKWARD>;
+                using Divergence = dare::Divergence<Grid, dare::EULER_BACKWARD>;
                 using FluxLimiter = dare::CDS;
                 using TVD = dare::TVD<Grid, SC, FluxLimiter>;
                 using FVStencil = dare::FaceValueStencil<Grid, SC, 1>;
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 
             auto build_coef_p = [&](auto mblock) {
                 // Normalize
-                // using Divergence = dare::Divergence<Grid, dare::Matrix::EULER_BACKWARD>;
+                // using Divergence = dare::Divergence<Grid, dare::EULER_BACKWARD>;
                 // using FluxLimiter = dare::CDS;
                 // using TVD = dare::TVD<Grid, SC, FluxLimiter>;
                 // using FVStencil = dare::FaceValueStencil<Grid, SC, 1>;
