@@ -60,13 +60,13 @@ int main(int argc, char* argv[]) {
     using GO = dare::defaults::GlobalOrdinalType;
     using LO = dare::defaults::LocalOrdinalType;
     using Grid = dare::Cartesian<1>;
-    using GridVector = dareVector<Grid, SC, 2>;
+    using GridVector = dare::GridVector<Grid, SC, 2>;
     using Field = dare::Field<Grid, SC, 2>;
     using Writer = dare::VTKWriter<Grid>;
-    using IndexGlobal = typename IndexGlobal;
-    using IndexLocal = typename Index;
-    using VecSC = typename VecSC;
-    using CNB = typename NeighborID;
+    using IndexGlobal = typename Grid::IndexGlobal;
+    using IndexLocal = typename Grid::Index;
+    using VecSC = typename Grid::VecSC;
+    using CNB = typename Grid::NeighborID;
 
     dare::ScopeGuard scope_guard(&argc, &argv);
     {

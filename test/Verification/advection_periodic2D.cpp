@@ -44,10 +44,10 @@ int main(int argc, char* argv[]) {
     using Grid = dare::Cartesian<2>;
     using Field = dare::Field<Grid, SC, 2>;
     using Writer = dare::VTKWriter<Grid>;
-    using IndexGlobal = typename IndexGlobal;
-    using IndexLocal = typename Index;
-    using VecLO = typename VecLO;
-    using VecSC = typename VecSC;
+    using IndexGlobal = typename Grid::IndexGlobal;
+    using IndexLocal = typename Grid::Index;
+    using VecLO = typename Grid::VecLO;
+    using VecSC = typename Grid::VecSC;
     using VecSC2 = dare::Vector<2, double>;
     using SCHEME = typename dare::MINMOD;
 
