@@ -25,7 +25,7 @@
 #include <string>
 #include <iostream>
 
-namespace dare::Matrix {
+namespace dare {
 
 template <typename SC>
 typename TrilinosSolver<SC>::ReturnType
@@ -176,7 +176,7 @@ TrilinosSolver<SC>::CreateSolver(SolverPackage solver_pack,
     } break;
     case SolverPackage::BumbleBee:
         if (type.compare("BICGSTAB2") == 0) {
-            sm = Teuchos::rcp(new dare::Matrix::BiCGStab2<SC, MultiVectorType, OperatorType>(param));
+            sm = Teuchos::rcp(new dare::BiCGStab2<SC, MultiVectorType, OperatorType>(param));
         } else {
             if (am_i_root)
                 std::cerr << "Type: " << type << " is not recognized by BumbleBee!" << std::endl;
@@ -291,4 +291,4 @@ int TrilinosSolver<SC>::GetNumIterations() const {
     return num_iter;
 }
 
-}  // end namespace dare::Matrix
+}  // end namespace dare

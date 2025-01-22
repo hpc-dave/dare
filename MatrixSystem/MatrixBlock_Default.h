@@ -30,7 +30,7 @@
 #include "MatrixBlockBase.h"
 #include "Utilities/Vector.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * @brief default version of MatrixBlock
@@ -42,9 +42,10 @@ namespace dare::Matrix {
 template<typename Grid, typename O, typename SC, std::size_t N>
 class MatrixBlock : public MatrixBlockBase<O, SC, N> {
 public:
-    using GridRepresentation = typename Grid::Representation;
-    using LocalOrdinalType = typename Grid::LocalOrdinalType;
-    using GlobalOrdinalType = typename Grid::GlobalOrdinalType;
+    using GridType = Grid;
+    using GridRepresentation = typename GridType::Representation;
+    using LocalOrdinalType = typename GridType::LocalOrdinalType;
+    using GlobalOrdinalType = typename GridType::GlobalOrdinalType;
     using SelfType = MatrixBlock<Grid, O, SC, N>;
     using GO = GlobalOrdinalType;
     using LO = LocalOrdinalType;
@@ -62,7 +63,7 @@ public:
      */
     MatrixBlock(const GridRepresentation* g_rep,
                 O node,
-                const dare::utils::Vector<N, std::size_t>& size_hint);
+                const dare::Vector<N, std::size_t>& size_hint);
 
     /*!
      * @brief initialzing constructor without memory allocation
@@ -103,7 +104,7 @@ public:
      */
     void Initialize(const GridRepresentation* g_rep,
                     O Node,
-                    const dare::utils::Vector<N, std::size_t>& size_hint);
+                    const dare::Vector<N, std::size_t>& size_hint);
 
     /*!
      * @brief checks, if ordinal is of global ordinal type
@@ -151,15 +152,16 @@ private:
  */
 template <typename Otarget, typename Grid, typename Osource, typename SC, std::size_t N>
 MatrixBlock<Grid, Otarget, SC, N> Convert(const MatrixBlock<Grid, Osource, SC, N>& source) {
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
+    using GridType = Grid;
+    using LO = typename GridType::LocalOrdinalType;
+    using GO = typename GridType::GlobalOrdinalType;
     static_assert(std::is_same_v<Otarget, LO> || std::is_same_v<Otarget, GO>,
                   "the target ordinal is not part of the grid");
     if constexpr (std::is_same_v<Osource, Otarget>) {
         return source;
     }
-    const typename Grid::Representation* g_rep = source.GetRepresentation();
-    dare::utils::Vector<N, std::size_t> size_hint;
+    const typename GridType::Representation* g_rep = source.GetRepresentation();
+    dare::Vector<N, std::size_t> size_hint;
     for (std::size_t n{0}; n < N; n++)
         size_hint[n] = source.GetNumEntries(n);
     if constexpr (std::is_same_v<Otarget, GO>) {
@@ -195,7 +197,7 @@ MatrixBlock<Grid, Otarget, SC, N> Convert(const MatrixBlock<Grid, Osource, SC, N
         return target;
     }
 }
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 #include "MatrixBlock_Default.inl"
 

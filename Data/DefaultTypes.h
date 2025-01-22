@@ -26,17 +26,17 @@
 #define DATA_DEFAULTTYPES_H_
 #include <Tpetra_Map_decl.hpp>
 
-namespace dare::Grid::details {
+namespace dare::details {
 using LocalOrdinalType = Tpetra::Map<>::local_ordinal_type;
 using GlobalOrdinalType = Tpetra::Map<>::global_ordinal_type;
 using ExecutionSpace = Tpetra::Map<>::execution_space;
 using MemorySpace = Tpetra::Map<>::memory_space;
 using NodeType = Tpetra::Map<>::node_type;
-}  // namespace dare::Grid::details
+}  // namespace dare::details
 
 namespace dare::defaults {
-using LocalOrdinalType = Grid::details::LocalOrdinalType;
-using GlobalOrdinalType = Grid::details::GlobalOrdinalType;
+using LocalOrdinalType = details::LocalOrdinalType;
+using GlobalOrdinalType = details::GlobalOrdinalType;
 using ScalarType = double;
 }  // end namespace dare::defaults
 

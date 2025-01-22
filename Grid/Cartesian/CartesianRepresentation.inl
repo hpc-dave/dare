@@ -29,7 +29,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace dare::Grid {
+namespace dare {
 
 template <std::size_t Dim>
 CartesianRepresentation<Dim>::CartesianRepresentation()
@@ -118,7 +118,7 @@ CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
     hierarchic_sum_loc[Dim - 1] = 1;
     hierarchic_sum_glob[Dim - 1] = 1;
 
-    this->dare::utils::InitializationTracker::Initialize();
+    this->dare::InitializationTracker::Initialize();
 
     // Prepare halo-buffers
     std::vector<GO> required_halo_IDs;
@@ -699,14 +699,14 @@ void CartesianRepresentation<Dim>::PrintDistribution(std::string fname) const {
 template <std::size_t Dim>
 void CartesianRepresentation<Dim>::TestIfInitialized(std::string func) const {
 #ifndef DARE_NDEBUG
-    if (!dare::utils::InitializationTracker::IsInitialized()) {
+    if (!dare::InitializationTracker::IsInitialized()) {
         grid->GetExecutionManager()->Terminate(func, "Cannot continue without initialization");
     }
 #endif
 }
 
 template <std::size_t Dim>
-mpi::HaloBuffer<typename CartesianRepresentation<Dim>::SC>&
+HaloBuffer<typename CartesianRepresentation<Dim>::SC>&
 CartesianRepresentation<Dim>::GetHaloBuffer() {
     return halo_buffer;
 }
@@ -745,4 +745,4 @@ CartesianRepresentation<Dim>::GetPeriodicity() const {
     return grid->GetPeriodicity();
 }
 
-}  // namespace dare::Grid
+}  // namespace dare

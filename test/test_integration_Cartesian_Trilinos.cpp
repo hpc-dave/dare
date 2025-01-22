@@ -36,15 +36,15 @@
 namespace dare::test {
 
 template <std::size_t Dim, typename GO>
-dare::utils::Vector<Dim, GO> GetResolutionIntegrationTestCartesianTrilinos() {
-    dare::utils::Vector<Dim, GO> res;
+dare::Vector<Dim, GO> GetResolutionIntegrationTestCartesianTrilinos() {
+    dare::Vector<Dim, GO> res;
     for (std::size_t n{0}; n < Dim; n++)
         res[n] = 20 + n;
     return res;
 }
 template <std::size_t Dim, typename SC>
-dare::utils::Vector<Dim, SC> GetSizeIntegrationTestCartesianTrilinos() {
-    dare::utils::Vector<Dim, SC> size;
+dare::Vector<Dim, SC> GetSizeIntegrationTestCartesianTrilinos() {
+    dare::Vector<Dim, SC> size;
     for (std::size_t n{0}; n < Dim; n++)
         size[n] = 1. + n;
     return size;
@@ -58,16 +58,16 @@ dare::utils::Vector<Dim, SC> GetSizeIntegrationTestCartesianTrilinos() {
  */
 template <std::size_t Dimension>
 class IntegrationCartesianTrilinos
-    : public testing::TestWithParam<typename dare::Grid::Cartesian<Dimension>::Options> {
+    : public testing::TestWithParam<typename dare::Cartesian<Dimension>::Options> {
 public:
     static const std::size_t N{3};
-    using GridType = dare::Grid::Cartesian<Dimension>;
+    using GridType = dare::Cartesian<Dimension>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using Index = typename GridType::Index;
     using IndexGlobal = typename GridType::IndexGlobal;
     using SC = double;
-    using GridVector = dare::Data::GridVector<GridType, SC, N>;
+    using GridVector = dare::GridVector<GridType, SC, N>;
 
     void SetUp() {
         const LO num_ghost{2};
@@ -79,7 +79,7 @@ public:
     }
 
     std::unique_ptr<GridType> grid;
-    dare::mpi::ExecutionManager exec_man;
+    dare::ExecutionManager exec_man;
 };
 
 using IntegrationCartesianTrilinos1D = IntegrationCartesianTrilinos<1>;
@@ -87,16 +87,16 @@ using IntegrationCartesianTrilinos2D = IntegrationCartesianTrilinos<2>;
 using IntegrationCartesianTrilinos3D = IntegrationCartesianTrilinos<3>;
 
 TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -160,16 +160,16 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
 }
 
 TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(1);  // staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -229,16 +229,16 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
 }
 
 TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -322,16 +322,16 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
 }
 
 TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_south{0.};
     const double value_north{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -415,16 +415,16 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
 }
 
 TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(1, 0);  // staggered in X direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -502,16 +502,16 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
 }
 
 TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0, 1);  // staggered in Y direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_south{0.};
     const double value_north{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -589,16 +589,16 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
 }
 
 TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -702,16 +702,16 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
 
 // We only test the configuration in z-direction to save some time in the unit testing
 TEST_F(IntegrationCartesianTrilinos3D, SolveStaggeredZ) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(1, 0);  // staggered in X direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_bottom{0.};
     const double value_top{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());

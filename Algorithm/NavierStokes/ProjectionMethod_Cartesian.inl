@@ -23,20 +23,20 @@
  */
 #include "Grid/Cartesian.h"
 
-namespace dare::algorithm {
+namespace dare {
 
 template <typename PM, std::size_t Dim>
-    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<Dim>>)
+    requires(std::is_same_v<typename PMType, dare::Cartesian<Dim>>)
 void free_compile_time_check(PM) {
-    static_assert(dare::algorithm::uses_newton_iterations_v<PM::ContinuityIterationsType>,
+    static_assert(dare::uses_newton_iterations_v<PM::ContinuityIterationsType>,
                   "Cartesian grid right now only uses newton iterations for enforcing continuity");
 }
 template <typename PM, std::size_t Dim, typename... Args>
-void free_pm_initialize(PM* pm, const dare::Grid::Cartesian<Dim>& grid, Args&&... bc_args) {
+void free_pm_initialize(PM* pm, const dare::Cartesian<Dim>& grid, Args&&... bc_args) {
     static_assert(PM::dimension == Dim, "The projection method and grid do not have the same dimension!");  // NOLINT
     static_assert(PM::Dimension < 3, "Not equipped for higher dimensions");
     std::string m_names[] = {"u", "v", "w"};
-    typename PM::GridType::Options opt;
+    typename PMType::Options opt;
     for (auto& o : opt)
         o = 0.;
 
@@ -59,11 +59,11 @@ void free_pm_initialize(PM* pm, const dare::Grid::Cartesian<Dim>& grid, Args&&..
 }
 
 template <typename PM, std::size_t dir>
-    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>)
+    requires(std::is_same_v<typename PMType, dare::Cartesian<PM::dimension>)
 void free_pm_build_momentum(PM* pm) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method");  // NOLINT
-    using GridType = typename PM::GridType;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using GridType = typename PMType;
+    using CNB = dare::CartesianNeighbor;
     using LO = typename GridType::LocalOrdinalType;
     using SC = typename GridType::ScalarType;
     using DensityType = typename PM::DensityVariableType;
@@ -71,17 +71,17 @@ void free_pm_build_momentum(PM* pm) {
     using PorosityType = typename PM::ViscosityVariableType;
     using FluxLimiter = typename PM::TVDScheme;
     using IndexLocal = typename GridType::Index;
-    using GridVectorType = dare::Data::GridVector<GridType, SC, 1>;
-    using DDT = dare::Matrix::DDT<GridType>;
-    using TVD = dare::Matrix::TVD<GridType, SC, FluxLimiter>;
+    using GridVectorType = dareVector<GridType, SC, 1>;
+    using DDT = dare::DDT<GridType>;
+    using TVD = dare::TVD<GridType, SC, FluxLimiter>;
     template <dare::TimeDiscretizationScheme Scheme>
-    using Divergence = dare::Matrix::Divergence<GridType, Scheme>;
-    using DivergenceVStress = Divergence<dare::Matrix::EULER_BACKWARD>;
+    using Divergence = dare::Divergence<GridType, Scheme>;
+    using DivergenceVStress = Divergence<dare::EULER_BACKWARD>;
     using DivergenceAdvection = Divergence<typename PM::ConvectiveTimeSchemeType>;
-    using FVType = dare::Data::FaceValueStencil<GridType, SC, 1>;
+    using FVType = dare::FaceValueStencil<GridType, SC, 1>;
 
     static const CNB f_low[] = {CNB::WEST, CNB::SOUTH, CNB::BOTTOM};
-    dare::utils::Vector<PM::dimension, const GridVectorType*> velocities;
+    dare::Vector<PM::dimension, const GridVectorType*> velocities;
     for (std::size_t d{0}; d < PM::dimension; d++) {
         velocities[d] = &pm->GetMomentum(d)->GetField().GetDataVector(1);
     }
@@ -101,9 +101,9 @@ void free_pm_build_momentum(PM* pm) {
         const ViscosityType mu{pm->GetViscosity()};
         const PorosityType epsilon{pm->GetPorosity()};
 
-        // FVStencil rho_f = dare::math::InterpolateToFaceStencil(*g_r, ind, rho);
-        FVStencil mu_f = dare::math::InterpolateToFaceStencil(*g_r, ind, mu);
-        FVStencil epsilon_f = dare::math::InterpolateToFaceStencil(*g_r, ind, epsilon);
+        // FVStencil rho_f = dare::InterpolateToFaceStencil(*g_r, ind, rho);
+        FVStencil mu_f = dare::InterpolateToFaceStencil(*g_r, ind, mu);
+        FVStencil epsilon_f = dare::InterpolateToFaceStencil(*g_r, ind, epsilon);
         // accumulation
         (*mblock) = ddt(epsilon, rho, *pm->GetMomentum(dir));
 
@@ -128,13 +128,13 @@ void free_pm_build_momentum(PM* pm) {
 }
 
 template<typename PM, std::size_t dir>
-    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>>)
+    requires(std::is_same_v<typename PMType, dare::Cartesian<PM::dimension>>)
 typename PM::SC pm_pressure_force_Cartesian(
     PM* pm,
     const typename PM::IndexLocal& ind,
-    const dare::Data::FaceValueStencil<typename PM::GridType, PM::SC, 1>& epsilon) {
+    const dare::FaceValueStencil<typename PMType, PM::SC, 1>& epsilon) {
     using SC = typename PM::SC;
-    using CNB = typename dare::Grid::CartesianNeighbor;
+    using CNB = typename dare::CartesianNeighbor;
     ind_nb(ind);
     ind_nb[dir] -= 1;
     SC eps{0.};
@@ -154,20 +154,20 @@ typename PM::SC pm_pressure_force_Cartesian(
 }
 
 template <typename PM, std::size_t dir>
-    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>>)
-std::pair<dare::Data::FaceMatrixStencil<typename PM::GridType, typename PM::SC, 1>,
-          dare::Data::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>>
+    requires(std::is_same_v<typename PMType, dare::Cartesian<PM::dimension>>)
+std::pair<dare::FaceMatrixStencil<typename PMType, typename PM::SC, 1>,
+          dare::FaceValueStencil<typename PMType, typename PM::SC, 1>>
 pm_viscious_stress_Cartesian<dir>(
     PM* pm,
-    const PM::GridType::Representation& grep,
+    const PMType::Representation& grep,
     const typename PM::IndexLocal& ind,
-    const dare::Data::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>& eps_mu_f,
-    const dare::utils::Vector<PM::dimension, const dare::Data::GridVector<typename PM::GridType, SC, 1>>& v) {
+    const dare::FaceValueStencil<typename PMType, typename PM::SC, 1>& eps_mu_f,
+    const dare::Vector<PM::dimension, const dareVector<typename PMType, SC, 1>>& v) {
     static const dim = PM::dimension;
     using Treatment = typename PM::ViscousStressTreatment;
-    using FMStencil = dare::Data::FaceMatrixStencil<typename PM::GridType, typename PM::SC, 1>;
-    using FVStencil = dare::Data::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using FMStencil = dare::FaceMatrixStencil<typename PMType, typename PM::SC, 1>;
+    using FVStencil = dare::FaceValueStencil<typename PMType, typename PM::SC, 1>;
+    using CNB = dare::CartesianNeighbor;
     using Index = typename PM::IndexLocal;
 
     static_assert(dim < 4, "limited to 3 dimensions");
@@ -185,10 +185,10 @@ pm_viscious_stress_Cartesian<dir>(
         // here we do it really verbose, all the other versions don't improve readability
         CNB f_low = ToFace<dir * 2>();     // lower face in momentum direction
         CNB f_up = ToFace<dir * 2 + 1>();  // upper face in momentum direction
-        if constexpr (dare::algorithm::is_pm_dijkhuizen_stress_tensor_v<Treatment>) {
+        if constexpr (dare::is_pm_dijkhuizen_stress_tensor_v<Treatment>) {
             for (auto face : grep.GetFaces())
-                coef_faces(face, 0) = eps_mu_f(face, 0) * dn_r[dare::Grid::ToFace(face) / 2];
-        } else if constexpr (dare::algorithm::is_pm_default_stress_tensor_v<Treatment>) {
+                coef_faces(face, 0) = eps_mu_f(face, 0) * dn_r[dare::ToFace(face) / 2];
+        } else if constexpr (dare::is_pm_default_stress_tensor_v<Treatment>) {
             coef_faces(f_low, 0) = eps_mu_f(f_low, 0) * dn_r[dir];
             coef_faces(f_up, 0) = eps_mu_f(f_up, 0) * dn_r[dir];
         }
@@ -206,7 +206,7 @@ pm_viscious_stress_Cartesian<dir>(
         Index ind_low(ind), ind_up(ind);
         if constexpr (dir == 0) {
             // x-direction
-            if constexpr (dare::algorithm::is_pm_default_stress_tensor_v<Treatment>) {
+            if constexpr (dare::is_pm_default_stress_tensor_v<Treatment>) {
                 // du/dy
                 ind_low.j() -= 1;
                 tau_ex(CNB::SOUTH) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
@@ -238,7 +238,7 @@ pm_viscious_stress_Cartesian<dir>(
         }
         if constexpr (dir == 1) {
             // y-direction
-            if constexpr (dare::algorithm::is_pm_default_stress_tensor_v<Treatment>) {
+            if constexpr (dare::is_pm_default_stress_tensor_v<Treatment>) {
                 // dv/dx
                 ind_low.i() -= 1;
                 tau_ex(CNB::WEST) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
@@ -269,7 +269,7 @@ pm_viscious_stress_Cartesian<dir>(
                 tau_ex(CNB::TOP) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
         } if constexpr(dir > 2) {
             // z-direction
-            if constexpr (dare::algorithm::is_pm_default_stress_tensor_v<Treatment>) {
+            if constexpr (dare::is_pm_default_stress_tensor_v<Treatment>) {
                 // dw/dx
                 ind_low.i() -= 1;
                 tau_ex(CNB::WEST) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
@@ -296,7 +296,7 @@ pm_viscious_stress_Cartesian<dir>(
             tau_ex(CNB::NORTH) += v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);  // check sign
         }
         for (auto face : grep.GetFaces()) {
-            tau_ex *= dn_r[dare::Grid::ToFace(face) / 2];
+            tau_ex *= dn_r[dare::ToFace(face) / 2];
         }
         tau_ex *= eps_mu_f;
         return std::make_pair(tau_im, tau_ex);
@@ -304,7 +304,7 @@ pm_viscious_stress_Cartesian<dir>(
 }
 
 template<typename PM, std::size_t dir>
-    requires(std::is_same_v<typename PM::GridType, dare::Grid::Cartesian<PM::dimension>>)
+    requires(std::is_same_v<typename PMType, dare::Cartesian<PM::dimension>>)
 typename PM::SC pm_explicit_force_Cartesian(PM* pm, const typename PM::MomentumType& m, typename PM::IndexLocal ind) {
     using VType = std::remove_cv_t<std::remove_pointer_t<PM::ExplicitForceVariableType>>;
     if constexpr (is_none_v<VType>) {
@@ -319,4 +319,4 @@ typename PM::SC pm_explicit_force_Cartesian(PM* pm, const typename PM::MomentumT
     }
 }
 
-}  // namespace dare::algorithm
+}  // namespace dare

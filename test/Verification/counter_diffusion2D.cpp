@@ -36,9 +36,9 @@
 #include "ScopeGuard/ScopeGuard.h"
 
 template <typename GridVector, typename GridRepresentation>
-void ComputeAnalyticalSolution(GridVector* field, typename GridVector::DataType tau, const GridRepresentation& grep) {
+void ComputeAnalyticalSolution(GridVector* field, typename GridVectorType tau, const GridRepresentation& grep) {
     using LO = typename GridRepresentation::LocalOrdinalType;
-    using SC = typename GridVector::DataType;
+    using SC = typename GridVectorType;
     using Index = typename GridRepresentation::Index;
     auto res = grep.GetLocalResolution();
     for (LO i{0}; i < res.i(); i++) {
@@ -62,14 +62,14 @@ int main(int argc, char* argv[]) {
     using SC = dare::defaults::ScalarType;
     using GO = dare::defaults::GlobalOrdinalType;
     using LO = dare::defaults::LocalOrdinalType;
-    using Grid = dare::Grid::Cartesian<2>;
-    using GridVector = dare::Data::GridVector<Grid, SC, 2>;
-    using Field = dare::Data::Field<Grid, SC, 2>;
-    using Writer = dare::io::VTKWriter<Grid>;
-    using IndexGlobal = typename Grid::IndexGlobal;
-    using IndexLocal = typename Grid::Index;
-    using VecSC = typename Grid::VecSC;
-    using CNB = typename Grid::NeighborID;
+    using Grid = dare::Cartesian<2>;
+    using GridVector = dareVector<Grid, SC, 2>;
+    using Field = dare::Field<Grid, SC, 2>;
+    using Writer = dare::VTKWriter<Grid>;
+    using IndexGlobal = typename IndexGlobal;
+    using IndexLocal = typename Index;
+    using VecSC = typename VecSC;
+    using CNB = typename NeighborID;
 
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
@@ -82,8 +82,8 @@ int main(int argc, char* argv[]) {
         IndexGlobal resolution_global(nx, ny);
         VecSC size_global(L, H);
 
-        dare::mpi::ExecutionManager exman;
-        dare::io::FileSystemManager fman(&exman, "verification");
+        dare::ExecutionManager exman;
+        dare::FileSystemManager fman(&exman, "verification");
         fman.CheckWithUser(false);
 
         Grid grid("scalar_2D",
@@ -104,10 +104,10 @@ int main(int argc, char* argv[]) {
         analytical.SetComponentName(1, "backward");
 
         auto build_coef = [&](auto mblock) {
-            using Gradient = dare::Matrix::Gradient<Grid>;
-            using TimeScheme = dare::Matrix::EULER_BACKWARD;
-            using Divergence = dare::Matrix::Divergence<Grid, TimeScheme>;
-            using DDT = dare::Matrix::DDT<Grid>;
+            using Gradient = dare::Gradient<Grid>;
+            using TimeScheme = dare::EULER_BACKWARD;
+            using Divergence = dare::Divergence<Grid, TimeScheme>;
+            using DDT = dare::DDT<Grid>;
 
             auto g_r = mblock->GetRepresentation();
             LO loc_o{mblock->GetLocalOrdinal()};
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
             }
         };
 
-        dare::Matrix::Trilinos<SC> msystem(&exman);
+        dare::Trilinos<SC> msystem(&exman);
         Teuchos::RCP<Teuchos::ParameterList> p_ilu = Teuchos::rcp(new Teuchos::ParameterList());
         // parameters for ILU
         p_ilu->set("fact: drop tolerance", 1e-9);
@@ -191,12 +191,12 @@ int main(int argc, char* argv[]) {
             // msystem.PrintX();
             // msystem.PrintB();
 
-            dare::Matrix::TrilinosSolver<SC> solver;
-            msystem.GetM() = solver.BuildPreconditioner(dare::Matrix::PreCondPackage::Ifpack2,
+            dare::TrilinosSolver<SC> solver;
+            msystem.GetM() = solver.BuildPreconditioner(dare::PreCondPackage::Ifpack2,
                                                         "ILUT",
                                                         p_ilu,
                                                         msystem.GetA());
-            auto ret = solver.Solve(dare::Matrix::SolverPackage::Belos,
+            auto ret = solver.Solve(dare::SolverPackage::Belos,
                                     "BICGSTAB",
                                     msystem.GetM(),
                                     msystem.GetA(), msystem.GetX(), msystem.GetB(),
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
             if (ret != Belos::ReturnType::Converged) {
                 exman.Terminate(__func__, "solver did not converge");
             }
-            exman.Print(dare::mpi::Verbosity::Low)
+            exman.Print(dare::Verbosity::Low)
                 << "t: " << time << "\tstep: " << timestep << "\tit: " << solver.GetNumIterations() << '\n';
 
             // Verification
@@ -224,7 +224,7 @@ int main(int argc, char* argv[]) {
             }
             err_f = exman.Allsum(err_f) / (nx * ny);
             err_b = exman.Allsum(err_b) / (nx * ny);
-            exman(dare::mpi::Verbosity::Low)
+            exman(dare::Verbosity::Low)
                 << "error (f | b): " << err_f << " | " << err_b << '\n';
 
             field.CopyDataVectorsToOldTimeStep();

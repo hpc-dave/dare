@@ -25,7 +25,7 @@
 #ifndef ALGORITHM_ALGORITHMTRAITS_H_
 #define ALGORITHM_ALGORITHMTRAITS_H_
 
-namespace dare::algorithm {
+namespace dare {
 
 /*!
  * \brief an tagging struct for Newton iterations
@@ -59,6 +59,6 @@ struct uses_fixed_point_iterations : std::bool_constant<FixedPointIterations<T>>
 template <typename T>
 constexpr bool uses_fixed_point_iterations_v = uses_fixed_point_iterations<T>::value;
 
-}  // namespace dare::algorithm
+}  // namespace dare
 
 #endif  // ALGORITHM_ALGORITHMTRAITS_H_

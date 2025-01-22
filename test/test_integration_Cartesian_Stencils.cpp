@@ -34,12 +34,12 @@ template <std::size_t Dim>
 class IntegrationTestCartesianStencils : public testing::Test {
 public:
     static const std::size_t N{3};
-    using GridType = dare::Grid::Cartesian<Dim>;
+    using GridType = dare::Cartesian<Dim>;
     using SC = double;
-    using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, SC, N>;
-    using CenterValueStencil = dare::Data::CenterValueStencil<GridType, SC, N>;
-    using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, SC, N>;
-    using FaceValueStencil = dare::Data::FaceValueStencil<GridType, SC, N>;
+    using CenterMatrixStencil = dare::CenterMatrixStencil<GridType, SC, N>;
+    using CenterValueStencil = dare::CenterValueStencil<GridType, SC, N>;
+    using FaceMatrixStencil = dare::FaceMatrixStencil<GridType, SC, N>;
+    using FaceValueStencil = dare::FaceValueStencil<GridType, SC, N>;
 
     void SetUp() {
     }

@@ -39,7 +39,7 @@
 #include "Vector_traits.h"
 #include "Errors.h"
 
-namespace dare::utils {
+namespace dare {
 
 template <typename T, typename... Ts>
 using AllConvertible = std::enable_if_t<std::conjunction_v<std::is_convertible<T, Ts>...>>;
@@ -404,39 +404,6 @@ private:
     auto IterateValues(Expr lambda, Op op) const;
 };
 
-}  // namespace dare::utils
-
-namespace std {
-/*
- * \brief specialization of the hash-function for Vector
- */
-template <std::size_t N, typename T>
-class hash<dare::utils::Vector<N, T>> {
-public:
-    /*
-     * \brief returns the hash for a Vector
-     */
-    [[nodiscard]] std::size_t operator()(const dare::utils::Vector<N, T>& v) const {
-        return v.GetHash();
-    }
-};
-
-/*!
- * \brief specialization for dare::utils::Vector: computes the absolute value
- * @tparam N number of elements in vector
- * @tparam T type of variable
- * @param v input vector
- * @return vector with all values absolute
- */
-template<std::size_t N, typename T>
-[[nodiscard]] dare::utils::Vector<N, T> abs(dare::utils::Vector<N, T> v) {
-    for (auto& e : v)
-        e = std::abs(e);
-    return v;
-}
-
-}  // namespace std
-
 /*!
  * @brief multiplication operator for convenience
  * @tparam T basic type
@@ -446,7 +413,7 @@ template<std::size_t N, typename T>
  * @return vector
  */
 template <std::size_t N, typename T>
-dare::utils::Vector<N, T> operator*(const T& v1, const dare::utils::Vector<N, T>& v2) {
+dare::Vector<N, T> operator*(const T& v1, const dare::Vector<N, T>& v2) {
     return v2 * v1;
 }
 
@@ -459,9 +426,42 @@ dare::utils::Vector<N, T> operator*(const T& v1, const dare::utils::Vector<N, T>
  * @return vector
  */
 template <std::size_t N, typename T>
-dare::utils::Vector<N, T> operator/(const T& v1, const dare::utils::Vector<N, T>& v2) {
+dare::Vector<N, T> operator/(const T& v1, const dare::Vector<N, T>& v2) {
     return v2 / v1;
 }
+
+}  // namespace dare
+
+namespace std {
+/*
+ * \brief specialization of the hash-function for Vector
+ */
+template <std::size_t N, typename T>
+class hash<dare::Vector<N, T>> {
+public:
+    /*
+     * \brief returns the hash for a Vector
+     */
+    [[nodiscard]] std::size_t operator()(const dare::Vector<N, T>& v) const {
+        return v.GetHash();
+    }
+};
+
+/*!
+ * \brief specialization for dare::Vector: computes the absolute value
+ * @tparam N number of elements in vector
+ * @tparam T type of variable
+ * @param v input vector
+ * @return vector with all values absolute
+ */
+template<std::size_t N, typename T>
+[[nodiscard]] dare::Vector<N, T> abs(dare::Vector<N, T> v) {
+    for (auto& e : v)
+        e = std::abs(e);
+    return v;
+}
+
+}  // namespace std
 
 #include "Vector.inl"
 #endif  // UTILITIES_VECTOR_H_

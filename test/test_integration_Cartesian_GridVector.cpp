@@ -32,15 +32,15 @@
 namespace dare::test {
 
 template <std::size_t Dim, typename GO>
-dare::utils::Vector<Dim, GO> GetResolutionTestCartesianGrid() {
-    dare::utils::Vector<Dim, GO> res;
+dare::Vector<Dim, GO> GetResolutionTestCartesianGrid() {
+    dare::Vector<Dim, GO> res;
     for (std::size_t n{0}; n < Dim; n++)
         res[n] = 100 + n;
     return res;
 }
 template <std::size_t Dim, typename SC>
-dare::utils::Vector<Dim, SC> GetSizeTestCartesianGrid() {
-    dare::utils::Vector<Dim, SC> size;
+dare::Vector<Dim, SC> GetSizeTestCartesianGrid() {
+    dare::Vector<Dim, SC> size;
     for (std::size_t n{0}; n < Dim; n++)
         size[n] = 1. + n;
     return size;
@@ -55,14 +55,14 @@ dare::utils::Vector<Dim, SC> GetSizeTestCartesianGrid() {
 template <std::size_t Dim>
 class IntegrationTestCartesianGridVector : public testing::Test {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;
+    using GridType = dare::Cartesian<Dim>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using Index = typename GridType::Index;
     using IndexGlobal = typename GridType::IndexGlobal;
     using SC = double;
     static const std::size_t N{3};
-    using GridVector = dare::Data::GridVector<GridType, SC, N>;
+    using GridVector = dare::GridVector<GridType, SC, N>;
 
     void SetUp() {
         const LO num_ghost{2};
@@ -73,7 +73,7 @@ public:
     }
 
     std::unique_ptr<GridType> grid;
-    dare::mpi::ExecutionManager exec_man;
+    dare::ExecutionManager exec_man;
 };
 
 using IntegrationTestCartesianGridVector1D = IntegrationTestCartesianGridVector<1>;

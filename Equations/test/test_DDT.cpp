@@ -34,15 +34,15 @@
 namespace dare::test {
 
 template <std::size_t Dim, typename GO>
-dare::utils::Vector<Dim, GO> GetResolutionTestDDT() {
-    dare::utils::Vector<Dim, GO> res;
+dare::Vector<Dim, GO> GetResolutionTestDDT() {
+    dare::Vector<Dim, GO> res;
     for (std::size_t n{0}; n < Dim; n++)
         res[n] = 10 + n;
     return res;
 }
 template <std::size_t Dim, typename SC>
-dare::utils::Vector<Dim, SC> GetSizeTestDDT() {
-    dare::utils::Vector<Dim, SC> size;
+dare::Vector<Dim, SC> GetSizeTestDDT() {
+    dare::Vector<Dim, SC> size;
     for (std::size_t n{0}; n < Dim; n++)
         size[n] = 1. + n;
     return size;
@@ -56,14 +56,14 @@ dare::utils::Vector<Dim, SC> GetSizeTestDDT() {
 class DDTTest : public testing::Test {
 public:
     static const std::size_t N{3};
-    using GridType = dare::Grid::Cartesian<3>;
+    using GridType = dare::Cartesian<3>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
     using Index = typename GridType::Index;
-    using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, SC, N>;
-    using CenterValueStencil = dare::Data::CenterValueStencil<GridType, SC, N>;
-    using FieldType = dare::Data::Field<GridType, SC, N>;
+    using CenterMatrixStencil = dare::CenterMatrixStencil<GridType, SC, N>;
+    using CenterValueStencil = dare::CenterValueStencil<GridType, SC, N>;
+    using FieldType = dare::Field<GridType, SC, N>;
 
     void SetUp() {
         const LO num_ghost{2};
@@ -74,7 +74,7 @@ public:
     }
 
     std::unique_ptr<GridType> grid;        //!< the grid
-    dare::mpi::ExecutionManager exec_man;  //!< the execution manager
+    dare::ExecutionManager exec_man;  //!< the execution manager
 };
 
 TEST_F(DDTTest, EulerBackward) {
@@ -97,7 +97,7 @@ TEST_F(DDTTest, EulerBackward) {
 
     LO ordinal = 0;
     SC dt = 0.1;
-    dare::Matrix::DDT<GridType> ddt(grep, ordinal, dt);
+    dare::DDT<GridType> ddt(grep, ordinal, dt);
     SC dV_dt = grep.GetCellVolume(ordinal) / dt;
     auto s_1 = ddt(field_phi);
     auto s_2 = ddt(field_p1, field_phi);
@@ -147,7 +147,7 @@ TEST_F(DDTTest, EulerBackwardStaggered) {
     LO ordinal = grep_x.MapIndexToOrdinalLocal(ind);
     LO ordinal_internal = grep_x.MapIndexToOrdinalLocalInternal(grep_x.MapLocalToInternal(ind));
     SC dt = 0.1;
-    dare::Matrix::DDT<GridType> ddt(grep_x, ordinal_internal, dt);
+    dare::DDT<GridType> ddt(grep_x, ordinal_internal, dt);
     SC dV_dt = grep_x.GetCellVolume(ordinal) / dt;
     auto s_1 = ddt(field_phi);
     auto s_2 = ddt(field_p1, field_phi);

@@ -37,10 +37,10 @@
 
 #include "VTKPXMLStructuredGridWriter.h"
 
-namespace dare::io {
+namespace dare {
 
 template<typename Grid>
-VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man, double _time, int _step)
+VTKWriter<Grid>::VTKWriter(ExecutionManager* ex_man, double _time, int _step)
     : exec_man(ex_man), time(_time), step(_step) {
 }
 
@@ -75,7 +75,7 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
         vtkNew<GridType> vtkDataSet;
         bool success = Options::AllocateGrid(*grep, vtkDataSet);
         if (!success) {
-            exec_man->Print(dare::mpi::Verbosity::Low)
+            exec_man->Print(dare::Verbosity::Low)
                 << "Error during grid allocation, cannot write " << grep->GetName() << " to file!" << std::endl;
             continue;
         }
@@ -216,4 +216,4 @@ void VTKWriter<Grid>::PopulateVTKArray(std::tuple<const Data&...> data,
     LoopThroughData<0>(SetData, data);
 }
 
-}  // end namespace dare::io
+}  // end namespace dare

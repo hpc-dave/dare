@@ -33,7 +33,7 @@
 #include "PM_Information.h"
 
 
-namespace dare::algorithm::detail {
+namespace dare::detail {
 
 template <typename TDict, ContainsViscosity TDictDefault>
 struct pm_get_viscosity {
@@ -198,12 +198,12 @@ struct PMAssembledPropertyInfoWithDefaults {
     using _implicit_force_t = pm_get_implicit_force_t<PropertyInfoUser, PropertyInfoDefault>;
     using _explicit_force_t = pm_get_explicit_force_t<PropertyInfoUser, PropertyInfoDefault>;
     static const bool _compressibility_v = pm_get_compressible_v<PropertyInfoUser, PropertyInfoDefault>;
-    using density = utils::default_convert_to_tagged_info_t<_density_t, PMProperties, PMProperties::Density>;
-    using viscosity = utils::default_convert_to_tagged_info_t<_viscosity_t, PMProperties, PMProperties::Viscosity>;
-    using porosity = utils::default_convert_to_tagged_info_t<_porosity_t, PMProperties, PMProperties::Porosity>;
-    using implicit_force = utils::default_convert_to_tagged_info_t<_implicit_force_t, PMProperties, PMProperties::ImplicitForce>;   // NOLINT
-    using explicit_force = utils::default_convert_to_tagged_info_t<_explicit_force_t, PMProperties, PMProperties::ExplicitForce>;   // NOLINT
-    using compressible = utils::FlaggedInfo<_compressibility_v, PMProperties, PMProperties::Compressible>;    // NOLINT
+    using density = default_convert_to_tagged_info_t<_density_t, PMProperties, PMProperties::Density>;
+    using viscosity = default_convert_to_tagged_info_t<_viscosity_t, PMProperties, PMProperties::Viscosity>;
+    using porosity = default_convert_to_tagged_info_t<_porosity_t, PMProperties, PMProperties::Porosity>;
+    using implicit_force = default_convert_to_tagged_info_t<_implicit_force_t, PMProperties, PMProperties::ImplicitForce>;   // NOLINT
+    using explicit_force = default_convert_to_tagged_info_t<_explicit_force_t, PMProperties, PMProperties::ExplicitForce>;   // NOLINT
+    using compressible = FlaggedInfo<_compressibility_v, PMProperties, PMProperties::Compressible>;    // NOLINT
 };
 
 template <typename NumericalInfoUser, typename NumericalInfoDefault>
@@ -267,7 +267,7 @@ template <typename T>
 struct DeterminePorosityVariableType {
 };
 
-template <dare::utils::NoneType T>
+template <dare::NoneType T>
 struct DeterminePorosityVariableType<T> {
     using type = T;
 };
@@ -296,7 +296,7 @@ template <typename T>
 struct DetermineImplicitForceVariableType {
 };
 
-template <dare::utils::NoneType T>
+template <dare::NoneType T>
 struct DetermineImplicitForceVariableType<T> {
     using type = T;
     using member_type = T;
@@ -321,7 +321,7 @@ template <typename T>
 struct DetermineExplicitForceVariableType {
 };
 
-template <dare::utils::NoneType T>
+template <dare::NoneType T>
 struct DetermineExplicitForceVariableType<T> {
     using type = T;
     using member_type = T;
@@ -343,6 +343,6 @@ template <typename T>
 using determine_explicit_force_member_variable_type_t
     = typename DetermineExplicitForceVariableType<typename T::type>::member_type;
 
-}  // namespace dare::algorithm::detail
+}  // namespace dare::detail
 
 #endif  // ALGORITHM_NAVIERSTOKES_PM_DETAILS_H_

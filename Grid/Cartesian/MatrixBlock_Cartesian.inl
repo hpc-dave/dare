@@ -26,23 +26,23 @@
 #include <vector>
 #include <limits>
 
-namespace dare::Matrix {
+namespace dare {
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::MatrixBlock()
-    : MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>(nullptr, 0, dare::utils::Vector<N, std::size_t>()) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::MatrixBlock()
+    : MatrixBlock<dare::Cartesian<Dim>, O, SC, N>(nullptr, 0, dare::Vector<N, std::size_t>()) {
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::MatrixBlock(const GridRepresentation* _g_rep,
-                                         O _node)
-    : MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>(_g_rep, _node, dare::utils::Vector<N, std::size_t>()) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::MatrixBlock(const GridRepresentation* _g_rep,
+                                                         O _node)
+    : MatrixBlock<dare::Cartesian<Dim>, O, SC, N>(_g_rep, _node, dare::Vector<N, std::size_t>()) {
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::MatrixBlock(const GridRepresentation* _g_rep,
-                                                               O _node,
-                                                               const dare::utils::Vector<N, std::size_t>& size_hint)
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::MatrixBlock(const GridRepresentation* _g_rep,
+                                                         O _node,
+                                                         const dare::Vector<N, std::size_t>& size_hint)
     : MatrixBlockBase<O, SC, N>(_node, size_hint), g_rep(_g_rep) {
     static_assert(std::is_same_v<O, LocalOrdinalType>
                || std::is_same_v<O, GlobalOrdinalType>,
@@ -63,7 +63,7 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::MatrixBlock(const GridReprese
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::MatrixBlock(const SelfType& other)
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::MatrixBlock(const SelfType& other)
     : MatrixBlockBase<O, SC, N>(other), g_rep(other.g_rep) {
     static_assert(std::is_same_v<O, LocalOrdinalType>
                || std::is_same_v<O, GlobalOrdinalType>,
@@ -71,11 +71,11 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::MatrixBlock(const SelfType& o
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::~MatrixBlock() {}
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::~MatrixBlock() {}
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator=(SelfType other) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::operator=(SelfType other) {
     if (this != &other) {
         MatrixBlockBase<O, SC, N>::operator=(other);
         g_rep = other.g_rep;
@@ -88,14 +88,14 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator=(SelfType other) {
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Initialize(const GridRepresentation* _g_rep, O _node) {
-    Initialize(_g_rep, _node, dare::utils::Vector<N, std::size_t>());
+void MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Initialize(const GridRepresentation* _g_rep, O _node) {
+    Initialize(_g_rep, _node, dare::Vector<N, std::size_t>());
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Initialize(const GridRepresentation* _g_rep,
+void MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Initialize(const GridRepresentation* _g_rep,
                                              O _node,
-                                             const dare::utils::Vector<N, std::size_t>& size_hint) {
+                                             const dare::Vector<N, std::size_t>& size_hint) {
     MatrixBlockBase<O, SC, N>::Initialize(_node, size_hint);
     g_rep = _g_rep;
     if constexpr (IsGlobal()) {
@@ -108,14 +108,14 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Initialize(const GridRep
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-const typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GridRepresentation*
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetRepresentation() const {
+const typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GridRepresentation*
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetRepresentation() const {
     return g_rep;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 template <CartesianNeighbor CNB>
-bool MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::IsSet(std::size_t nr, std::size_t nc) const {
+bool MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IsSet(std::size_t nr, std::size_t nc) const {
     if constexpr (N == 1) {
         if (nc == N)
             nc = 0;
@@ -146,7 +146,7 @@ bool MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::IsSet(std::size_t nr, st
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
+void MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Finalize() {
     using CN = CartesianNeighbor;
     const bool map_periodic{true};
     Index ind = ind_internal;
@@ -288,7 +288,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Finalize() {
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 template <CartesianNeighbor CNB>
-SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::size_t nc) {
+SC& MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::size_t nc) {
     if constexpr (N == 1) {
         if (nc == N)
             nc = 0;
@@ -333,7 +333,7 @@ SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) {
+SC& MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) {
     switch (cnb) {
     case CartesianNeighbor::CENTER:
         return Get<CartesianNeighbor::CENTER>(nr, nc);
@@ -369,7 +369,7 @@ SC& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 template <CartesianNeighbor CNB>
-void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Remove(std::size_t nr, std::size_t nc) {
+void MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Remove(std::size_t nr, std::size_t nc) {
     if constexpr (N == 1) {
         if (nc == N)
             nc = 0;
@@ -404,7 +404,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Remove(std::size_t nr, s
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Remove(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) {
+void MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Remove(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) {
     switch (cnb) {
     case CartesianNeighbor::CENTER:
         Remove<CartesianNeighbor::CENTER>(nr, nc);
@@ -438,7 +438,7 @@ void MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Remove(std::size_t nr, s
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 template <CartesianNeighbor CNB>
-SC MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::size_t nc) const {
+SC MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::size_t nc) const {
     if constexpr(N == 1) {
         if (nc == 1)
             nc = 0;
@@ -474,7 +474,7 @@ SC MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::s
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-SC MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) const {
+SC MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) const {
     switch (cnb) {
     case CartesianNeighbor::CENTER:
         return Get<CartesianNeighbor::CENTER>(nr, nc);
@@ -499,24 +499,24 @@ SC MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Get(std::size_t nr, std::s
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-constexpr bool MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::IsGlobal() {
+constexpr bool MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IsGlobal() {
     return std::is_same_v<O, GlobalOrdinalType>;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Index
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetIndex() const {
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Index
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetIndex() const {
     return ind_full;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Index
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetIndexInternal() const {
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Index
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetIndexInternal() const {
     return ind_internal;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-bool MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::IsStencilLocal() const {
+bool MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IsStencilLocal() const {
     if constexpr (std::is_same_v<LocalOrdinalType, O>) {
         return true;
     } else {
@@ -531,78 +531,78 @@ bool MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::IsStencilLocal() const {
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-dare::utils::Array<N, N, typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::ScalarArray>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighbors() {
+dare::Array<N, N, typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::ScalarArray>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighbors() {
     return neighbors;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-const dare::utils::Array<N, N, typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::ScalarArray>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighbors() const {
+const dare::Array<N, N, typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::ScalarArray>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighbors() const {
     return neighbors;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-dare::utils::Vector<N, typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::ScalarArray>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr) {
+dare::Vector<N, typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::ScalarArray>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr) {
     return neighbors[nr];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-const dare::utils::Vector<N, typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::ScalarArray>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr) const {
+const dare::Vector<N, typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::ScalarArray>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr) const {
     return neighbors[nr];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::ScalarArray&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr, std::size_t nc) {
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::ScalarArray&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr, std::size_t nc) {
     return neighbors[nr][nc];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-const typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::ScalarArray&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr, std::size_t nc) const {
+const typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::ScalarArray&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighbors(std::size_t nr, std::size_t nc) const {
     return neighbors[nr][nc];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-dare::utils::Array<N, N, char>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet() {
+dare::Array<N, N, char>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet() {
     return neighbor_set;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-const dare::utils::Array<N, N, char>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet() const {
+const dare::Array<N, N, char>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet() const {
     return neighbor_set;
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-dare::utils::Vector<N, char>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet(std::size_t nr) {
+dare::Vector<N, char>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet(std::size_t nr) {
     return neighbor_set[nr];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-const dare::utils::Vector<N, char>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet(std::size_t nr) const {
+const dare::Vector<N, char>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet(std::size_t nr) const {
     return neighbor_set[nr];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-char& MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet(std::size_t nr, std::size_t nc) {
+char& MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet(std::size_t nr, std::size_t nc) {
     return neighbor_set[nr];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-char MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet(std::size_t nr, std::size_t nc) const {
+char MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetNeighborBitSet(std::size_t nr, std::size_t nc) const {
     return neighbor_set[nr][nc];
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Set(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Set(const dare::CenterMatrixStencil<GridType, SC, N>& s) {
     for (std::size_t n{0}; n < N; n++) {
         Get<CartesianNeighbor::CENTER>(n, n) = s.GetValue(CartesianNeighbor::CENTER, n);
         Get<CartesianNeighbor::WEST>(n, n) = s.GetValue(CartesianNeighbor::WEST, n);
@@ -621,9 +621,9 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Set(const dare::Data::CenterM
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Set(std::size_t n,
-                                                       const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Set(std::size_t n,
+                                                       const dare::CenterMatrixStencil<GridType, SC, 1>& s) {
     Get<CartesianNeighbor::CENTER>(n, n) = s.GetValue(CartesianNeighbor::CENTER, 0);
     Get<CartesianNeighbor::WEST>(n, n) = s.GetValue(CartesianNeighbor::WEST, 0);
     Get<CartesianNeighbor::EAST>(n, n) = s.GetValue(CartesianNeighbor::EAST, 0);
@@ -640,16 +640,16 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Set(std::size_t n,
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator=(
-    const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::operator=(
+    const dare::CenterMatrixStencil<GridType, SC, N>& s) {
     return this->Set(s);
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Add(
-    const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Add(
+    const dare::CenterMatrixStencil<GridType, SC, N>& s) {
     for (std::size_t n{0}; n < N; n++) {
         Get<CartesianNeighbor::CENTER>(n, n) += s.GetValue(CartesianNeighbor::CENTER, n);
         Get<CartesianNeighbor::WEST>(n, n) += s.GetValue(CartesianNeighbor::WEST, n);
@@ -668,9 +668,9 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Add(
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Add(std::size_t n,
-                                                       const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Add(std::size_t n,
+                                                       const dare::CenterMatrixStencil<GridType, SC, 1>& s) {
     Get<CartesianNeighbor::CENTER>(n, n) += s.GetValue(CartesianNeighbor::CENTER, 0);
     Get<CartesianNeighbor::WEST>(n, n) += s.GetValue(CartesianNeighbor::WEST, 0);
     Get<CartesianNeighbor::EAST>(n, n) += s.GetValue(CartesianNeighbor::EAST, 0);
@@ -687,37 +687,37 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Add(std::size_t n,
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator+=(
-    const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::operator+=(
+    const dare::CenterMatrixStencil<GridType, SC, N>& s) {
     return this->Add(s);
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Subtract(
-    const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Subtract(
+    const dare::CenterMatrixStencil<GridType, SC, N>& s) {
     return this->Add(-1. * s);
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::Subtract(
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Subtract(
     std::size_t n,
-    const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s) {
+    const dare::CenterMatrixStencil<GridType, SC, 1>& s) {
     return this->Add(n, -1. * s);
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>&
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::operator-=(
-    const dare::Data::CenterMatrixStencil<GridType, SC, N>& s) {
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::operator-=(
+    const dare::CenterMatrixStencil<GridType, SC, N>& s) {
     return (*this) += (-1. * s);
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GO
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetGlobalOrdinal() const {
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GO
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetGlobalOrdinal() const {
     if constexpr (std::is_same_v<O, GlobalOrdinalType>)
         return this->GetNode();
     else
@@ -725,21 +725,21 @@ MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetGlobalOrdinal() const {
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-typename MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::LO
-MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>::GetLocalOrdinal() const {
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::LO
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetLocalOrdinal() const {
     if constexpr (std::is_same_v<O, LocalOrdinalType>)
         return this->GetNode();
     else
         return g_rep->MapGlobalToLocalInternal(this->GetNode());
 }
 
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 // template <std::size_t Dim, typename O, typename SC, std::size_t N>
-// void std::swap(dare::Matrix::MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>& m1,
-//                dare::Matrix::MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>& m2) {
-//     std::swap(static_cast<dare::Matrix::MatrixBlockBase<O, SC, N>&>(m1),
-//               static_cast<dare::Matrix::MatrixBlockBase<O, SC, N>&>(m2));
+// void std::swap(dare::MatrixBlock<dare::Cartesian<Dim>, O, SC, N>& m1,
+//                dare::MatrixBlock<dare::Cartesian<Dim>, O, SC, N>& m2) {
+//     std::swap(static_cast<dare::MatrixBlockBase<O, SC, N>&>(m1),
+//               static_cast<dare::MatrixBlockBase<O, SC, N>&>(m2));
 //     std::swap(m1.g_rep, m2.g_rep);
 //     std::swap(m1.neighbors, m2.neighbors);
 //     std::swap(m1.neighbor_set, m2.neighbor_set);

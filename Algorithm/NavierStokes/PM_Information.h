@@ -29,7 +29,7 @@
 #include "Utilities/PropertyInformation.h"
 #include "Algorithm/StaticInformation.h"
 
-namespace dare::algorithm {
+namespace dare {
 
 /*!
  * \brief information related to the properties of the system simulated via the projection method
@@ -67,16 +67,16 @@ struct PMDefaultStressTensor {
 };
 
 template <bool Flag, PMProperties Tag>
-using PMFlaggedInfo = utils::FlaggedInfo<Flag, PMProperties, Tag>;
+using PMFlaggedInfo = FlaggedInfo<Flag, PMProperties, Tag>;
 
 template <typename Type, PMProperties Tag>
-using PMTypeInfo = utils::TaggedTypeInfo<Type, PMProperties, Tag>;
+using PMTypeInfo = TaggedTypeInfo<Type, PMProperties, Tag>;
 
 template <typename Type, PMProperties Tag, std::size_t N>
-using PMTypeCountedInfo = utils::TaggedCountedTypeInfo<Type, PMProperties, Tag, N>;
+using PMTypeCountedInfo = TaggedCountedTypeInfo<Type, PMProperties, Tag, N>;
 
 template <typename Type, PMNumerics Tag>
-using PMNumericsInfo = utils::TaggedTypeInfo<Type, PMNumerics, Tag>;
+using PMNumericsInfo = TaggedTypeInfo<Type, PMNumerics, Tag>;
 
 template <typename Type>
 struct PMDensityInfo : PMTypeInfo<Type, PMProperties::Density> {};
@@ -133,6 +133,6 @@ struct is_pm_dijkuizen_stress_tensor : std::bool_constant<PMDijkhuizenStressTrea
 template <typename T>
 struct is_pm_default_stress_tensor : std::bool_constant<PMDefaultStressTreatment<T>> {};
 
-}  // namespace dare::algorithm
+}  // namespace dare
 
 #endif  // ALGORITHM_NAVIERSTOKES_PM_INFORMATION_H_

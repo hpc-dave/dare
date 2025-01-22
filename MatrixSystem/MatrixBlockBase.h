@@ -35,7 +35,7 @@
 #include "Utilities/Vector.h"
 #include "Utilities/Errors.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * @brief basic data structure for matrix blocks
@@ -55,7 +55,7 @@ public:
     using ScalarType = SC;
     using OrdinalArray = std::vector<OrdinalType>;
     using ScalarArray = std::vector<ScalarType>;
-    using ScalarArrayN = dare::utils::Vector<N, SC>;
+    using ScalarArrayN = dare::Vector<N, SC>;
 
     /*!
      * @brief default constructor
@@ -67,7 +67,7 @@ public:
      * @param node grid cell ID
      * @param size_hint number of elements which will be allocated
      */
-    MatrixBlockBase(const O& node, const dare::utils::Vector<N, std::size_t>& size_hint);
+    MatrixBlockBase(const O& node, const dare::Vector<N, std::size_t>& size_hint);
 
     /*!
      * @brief copy constructor
@@ -102,13 +102,13 @@ public:
      * @param field field with values to copy from
      * @param node grid cell ID
      */
-    void Initialize(O node, const dare::utils::Vector<N, std::size_t>& size_hint);
+    void Initialize(O node, const dare::Vector<N, std::size_t>& size_hint);
 
     /*!
      * @brief Allocates memory according to size hint
      * @param hint size hint for each row
      */
-    void ProvideSizeHint(const dare::utils::Vector<N, std::size_t>& hint);
+    void ProvideSizeHint(const dare::Vector<N, std::size_t>& hint);
 
     /*!
      * @brief resizes a certain row
@@ -336,7 +336,7 @@ private:
     OrdinalType node;               //!< node associated with this matrix block
 };
 
-}  // namespace dare::Matrix
+}  // namespace dare
 
 #include "MatrixBlockBase.inl"
 #endif  // MATRIXSYSTEM_MATRIXBLOCKBASE_H_

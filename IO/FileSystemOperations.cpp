@@ -23,7 +23,7 @@
  */
 
 #include "FileSystemOperations.h"
-namespace dare::io {
+namespace dare {
 namespace details {
 
 bool Exists(const Path& path) {
@@ -74,4 +74,4 @@ bool CreateDirectoryRecursive(const Path& path) {
 }
 }  // end namespace details
 
-}  // end namespace dare::io
+}  // end namespace dare

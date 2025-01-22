@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-namespace dare::mpi {
+namespace dare {
 
 bool ExecutionManager::AmIRoot() const {
     return is_root;
@@ -52,4 +52,4 @@ int ExecutionManager::GetRankRoot() const {
     return rank_root;
 }
 
-}  // namespace dare::mpi
+}  // namespace dare

@@ -23,7 +23,7 @@
  */
 #include "Utilities/Errors.h"
 
-namespace dare::algorithm {
+namespace dare {
 
 template <typename PM>
 void free_compile_time_check(PM) {
@@ -38,13 +38,13 @@ void free_pm_initialize(PM* pm, const Grid& grid, Args&&... args) {
 template <typename PM, std::size_t dir>
 void free_pm_build_momentum(PM* pm) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method");  // NOLINT
-    // using GridType = typename PM::GridType;
+    // using GridType = typename PMType;
     // using LO = typename GridType::LocalOrdinalType;
     // using DensityType = typename PM::DensityVariableType;
     // using ViscosityType = typename PM::ViscosityVariableType;
     // using PorosityType = typename PM::ViscosityVariableType;
     // using IndexLocal = typename GridType::Index;
-    // using DDT = dare::Matrix::DDT<GridType>;
+    // using DDT = dare::DDT<GridType>;
 
     // auto BuildStrategy = [= pm](auto mblock) {
     //     auto g_r{mblock->GetRepresentation()};
@@ -68,9 +68,9 @@ std::pair<bool, int> free_pm_solve_momentum(PM* pm, std::size_t dir) {
     using IterType = typename PM::MomentumIterationType;
     std::pair<bool, int> ret = std::make_pair(false, static_cast<int>(-1));
     if constexpr (uses_fixed_point_iterations_v<IterType>) {
-        ret = pm->GetContinuity()->Solve(dare::Matrix::UpdateFieldCopy{});
+        ret = pm->GetContinuity()->Solve(dare::UpdateFieldCopy{});
     } else if constexpr (uses_newton_iterations_v<IterType>) {
-        ret = pm->GetContinuity()->Solve(dare::Matrix::UpdateFieldAddInto{});
+        ret = pm->GetContinuity()->Solve(dare::UpdateFieldAddInto{});
     } else {
         static_assert(dare::always_false<IterType>, "Solving the momentum equations is not implemented for the specified algorithm type");  // NOLINT
     }
@@ -119,4 +119,4 @@ bool free_pm_continuity_convergence(PM* pm, int iteration) {
     return false;
 }
 
-}  // namespace dare::algorithm
+}  // namespace dare

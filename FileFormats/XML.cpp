@@ -138,8 +138,8 @@ XML& XML::AddXMLObject(const XML& other) {
     return *this;
 }
 
-void XML::WriteToFile(const std::string& file_name, std::ios::openmode mode) {
-    std::ofstream ofs(file_name, std::ios::out);
+void XML::WriteToFile(const std::string& file_name, stds::openmode mode) {
+    std::ofstream ofs(file_name, stds::out);
     if (!ofs) {
         std::cerr << "Couldn't open file " << file_name << " aborting writing" << std::endl;
     }

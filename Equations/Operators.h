@@ -27,7 +27,7 @@
 #include "Equations/TimeDiscretizationSchemes.h"
 #include "Equations/DDT.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * @brief basic dummy for SFINAE for a gradient operator
@@ -78,14 +78,14 @@ class Gradient {
  *
  * // determine the divergence from values at the faces with N components, SC here is the scalar type
  * FaceValueStencil values_at_faces;
- * dare::utils::Vector<N, SC> div_values = div(values_at_faces);
+ * dare::Vector<N, SC> div_values = div(values_at_faces);
  *
  * // For adding to a matrix, following interface must exist
  * FaceMatrixValues matrix_entries_at_faces;
  * CenterMatrixStencil<Grid, N> div_for_matrix = div(matrix_entries_at_faces);
  *
  * // Finally, the whole thing should be able to look as follows with the gradient operator
- * dare::utils::Vector<N, SC> div_values = div(rho * grad(field));
+ * dare::Vector<N, SC> div_values = div(rho * grad(field));
  *
  * // or
  * MatrixBlock<Grid, N> mb;
@@ -115,7 +115,7 @@ class Divergence {
  * // Initialization may deviate per specialization, however the maximum requirement
  * // should be the one where you specify an Index of the relevant cell and the velocity
  * // Here the flux-limiter is left unspecified.
- * TVD<Grid, FluxLimiter> u(grid, const dare::utils::Vector<Dim, Field>& v, Index ind);
+ * TVD<Grid, FluxLimiter> u(grid, const dare::Vector<Dim, Field>& v, Index ind);
  *
  * // Get flux values at faces
  * FaceValueStencil flux_v = u * values_at_faces;
@@ -130,7 +130,7 @@ class Divergence {
  * mb += div(rho * u * phi);
  *
  * // or
- * dare::utils::Vector<N, SC> defect;
+ * dare::Vector<N, SC> defect;
  * defect = -div(rho * u);
  * @endcode
  */
@@ -138,6 +138,6 @@ template<typename Grid, typename SC, typename FluxLimiter>
 class TVD {
 };
 
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 #endif  // EQUATIONS_OPERATORS_H_

@@ -33,13 +33,13 @@
 #include "test_TrilinosTestGrid.h"
 #include "Utilities/Errors.h"
 
-namespace dare::Matrix::test {
+namespace dare::test {
 struct _solverTestParam {
     using SC = dare::defaults::ScalarType;
     using LO = dare::defaults::LocalOrdinalType;
     using GO = dare::defaults::GlobalOrdinalType;
-    using PT = dare::Matrix::SolverPackage;
-    using PTM = dare::Matrix::PreCondPackage;
+    using PT = dare::SolverPackage;
+    using PTM = dare::PreCondPackage;
     PT package;
     std::string type;
     PTM package_pre;
@@ -69,26 +69,26 @@ Teuchos::RCP<Teuchos::ParameterList> GetPreconditionerParameters(_solverTestPara
     return parameters;
 }
 
-}  // end namespace dare::Matrix::test
+}  // end namespace dare::test
 
 /*!
  * @brief templated fixture for testing multiple solvers
  */
-class TrilinosSolverTest : public testing::TestWithParam<dare::Matrix::test::_solverTestParam> {
+class TrilinosSolverTest : public testing::TestWithParam<dare::test::_solverTestParam> {
 public:
-    using GridType = dare::Matrix::test::TrilinosTestGrid;
+    using GridType = dare::test::TrilinosTestGrid;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
     using GridRepresentation = typename GridType::Representation;
-    static const std::size_t N = dare::Matrix::test::N;
-    using FieldType = dare::Data::GridVector<GridType, SC, N>;
-    using GOViewType = typename dare::Matrix::Trilinos<SC>::GOViewType;
-    using LOViewType = typename dare::Matrix::Trilinos<SC>::LOViewType;
-    using SViewType = typename dare::Matrix::Trilinos<SC>::SViewType;
+    static const std::size_t N = dare::test::N;
+    using FieldType = dare::GridVector<GridType, SC, N>;
+    using GOViewType = typename dare::Trilinos<SC>::GOViewType;
+    using LOViewType = typename dare::Trilinos<SC>::LOViewType;
+    using SViewType = typename dare::Trilinos<SC>::SViewType;
     GridType grid;
     FieldType field;
-    dare::mpi::ExecutionManager exec_man;
+    dare::ExecutionManager exec_man;
     Teuchos::RCP<Teuchos::ParameterList> solver_param;
     bool multiSolves = false;
     void SetUp() {
@@ -98,9 +98,9 @@ public:
 };
 
 TEST_P(TrilinosSolverTest, SolveLaplace) {
-    dare::Matrix::test::_solverTestParam test_param = GetParam();
+    dare::test::_solverTestParam test_param = GetParam();
 
-    if (test_param.package == dare::Matrix::test::_solverTestParam::PT::Amesos2) {
+    if (test_param.package == dare::test::_solverTestParam::PT::Amesos2) {
         solver_param = Teuchos::rcp(new Teuchos::ParameterList("Amesos2"));
         // using standard solver parameters
         // The KLU solver only works in serial
@@ -167,12 +167,12 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
         }
     };
 
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Trilinos<SC> trilinos(&exec_man);
     trilinos.Build(g_rep, field, functor, false);
 
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::TrilinosSolver<SC> solver;
 
-    auto precond_param = dare::Matrix::test::GetPreconditionerParameters(test_param.package_pre, test_param.type_pre);
+    auto precond_param = dare::test::GetPreconditionerParameters(test_param.package_pre, test_param.type_pre);
 
     trilinos.GetM() = solver.BuildPreconditioner(test_param.package_pre,
                                                  test_param.type_pre,
@@ -206,7 +206,7 @@ TEST_P(TrilinosSolverTest, SolveLaplace) {
     }
 }
 
-using dare::Matrix::test::_solverTestParam;
+using dare::test::_solverTestParam;
 
 INSTANTIATE_TEST_SUITE_P(SolverConvergence,
                          TrilinosSolverTest,

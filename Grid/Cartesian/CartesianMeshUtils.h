@@ -32,7 +32,7 @@
 
 #include "Utilities/CompileTimeFunctions.h"
 
-namespace dare::Grid {
+namespace dare {
 
 namespace details::Cartesian {
 /*!
@@ -142,7 +142,7 @@ constexpr CartesianRangeType<Dim * 2 + 1> GetCartesianPositionRange() {
     if constexpr (Dim == 0) {
         return {CartesianNeighbor::CENTER};
     } else {
-        return dare::utils::convert_tuple_to_array(
+        return dare::convert_tuple_to_array(
             std::tuple_cat(GetCartesianPositionRange<Dim - 1>(),
                            std::make_tuple(static_cast<CartesianNeighbor>(Dim * 2 - 1),
                                            static_cast<CartesianNeighbor>(Dim * 2))));
@@ -160,7 +160,7 @@ constexpr CartesianRangeType<Dim * 2> GetCartesianFaceRange() {
     if constexpr (Dim == 1) {
         return {CartesianNeighbor::WEST, CartesianNeighbor::EAST};
     } else {
-        return dare::utils::convert_tuple_to_array(
+        return dare::convert_tuple_to_array(
             std::tuple_cat(GetCartesianFaceRange<Dim - 1>(),
                            std::make_tuple(static_cast<CartesianNeighbor>(Dim * 2 - 1),
                                            static_cast<CartesianNeighbor>(Dim * 2))));
@@ -269,6 +269,6 @@ constexpr std::size_t MapCartesianFaceToDim() {
     return (static_cast<size_t>(CNB) - static_cast<size_t>(1)) / static_cast<size_t>(2);
 }
 
-}  // namespace dare::Grid
+}  // namespace dare
 
 #endif  // GRID_CARTESIAN_CARTESIANMESHUTILS_H_

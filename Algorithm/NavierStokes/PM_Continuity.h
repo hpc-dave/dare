@@ -34,12 +34,12 @@
 #include "MPI/ExecutionManager.h"
 #include "Equations/GenericEquation.h"
 
-namespace dare::algorithm {
+namespace dare {
 
 template<typename Grid, typename BoundaryStrategy, typename CustomMember>
-class PMContinuity : public dare::Matrix::GenericEquation<Grid, BoundaryStrategy, CustomMember> {
+class PMContinuity : public dare::GenericEquation<Grid, BoundaryStrategy, CustomMember> {
 public:
-    using BaseType = dare::Matrix::GenericEquation<Grid, BoundaryStrategy, CustomMember>;
+    using BaseType = dare::GenericEquation<Grid, BoundaryStrategy, CustomMember>;
     using GridRepresentation = typename BaseType::GridRepresentation;
     using FieldType = typename BaseType::FieldType;
     // using BoundaryStrategyType = typename BaseType::BoundaryStrategy;
@@ -48,7 +48,7 @@ public:
 
     PMContinuity(const std::string& name,
                  GridRepresentation grid,
-                 dare::mpi::ExecutionManager* ex_man,
+                 dare::ExecutionManager* ex_man,
                  std::size_t num_tsteps,
                  BoundaryStrategy bc_strat);
 
@@ -69,7 +69,7 @@ private:
     FieldType dP;
 };
 
-}  // namespace dare::algorithm
+}  // namespace dare
 
 #include "PM_Continuity.inl"
 

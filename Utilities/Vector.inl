@@ -33,7 +33,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace dare::utils {
+namespace dare {
 
 template <std::size_t N, typename T>
 template <typename... Ts,
@@ -415,9 +415,9 @@ auto Vector<N, T>::IterateValues(Expr lambda, Op op) const {
     }
 }
 
-}  // namespace dare::utils
+}  // namespace dare
 
 // template <std::size_t N, typename T>
-// void std::swap(dare::utils::Vector<N, T>& v1, dare::utils::Vector<N, T>& v2) {
+// void std::swap(dare::Vector<N, T>& v1, dare::Vector<N, T>& v2) {
 //     std::swap(v1._data, v2._data);
 // }

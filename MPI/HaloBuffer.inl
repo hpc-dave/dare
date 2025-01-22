@@ -28,7 +28,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace dare::mpi {
+namespace dare {
 
 template <typename SC>
 HaloBuffer<SC>::HaloBuffer() : exec_man(nullptr) {}
@@ -194,7 +194,7 @@ void HaloBuffer<SC>::Initialize(ExecutionManager* execution_manager,
         buffers.erase(exec_man->GetRank());
     }
 
-    this->utils::InitializationTracker::Initialize();
+    this->InitializationTracker::Initialize();
 }
 
 template <typename SC>
@@ -217,4 +217,4 @@ template <typename SC>
 ExecutionManager* HaloBuffer<SC>::GetExecutionManager() {
     return exec_man;
 }
-}  // namespace dare::mpi
+}  // namespace dare

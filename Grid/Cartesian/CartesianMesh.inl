@@ -26,7 +26,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace dare::Grid {
+namespace dare {
 
 template <std::size_t Dim>
 Cartesian<Dim>::Cartesian() : exec_man(nullptr) {
@@ -37,7 +37,7 @@ Cartesian<Dim>::Cartesian() : exec_man(nullptr) {
 template <std::size_t Dim>
 template <typename Distributor>
 Cartesian<Dim>::Cartesian(std::string _name,
-                          mpi::ExecutionManager* _exec_man,
+                          ExecutionManager* _exec_man,
                           const typename Cartesian<Dim>::VecGO& res,
                           const typename Cartesian<Dim>::VecSC& size,
                           const LO _num_ghost,
@@ -112,12 +112,12 @@ Cartesian<Dim>::Cartesian(std::string _name,
         size_local[dim] = resolution_local[dim] * cell_width[dim];
     }
 
-    this->dare::utils::InitializationTracker::Initialize();
+    this->dare::InitializationTracker::Initialize();
 }
 
 template <std::size_t Dim>
 template <typename Distributor>
-Cartesian<Dim>::Cartesian(mpi::ExecutionManager* exec_man,
+Cartesian<Dim>::Cartesian(ExecutionManager* exec_man,
                           const typename Cartesian<Dim>::VecGO& res,
                           const typename Cartesian<Dim>::VecSC& size,
                           const LO num_ghost,
@@ -127,7 +127,7 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* exec_man,
 }
 
 template <std::size_t Dim>
-Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
+Cartesian<Dim>::Cartesian(ExecutionManager* _exec_man,
                           const typename Cartesian<Dim>::VecGO& res,
                           const typename Cartesian<Dim>::VecSC& size,
                           const LO _num_ghost,
@@ -137,17 +137,17 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
                 size,
                 _num_ghost,
                 periodic,
-                [](mpi::ExecutionManager* a,
+                [](ExecutionManager* a,
                    const typename Cartesian<Dim>::VecGO& b,
                    typename Cartesian<Dim>::VecLO* c,
                    typename Cartesian<Dim>::VecGO* d) {
-                    dare::Grid::CartesianDistribution_MPI_Dims_create(a, b, c, d);
+                    dare::CartesianDistribution_MPI_Dims_create(a, b, c, d);
                 }) {
 }
 
 template <std::size_t Dim>
 Cartesian<Dim>::Cartesian(const std::string& _name,
-                          mpi::ExecutionManager* _exec_man,
+                          ExecutionManager* _exec_man,
                           const typename Cartesian<Dim>::VecGO& res,
                           const typename Cartesian<Dim>::VecSC& size,
                           const LO _num_ghost,
@@ -158,16 +158,16 @@ Cartesian<Dim>::Cartesian(const std::string& _name,
                 size,
                 _num_ghost,
                 periodic,
-                [](mpi::ExecutionManager* a,
+                [](ExecutionManager* a,
                    const typename Cartesian<Dim>::VecGO& b,
                    typename Cartesian<Dim>::VecLO* c,
                    typename Cartesian<Dim>::VecGO* d) {
-                    dare::Grid::CartesianDistribution_MPI_Dims_create(a, b, c, d);
+                    dare::CartesianDistribution_MPI_Dims_create(a, b, c, d);
                 }) {
 }
 
 template <std::size_t Dim>
-Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
+Cartesian<Dim>::Cartesian(ExecutionManager* _exec_man,
                                       const typename Cartesian<Dim>::VecGO& res,
                                       const typename Cartesian<Dim>::VecSC& size,
                                       const LO _num_ghost)
@@ -180,7 +180,7 @@ Cartesian<Dim>::Cartesian(mpi::ExecutionManager* _exec_man,
 
 template <std::size_t Dim>
 Cartesian<Dim>::Cartesian(const std::string& _name,
-                          mpi::ExecutionManager* _exec_man,
+                          ExecutionManager* _exec_man,
                           const typename Cartesian<Dim>::VecGO& res,
                           const typename Cartesian<Dim>::VecSC& size,
                           const LO _num_ghost)
@@ -201,7 +201,7 @@ Cartesian<Dim>::~Cartesian() {
 
 template <std::size_t Dim>
 typename Cartesian<Dim>::Representation Cartesian<Dim>::GetRepresentation(Options opt) {
-    if (!this->dare::utils::InitializationTracker::IsInitialized()) {
+    if (!this->dare::InitializationTracker::IsInitialized()) {
         exec_man->Terminate(__func__, "Grid needs to be initialized before providing a Representation");
     }
     if (map_representations.find(opt) == map_representations.end()) {
@@ -281,7 +281,7 @@ bool Cartesian<Dim>::IsPeriodic() const {
 }
 
 template <std::size_t Dim>
-mpi::ExecutionManager* Cartesian<Dim>::GetExecutionManager() const {
+ExecutionManager* Cartesian<Dim>::GetExecutionManager() const {
     return exec_man;
 }
 
@@ -290,4 +290,4 @@ std::string Cartesian<Dim>::GetName() const {
     return name;
 }
 
-}  // namespace dare::Grid
+}  // namespace dare

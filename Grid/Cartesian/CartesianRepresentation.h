@@ -35,7 +35,7 @@
 #include "Utilities/InitializationTracker.h"
 #include "CartesianMeshUtils.h"
 
-namespace dare::Grid {
+namespace dare {
 
 // forward declaration of the Grid
 template <std::size_t Dim>
@@ -49,7 +49,7 @@ class Cartesian;
  * @tparam Dim dimension of grid
  */
 template <std::size_t Dim>
-class CartesianRepresentation : public dare::utils::InitializationTracker {
+class CartesianRepresentation : public dare::InitializationTracker {
 public:
     using GridType = Cartesian<Dim>;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
@@ -279,7 +279,7 @@ public:
     /*!
      * @brief Provides Halobuffer for exchange of data across processes
      */
-    mpi::HaloBuffer<SC>& GetHaloBuffer();
+    HaloBuffer<SC>& GetHaloBuffer();
 
     /*!
      * @brief provides name of the grid including options
@@ -334,10 +334,10 @@ private:
     VecLO hierarchic_sum_loc;            //!< precomputed values to account for ordering
     VecLO hierarchic_sum_loc_internal;   //!< same as above, just for the internal cells
 
-    mpi::HaloBuffer<SC> halo_buffer;  //!< maps with Halo Buffers
+    HaloBuffer<SC> halo_buffer;  //!< maps with Halo Buffers
 };
 
-}  // namespace dare::Grid
+}  // namespace dare
 
 #include "CartesianRepresentation.inl"
 

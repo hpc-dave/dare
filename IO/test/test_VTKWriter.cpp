@@ -36,15 +36,15 @@
 namespace dare::test {
 
 template <std::size_t Dim>
-dare::utils::Vector<Dim, defaults::GlobalOrdinalType> GetResolutionTestVTKWriterCart() {
-    dare::utils::Vector<Dim, defaults::GlobalOrdinalType> res;
+dare::Vector<Dim, defaults::GlobalOrdinalType> GetResolutionTestVTKWriterCart() {
+    dare::Vector<Dim, defaults::GlobalOrdinalType> res;
     for (std::size_t n{0}; n < Dim; n++)
         res[n] = 10 + n;
     return res;
 }
 template <std::size_t Dim>
-dare::utils::Vector<Dim, defaults::ScalarType> GetSizeTestVTKWriterCart() {
-    dare::utils::Vector<Dim, defaults::ScalarType> size;
+dare::Vector<Dim, defaults::ScalarType> GetSizeTestVTKWriterCart() {
+    dare::Vector<Dim, defaults::ScalarType> size;
     for (std::size_t n{0}; n < Dim; n++)
         size[n] = 1. + n;
     return size;
@@ -60,14 +60,14 @@ template<std::size_t Dim>
 class VTKWriterTestsCartesian : public testing::Test {
 public:
     static const std::size_t N{Dim};
-    using GridType = dare::Grid::Cartesian<Dim>;
+    using GridType = dare::Cartesian<Dim>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
     using Index = typename GridType::Index;
-    using GridVector = dare::Data::GridVector<GridType, SC, N>;
+    using GridVector = dare::GridVector<GridType, SC, N>;
     using Options = typename GridType::Options;
-    using VTKWriter = dare::io::VTKWriter<GridType>;
+    using VTKWriter = dare::VTKWriter<GridType>;
 
     void SetUp() {
         const LO num_ghost{2};
@@ -79,7 +79,7 @@ public:
                                           dare::test::GetResolutionTestVTKWriterCart<Dim>(),
                                           dare::test::GetSizeTestVTKWriterCart<Dim>(),
                                           num_ghost);
-        fsys_man = std::make_unique<dare::io::FileSystemManager>(&exec_man);
+        fsys_man = std::make_unique<dare::FileSystemManager>(&exec_man);
         fsys_man->SetOutputPath("cartesian_test");
         fsys_man->CheckWithUser(false);
         fsys_man->OverwriteFiles(true);
@@ -87,8 +87,8 @@ public:
     }
 
     std::unique_ptr<GridType> grid;        //!< the grid
-    dare::mpi::ExecutionManager exec_man;  //!< the execution manager
-    std::unique_ptr<dare::io::FileSystemManager> fsys_man;  //!< a file system manager
+    dare::ExecutionManager exec_man;  //!< the execution manager
+    std::unique_ptr<dare::FileSystemManager> fsys_man;  //!< a file system manager
 };
 
 using VTKWriterTestsCartesian1Dim = VTKWriterTestsCartesian<1>;
@@ -100,7 +100,7 @@ TEST_F(VTKWriterTestsCartesian1Dim, GridVectorOutputTest) {
     double time = 0.2;
     int step = 100;
 
-    dare::math::Randomizer dice(-10000, 10000);
+    dare::Randomizer dice(-10000, 10000);
     auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
     auto grep = grid->GetRepresentation(opt);
     auto grep_s = grid->GetRepresentation(opt_s);
@@ -131,7 +131,7 @@ TEST_F(VTKWriterTestsCartesian2Dim, GridVectorOutputTest) {
     double time = 0.5;
     int step = 200;
 
-    dare::math::Randomizer dice(-10000, 10000);
+    dare::Randomizer dice(-10000, 10000);
     auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
     auto grep = grid->GetRepresentation(opt);
     auto grep_s = grid->GetRepresentation(opt_s);
@@ -163,7 +163,7 @@ TEST_F(VTKWriterTestsCartesian3Dim, GridVectorOutputTest) {
     double time = 0.67;
     int step = 300;
 
-    dare::math::Randomizer dice(-10000, 10000);
+    dare::Randomizer dice(-10000, 10000);
     auto GetRandValue = [&]() { return 1e-4 * dice.Get(); };
     auto grep = grid->GetRepresentation(opt);
     auto grep_s = grid->GetRepresentation(opt_s);

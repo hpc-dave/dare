@@ -24,29 +24,29 @@
 
 #include <string>
 
-namespace dare::Data {
+namespace dare {
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::CenterMatrixStencil() {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::CenterMatrixStencil() {
     static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
     SetAll(0);
     rhs.SetAllValues(0);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::~CenterMatrixStencil() {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::~CenterMatrixStencil() {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::CenterMatrixStencil(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other)
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::CenterMatrixStencil(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other)
     : coefficients(other.coefficients), rhs(other.rhs) {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator=(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     if (this == &other)
         return *this;
 
@@ -56,8 +56,8 @@ CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator=(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(SC v) {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator*=(SC v) {
     for (auto& c : coefficients)
         c *= v;
     for (auto& e : rhs)
@@ -66,16 +66,16 @@ CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(SC v) {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*(SC v) const {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator*(SC v) const {
     CenterMatrixStencil<GridType, SC, N> s(*this);
     s *= v;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(SC v) {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator/=(SC v) {
     for (auto& c : coefficients)
         c /= v;
     for (auto& e : rhs)
@@ -84,130 +84,130 @@ CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(SC v) {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/(SC v) const {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator/(SC v) const {
     CenterMatrixStencil<GridType, SC, N> s(*this);
     s /= v;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator+=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator+=(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients += other.coefficients;
     rhs += other.rhs;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator+(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator+(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     CenterMatrixStencil<GridType, SC, N> s(*this);
     s += other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator-=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator-=(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients -= other.coefficients;
     rhs -= other.rhs;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator-(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator-(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     CenterMatrixStencil<GridType, SC, N> s(*this);
     s -= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator*=(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients *= other.coefficients;
     rhs += other.rhs;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator*(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     CenterMatrixStencil<GridType, SC, N> s(*this);
     s *= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator/=(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients /= other.coefficients;
     rhs += other.rhs;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/(
-    const CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator/(
+    const CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     CenterMatrixStencil<GridType, SC, N> s(*this);
     s /= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC& CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::Center(std::size_t n) {
+SC& CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::Center(std::size_t n) {
     return GetValue(Positions::CENTER, n);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::Center(std::size_t n) const {
+SC CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::Center(std::size_t n) const {
     return GetValue(Positions::CENTER, n);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValue(Positions pos, std::size_t n, SC v) {
+void CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValue(Positions pos, std::size_t n, SC v) {
     RangeCheck(__func__, pos, n);
-    coefficients[n][Grid::ToNum(pos)] = v;
+    coefficients[n][ToNum(pos)] = v;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetRHS(
+void CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetRHS(
     std::size_t n, SC v) {
     rhs[n] = v;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetAll(SC v) {
+void CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetAll(SC v) {
     for (auto& a : coefficients)
         for (auto& e : a)
             e = v;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC& CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValue(Positions pos, std::size_t n) {
+SC& CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetValue(Positions pos, std::size_t n) {
     RangeCheck(__func__, pos, n);
-    return coefficients[n][Grid::ToNum(pos)];
+    return coefficients[n][ToNum(pos)];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValue(Positions pos, std::size_t n) const {
+SC CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetValue(Positions pos, std::size_t n) const {
     RangeCheck(__func__, pos, n);
-    return coefficients[n][Grid::ToNum(pos)];
+    return coefficients[n][ToNum(pos)];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-dare::utils::Vector<N, SC>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValues(Positions pos) const {
-    dare::utils::Vector<N, SC> v;
+dare::Vector<N, SC>
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetValues(Positions pos) const {
+    dare::Vector<N, SC> v;
     for (std::size_t n{0}; n < N; n++) {
         v[n] = GetValue(pos, n);
     }
@@ -215,42 +215,42 @@ CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValues(Positions pos)
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-typename CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::DataArray&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetData() {
+typename CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::DataArray&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetData() {
     return coefficients;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-const typename CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::DataArray&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetData() const {
+const typename CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::DataArray&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetData() const {
     return coefficients;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-typename CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RHSType&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS() {
+typename CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::RHSType&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetRHS() {
     return rhs;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-const typename CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RHSType&
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS() const {
+const typename CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::RHSType&
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetRHS() const {
     return rhs;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC& CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS(std::size_t n) {
+SC& CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetRHS(std::size_t n) {
     return rhs[n];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS(std::size_t n) const {
+SC CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetRHS(std::size_t n) const {
     return rhs[n];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, 1>
-CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetSlice(std::size_t n) const {
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, 1>
+CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetSlice(std::size_t n) const {
     CenterMatrixStencil<GridType, SC, 1> s;
     s.GetData()[0] = this->GetData()[n];
     s.GetRHS(0) = this->GetRHS(n);
@@ -258,11 +258,11 @@ CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetSlice(std::size_t n) 
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
+void CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::RangeCheck(
     std::string func, Positions pos, std::size_t n) const {
 #ifndef DARE_NDEBUG
-    if (Grid::ToNum(pos) >= static_cast<char>(NUM_ENTRIES)) {
-        ERROR << "In " << func << ": Provided position (" << std::to_string(Grid::ToNum(pos)) << ") "
+    if (ToNum(pos) >= static_cast<char>(NUM_ENTRIES)) {
+        ERROR << "In " << func << ": Provided position (" << std::to_string(ToNum(pos)) << ") "
                   << "is out of range of " << std::to_string(NUM_ENTRIES) << "-point center based stencil"
                   << ERROR_CLOSE;
     }
@@ -275,25 +275,25 @@ void CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::FaceMatrixStencil() {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::FaceMatrixStencil() {
     static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
     SetAll(0);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::~FaceMatrixStencil() {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::~FaceMatrixStencil() {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::FaceMatrixStencil(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other)
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::FaceMatrixStencil(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other)
     : coefficients_nb(other.coefficients_nb), coefficients_c(other.coefficients_c), rhs(other.rhs) {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator=(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator=(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     if (this == &other)
         return *this;
 
@@ -304,8 +304,8 @@ FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator=(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(SC v) {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator*=(SC v) {
     for (auto& c : coefficients_nb)
         c *= v;
     for (auto& c : coefficients_c)
@@ -315,16 +315,16 @@ FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(SC v) {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*(SC v) const {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator*(SC v) const {
     FaceMatrixStencil<GridType, SC, N> s(*this);
     s *= v;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(SC v) {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator/=(SC v) {
     for (auto& c : coefficients_c)
         c /= v;
     for (auto& c : coefficients_nb)
@@ -334,17 +334,17 @@ FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(SC v) {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/(SC v) const {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator/(SC v) const {
     FaceMatrixStencil<GridType, SC, N> s(*this);
     s /= v;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator+=(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator+=(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients_nb += other.coefficients_nb;
     coefficients_c += other.coefficients_c;
     rhs += other.rhs;
@@ -352,18 +352,18 @@ FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator+=(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator+(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator+(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     FaceMatrixStencil<GridType, SC, N> s(*this);
     s += other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator-=(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator-=(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients_c -= other.coefficients_c;
     coefficients_nb -= other.coefficients_nb;
     rhs -= other.rhs;
@@ -371,18 +371,18 @@ FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator-=(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator-(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator-(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     FaceMatrixStencil<GridType, SC, N> s(*this);
     s -= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator*=(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients_c *= other.coefficients_c;
     coefficients_nb *= other.coefficients_nb;
     rhs += other.rhs;
@@ -390,18 +390,18 @@ FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator*(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     FaceMatrixStencil<GridType, SC, N> s(*this);
     s *= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator/=(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients_c /= other.coefficients_c;
     coefficients_nb /= other.coefficients_nb;
     rhs += other.rhs;
@@ -409,70 +409,70 @@ FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/(
-    const FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::operator/(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     FaceMatrixStencil<GridType, SC, N> s(*this);
     s /= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValueNeighbor(
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValueNeighbor(
     Positions pos, std::size_t n, SC v) {
     RangeCheck(__func__, pos, n);
-    coefficients_nb[n][Grid::ToFace(pos)] = v;
+    coefficients_nb[n][ToFace(pos)] = v;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValueCenter(Positions pos, std::size_t n, SC v) {
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValueCenter(Positions pos, std::size_t n, SC v) {
     RangeCheck(__func__, pos, n);
-    coefficients_c[n][Grid::ToFace(pos)] = v;
+    coefficients_c[n][ToFace(pos)] = v;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValues(
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValues(
     Positions pos, std::size_t n, SC v_nb, SC v_c) {
     SetValueNeighbor(pos, n, v_nb);
     SetValueCenter(pos, n, v_c);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetRHS(
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetRHS(
     Positions pos, std::size_t n, SC v) {
     rhs.SetValue(pos, n, v);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValueNeighbor(
-    Positions pos, const dare::utils::Vector<N, SC>& v) {
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValueNeighbor(
+    Positions pos, const dare::Vector<N, SC>& v) {
     for (std::size_t n{0}; n < N; n++)
         SetValueNeighbor(pos, n, v[n]);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValueCenter(
-    Positions pos, const dare::utils::Vector<N, SC>& v) {
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValueCenter(
+    Positions pos, const dare::Vector<N, SC>& v) {
     for (std::size_t n{0}; n < N; n++)
         SetValueCenter(pos, n, v[n]);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValues(
-    Positions pos, const dare::utils::Vector<N, SC>& v_nb, const dare::utils::Vector<N, SC>& v_c) {
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValues(
+    Positions pos, const dare::Vector<N, SC>& v_nb, const dare::Vector<N, SC>& v_c) {
     SetValueNeighbor(pos, v_nb);
     SetValueCenter(pos, v_c);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetRHS(
-    Positions pos, const dare::utils::Vector<N, SC>& v) {
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetRHS(
+    Positions pos, const dare::Vector<N, SC>& v) {
     for (std::size_t n{0}; n < N; n++)
         SetRHS(pos, n, v[n]);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetAll(SC v) {
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetAll(SC v) {
     for (auto& a : coefficients_c)
         for (auto& e : a)
             e = v;
@@ -482,81 +482,81 @@ void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetAll(SC v) {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC& FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValueCenter(Positions pos, std::size_t n) {
+SC& FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetValueCenter(Positions pos, std::size_t n) {
     RangeCheck(__func__, pos, n);
-    return coefficients_c[n][Grid::ToFace(pos)];
+    return coefficients_c[n][ToFace(pos)];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC& FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValueNeighbor(Positions pos, std::size_t n) {
+SC& FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetValueNeighbor(Positions pos, std::size_t n) {
     RangeCheck(__func__, pos, n);
-    return coefficients_nb[n][Grid::ToFace(pos)];
+    return coefficients_nb[n][ToFace(pos)];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValueCenter(Positions pos, std::size_t n) const {
+SC FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetValueCenter(Positions pos, std::size_t n) const {
     RangeCheck(__func__, pos, n);
-    return coefficients_c[n][Grid::ToFace(pos)];
+    return coefficients_c[n][ToFace(pos)];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValueNeighbor(Positions pos, std::size_t n) const {
+SC FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetValueNeighbor(Positions pos, std::size_t n) const {
     RangeCheck(__func__, pos, n);
-    return coefficients_nb[n][Grid::ToFace(pos)];
+    return coefficients_nb[n][ToFace(pos)];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC& FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS(Positions pos, std::size_t n) {
-    RangeCheck(__func__, pos, n);
-    return rhs.GetValue(pos, n);
-}
-
-template <std::size_t Dim, typename SC, std::size_t N>
-SC FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS(Positions pos, std::size_t n) const {
+SC& FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetRHS(Positions pos, std::size_t n) {
     RangeCheck(__func__, pos, n);
     return rhs.GetValue(pos, n);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-typename FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::DataArray&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetDataNeighbor() {
+SC FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetRHS(Positions pos, std::size_t n) const {
+    RangeCheck(__func__, pos, n);
+    return rhs.GetValue(pos, n);
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+typename FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::DataArray&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetDataNeighbor() {
     return coefficients_nb;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-typename FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::DataArray&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetDataCenter() {
+typename FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::DataArray&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetDataCenter() {
     return coefficients_c;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-const typename FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::DataArray&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetDataNeighbor() const {
+const typename FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::DataArray&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetDataNeighbor() const {
     return coefficients_nb;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-const typename FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::DataArray&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetDataCenter() const {
+const typename FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::DataArray&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetDataCenter() const {
     return coefficients_c;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-typename FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RHSType&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS() {
+typename FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::RHSType&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetRHS() {
     return rhs;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-const typename FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RHSType&
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetRHS() const {
+const typename FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::RHSType&
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetRHS() const {
     return rhs;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, 1>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetSlice(std::size_t n) const {
-    FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, 1> s;
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, 1>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetSlice(std::size_t n) const {
+    FaceMatrixStencil<dare::Cartesian<Dim>, SC, 1> s;
     s.GetDataNeighbor(0) = this->GetDataNeighbor(n);
     s.GetDataCenter(0) = this->GetDataCenter(n);
     s.GetRHS(0) = this->GetRHS(n);
@@ -564,14 +564,14 @@ FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetSlice(std::size_t n) co
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::RangeCheck(
     std::string func, Positions pos, std::size_t n) const {
 #ifndef DARE_NDEBUG
-    if (Grid::ToNum(pos) > static_cast<char>(NUM_FACES)) {
-        ERROR << "In " << func << ": Provided position (" << std::to_string(Grid::ToNum(pos)) << ") "
+    if (ToNum(pos) > static_cast<char>(NUM_FACES)) {
+        ERROR << "In " << func << ": Provided position (" << std::to_string(ToNum(pos)) << ") "
                   << "is out of range of " << std::to_string(GridType::STENCIL_SIZE) << "-point center based stencil"
                   << ERROR_CLOSE;
-    } else if (Grid::ToNum(pos) == 0) {
+    } else if (ToNum(pos) == 0) {
         ERROR << "In " << func << ": The face stencil cannot take CENTER as an argument!" << ERROR_CLOSE;
     }
     if (n >= NUM_COMPONENTS) {
@@ -582,25 +582,25 @@ void FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::FaceValueStencil() {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::FaceValueStencil() {
     static_assert(static_cast<char>(Positions::CENTER) == 0, "The center position needs to be at 0!");
     SetAll(0);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::~FaceValueStencil() {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::~FaceValueStencil() {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::FaceValueStencil(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other)
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::FaceValueStencil(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other)
     : coefficients(other.coefficients) {
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator=(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator=(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) {
     if (this == &other)
         return *this;
 
@@ -609,118 +609,118 @@ FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator=(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC& FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator()(Positions face, std::size_t n) {
+SC& FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator()(Positions face, std::size_t n) {
     return GetValue(face, n);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator()(Positions face, std::size_t n) const {
+SC FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator()(Positions face, std::size_t n) const {
     return GetValue(face, n);
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(SC v) {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator*=(SC v) {
     for (auto& c : coefficients)
         c *= v;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*(SC v) const {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator*(SC v) const {
     FaceValueStencil<GridType, SC, N> s(*this);
     s *= v;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(SC v) {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator/=(SC v) {
     for (auto& c : coefficients)
         c /= v;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/(SC v) const {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator/(SC v) const {
     FaceValueStencil<GridType, SC, N> s(*this);
     s /= v;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator+=(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator+=(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients += other.coefficients;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator+(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator+(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     FaceValueStencil<GridType, SC, N> s(*this);
     s += other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator-=(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator-=(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients -= other.coefficients;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator-(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator-(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     FaceValueStencil<GridType, SC, N> s(*this);
     s -= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*=(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator*=(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients *= other.coefficients;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator*(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     FaceValueStencil<GridType, SC, N> s(*this);
     s *= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/=(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator/=(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients /= other.coefficients;
     return *this;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator/(
-    const FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>& other) const {
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator/(
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) const {
     FaceValueStencil<GridType, SC, N> s(*this);
     s /= other;
     return s;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*(
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator*(
     const FaceMatrixStencil<GridType, SC, N>& other) const {
     FaceMatrixStencil<GridType, SC, N> s(other);
     s.GetDataCenter() *= coefficients;
@@ -729,60 +729,60 @@ FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::operator*(
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValue(Positions pos, std::size_t n, SC v) {
+void FaceValueStencil<dare::Cartesian<Dim>, SC, N>::SetValue(Positions pos, std::size_t n, SC v) {
     RangeCheck(__func__, pos, n);
-    coefficients[n][Grid::ToFace(pos)] = v;
+    coefficients[n][ToFace(pos)] = v;
 }
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetValues(Positions pos,
-                                                                    const dare::utils::Vector<N, SC>& v) {
+void FaceValueStencil<dare::Cartesian<Dim>, SC, N>::SetValues(Positions pos,
+                                                                    const dare::Vector<N, SC>& v) {
     for (std::size_t n{0}; n < N; n++) {
         RangeCheck(__func__, pos, n);
-        coefficients[n][Grid::ToFace(pos)] = v[n];
+        coefficients[n][ToFace(pos)] = v[n];
     }
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::SetAll(SC v) {
+void FaceValueStencil<dare::Cartesian<Dim>, SC, N>::SetAll(SC v) {
     for (auto& a : coefficients)
         for (auto& e : a)
             e = v;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC& FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValue(Positions pos, std::size_t n) {
+SC& FaceValueStencil<dare::Cartesian<Dim>, SC, N>::GetValue(Positions pos, std::size_t n) {
     RangeCheck(__func__, pos, n);
-    return coefficients[n][Grid::ToFace(pos)];
+    return coefficients[n][ToFace(pos)];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-SC FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetValue(Positions pos, std::size_t n) const {
+SC FaceValueStencil<dare::Cartesian<Dim>, SC, N>::GetValue(Positions pos, std::size_t n) const {
     RangeCheck(__func__, pos, n);
-    return coefficients[n][Grid::ToFace(pos)];
+    return coefficients[n][ToFace(pos)];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-typename FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::DataArray&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetData() {
+typename FaceValueStencil<dare::Cartesian<Dim>, SC, N>::DataArray&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::GetData() {
     return coefficients;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-const typename FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::DataArray&
-FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::GetData() const {
+const typename FaceValueStencil<dare::Cartesian<Dim>, SC, N>::DataArray&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::GetData() const {
     return coefficients;
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
-void FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
+void FaceValueStencil<dare::Cartesian<Dim>, SC, N>::RangeCheck(
     std::string func, Positions pos, std::size_t n) const {
 #ifndef DARE_NDEBUG
-    if (Grid::ToNum(pos) > static_cast<char>(NUM_FACES)) {
+    if (ToNum(pos) > static_cast<char>(NUM_FACES)) {
         ERROR << "In " << __FILE__ << ": "<< func << ": Provided position ("
-                  << std::to_string(Grid::ToNum(pos)) << ") "
+                  << std::to_string(ToNum(pos)) << ") "
                   << "is out of range of " << std::to_string(NUM_FACES + 1)
                   << "-point center based stencil" << ERROR_CLOSE;
-    } else if (Grid::ToNum(pos) == 0) {
+    } else if (ToNum(pos) == 0) {
         ERROR << "In " << func << ": The face stencil cannot take CENTER as an argument!"
               << ERROR_CLOSE;
     }
@@ -793,4 +793,4 @@ void FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>::RangeCheck(
     }
 #endif
 }
-}  // end namespace dare::Data
+}  // end namespace dare

@@ -33,7 +33,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace dare::mpi {
+namespace dare {
 
 template <typename T>
 void ExecutionManager::Exchange(const T* data, int count_send, T* recv,
@@ -178,6 +178,6 @@ int ExecutionManager::Irecv(T* buffer, int count, int sender, int tag, MPI_Reque
 int ExecutionManager::Probe(int source, int tag, MPI_Status* status) {
     return MPI_Probe(source, tag, communicator, status);
 }
-}  // namespace dare::mpi
+}  // namespace dare
 
 #endif  // MPI_EXECUTIONMANAGER_MPI_INL_

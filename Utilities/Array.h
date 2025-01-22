@@ -27,13 +27,13 @@
 
 #include "Utilities/Vector.h"
 
-namespace dare::utils {
+namespace dare {
 
 template<std::size_t M, std::size_t N, typename T>
 class Array {
 public:
-    using InnerVec = typename dare::utils::Vector<N, T>;            //!< holds data for each m
-    using OuterVec = typename dare::utils::Vector<M, InnerVec>;     //!< holds m vectors
+    using InnerVec = typename dare::Vector<N, T>;            //!< holds data for each m
+    using OuterVec = typename dare::Vector<M, InnerVec>;     //!< holds m vectors
     using SelfType = Array<M, N, T>;                                //!< its own type
 
     /*!
@@ -78,7 +78,7 @@ private:
     OuterVec data;
 };
 
-}  // namespace dare::utils
+}  // namespace dare
 
 #include "Array.inl"
 #endif  // UTILITIES_ARRAY_H_

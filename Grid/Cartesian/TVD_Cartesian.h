@@ -30,13 +30,13 @@
 #include "Grid/Cartesian/MatrixBlock_Cartesian.h"
 #include "Grid/Cartesian/Stencils_Cartesian.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
-class TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter> {
+class TVD<dare::Cartesian<Dim>, SC, FluxLimiter> {
 public:
     static const std::size_t NUM_FACES{2 * Dim};
-    using GridType = dare::Grid::Cartesian<Dim>;
+    using GridType = dare::Cartesian<Dim>;
     using GridRepresentation = typename GridType::Representation;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
@@ -52,7 +52,7 @@ public:
      */
     TVD(const GridRepresentation& grid,
         LO ordinal_internal,
-        dare::utils::Vector<Dim, const dare::Data::GridVector<GridType, SC, 1>*> v);
+        dare::Vector<Dim, const dare::GridVector<GridType, SC, 1>*> v);
 
     /*!
      * @brief initialization with constant velocities
@@ -62,7 +62,7 @@ public:
      */
     TVD(const GridRepresentation& grid,
         LO ordinal_internal,
-        const dare::utils::Vector<Dim, SC>& v);
+        const dare::Vector<Dim, SC>& v);
 
     /*!
      * @brief destructor
@@ -78,9 +78,9 @@ public:
      * excluding the velocity component
      */
     template <std::size_t N>
-    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, N> Interpolate(
-        const dare::Data::CenterValueStencil<GridType, SC, N>& s_close,
-        const dare::Data::CenterValueStencil<GridType, SC, N>& s_far) const;
+    [[nodiscard]] dare::FaceValueStencil<GridType, SC, N> Interpolate(
+        const dare::CenterValueStencil<GridType, SC, N>& s_close,
+        const dare::CenterValueStencil<GridType, SC, N>& s_far) const;
 
     /*!
      * @brief When used for interpolation from a field
@@ -90,8 +90,8 @@ public:
      * excluding the velocity component
      */
     template <std::size_t N>
-    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, N> Interpolate(
-        const dare::Data::GridVector<GridType, SC, N>& field) const;
+    [[nodiscard]] dare::FaceValueStencil<GridType, SC, N> Interpolate(
+        const dare::GridVector<GridType, SC, N>& field) const;
 
     /*!
      * @brief When used for interpolation from a field
@@ -100,8 +100,8 @@ public:
      * Here, the face values are set to the values depending on the component
      */
     template <std::size_t N>
-    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, N> Interpolate(
-        const dare::utils::Vector<N, SC>& values) const;
+    [[nodiscard]] dare::FaceValueStencil<GridType, SC, N> Interpolate(
+        const dare::Vector<N, SC>& values) const;
 
     /*!
      * @brief When used for interpolation from a field
@@ -109,7 +109,7 @@ public:
      * @param value constant value
      * Here, the face values are set to the value
      */
-    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, 1> Interpolate(
+    [[nodiscard]] dare::FaceValueStencil<GridType, SC, 1> Interpolate(
                     SC value) const;
 
     /*!
@@ -118,8 +118,8 @@ public:
      * @param v none type
      * Here, the face values are set to 1
      */
-    [[nodiscard]] dare::Data::FaceValueStencil<GridType, SC, 1> Interpolate(
-        dare::utils::None v) const;
+    [[nodiscard]] dare::FaceValueStencil<GridType, SC, 1> Interpolate(
+        dare::None v) const;
 
     /*!
      * \brief when used for matrix assembly
@@ -140,24 +140,24 @@ public:
      * @endcode
      */
     template <std::size_t N>
-    [[nodiscard]] dare::Data::FaceMatrixStencil<GridType, SC, N> operator*(
-        const dare::Data::GridVector<GridType, SC, N>& field) const;
+    [[nodiscard]] dare::FaceMatrixStencil<GridType, SC, N> operator*(
+        const dare::GridVector<GridType, SC, N>& field) const;
 
     /*!
      * @brief returns the velocity values
      */
-    [[nodiscard]] const dare::Data::FaceValueStencil<GridType, SC, 1>& GetVelocities() const;
+    [[nodiscard]] const dare::FaceValueStencil<GridType, SC, 1>& GetVelocities() const;
 
 private:
     Index ind;                                               //!< triplet of indices
-    dare::Data::FaceValueStencil<GridType, SC, 1> velocity;  //!< stencil with velocity
-    dare::utils::Vector<NUM_FACES, bool> upwind;             //!< identifier for upwind at each face
+    dare::FaceValueStencil<GridType, SC, 1> velocity;  //!< stencil with velocity
+    dare::Vector<NUM_FACES, bool> upwind;             //!< identifier for upwind at each face
 #ifndef DARE_NDEBUG
     const GridRepresentation* grep_debug;                           //!< debugging helper with grid information
 #endif
 };
 
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 #include "TVD_Cartesian.inl"
 

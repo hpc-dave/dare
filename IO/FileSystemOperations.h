@@ -29,7 +29,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
-namespace dare::io {
+namespace dare {
 
 using Path = boost::filesystem::path;
 
@@ -44,6 +44,6 @@ bool CreateDirectoryRecursive(const Path& path);
 
 }  // end namespace details
 
-}  // end namespace dare::io
+}  // end namespace dare
 
 #endif  // IO_FILESYSTEMOPERATIONS_H_

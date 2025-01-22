@@ -120,7 +120,7 @@ STL<VT>::STL(const std::string& file) {
 
 template <typename VT>
 bool STL<VT>::ReadFile(const std::string& file) {
-    std::ifstream in(file, std::ios::in | std::ios::binary);
+    std::ifstream in(file, stds::in | stds::binary);
     if (!in) {
         std::cerr << "Could not open file '" << file << "'! Aborting read operation!" << std::endl;
         return false;
@@ -139,7 +139,7 @@ bool STL<VT>::ReadFile(const std::string& file) {
 
 template <typename VT>
 bool STL<VT>::WriteToFile(const std::string& file, bool write_ASCII) {
-    std::ofstream ofs(file, std::ios::out | std::ios::binary);
+    std::ofstream ofs(file, stds::out | stds::binary);
     if (!ofs) {
         std::cerr << "Could not open file " << file << "! Aborting write operation!" << std::endl;
         return false;
@@ -166,7 +166,7 @@ bool STL<VT>::IsASCII(std::ifstream& in) {
         return false;
     }
     in.clear();
-    in.seekg(0, std::ios::beg);
+    in.seekg(0, stds::beg);
     return strcmp(check_line, "solid");
 }
 
@@ -193,7 +193,7 @@ bool STL<VT>::ReadASCII(std::ifstream& in) {
 
     /* Reset STLfile */
     in.clear();  // clears EOF flag
-    in.seekg(0, std::ios::beg);
+    in.seekg(0, stds::beg);
 
     /* Process and store data from STL file */
     getline(in, dummy);  // reads "solid <NAME>"

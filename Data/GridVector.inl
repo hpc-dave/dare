@@ -24,7 +24,7 @@
 
 #include <string>
 
-namespace dare::Data {
+namespace dare {
 
 template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>::GridVector() : GridVector("not_specified", 0, GridRepresentation()) {
@@ -185,8 +185,8 @@ T GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) const {
 }
 
 template <typename Grid, typename T, std::size_t N>
-dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const LO n) const {
-    dare::utils::Vector<N, T> values;
+dare::Vector<N, T> GridVector<Grid, T, N>::GetValues(const LO n) const {
+    dare::Vector<N, T> values;
     LO n_start{n * static_cast<LO>(N)};
     for (std::size_t c{0}; c < N; c++) {
         values[c] = operator[](n_start + c);
@@ -195,7 +195,7 @@ dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const LO n) const {
 }
 
 template <typename Grid, typename T, std::size_t N>
-dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const Index& ind) const {
+dare::Vector<N, T> GridVector<Grid, T, N>::GetValues(const Index& ind) const {
     return GetValues(grid.MapIndexToOrdinalLocal(ind));
 }
 
@@ -288,4 +288,4 @@ template <typename Grid, typename T, std::size_t N>
 const std::string& GridVector<Grid, T, N>::GetComponentName(std::size_t n) const {
     return component_names[n];
 }
-}  // namespace dare::Data
+}  // namespace dare

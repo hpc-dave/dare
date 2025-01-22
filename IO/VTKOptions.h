@@ -38,7 +38,7 @@
 #include "VTKTypes.h"
 #include "VTKPXMLStructuredGridWriter.h"
 
-namespace dare::io {
+namespace dare {
 
 /*!
  * @brief provides writer type according to vtkGrid via SFINAE
@@ -83,6 +83,6 @@ struct VTKOptions {
     static_assert(std::is_same_v<Grid, void>, "No specialization for your grid type found!");
 };
 
-}  // end namespace dare::io
+}  // end namespace dare
 
 #endif  // IO_VTKOPTIONS_H_

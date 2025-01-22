@@ -50,7 +50,7 @@
 #include "Utilities/Errors.h"
 #include "Data/DefaultTypes.h"
 #include "BiCGStab2.h"
-namespace dare::Matrix {
+namespace dare {
 
 enum class PreCondPackage {
     None,
@@ -237,7 +237,7 @@ private:
     int num_iter{-1};
 };
 
-}  // namespace dare::Matrix
+}  // namespace dare
 
 #include "TrilinosSolver.inl"
 

@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace dare::Data {
+namespace dare {
 template <typename Grid, typename SC, std::size_t N>
 Field<Grid, SC, N>::Field(std::string _identifier, GridRepresentation grid_rep, std::size_t num_time_levels)
     : identifier(_identifier), data(num_time_levels) {
@@ -98,7 +98,7 @@ void Field<Grid, SC, N>::CopyDataVectorsToOldTimeStep() {
 }
 
 template <typename Grid, typename SC, std::size_t N>
-dare::mpi::ExecutionManager* Field<Grid, SC, N>::GetExecutionManager() {
+dare::ExecutionManager* Field<Grid, SC, N>::GetExecutionManager() {
     return GetGridRepresentation().GetHaloBuffer().GetExecutionManager();
 }
 
@@ -137,4 +137,4 @@ void Field<Grid, SC, N>::SetComponentName(std::size_t n, const std::string& name
         d.SetComponentName(n, name);
 }
 
-}  // end namespace dare::Data
+}  // end namespace dare

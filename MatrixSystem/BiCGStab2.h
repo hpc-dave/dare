@@ -28,7 +28,7 @@
 #include "BelosMultiVecTraits.hpp"
 #include "BelosSolverManager.hpp"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * \class BiCGSTAB2
@@ -204,7 +204,7 @@ private:
     int stop_criteria;        //!< identifier of stop criteria
     bool converged;           //!< identifier, if converged
 };
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 #include "BiCGStab2.inl"
 

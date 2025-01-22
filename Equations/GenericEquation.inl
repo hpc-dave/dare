@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 
-namespace dare::Matrix {
+namespace dare {
 
 template <typename Grid, typename BS, typename CM>
 GenericEquation<Grid, BS, CM>::GenericEquation(const std::string& name,
                                                GridRepresentation grid,
-                                               dare::mpi::ExecutionManager* ex_man,
+                                               dare::ExecutionManager* ex_man,
                                                std::size_t num_tsteps,
                                                BS bc_strat)
     : grep(std::move(grid)),
@@ -151,4 +151,4 @@ template <typename Grid, typename BS, typename CM>
 void GenericEquation<Grid, BS, CM>::ClearPostStepStrategy() {
     post_step_strategy.clear();
 }
-}  // namespace dare::Matrix
+}  // namespace dare

@@ -24,7 +24,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace dare::Matrix {
+namespace dare {
 
 template <typename Grid, typename TimeDiscretization>
 DDT<Grid, TimeDiscretization>::DDT(const GridRepresentation& _grep,
@@ -51,8 +51,8 @@ auto DDT<Grid, TimeDiscretization>::operator()(const Args&... args) {
     using LastType = std::remove_reference_t<decltype(std::get<LAST_POS>(tuple_val))>;
     static_assert(dare::is_field_v<LastType>, "The last element needs to be a field!");
     const std::size_t NUM_COMPONENTS{LastType::NUM_COMPONENTS};
-    using TransientTerms = dare::utils::Vector<NUM_TFIELDS, SC>;
-    using ComponentVector = dare::utils::Vector<NUM_COMPONENTS, TransientTerms>;
+    using TransientTerms = dare::Vector<NUM_TFIELDS, SC>;
+    using ComponentVector = dare::Vector<NUM_COMPONENTS, TransientTerms>;
 
 #ifndef DARE_NDEBUG
     std::size_t num_last_timesteps = std::get<LAST_POS>(std::forward_as_tuple(args...)).GetNumberTimesteps();
@@ -73,7 +73,7 @@ auto DDT<Grid, TimeDiscretization>::operator()(const Args&... args) {
     Iterate<LAST_POS - 1>(transient_terms, std::forward_as_tuple(args...));
 
     // add the information to the matrix stencil
-    using Stencil = Data::CenterMatrixStencil<Grid, SC, NUM_COMPONENTS>;
+    using Stencil = CenterMatrixStencil<Grid, SC, NUM_COMPONENTS>;
     Stencil stencil;
     for (std::size_t n{0}; n < NUM_COMPONENTS; n++) {
         stencil.Center(n) = transient_terms[n][0];
@@ -89,7 +89,7 @@ auto DDT<Grid, TimeDiscretization>::operator()(const Args&... args) {
 template <typename Grid, typename TimeDiscretization>
 template <int I, std::size_t NUM_COMPONENTS, typename... Args>
 void DDT<Grid, TimeDiscretization>::Iterate(
-    dare::utils::Vector<NUM_COMPONENTS, dare::utils::Vector<NUM_TFIELDS, SC>>& transient_terms, // NOLINT
+    dare::Vector<NUM_COMPONENTS, dare::Vector<NUM_TFIELDS, SC>>& transient_terms, // NOLINT
     const std::tuple<const Args&...>& args) {
     if constexpr (I == -1) {
         // end of iteration, do nothing
@@ -106,13 +106,13 @@ void DDT<Grid, TimeDiscretization>::Iterate(
                 // maybe work with overloads here in future
                 SC v{0.};
                 if constexpr (dare::is_field_v<Type>) {
-                    v = dare::math::InterpolateToCenter(*grep, ind, arg.GetDataVector(t), n);
+                    v = dare::InterpolateToCenter(*grep, ind, arg.GetDataVector(t), n);
                 } else if constexpr (std::is_pointer_v<Type>                        // NOLINT
                                      && dare::is_field_v<std::remove_cv_t<Type>>) {
-                    v = dare::math::InterpolateToCenter(*grep, ind, arg->GetDataVector(t), n);
+                    v = dare::InterpolateToCenter(*grep, ind, arg->GetDataVector(t), n);
                 } else if constexpr (std::is_arithmetic_v<Type>) {
                     v = arg;
-                } else if constexpr (dare::utils::is_none_v<Type>) {
+                } else if constexpr (dare::is_none_v<Type>) {
                     v = 1.;
                 } else {
                     static_assert(dare::always_false<Type>, "The input type is currently not supported");
@@ -125,4 +125,4 @@ void DDT<Grid, TimeDiscretization>::Iterate(
         Iterate<I - 1>(transient_terms, args);
     }
 }
-}  // end namespace dare::Matrix
+}  // end namespace dare

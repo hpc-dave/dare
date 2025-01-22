@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-namespace dare::utils {
+namespace dare {
 
 template <std::size_t M, std::size_t N, typename T>
 typename Array<M, N, T>::InnerVec& Array<M, N, T>::operator[](std::size_t m) {
@@ -74,4 +74,4 @@ const T& Array<M, N, T>::Get(std::size_t m, std::size_t n) const {
     return data[m][n];
 }
 
-}  // namespace dare::utils
+}  // namespace dare

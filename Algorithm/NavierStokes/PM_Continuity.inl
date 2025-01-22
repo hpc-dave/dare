@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-namespace dare::algorithm {
+namespace dare {
 
 template <typename Grid, typename BS, typename CM>
 PMContinuity<Grid, BS, CM>::PMContinuity(const std::string& name,
                                          GridRepresentation grid,
-                                         dare::mpi::ExecutionManager* ex_man,
+                                         dare::ExecutionManager* ex_man,
                                          std::size_t num_tsteps,
                                          BS bc_strat)
-    : Matrix::GenericEquation<Grid, BS, CM>(name, std::move(grid), ex_man, num_tsteps, std::move(bc_strat)),
+    : dare::GenericEquation<Grid, BS, CM>(name, std::move(grid), ex_man, num_tsteps, std::move(bc_strat)),
       defect("defect", grid, 1),
       dP("dP", grid, 1) {
 }
@@ -65,4 +65,4 @@ const PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetdP()
     return dP;
 }
 
-}  // namespace dare::algorithm
+}  // namespace dare

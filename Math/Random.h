@@ -28,7 +28,7 @@
 #include <random>
 #include <memory>
 
-namespace dare::math {
+namespace dare {
 
 template<typename Generator = std::default_random_engine, typename Distribution = std::uniform_int_distribution<int>>
 class RandomNumberGenerator {
@@ -45,6 +45,6 @@ private:
 };
 
 using Randomizer = RandomNumberGenerator<>;
-}  // end namespace dare::math
+}  // end namespace dare
 
 #endif  // MATH_RANDOM_H_

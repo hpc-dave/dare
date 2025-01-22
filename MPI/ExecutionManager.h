@@ -37,7 +37,7 @@
 #include "OBlackHoleStream.h"
 #include "Utilities/Errors.h"
 
-namespace dare::mpi {
+namespace dare {
 
 /*! \class Verbosity
  * \brief identifiers for verbosity
@@ -486,7 +486,7 @@ private:
     BlackHoleOStream black_hole_osteam;  //!< can swallow output if required
 };
 
-}  // namespace dare::mpi
+}  // namespace dare
 
 #include "ExecutionManager.inl"
 #include "ExecutionManager_MPI.inl"

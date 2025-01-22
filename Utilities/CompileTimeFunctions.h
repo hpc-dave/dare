@@ -28,7 +28,7 @@
 #include <array>
 #include <utility>
 
-namespace dare::utils {
+namespace dare {
 
 /*!
  * @brief converts a homogeneous tuple into an array at compile time
@@ -42,6 +42,6 @@ constexpr auto convert_tuple_to_array(tuple_t&& tuple) {
     return std::apply(get_array, std::forward<tuple_t>(tuple));
 }
 
-}  // namespace dare::utils
+}  // namespace dare
 
 #endif  // UTILITIES_COMPILETIMEFUNCTIONS_H_

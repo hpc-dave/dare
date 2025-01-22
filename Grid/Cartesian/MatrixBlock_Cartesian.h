@@ -34,9 +34,9 @@
 #include "Utilities/Errors.h"
 #include "Utilities/Array.h"
 
-namespace dare::Matrix {
+namespace dare {
 
-using CartesianNeighbor = dare::Grid::CartesianNeighbor;
+using CartesianNeighbor = dare::CartesianNeighbor;
 
 enum class CartesianNeighborBitSet : int16_t {
     CENTER = 1 << static_cast<char>(CartesianNeighbor::CENTER),
@@ -54,10 +54,10 @@ template <CartesianNeighbor A, CartesianNeighbor B>
 constexpr bool IsSame() { return A == B; }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
-class MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N> : public MatrixBlockBase<O, SC, N> {
+class MatrixBlock<dare::Cartesian<Dim>, O, SC, N> : public MatrixBlockBase<O, SC, N> {
 public:
     static const std::size_t STENCIL_SIZE = 2 * Dim + 1;
-    using GridType = dare::Grid::Cartesian<Dim>;
+    using GridType = dare::Cartesian<Dim>;
     using GridRepresentation = typename GridType::Representation;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
     using GlobalOrdinalType = typename GridType::GlobalOrdinalType;
@@ -66,7 +66,7 @@ public:
     using LO = LocalOrdinalType;
     using SelfType = MatrixBlock<GridType, O, SC, N>;
     using Index = typename GridType::template GetIndexType<O>::type;
-    using ScalarArray = dare::utils::Vector<STENCIL_SIZE, SC>;
+    using ScalarArray = dare::Vector<STENCIL_SIZE, SC>;
 
     /*!
      * @brief default constructor
@@ -81,7 +81,7 @@ public:
      */
     MatrixBlock(const GridRepresentation* g_rep,
                 O node,
-                const dare::utils::Vector<N, std::size_t>& size_hint);
+                const dare::Vector<N, std::size_t>& size_hint);
 
     /*!
      * @brief initializing without size hint
@@ -113,8 +113,8 @@ public:
     //  * @param m2 second block
     //  */
     // template <std::size_t Dims, typename Os, typename SCs, std::size_t Ns>
-    // friend void swap(MatrixBlock<dare::Grid::Cartesian<Dims>, Os, SCs, Ns>& m1,
-    //                  MatrixBlock<dare::Grid::Cartesian<Dims>, Os, SCs, Ns>& m2);
+    // friend void swap(MatrixBlock<dare::Cartesian<Dims>, Os, SCs, Ns>& m1,
+    //                  MatrixBlock<dare::Cartesian<Dims>, Os, SCs, Ns>& m2);
 
     /*!
      * @brief initialize the matrix block
@@ -131,7 +131,7 @@ public:
      */
     void Initialize(const GridRepresentation* g_rep,
                     O Node,
-                    const dare::utils::Vector<N, std::size_t>& size_hint);
+                    const dare::Vector<N, std::size_t>& size_hint);
 
     /*!
      * @brief identifier, if the ordinal is a global ordinal
@@ -221,58 +221,58 @@ public:
      * @brief assigns values from a stencil
      * @param s center stencil with matrix values
      */
-    SelfType& Set(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+    SelfType& Set(const dare::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief assigns values from a single component stencil to single component
      * @param n component ID to which the value is assigned
      * @param s center stencil with matrix values
      */
-    SelfType& Set(std::size_t n, const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s);
+    SelfType& Set(std::size_t n, const dare::CenterMatrixStencil<GridType, SC, 1>& s);
 
     /*!
      * @brief operator for assigning values from a stencil
      * @param s center stencil with matrix values
      */
-    SelfType& operator=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+    SelfType& operator=(const dare::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief adds values from stencil
      * @param s center stencil with matrix values
      */
-    SelfType& Add(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+    SelfType& Add(const dare::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief adds values from single component stencil to single component
      * @param component ID to which the values are added
      * @param s center stencil with matrix values
      */
-    SelfType& Add(std::size_t n, const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s);
+    SelfType& Add(std::size_t n, const dare::CenterMatrixStencil<GridType, SC, 1>& s);
 
     /*!
      * @brief operator for adding values from stencil
      * @param s center stencil with matrix values
      */
-    SelfType& operator+=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+    SelfType& operator+=(const dare::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief subtracts values of stencil
      * @param s center stencil with matrix values
      */
-    SelfType& Subtract(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+    SelfType& Subtract(const dare::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief subtracts values of single component stencil from single component
      * @param n component ID from which the values will be subtracted
      * @param s center stencil with matrix values
      */
-    SelfType& Subtract(std::size_t n, const dare::Data::CenterMatrixStencil<GridType, SC, 1>& s);
+    SelfType& Subtract(std::size_t n, const dare::CenterMatrixStencil<GridType, SC, 1>& s);
 
     /*!
      * @brief operator for subtracting values of stencil
      * @param s center stencil with matrix values
      */
-    SelfType& operator-=(const dare::Data::CenterMatrixStencil<GridType, SC, N>& s);
+    SelfType& operator-=(const dare::CenterMatrixStencil<GridType, SC, N>& s);
 
     /*!
      * @brief returns global internal ordinal
@@ -285,7 +285,7 @@ public:
     LO GetLocalOrdinal() const;
 
     template <typename OS>
-    friend OS& operator<<(OS& os, const MatrixBlock<dare::Grid::Cartesian<Dim>, O, SC, N>& m) {
+    friend OS& operator<<(OS& os, const MatrixBlock<dare::Cartesian<Dim>, O, SC, N>& m) {
         os << "GO: " << m.GetGlobalOrdinal() << "\tLO: " << m.GetLocalOrdinal() << '\n';
         for (std::size_t n{0}; n < N; n++) {
             if (N > 1)
@@ -320,24 +320,24 @@ private:
     /*!
      * @brief Getter for raw neighbor array
      */
-    dare::utils::Array<N, N, ScalarArray>& GetNeighbors();
+    dare::Array<N, N, ScalarArray>& GetNeighbors();
 
     /*!
      * @brief const getter for raw neighbor array
      */
-    const dare::utils::Array<N, N, ScalarArray>& GetNeighbors() const;
+    const dare::Array<N, N, ScalarArray>& GetNeighbors() const;
 
     /*!
      * @brief Getter for partial neighbor array of component nr
      * @param nr component id
      */
-    dare::utils::Vector<N, ScalarArray>& GetNeighbors(std::size_t nr);
+    dare::Vector<N, ScalarArray>& GetNeighbors(std::size_t nr);
 
     /*!
      * @brief const getter for partial neighbor array of component nr
      * @param nr component id
      */
-    const dare::utils::Vector<N, ScalarArray>& GetNeighbors(std::size_t nr) const;
+    const dare::Vector<N, ScalarArray>& GetNeighbors(std::size_t nr) const;
 
     /*!
      * @brief Get the neighbor array for a component nr with respect to the component nc
@@ -356,24 +356,24 @@ private:
     /*!
      * @brief Getter for the raw bitset array
      */
-    dare::utils::Array<N, N, char>& GetNeighborBitSet();
+    dare::Array<N, N, char>& GetNeighborBitSet();
 
     /*!
      * @brief const getter for the raw bitset array
      */
-    const dare::utils::Array<N, N, char>& GetNeighborBitSet() const;
+    const dare::Array<N, N, char>& GetNeighborBitSet() const;
 
     /*!
      * @brief getter for the bitset array associated with the component id nr
      * @param nr component id associated with the row
      */
-    dare::utils::Vector<N, char>& GetNeighborBitSet(std::size_t nr);
+    dare::Vector<N, char>& GetNeighborBitSet(std::size_t nr);
 
     /*!
      * @brief const getter for the bitset array associated with the component id nr
      * @param nr component id associated with the row
      */
-    const dare::utils::Vector<N, char>& GetNeighborBitSet(std::size_t nr) const;
+    const dare::Vector<N, char>& GetNeighborBitSet(std::size_t nr) const;
 
     /*!
      * @brief getter for the stencil-bitset associated with the row-relative and column-relative component
@@ -390,12 +390,12 @@ private:
     char GetNeighborBitSet(std::size_t nr, std::size_t nc) const;
 
     const GridRepresentation* g_rep;                      //!< reference to grid representation
-    dare::utils::Array<N, N, ScalarArray> neighbors;      //!< holds values referencing to neighbor coefficients
-    dare::utils::Array<N, N, char> neighbor_set;          //!< identifiers, if the neighbors were set
+    dare::Array<N, N, ScalarArray> neighbors;      //!< holds values referencing to neighbor coefficients
+    dare::Array<N, N, char> neighbor_set;          //!< identifiers, if the neighbors were set
     Index ind_internal;                                   //!< indices of internal grid
     Index ind_full;                                       //!< indices of grid including halo/ghost cells
 };
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 #include "MatrixBlock_Cartesian.inl"
 

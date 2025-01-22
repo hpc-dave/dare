@@ -39,14 +39,14 @@ int main(int argc, char* argv[]) {
     using SC = dare::defaults::ScalarType;
     using GO = dare::defaults::GlobalOrdinalType;
     using LO = dare::defaults::LocalOrdinalType;
-    using Grid = dare::Grid::Cartesian<1>;
-    using GridVector = dare::Data::GridVector<Grid, SC, 1>;
-    using Field = dare::Data::Field<Grid, SC, 1>;
-    using Writer = dare::io::VTKWriter<Grid>;
-    using IndexGlobal = typename Grid::IndexGlobal;
-    using IndexLocal = typename Grid::Index;
-    using VecSC = typename Grid::VecSC;
-    using CNB = typename Grid::NeighborID;
+    using Grid = dare::Cartesian<1>;
+    using GridVector = dareVector<Grid, SC, 1>;
+    using Field = dare::Field<Grid, SC, 1>;
+    using Writer = dare::VTKWriter<Grid>;
+    using IndexGlobal = typename IndexGlobal;
+    using IndexLocal = typename Index;
+    using VecSC = typename VecSC;
+    using CNB = typename NeighborID;
 
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
@@ -59,8 +59,8 @@ int main(int argc, char* argv[]) {
             IndexGlobal resolution_global(nx);
             VecSC size_global(L);
 
-            dare::mpi::ExecutionManager exman;
-            dare::io::FileSystemManager fman(&exman, "verification");
+            dare::ExecutionManager exman;
+            dare::FileSystemManager fman(&exman, "verification");
             fman.CheckWithUser(false);
 
             Grid grid("scalar_1D",
@@ -93,11 +93,11 @@ int main(int argc, char* argv[]) {
 
             auto build_coef_x = [&](auto mblock) {
                 // Normalize!
-                using TimeScheme = dare::Matrix::EULER_BACKWARD;
-                using Divergence = dare::Matrix::Divergence<Grid, TimeScheme>;
-                using DDT = dare::Matrix::DDT<Grid>;
-                using FluxLimiter = dare::Matrix::MINMOD;
-                using TVD = dare::Matrix::TVD<Grid, SC, FluxLimiter>;
+                using TimeScheme = dare::EULER_BACKWARD;
+                using Divergence = dare::Divergence<Grid, TimeScheme>;
+                using DDT = dare::DDT<Grid>;
+                using FluxLimiter = dare::MINMOD;
+                using TVD = dare::TVD<Grid, SC, FluxLimiter>;
 
                 auto g_r = mblock->GetRepresentation();
                 LO loc_o{mblock->GetLocalOrdinal()};
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
 
                 Divergence div(*g_r, loc_o);
                 DDT ddt(*g_r, loc_o, dt);
-                TVD tvd(*g_r, loc_o, dare::utils::Vector<1, const GridVector*>(&u));
+                TVD tvd(*g_r, loc_o, dare::Vector<1, const GridVector*>(&u));
 
                 // time derivative
                 (*mblock) = ddt(epsilon, rho, mom_x);
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
                     grad_p /= g_r->GetDistances().x();
                     grad_p *= g_r->GetCellVolume();
                 }
-                SC poro = dare::math::InterpolateToFace(*g_r, ind, CNB::WEST, epsilon.GetDataVector(), 0);
+                SC poro = dare::InterpolateToFace(*g_r, ind, CNB::WEST, epsilon.GetDataVector(), 0);
 
                 mblock->GetRhs(0) -= poro * grad_p;
 
@@ -152,17 +152,17 @@ int main(int argc, char* argv[]) {
             };
 
             auto compute_defect = [&](const auto& grep, LO loc_o, IndexLocal ind) {
-                using Divergence = dare::Matrix::Divergence<Grid, dare::Matrix::EULER_BACKWARD>;
-                using FluxLimiter = dare::Matrix::CDS;
-                using TVD = dare::Matrix::TVD<Grid, SC, FluxLimiter>;
-                using FVStencil = dare::Data::FaceValueStencil<Grid, SC, 1>;
-                using CVStencil = dare::Data::CenterValueStencil<Grid, SC, 1>;
+                using Divergence = dare::Divergence<Grid, dare::Matrix::EULER_BACKWARD>;
+                using FluxLimiter = dare::CDS;
+                using TVD = dare::TVD<Grid, SC, FluxLimiter>;
+                using FVStencil = dare::FaceValueStencil<Grid, SC, 1>;
+                using CVStencil = dare::CenterValueStencil<Grid, SC, 1>;
                 const GridVector& u = mom_x.GetDataVector();
                 Divergence div(grep, loc_o);
-                TVD tvd(grep, loc_o, dare::utils::Vector<1, const GridVector*>(&u));
+                TVD tvd(grep, loc_o, dare::Vector<1, const GridVector*>(&u));
 
                 CVStencil ONES;
-                FVStencil uloc = dare::math::InterpolateToFaceStencil(grep, ind, u);
+                FVStencil uloc = dare::InterpolateToFaceStencil(grep, ind, u);
                 ONES.SetAll(1.);
                 SC defect = div(tvd.Interpolate(ONES, ONES) * uloc)[0];
                 return defect;
@@ -170,11 +170,11 @@ int main(int argc, char* argv[]) {
 
             auto build_coef_p = [&](auto mblock) {
                 // Normalize
-                // using Divergence = dare::Matrix::Divergence<Grid, dare::Matrix::EULER_BACKWARD>;
-                // using FluxLimiter = dare::Matrix::CDS;
-                // using TVD = dare::Matrix::TVD<Grid, SC, FluxLimiter>;
-                // using FVStencil = dare::Data::FaceValueStencil<Grid, SC, 1>;
-                // using CVStencil = dare::Data::CenterValueStencil<Grid, SC, 1>;
+                // using Divergence = dare::Divergence<Grid, dare::Matrix::EULER_BACKWARD>;
+                // using FluxLimiter = dare::CDS;
+                // using TVD = dare::TVD<Grid, SC, FluxLimiter>;
+                // using FVStencil = dare::FaceValueStencil<Grid, SC, 1>;
+                // using CVStencil = dare::CenterValueStencil<Grid, SC, 1>;
 
                 auto g_r = mblock->GetRepresentation();
                 LO loc_o{mblock->GetLocalOrdinal()};
@@ -182,15 +182,15 @@ int main(int argc, char* argv[]) {
                 // const GridVector& u = mom_x.GetDataVector();
 
                 // Divergence div(*g_r, loc_o);
-                // TVD tvd(*g_r, loc_o, dare::utils::Vector<1, const GridVector*>(&u));
+                // TVD tvd(*g_r, loc_o, dare::Vector<1, const GridVector*>(&u));
 
                 // subsitute with interpolation to face and then gradient
-                SC rho_w = dare::math::InterpolateToFace(*g_r, ind, CNB::WEST, rho.GetDataVector(), 0);
-                SC rho_e = dare::math::InterpolateToFace(*g_r, ind, CNB::EAST, rho.GetDataVector(), 0);
-                SC beta_w = dare::math::InterpolateToFace(*g_r, ind, CNB::WEST, beta.GetDataVector(), 0);
-                SC beta_e = dare::math::InterpolateToFace(*g_r, ind, CNB::EAST, beta.GetDataVector(), 0);
-                SC poro_w = dare::math::InterpolateToFace(*g_r, ind, CNB::WEST, epsilon.GetDataVector(), 0);
-                SC poro_e = dare::math::InterpolateToFace(*g_r, ind, CNB::EAST, epsilon.GetDataVector(), 0);
+                SC rho_w = dare::InterpolateToFace(*g_r, ind, CNB::WEST, rho.GetDataVector(), 0);
+                SC rho_e = dare::InterpolateToFace(*g_r, ind, CNB::EAST, rho.GetDataVector(), 0);
+                SC beta_w = dare::InterpolateToFace(*g_r, ind, CNB::WEST, beta.GetDataVector(), 0);
+                SC beta_e = dare::InterpolateToFace(*g_r, ind, CNB::EAST, beta.GetDataVector(), 0);
+                SC poro_w = dare::InterpolateToFace(*g_r, ind, CNB::WEST, epsilon.GetDataVector(), 0);
+                SC poro_e = dare::InterpolateToFace(*g_r, ind, CNB::EAST, epsilon.GetDataVector(), 0);
 
                 mblock->Get(0, 0, CNB::WEST) = -poro_w * dt /
                             (poro_w * rho_w + beta_w * dt) * g_r->GetFaceArea().x() / g_r->GetDistances().x();
@@ -200,14 +200,14 @@ int main(int argc, char* argv[]) {
                 mblock->Get(0, 0, CNB::CENTER) = -mblock->Get(0, 0, CNB::WEST) - mblock->Get(0, 0, CNB::EAST);
 
                 // populate stencil, FOR HIGHER DIMENSIONS THAT SHOULD BE A DEDICATED SETUP
-                // FVStencil u_close = dare::math::InterpolateToFaceStencil(*g_r, ind, u, 0);
-                // FVStencil u_far = dare::math::InterpolateToFaceStencil(*g_r, ind, u, 1);
+                // FVStencil u_close = dare::InterpolateToFaceStencil(*g_r, ind, u, 0);
+                // FVStencil u_far = dare::InterpolateToFaceStencil(*g_r, ind, u, 1);
                 // CVStencil ONES;
-                // FVStencil uloc = dare::math::InterpolateToFaceStencil(*g_r, ind, u);
+                // FVStencil uloc = dare::InterpolateToFaceStencil(*g_r, ind, u);
                 // ONES.SetAll(1.);
                 // SC defect = div(tvd.Interpolate(ONES, ONES) * uloc)[0];
-                // SC u_w = dare::math::InterpolateToFace(*g_r, ind, CNB::WEST, u, 0);
-                // SC u_e = dare::math::InterpolateToFace(*g_r, ind, CNB::EAST, u, 0);
+                // SC u_w = dare::InterpolateToFace(*g_r, ind, CNB::WEST, u, 0);
+                // SC u_e = dare::InterpolateToFace(*g_r, ind, CNB::EAST, u, 0);
                 // std::cout << ind << " u_west: " << u_w << " u_east: " << u_e << std::endl;
                 SC defect = compute_defect(*g_r, loc_o, ind);
                 mblock->GetRhs(0) = -defect;
@@ -234,8 +234,8 @@ int main(int argc, char* argv[]) {
                 }
             };
 
-            dare::Matrix::Trilinos<SC> msystem_x(&exman);
-            dare::Matrix::Trilinos<SC> msystem_p(&exman);
+            dare::Trilinos<SC> msystem_x(&exman);
+            dare::Trilinos<SC> msystem_p(&exman);
             Teuchos::RCP<Teuchos::ParameterList> p_ilu = Teuchos::rcp(new Teuchos::ParameterList());
             // parameters for ILU
             p_ilu->set("fact: drop tolerance", 1e-9);
@@ -269,26 +269,26 @@ int main(int argc, char* argv[]) {
                 rho.CopyDataVectorsToOldTimeStep();
                 epsilon.CopyDataVectorsToOldTimeStep();
 
-                exman.Print(dare::mpi::Verbosity::Low) << "t: " << time << "\tstep: " << timestep << "\n";
+                exman.Print(dare::Verbosity::Low) << "t: " << time << "\tstep: " << timestep << "\n";
                 msystem_x.Build(grid_x, mom_x.GetDataVector(), build_coef_x, false);
 
                 // msystem.PrintMatrix();
                 // msystem.PrintX();
                 // msystem.PrintB();
 
-                dare::Matrix::TrilinosSolver<SC> solver_x;
-                msystem_x.GetM() = solver_x.BuildPreconditioner(dare::Matrix::PreCondPackage::Ifpack2,
+                dare::TrilinosSolver<SC> solver_x;
+                msystem_x.GetM() = solver_x.BuildPreconditioner(dare::PreCondPackage::Ifpack2,
                                                             "ILUT",
                                                             p_ilu,
                                                             msystem_x.GetA());
-                auto ret_x = solver_x.Solve(dare::Matrix::SolverPackage::Belos,
+                auto ret_x = solver_x.Solve(dare::SolverPackage::Belos,
                                           "BICGSTAB",
                                           msystem_x.GetM(),
                                           msystem_x.GetA(), msystem_x.GetX(), msystem_x.GetB(),
                                           p_solver);
                 msystem_x.CopyTo(&mom_x.GetDataVector());
                 if (ret_x != Belos::ReturnType::Converged) {
-                    exman.Print(dare::mpi::Verbosity::Low) << "momentum did not converge\n";
+                    exman.Print(dare::Verbosity::Low) << "momentum did not converge\n";
                 }
 
                 mom_x.ExchangeHaloCells();
@@ -297,20 +297,20 @@ int main(int argc, char* argv[]) {
                 mom_x.GetDataVector().At(num_ghost - 1, 0) = mom_x.GetDataVector().At(num_ghost, 0);
                 mom_x.GetDataVector().At(nx + num_ghost + 1, 0) = mom_x.GetDataVector().At(nx + num_ghost, 0);
 
-                exman.Print(dare::mpi::Verbosity::Low)
+                exman.Print(dare::Verbosity::Low)
                     << "U: " << solver_x.GetNumIterations() << '\n';
 
                 int it{0};
                 for (; it < 10; it++) {
                     msystem_p.Build(grid_s, pressure.GetDataVector(), build_coef_p, false);
 
-                    dare::Matrix::TrilinosSolver<SC> solver_p;
-                    msystem_p.GetM() = solver_p.BuildPreconditioner(dare::Matrix::PreCondPackage::MueLu,
+                    dare::TrilinosSolver<SC> solver_p;
+                    msystem_p.GetM() = solver_p.BuildPreconditioner(dare::PreCondPackage::MueLu,
                                                                     "AMG",
                                                                     p_amg,
                                                                     msystem_p.GetA());
 
-                    auto ret_p = solver_p.Solve(dare::Matrix::SolverPackage::Belos,
+                    auto ret_p = solver_p.Solve(dare::SolverPackage::Belos,
                                                 "BICGSTAB",
                                                 msystem_p.GetM(),
                                                 msystem_p.GetA(), msystem_p.GetX(), msystem_p.GetB(),
@@ -320,9 +320,9 @@ int main(int argc, char* argv[]) {
                     msystem_p.AddTo(&pressure.GetDataVector());
 
                     if (ret_p != Belos::ReturnType::Converged) {
-                        exman.Print(dare::mpi::Verbosity::Low) << "pressure did not converge\n";
+                        exman.Print(dare::Verbosity::Low) << "pressure did not converge\n";
                     }
-                    exman.Print(dare::mpi::Verbosity::Low)
+                    exman.Print(dare::Verbosity::Low)
                         << "P: " << solver_p.GetNumIterations() << '\n';
                     dp.ExchangeHaloCells();
                     pressure.ExchangeHaloCells();
@@ -332,9 +332,9 @@ int main(int argc, char* argv[]) {
                         IndexLocal ind = grid_x.MapOrdinalToIndexLocal(lo);
                         IndexLocal ind_prev(ind);
 
-                        SC rho_x = dare::math::InterpolateToFace(grid_s, ind, CNB::WEST, rho.GetDataVector(), 0);
-                        SC beta_x = dare::math::InterpolateToFace(grid_s, ind, CNB::WEST, beta.GetDataVector(), 0);
-                        SC poro_x = dare::math::InterpolateToFace(grid_s, ind, CNB::WEST, epsilon.GetDataVector(), 0);
+                        SC rho_x = dare::InterpolateToFace(grid_s, ind, CNB::WEST, rho.GetDataVector(), 0);
+                        SC beta_x = dare::InterpolateToFace(grid_s, ind, CNB::WEST, beta.GetDataVector(), 0);
+                        SC poro_x = dare::InterpolateToFace(grid_s, ind, CNB::WEST, epsilon.GetDataVector(), 0);
                         SC beta_xit = it == 0 ? beta_x : 0.;
                         ind_prev.i() -= 1;
                         SC dp_e = dp.GetDataVector().At(ind, 0);
@@ -358,7 +358,7 @@ int main(int argc, char* argv[]) {
                         SC defect_loc = std::abs(compute_defect(pressure.GetGridRepresentation(), lo, ind));
                         defect_max = std::max(defect_max, defect_loc);
                     }
-                    exman.Print(dare::mpi::Verbosity::Low) << "it: " << it << " Defect: " << defect_max << std::endl;
+                    exman.Print(dare::Verbosity::Low) << "it: " << it << " Defect: " << defect_max << std::endl;
                     if (defect_max < 1e-14)
                         break;
                 }

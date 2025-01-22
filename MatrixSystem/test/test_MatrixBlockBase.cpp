@@ -35,7 +35,7 @@ public:
     using O = int;                      //!< ordinal type
     using SC = double;                  //!< scalar type
     static const std::size_t N = 5;     //!< number of components
-    using SizeHintVector = dare::utils::Vector<N, std::size_t>;  // type of vector for size hint
+    using SizeHintVector = dare::Vector<N, std::size_t>;  // type of vector for size hint
 };
 
 TEST_F(MatrixBlockBaseTest, Initialization) {
@@ -43,9 +43,9 @@ TEST_F(MatrixBlockBaseTest, Initialization) {
     SizeHintVector size_hint;
     for (std::size_t n{0}; n < N; n++)
         size_hint[n] = 7;
-    dare::Matrix::MatrixBlockBase<O, SC, N> mblock_default_construct;
-    dare::Matrix::MatrixBlockBase<O, SC, N> mblock_init_construct(node, size_hint);
-    dare::Matrix::MatrixBlockBase<O, SC, N> mblock_copy_construct(mblock_init_construct);
+    dare::MatrixBlockBase<O, SC, N> mblock_default_construct;
+    dare::MatrixBlockBase<O, SC, N> mblock_init_construct(node, size_hint);
+    dare::MatrixBlockBase<O, SC, N> mblock_copy_construct(mblock_init_construct);
 
     mblock_default_construct.Initialize(node, size_hint);
 
@@ -73,7 +73,7 @@ TEST_F(MatrixBlockBaseTest, SizeHint) {
     SizeHintVector size_hint;
     for (std::size_t n{0}; n < N; n++)
         size_hint[n] = n;
-    dare::Matrix::MatrixBlockBase<O, SC, N> mblock(node, size_hint);
+    dare::MatrixBlockBase<O, SC, N> mblock(node, size_hint);
 
     for (std::size_t n{0}; n < N; n++) {
         ASSERT_EQ(mblock.GetSize(n), n);
@@ -85,8 +85,8 @@ TEST_F(MatrixBlockBaseTest, Copy) {
     SizeHintVector size_hint;
     for (std::size_t n{0}; n < N; n++)
         size_hint[n] = n;
-    dare::Matrix::MatrixBlockBase<O, SC, N> mblock_src(node, size_hint);
-    dare::Matrix::MatrixBlockBase<O, SC, N> mblock_dst;
+    dare::MatrixBlockBase<O, SC, N> mblock_src(node, size_hint);
+    dare::MatrixBlockBase<O, SC, N> mblock_dst;
 
     O col_count{0};
     SC val_count{0.};
@@ -132,7 +132,7 @@ TEST_F(MatrixBlockBaseTest, GettersAndSetter) {
     SizeHintVector size_hint;
     for (std::size_t n{0}; n < N; n++)
         size_hint[n] = n;
-    dare::Matrix::MatrixBlockBase<O, SC, N> mblock(node, size_hint);
+    dare::MatrixBlockBase<O, SC, N> mblock(node, size_hint);
 
     O col_count{0};
     SC val_count{0.};
@@ -188,7 +188,7 @@ TEST_F(MatrixBlockBaseTest, RemoveEntries) {
     SizeHintVector size_hint;
     for (std::size_t n{0}; n < N; n++)
         size_hint[n] = n + 10;
-    dare::Matrix::MatrixBlockBase<O, SC, N> mblock(node, size_hint);
+    dare::MatrixBlockBase<O, SC, N> mblock(node, size_hint);
 
     O col_count{0};
     SC val_count{0.};

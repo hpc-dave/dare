@@ -24,10 +24,10 @@
 
 #include <tuple>
 
-namespace dare::Matrix {
+namespace dare {
 
 template <std::size_t Dim, typename TimeDiscretization>
-Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Divergence(
+Divergence<dare::Cartesian<Dim>, TimeDiscretization>::Divergence(
     const GridRepresentation& grid, LO ordinal_internal)
     : A(grid.GetFaceArea()),
       ind(grid.MapInternalToLocal(grid.MapOrdinalToIndexLocalInternal(ordinal_internal))),
@@ -36,7 +36,7 @@ Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Divergence(
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename... Args>
-auto Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::operator()(const Args&... args) {
+auto Divergence<dare::Cartesian<Dim>, TimeDiscretization>::operator()(const Args&... args) {
     const int LAST_POS{sizeof...(args) - 1};
     static_assert(LAST_POS >= 0, "minimally one argument (the relevant field) is required!");
     auto tuple_val = std::forward_as_tuple(args...);
@@ -68,7 +68,7 @@ auto Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::operator()(cons
         // apply divergence
         return ApplyDivergence(f);
     } if constexpr (dare::is_face_value_stencil_v<LastType> || dare::is_gridvector_v<LastType>) {
-        dare::Data::FaceValueStencil<GridType, SC, NUM_COMPONENTS> f;
+        dare::FaceValueStencil<GridType, SC, NUM_COMPONENTS> f;
         if constexpr (dare::is_gridvector_v<LastType>) {
             f = PopulateFaceValueFromField(std::get<LAST_POS>(tuple_val));
         } else {
@@ -89,7 +89,7 @@ auto Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::operator()(cons
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
+void Divergence<dare::Cartesian<Dim>, TimeDiscretization>::Multiply(
     SC value, TFaceMatrixStencil<SC, N>* s) const {
     for (auto& i : *s)
         i *= value;
@@ -97,8 +97,8 @@ void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
-    const dare::Data::FaceValueStencil<GridType, SC, N>& f,
+void Divergence<dare::Cartesian<Dim>, TimeDiscretization>::Multiply(
+    const dare::FaceValueStencil<GridType, SC, N>& f,
     TFaceMatrixStencil<SC, N>* s) const {
     for (auto& i : *s)
         i *= f;
@@ -106,7 +106,7 @@ void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
+void Divergence<dare::Cartesian<Dim>, TimeDiscretization>::Multiply(
     const TFaceValueStencil<SC, N>& f,
     TFaceMatrixStencil<SC, N>* s) const {
 #ifndef DARE_NDEBUG
@@ -121,15 +121,15 @@ void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
-    const dare::Data::GridVector<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const {
+void Divergence<dare::Cartesian<Dim>, TimeDiscretization>::Multiply(
+    const dare::GridVector<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const {
     Multiply(PopulateFaceValueFromField(f), s);
 }
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
-    const dare::Data::Field<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const {
+void Divergence<dare::Cartesian<Dim>, TimeDiscretization>::Multiply(
+    const dare::Field<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const {
     for (std::size_t n{0}; n < NUM_TIMESTEPS; n++) {
         (*s)[n] *= PopulateFaceValueFromField(f.GetDataVector(n));
     }
@@ -137,12 +137,12 @@ void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Multiply(
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-dare::Data::CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
+dare::CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
+Divergence<dare::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
     const TFaceMatrixStencil<SC, N>& s) const {
     // This whole function is quite verbose, helps during debugging and
     // maybe optimizes the whole thing...
-    dare::Data::CenterMatrixStencil<GridType, SC, N> s_c;
+    dare::CenterMatrixStencil<GridType, SC, N> s_c;
     // at timestep 0, we deal with the implicit components
     for (std::size_t n{0}; n < N; n++) {
         // Divergence in X
@@ -210,12 +210,12 @@ Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-dare::utils::Vector<N, SC>
-Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
-    const dare::Data::FaceValueStencil<GridType, SC, N>& s) const {
+dare::Vector<N, SC>
+Divergence<dare::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
+    const dare::FaceValueStencil<GridType, SC, N>& s) const {
     // Note that here we don't care about the time discretization, since
     // we have no temporal information
-    dare::utils::Vector<N, SC> div_v;
+    dare::Vector<N, SC> div_v;
     for (std::size_t n{0}; n < N; n++) {
         // Divergence in X
         div_v[n] = A[0] * s.GetValue(Positions::EAST, n);
@@ -238,10 +238,10 @@ Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
 
 // template <std::size_t Dim, typename TimeDiscretization>
 // template <typename SC, std::size_t N>
-// dare::Data::CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-// Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::Apply(
-//     const dare::Data::FaceMatrixStencil<GridType, SC, N>& s) const {
-//     dare::Data::CenterMatrixStencil<GridType, SC, N> s_c;
+// dare::CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
+// Divergence<dare::Cartesian<Dim>, TimeDiscretization>::Apply(
+//     const dare::FaceMatrixStencil<GridType, SC, N>& s) const {
+//     dare::CenterMatrixStencil<GridType, SC, N> s_c;
 //     for (std::size_t n{0}; n < N; n++) {
 //         // Divergence in X
 //         SC coef_c = s.GetValueCenter(Positions::EAST, n);
@@ -291,18 +291,18 @@ Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFromField(
-    const dare::Data::GridVector<GridType, SC, N>& f) const {
-    return dare::math::InterpolateToFaceStencil(*grep, ind, f);
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+Divergence<dare::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFromField(
+    const dare::GridVector<GridType, SC, N>& f) const {
+    return dare::InterpolateToFaceStencil(*grep, ind, f);
 
     // static_assert(dare::always_false<>, "need to interpolated those values!");
-    // using Pos = typename dare::Grid::Cartesian<Dim>::NeighborID;
+    // using Pos = typename dare::Cartesian<Dim>::NeighborID;
     // Index ind_nb{ind};
-    // dare::Data::FaceValueStencil<GridType, SC, N> s;
+    // dare::FaceValueStencil<GridType, SC, N> s;
 
     // ind_nb.i()--;
-    // auto v = dare::math::InterpolateToFace(*grep, ind, Pos::WEST, f);
+    // auto v = dare::InterpolateToFace(*grep, ind, Pos::WEST, f);
     // for (std::size_t n{0}; n < N; n++)
     //     s.SetValue(Pos::WEST, v[n]);
     // ind_nb.i() += 2;
@@ -331,16 +331,16 @@ Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFro
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-typename Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::template TFaceValueStencil<SC, N>
-Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFromField(
-    const dare::Data::Field<GridType, SC, N>& f) const {
+typename Divergence<dare::Cartesian<Dim>, TimeDiscretization>::template TFaceValueStencil<SC, N>
+Divergence<dare::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFromField(
+    const dare::Field<GridType, SC, N>& f) const {
     static_assert(dare::always_false<>, "need to include temporal information");
     return PopulateFaceValueFromField(f.GetDataVector(0));
 }
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename Stencil, typename Arg, typename... Args>
-void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::MultiplyAll(
+void Divergence<dare::Cartesian<Dim>, TimeDiscretization>::MultiplyAll(
     Stencil* f, const Arg& arg, const Args&... args) {
     if constexpr (sizeof...(args) > 0) {
         Multiply(arg, f);
@@ -351,10 +351,10 @@ void Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::MultiplyAll(
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-dare::Data::FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::GetFaceMatrixStencil(
-    const dare::Data::Field<GridType, SC, N>& field) const {
-    dare::Data::FaceMatrixStencil<GridType, SC, N> f;
+dare::FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+Divergence<dare::Cartesian<Dim>, TimeDiscretization>::GetFaceMatrixStencil(
+    const dare::Field<GridType, SC, N>& field) const {
+    dare::FaceMatrixStencil<GridType, SC, N> f;
     f.SetValues(Positions::WEST, 0, -1., 1.);
     f.SetValues(Positions::EAST, 0, 1., -1.);
     if constexpr (Dim > 1) {
@@ -375,10 +375,10 @@ Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::GetFaceMatrixStencil
 
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
-dare::Data::FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization>::GetFaceMatrixStencil(
-    const dare::Data::FaceMatrixStencil<GridType, SC, N>& s) const {
+dare::FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+Divergence<dare::Cartesian<Dim>, TimeDiscretization>::GetFaceMatrixStencil(
+    const dare::FaceMatrixStencil<GridType, SC, N>& s) const {
     return s;
 }
 
-}  // end namespace dare::Matrix
+}  // end namespace dare

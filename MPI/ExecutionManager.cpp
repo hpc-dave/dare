@@ -28,7 +28,7 @@
 
 #include "ExecutionManager.h"
 
-namespace dare::mpi {
+namespace dare {
 
 ExecutionManager::ExecutionManager(MPI_Comm _communicator, Verbosity _output_level)
     : communicator(_communicator), rank_root(0), output_level(_output_level) {
@@ -102,4 +102,4 @@ int ExecutionManager::Waitall(std::vector<MPI_Request>& requests, MPI_Status* st
 int ExecutionManager::Waitall(int count, MPI_Request* requests, MPI_Status* status) {
     return MPI_Waitall(count, requests, status);
 }
-}  // namespace dare::mpi
+}  // namespace dare

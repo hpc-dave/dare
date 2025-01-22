@@ -32,7 +32,7 @@
 #include "MPI/ExecutionManager.h"
 #include "Utilities/Vector.h"
 
-namespace dare::Grid {
+namespace dare {
 
 namespace details {
 /*!
@@ -48,22 +48,22 @@ namespace details {
  */
 template <std::size_t Dim, class LO, class GO>
 void CartesianDistribution_MPI_Dims_create(int num_proc,
-                                  const utils::Vector<Dim, GO>& resolution_global,
-                                  std::vector<utils::Vector<Dim, LO>>* vec_res_local,
-                                  std::vector<utils::Vector<Dim, GO>>* vec_offsets) {
+                                  const Vector<Dim, GO>& resolution_global,
+                                  std::vector<Vector<Dim, LO>>* vec_res_local,
+                                  std::vector<Vector<Dim, GO>>* vec_offsets) {
     vec_res_local->resize(num_proc);
     vec_offsets->resize(num_proc);
     int ndims = Dim;
     int dims[Dim];
     std::fill(dims, dims + Dim, 0);
     MPI_Dims_create(num_proc, ndims, dims);
-    utils::Vector<Dim, GO> subdomain_res, subdomain_add_to_last;
+    Vector<Dim, GO> subdomain_res, subdomain_add_to_last;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         subdomain_res[dim] = resolution_global[dim] / dims[dim];
         subdomain_add_to_last[dim] = resolution_global[dim] - subdomain_res[dim] * dims[dim];
     }
 
-    utils::Vector<Dim, int> hsum_topo;
+    Vector<Dim, int> hsum_topo;
     for (std::size_t dim{0}; dim < Dim; dim++) {
         hsum_topo[dim] = 1;
         for (std::size_t n{dim + 1}; n < Dim; n++)
@@ -71,7 +71,7 @@ void CartesianDistribution_MPI_Dims_create(int num_proc,
     }
 
     auto GetIndex = [&](int n) {
-        utils::Vector<Dim, int> ind;
+        Vector<Dim, int> ind;
         for (std::size_t dim{0}; dim < Dim; dim++) {
             ind[dim] = n / hsum_topo[dim];
             n -= ind[dim] * hsum_topo[dim];
@@ -81,7 +81,7 @@ void CartesianDistribution_MPI_Dims_create(int num_proc,
 
     for (int n_proc{0}; n_proc < num_proc; n_proc++) {
         (*vec_res_local)[n_proc] = subdomain_res;
-        utils::Vector<Dim, int> ind = GetIndex(n_proc);
+        Vector<Dim, int> ind = GetIndex(n_proc);
         for (std::size_t dim{0}; dim < Dim; dim++) {
             if (ind[dim] == (dims[dim] - 1)) {
                 (*vec_res_local)[n_proc][dim] += subdomain_add_to_last[dim];
@@ -93,9 +93,9 @@ void CartesianDistribution_MPI_Dims_create(int num_proc,
 
 template <std::size_t Dim, class LO, class GO>
 void CartesianDistribution_Cubical(int num_proc,
-                                  const utils::Vector<Dim, GO>& resolution_global,
-                                  std::vector<utils::Vector<Dim, LO>>* vec_res_local,
-                                  std::vector<utils::Vector<Dim, GO>>* vec_offsets, bool print_warning = true) {
+                                  const Vector<Dim, GO>& resolution_global,
+                                  std::vector<Vector<Dim, LO>>* vec_res_local,
+                                  std::vector<Vector<Dim, GO>>* vec_offsets, bool print_warning = true) {
     const double max_ratio_deviation{1.2};  // acceptable volume ration of domains
     // Determine direction with maximum number of cells
     vec_res_local->resize(num_proc);
@@ -113,15 +113,15 @@ void CartesianDistribution_Cubical(int num_proc,
     double length_side = std::pow(avg_cells_proc, 1. / Dim);
 
     // set and correct number of cells per direction of subdomain
-    dare::utils::Vector<Dim, GO> subdomain_res;
+    dare::Vector<Dim, GO> subdomain_res;
     subdomain_res.SetAllValues(static_cast<GO>(length_side));
 
     for (std::size_t dim{0}; dim < Dim; dim++)
         subdomain_res[dim] = std::min(subdomain_res[dim], resolution_global[dim]);
 
-    dare::utils::Vector<Dim, int> topo, topo_hierarchic_sum;
+    dare::Vector<Dim, int> topo, topo_hierarchic_sum;
     // remaining cells which cannot be evenly distributed
-    dare::utils::Vector<Dim, GO> remaining_cells;
+    dare::Vector<Dim, GO> remaining_cells;
 
     for (std::size_t dim{0}; dim < Dim; dim++) {
         topo[dim] = resolution_global[dim] / subdomain_res[dim];
@@ -157,7 +157,7 @@ void CartesianDistribution_Cubical(int num_proc,
     }
 
     for (int n{0}; n < num_proc; n++) {
-        utils::Vector<Dim, int> proc_ind;
+        Vector<Dim, int> proc_ind;
         int loc_n{n};
         for (std::size_t dim{0}; dim < Dim; dim++) {
             proc_ind[dim] = loc_n / topo_hierarchic_sum[dim];
@@ -333,10 +333,10 @@ void CartesianDistribution_Cubical(int num_proc,
  * and will only subdivide the domains at the longest end unequally.
  */
 template <std::size_t Dim, class LO, class GO>
-void CartesianDistribution_Cubical(mpi::ExecutionManager* exec_man,
-                                  const utils::Vector<Dim, GO>& resolution_global,
-                                  utils::Vector<Dim, LO>* resolution_local,
-                                  utils::Vector<Dim, GO>* offset) {
+void CartesianDistribution_Cubical(ExecutionManager* exec_man,
+                                  const Vector<Dim, GO>& resolution_global,
+                                  Vector<Dim, LO>* resolution_local,
+                                  Vector<Dim, GO>* offset) {
     int tag_res{1000};                      // tag for MPI communication
     int tag_off{1001};                      // tag for MPI communication
 
@@ -344,8 +344,8 @@ void CartesianDistribution_Cubical(mpi::ExecutionManager* exec_man,
         int num_proc = exec_man->GetNumberProcesses();
 
         // storage for each subdomain
-        std::vector<utils::Vector<Dim, LO>> vec_res_local(num_proc);
-        std::vector<utils::Vector<Dim, GO>> vec_offsets(num_proc);
+        std::vector<Vector<Dim, LO>> vec_res_local(num_proc);
+        std::vector<Vector<Dim, GO>> vec_offsets(num_proc);
 
         details::CartesianDistribution_Cubical(num_proc, resolution_global,
                                               &vec_res_local, &vec_offsets);
@@ -366,11 +366,11 @@ void CartesianDistribution_Cubical(mpi::ExecutionManager* exec_man,
             int status_res_all = MPI_Waitall(requests_res.size(), requests_res.data(), status_res.data());
             int status_off_all = MPI_Waitall(requests_off.size(), requests_off.data(), status_off.data());
             if (status_res_all != MPI_SUCCESS) {
-                exec_man->Print(dare::mpi::Verbosity::Low)
+                exec_man->Print(dare::Verbosity::Low)
                     << "An error occured during the sending of resolutions: " << status_res_all << std::endl;
             }
             if (status_off_all != MPI_SUCCESS) {
-                exec_man->Print(dare::mpi::Verbosity::Low)
+                exec_man->Print(dare::Verbosity::Low)
                     << "An error occured during the sending of offsets: " << status_off_all << std::endl;
             }
         }
@@ -387,15 +387,15 @@ void CartesianDistribution_Cubical(mpi::ExecutionManager* exec_man,
  * Employs MPI_Dims_create
  */
 template <std::size_t Dim, class LO, class GO>
-void CartesianDistribution_MPI_Dims_create(mpi::ExecutionManager* exec_man,
-                                  const utils::Vector<Dim, GO>& resolution_global,
-                                  utils::Vector<Dim, LO>* resolution_local,
-                                  utils::Vector<Dim, GO>* offset) {
+void CartesianDistribution_MPI_Dims_create(ExecutionManager* exec_man,
+                                  const Vector<Dim, GO>& resolution_global,
+                                  Vector<Dim, LO>* resolution_local,
+                                  Vector<Dim, GO>* offset) {
     int num_proc = exec_man->GetNumberProcesses();
 
     // storage for each subdomain
-    std::vector<utils::Vector<Dim, LO>> vec_res_local(num_proc);
-    std::vector<utils::Vector<Dim, GO>> vec_offsets(num_proc);
+    std::vector<Vector<Dim, LO>> vec_res_local(num_proc);
+    std::vector<Vector<Dim, GO>> vec_offsets(num_proc);
 
     details::CartesianDistribution_MPI_Dims_create(num_proc, resolution_global,
                                                    &vec_res_local, &vec_offsets);
@@ -404,6 +404,6 @@ void CartesianDistribution_MPI_Dims_create(mpi::ExecutionManager* exec_man,
     *offset = vec_offsets[exec_man->GetRank()];
 }
 
-}  // namespace dare::Grid
+}  // namespace dare
 
 #endif  // GRID_CARTESIAN_CARTESIANDISTRIBUTION_H_

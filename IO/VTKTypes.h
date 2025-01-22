@@ -28,10 +28,10 @@
 #include <vtkType.h>
 #include "Utilities/Vector.h"
 
-namespace dare::io {
+namespace dare {
 
 using vtkOrdinal = vtkIdType;
-using VTKExtent = dare::utils::Vector<6, vtkOrdinal>;
+using VTKExtent = dare::Vector<6, vtkOrdinal>;
 
 }
 

@@ -38,7 +38,7 @@
 #include "CartesianDistribution.h"
 #include "CartesianRepresentation.h"
 
-namespace dare::Grid {
+namespace dare {
 
 /*!
  * @brief A distributed Cartesian grid
@@ -48,7 +48,7 @@ namespace dare::Grid {
  * side lengths are constant along each axis.
  */
 template <std::size_t Dim>
-class Cartesian : public dare::utils::InitializationTracker {
+class Cartesian : public dare::InitializationTracker {
 public:
     enum {
         BOUNDARIES_NONE = 0b00000000,
@@ -75,9 +75,9 @@ public:
     static const std::size_t STENCIL_SIZE = Dim * 2 + 1;
     static const std::size_t NUM_FACES = Dim * 2;
     using ScalarType = SC;
-    using VecGO = utils::Vector<Dim, GO>;
-    using VecLO = utils::Vector<Dim, LO>;
-    using VecSC = utils::Vector<Dim, SC>;
+    using VecGO = Vector<Dim, GO>;
+    using VecLO = Vector<Dim, LO>;
+    using VecSC = Vector<Dim, SC>;
     using Representation = CartesianRepresentation<Dim>;
     using Options = VecLO;
     using Index = VecLO;
@@ -90,7 +90,7 @@ public:
      */
     template <typename O>
     struct GetIndexType {
-        using type = utils::Vector<Dim, O>;
+        using type = Vector<Dim, O>;
     };
 
     /*!
@@ -101,7 +101,7 @@ public:
     template <typename Distributor>
     Cartesian(
         std::string name,
-        mpi::ExecutionManager* exec_man,
+        ExecutionManager* exec_man,
         const VecGO& resolution,
         const VecSC& size,
         const LO num_ghost,
@@ -110,7 +110,7 @@ public:
 
     template <typename Distributor>
     Cartesian(
-        mpi::ExecutionManager* exec_man,
+        ExecutionManager* exec_man,
         const VecGO& resolution,
         const VecSC& size,
         const LO num_ghost,
@@ -119,14 +119,14 @@ public:
 
     Cartesian(
         const std::string& name,
-        mpi::ExecutionManager* exec_man,
+        ExecutionManager* exec_man,
         const VecGO& resolution,
         const VecSC& size,
         const LO num_ghost,
         const VecLO& periodic);
 
     Cartesian(
-        mpi::ExecutionManager* exec_man,
+        ExecutionManager* exec_man,
         const VecGO& resolution,
         const VecSC& size,
         const LO num_ghost,
@@ -134,13 +134,13 @@ public:
 
     Cartesian(
         const std::string& name,
-        mpi::ExecutionManager * exec_man,
+        ExecutionManager * exec_man,
         const VecGO& resolution,
         const VecSC& size,
         const LO num_ghost);
 
     Cartesian(
-        mpi::ExecutionManager* exec_man,
+        ExecutionManager* exec_man,
         const VecGO& resolution,
         const VecSC& size,
         const LO num_ghost);
@@ -224,7 +224,7 @@ public:
     /*!
      * @brief returns pointer to execution manager
      */
-    [[nodiscard]] mpi::ExecutionManager* GetExecutionManager() const;
+    [[nodiscard]] ExecutionManager* GetExecutionManager() const;
 
     /*!
      * @brief provides unique name of this grid
@@ -260,10 +260,10 @@ private:
 
     std::unordered_map<Options, Representation> map_representations;  //!< representation storage
 
-    mpi::ExecutionManager* exec_man;  //!< pointer to execution manager
+    ExecutionManager* exec_man;  //!< pointer to execution manager
 };
 
-}  // namespace dare::Grid
+}  // namespace dare
 
 #include "CartesianMesh.inl"
 

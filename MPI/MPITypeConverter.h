@@ -27,7 +27,7 @@
 
 #include <mpi.h>
 
-namespace dare::mpi {
+namespace dare {
 
 /*!
  * \brief declaration of the generic function
@@ -134,6 +134,6 @@ inline MPI_Datatype GetMPIType<char>() {
     return MPI_CHAR;
 }
 
-}  // namespace dare::mpi
+}  // namespace dare
 
 #endif  // MPI_MPITYPECONVERTER_H_

@@ -27,7 +27,7 @@
 
 #include <string>
 
-namespace dare::Data {
+namespace dare {
 
 /*!
  * @brief dummy class for SFINAE
@@ -118,7 +118,7 @@ FaceValueStencil<Grid, SC, N> operator*(SC v, const FaceValueStencil<Grid, SC, N
     return s * v;
 }
 
-}  // namespace dare::Data
+}  // namespace dare
 
 
 namespace dare {
@@ -127,7 +127,7 @@ template<typename T>
 struct is_face_matrix_stencil_helper : std::false_type {
 };
 template <typename GridType, typename SC, std::size_t N>
-struct is_face_matrix_stencil_helper<Data::FaceMatrixStencil<GridType, SC, N>> : std::true_type {
+struct is_face_matrix_stencil_helper<FaceMatrixStencil<GridType, SC, N>> : std::true_type {
 };
 template <typename T>
 struct is_face_matrix_stencil : is_face_matrix_stencil_helper<std::remove_cv_t<T>> {
@@ -139,7 +139,7 @@ template <typename T>
 struct is_center_matrix_stencil_helper : std::false_type {
 };
 template <typename GridType, typename SC, std::size_t N>
-struct is_center_matrix_stencil_helper<Data::CenterMatrixStencil<GridType, SC, N>> : std::true_type {
+struct is_center_matrix_stencil_helper<CenterMatrixStencil<GridType, SC, N>> : std::true_type {
 };
 template <typename T>
 struct is_center_matrix_stencil : is_center_matrix_stencil_helper<std::remove_cv_t<T>> {
@@ -151,7 +151,7 @@ template <typename T>
 struct is_face_value_stencil_helper : std::false_type {
 };
 template <typename GridType, typename SC, std::size_t N>
-struct is_face_value_stencil_helper<Data::FaceValueStencil<GridType, SC, N>> : std::true_type {
+struct is_face_value_stencil_helper<FaceValueStencil<GridType, SC, N>> : std::true_type {
 };
 template <typename T>
 struct is_face_value_stencil : is_face_value_stencil_helper<std::remove_cv_t<T>> {
@@ -163,7 +163,7 @@ template <typename T>
 struct is_center_value_stencil_helper : std::false_type {
 };
 template <typename GridType, typename SC, std::size_t N>
-struct is_center_value_stencil_helper<Data::CenterValueStencil<GridType, SC, N>> : std::true_type {
+struct is_center_value_stencil_helper<CenterValueStencil<GridType, SC, N>> : std::true_type {
 };
 template <typename T>
 struct is_center_value_stencil : is_center_value_stencil_helper<std::remove_cv_t<T>> {

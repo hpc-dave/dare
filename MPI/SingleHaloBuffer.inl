@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-namespace dare::mpi {
+namespace dare {
 
 template<typename SC>
 SingleHaloBuffer<SC>::SingleHaloBuffer(ExecutionManager* execution_manager,
@@ -94,7 +94,7 @@ void SingleHaloBuffer<SC>::FinalizeInitialization(const std::vector<LO>& list_ID
     list_local_IDs_send = list_IDs_send;
     list_local_IDs_recv = list_IDs_recv;
 
-    this->utils::InitializationTracker::Initialize();
+    this->InitializationTracker::Initialize();
 }
 
 template<typename SC>
@@ -137,4 +137,4 @@ template<typename SC>
 int SingleHaloBuffer<SC>::GetPartnerRank() const {
     return rank_partner_proc;
 }
-}  // namespace dare::mpi
+}  // namespace dare

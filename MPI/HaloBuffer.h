@@ -33,7 +33,7 @@
 #include "Utilities/InitializationTracker.h"
 #include "Data/DefaultTypes.h"
 #include "SingleHaloBuffer.h"
-namespace dare::mpi {
+namespace dare {
 
 /*! \class HaloBuffer
  * @brief takes care of communication with all processes to exchange halo data
@@ -41,7 +41,7 @@ namespace dare::mpi {
  * halo cell region.
  */
 template <typename SC>
-class HaloBuffer : public utils::InitializationTracker {
+class HaloBuffer : public InitializationTracker {
 public:
     using LO = dare::defaults::LocalOrdinalType;
     using GO = dare::defaults::GlobalOrdinalType;
@@ -103,7 +103,7 @@ private:
     ExecutionManager* exec_man;                           //!< execution manager
     std::map<int, SingleHaloBuffer<SC>> buffers;          //!< list of buffers
 };
-}  // namespace dare::mpi
+}  // namespace dare
 
 #include "HaloBuffer.inl"
 

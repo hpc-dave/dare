@@ -41,16 +41,16 @@ int main(int argc, char* argv[]) {
     using SC = dare::defaults::ScalarType;
     using GO = dare::defaults::GlobalOrdinalType;
     using LO = dare::defaults::LocalOrdinalType;
-    using Grid = dare::Grid::Cartesian<1>;
-    // using GridVector = dare::Data::GridVector<Grid, SC, 2>;
-    using Field = dare::Data::Field<Grid, SC, 2>;
-    using Writer = dare::io::VTKWriter<Grid>;
-    using IndexGlobal = typename Grid::IndexGlobal;
-    using IndexLocal = typename Grid::Index;
-    using VecLO = typename Grid::VecLO;
-    using VecSC = typename Grid::VecSC;
-    using VecSC2 = dare::utils::Vector<2, double>;
-    using SCHEME = typename dare::Matrix::MINMOD;
+    using Grid = dare::Cartesian<1>;
+    // using GridVector = dareVector<Grid, SC, 2>;
+    using Field = dare::Field<Grid, SC, 2>;
+    using Writer = dare::VTKWriter<Grid>;
+    using IndexGlobal = typename IndexGlobal;
+    using IndexLocal = typename Index;
+    using VecLO = typename VecLO;
+    using VecSC = typename VecSC;
+    using VecSC2 = dare::Vector<2, double>;
+    using SCHEME = typename dare::MINMOD;
 
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
@@ -65,8 +65,8 @@ int main(int argc, char* argv[]) {
         IndexGlobal resolution_global(nx);
         VecSC size_global(L);
 
-        dare::mpi::ExecutionManager exman;
-        dare::io::FileSystemManager fman(&exman, "dancing_waves");
+        dare::ExecutionManager exman;
+        dare::FileSystemManager fman(&exman, "dancing_waves");
         fman.CheckWithUser(false);
 
         if (exman.GetNumberProcesses() > 1) {
@@ -104,10 +104,10 @@ int main(int argc, char* argv[]) {
         mass_init[1] = exman.Allsum(mass_init[1]);
 
         auto build_coef = [&](auto mblock) {
-            using TimeScheme = dare::Matrix::EULER_BACKWARD;
-            using Divergence = dare::Matrix::Divergence<Grid, TimeScheme>;
-            using TVD = dare::Matrix::TVD<Grid, SC, SCHEME>;
-            using DDT = dare::Matrix::DDT<Grid>;
+            using TimeScheme = dare::EULER_BACKWARD;
+            using Divergence = dare::Divergence<Grid, TimeScheme>;
+            using TVD = dare::TVD<Grid, SC, SCHEME>;
+            using DDT = dare::DDT<Grid>;
 
             auto g_r = mblock->GetRepresentation();
             LO loc_o{mblock->GetLocalOrdinal()};
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
             mblock->Add(1, div(u_1 * field.GetDataVector()).GetSlice(1));
         };
 
-        dare::Matrix::Trilinos<SC> msystem(&exman);
+        dare::Trilinos<SC> msystem(&exman);
         Teuchos::RCP<Teuchos::ParameterList> p_ilu = Teuchos::rcp(new Teuchos::ParameterList());
         // parameters for ILU
         p_ilu->set("fact: drop tolerance", 1e-9);
@@ -153,12 +153,12 @@ int main(int argc, char* argv[]) {
 
             msystem.Build(grep, field.GetDataVector(), build_coef, false);
 
-            dare::Matrix::TrilinosSolver<SC> solver;
-            msystem.GetM() = solver.BuildPreconditioner(dare::Matrix::PreCondPackage::Ifpack2,
+            dare::TrilinosSolver<SC> solver;
+            msystem.GetM() = solver.BuildPreconditioner(dare::PreCondPackage::Ifpack2,
                                                         "ILUT",
                                                         p_ilu,
                                                         msystem.GetA());
-            auto ret = solver.Solve(dare::Matrix::SolverPackage::Belos,
+            auto ret = solver.Solve(dare::SolverPackage::Belos,
                                     "BICGSTAB",
                                     msystem.GetM(),
                                     msystem.GetA(), msystem.GetX(), msystem.GetB(),
@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
             mass[1] = exman.Allsum(mass[1]);
 
             VecSC2 err = (mass - mass_init) / mass_init;
-            exman.Print(dare::mpi::Verbosity::Low)
+            exman.Print(dare::Verbosity::Low)
                 << "t: " << time << "\tstep: " << timestep << "\tit: " << solver.GetNumIterations()
                 << "\tmass-error: " << err << '\n';
 

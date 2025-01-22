@@ -31,11 +31,11 @@
 #include <type_traits>
 #include <string>
 
-namespace dare::io {
+namespace dare {
 
 vtkStandardNewMacro(VTKPXMLStructuredGridWriter);
 
-void VTKPXMLStructuredGridWriter::SetPPieceExtent(const VTKExtent& local_extent, dare::mpi::ExecutionManager* exman) {
+void VTKPXMLStructuredGridWriter::SetPPieceExtent(const VTKExtent& local_extent, dare::ExecutionManager* exman) {
     extent_array.resize(exman->GetNumberProcesses() * 6);
     if ((exman->Allgather(local_extent.data(), 6, extent_array.data(), 6) != MPI_SUCCESS) && exman->AmIRoot())
         ERROR << "A not further specified problem occured during communication!" << ERROR_CLOSE;
@@ -53,4 +53,4 @@ void VTKPXMLStructuredGridWriter::WritePPieceAttributes(int index) {
     this->WriteStringAttribute("Extent", extent_s.c_str());
 }
 
-}  // namespace dare::io
+}  // namespace dare

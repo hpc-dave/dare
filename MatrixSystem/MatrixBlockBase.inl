@@ -26,14 +26,14 @@
 #include <utility>
 #include <vector>
 
-namespace dare::Matrix {
+namespace dare {
 template <typename O, typename SC, std::size_t N>
 MatrixBlockBase<O, SC, N>::MatrixBlockBase()
-    : MatrixBlockBase<O, SC, N>(0, dare::utils::Vector<N, std::size_t>()) {
+    : MatrixBlockBase<O, SC, N>(0, dare::Vector<N, std::size_t>()) {
 }
 
 template <typename O, typename SC, std::size_t N>
-MatrixBlockBase<O, SC, N>::MatrixBlockBase(const O& _node, const dare::utils::Vector<N, std::size_t>& size_hint)
+MatrixBlockBase<O, SC, N>::MatrixBlockBase(const O& _node, const dare::Vector<N, std::size_t>& size_hint)
     : node(_node) {
     ProvideSizeHint(size_hint);
 }
@@ -67,13 +67,13 @@ template <typename O, typename SC, std::size_t N>
 MatrixBlockBase<O, SC, N>::~MatrixBlockBase() {}
 
 template <typename O, typename SC, std::size_t N>
-void MatrixBlockBase<O, SC, N>::Initialize(O _node, const dare::utils::Vector<N, std::size_t>& size_hint) {
+void MatrixBlockBase<O, SC, N>::Initialize(O _node, const dare::Vector<N, std::size_t>& size_hint) {
     node = _node;
     ProvideSizeHint(size_hint);
 }
 
 template <typename O, typename SC, std::size_t N>
-void MatrixBlockBase<O, SC, N>::ProvideSizeHint(const dare::utils::Vector<N, std::size_t>& size_hint) {
+void MatrixBlockBase<O, SC, N>::ProvideSizeHint(const dare::Vector<N, std::size_t>& size_hint) {
     for (std::size_t n{0}; n < N; n++) {
         ordinals[n].resize(size_hint[n]);
         coefficients[n].resize(size_hint[n]);
@@ -369,4 +369,4 @@ void MatrixBlockBase<O, SC, N>::RemoveCoefficientsByOrdinals(std::size_t n,
 //     std::swap(obj1.node, obj2.node);
 // }
 
-}  // namespace dare::Matrix
+}  // namespace dare

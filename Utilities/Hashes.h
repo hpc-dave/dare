@@ -25,7 +25,7 @@
 #ifndef UTILITIES_HASHES_H_
 #define UTILITIES_HASHES_H_
 #include <cstddef>
-namespace dare::utils {
+namespace dare {
 
 /*\struct _FNVparam
  * \brief Helpers for hashing with the Fowler-Noll-Vu (FNV) hash function
@@ -59,6 +59,6 @@ struct _FNVparam<8> {
     static const std::size_t prime{0x00000100000001B3};
     static const std::size_t offset{0xcbf29ce484222325};
 };
-}  // namespace dare::utils
+}  // namespace dare
 
 #endif  // UTILITIES_HASHES_H_

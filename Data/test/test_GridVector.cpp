@@ -27,7 +27,7 @@
 #include "../../Utilities/Vector.h"
 #include "../GridVector.h"
 
-namespace dare::Data::test {
+namespace dare::test {
 
 /*!
  * @brief small mock grid with minimal interface for the GridVector type
@@ -37,8 +37,8 @@ public:
     using LocalOrdinalType = int32_t;
     using GlobalOrdinalType = int64_t;
     using LO = LocalOrdinalType;
-    using Index = dare::utils::Vector<3, LocalOrdinalType>;
-    using IndexGlobal = dare::utils::Vector<3, GlobalOrdinalType>;
+    using Index = dare::Vector<3, LocalOrdinalType>;
+    using IndexGlobal = dare::Vector<3, GlobalOrdinalType>;
 
     /*!
      * @brief represenation of mock grid
@@ -114,18 +114,18 @@ public:
     Index size;  //!< size of the grid
 };
 
-}  // namespace dare::Data::test
+}  // namespace dare::test
 
 /*!
  * @brief Testing suite for GridVector
  */
 class GridVectorTest : public testing::Test {
 protected:
-    using TestGrid = dare::Data::test::TestGrid;
+    using TestGrid = dare::test::TestGrid;
     using LO = typename TestGrid::LocalOrdinalType;
     using SC = double;
     static const std::size_t num_eq{5};
-    using GridVector = dare::Data::GridVector<TestGrid, SC, num_eq>;
+    using GridVector = dare::GridVector<TestGrid, SC, num_eq>;
 
     void SetUp() override {
         resolution = TestGrid::Index(10, 12, 13);

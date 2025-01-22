@@ -25,7 +25,7 @@
 #ifndef MATH_DIVISORS_H_
 #define MATH_DIVISORS_H_
 
-namespace dare::math {
+namespace dare {
 
 /*!
  * \brief tests if an integral number is a integral root of another
@@ -93,7 +93,7 @@ template <typename T, int Nominator, int Denominator>
     return static_cast<T>(Nominator) / static_cast<T>(Denominator);
 }
 
-}  // end namespace dare::math
+}  // end namespace dare
 
 
 #endif  // MATH_DIVISORS_H_

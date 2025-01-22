@@ -24,33 +24,33 @@
 
 #include <type_traits>
 
-namespace dare::Matrix {
+namespace dare {
 template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::MatrixBlock()
-    : MatrixBlock<Grid, O, SC, N>(nullptr, 0, dare::utils::Vector<N, std::size_t>()) {
+    : MatrixBlock<Grid, O, SC, N>(nullptr, 0, dare::Vector<N, std::size_t>()) {
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::MatrixBlock(const GridRepresentation* _g_rep,
                                          O _node)
-    : MatrixBlock<Grid, O, SC, N>(_g_rep, _node, dare::utils::Vector<N, std::size_t>()) {
+    : MatrixBlock<Grid, O, SC, N>(_g_rep, _node, dare::Vector<N, std::size_t>()) {
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::MatrixBlock(const GridRepresentation* _g_rep,
                                          O _node,
-                                         const dare::utils::Vector<N, std::size_t>& size_hint)
+                                         const dare::Vector<N, std::size_t>& size_hint)
     : MatrixBlockBase<O, SC, N>(_node, size_hint), g_rep(_g_rep) {
-    static_assert(std::is_same_v<O, typename Grid::LocalOrdinalType>
-               || std::is_same_v<O, typename Grid::GlobalOrdinalType>,
+    static_assert(std::is_same_v<O, LocalOrdinalType>
+               || std::is_same_v<O, GlobalOrdinalType>,
                   "The ordinal type needs to be either a local or global ordinal type!");
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
 MatrixBlock<Grid, O, SC, N>::MatrixBlock(const SelfType& other)
     : MatrixBlockBase<O, SC, N>(other), g_rep(other.g_rep) {
-    static_assert(std::is_same_v<O, typename Grid::LocalOrdinalType>
-               || std::is_same_v<O, typename Grid::GlobalOrdinalType>,
+    static_assert(std::is_same_v<O, LocalOrdinalType>
+               || std::is_same_v<O, GlobalOrdinalType>,
                   "The ordinal type needs to be either a local or global ordinal type!");
 }
 
@@ -68,13 +68,13 @@ MatrixBlock<Grid, O, SC, N>& MatrixBlock<Grid, O, SC, N>::operator=(const Matrix
 
 template <typename Grid, typename O, typename SC, std::size_t N>
 void MatrixBlock<Grid, O, SC, N>::Initialize(const GridRepresentation* _g_rep, O _node) {
-    Initialize(_g_rep, _node, dare::utils::Vector<N, std::size_t>());
+    Initialize(_g_rep, _node, dare::Vector<N, std::size_t>());
 }
 
 template <typename Grid, typename O, typename SC, std::size_t N>
 void MatrixBlock<Grid, O, SC, N>::Initialize(const GridRepresentation* _g_rep,
                                              O _node,
-                                             const dare::utils::Vector<N, std::size_t>& size_hint) {
+                                             const dare::Vector<N, std::size_t>& size_hint) {
     MatrixBlockBase<O, SC, N>::Initialize(_node, size_hint);
     g_rep = _g_rep;
 }
@@ -127,4 +127,4 @@ template <typename Grid, typename O, typename SC, std::size_t N>
 void MatrixBlock<Grid, O, SC, N>::Finalize() {
 }
 
-}  // end namespace dare::Matrix
+}  // end namespace dare

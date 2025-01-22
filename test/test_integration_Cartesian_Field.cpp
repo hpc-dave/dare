@@ -32,15 +32,15 @@
 namespace dare::test {
 
 template <std::size_t Dim, typename GO>
-dare::utils::Vector<Dim, GO> GetResolutionIntegrationTestCartesianField() {
-    dare::utils::Vector<Dim, GO> res;
+dare::Vector<Dim, GO> GetResolutionIntegrationTestCartesianField() {
+    dare::Vector<Dim, GO> res;
     for (std::size_t n{0}; n < Dim; n++)
         res[n] = 20 + n;
     return res;
 }
 template <std::size_t Dim, typename SC>
-dare::utils::Vector<Dim, SC> GetSizeIntegrationTestCartesianField() {
-    dare::utils::Vector<Dim, SC> size;
+dare::Vector<Dim, SC> GetSizeIntegrationTestCartesianField() {
+    dare::Vector<Dim, SC> size;
     for (std::size_t n{0}; n < Dim; n++)
         size[n] = 1. + n;
     return size;
@@ -54,17 +54,17 @@ dare::utils::Vector<Dim, SC> GetSizeIntegrationTestCartesianField() {
  */
 template <std::size_t Dimension>
 class IntegrationCartesianField
-    : public testing::TestWithParam<typename dare::Grid::Cartesian<Dimension>::Options> {
+    : public testing::TestWithParam<typename dare::Cartesian<Dimension>::Options> {
 public:
     static const std::size_t N{3};
     static const std::size_t num_time_steps{3};
-    using GridType = dare::Grid::Cartesian<Dimension>;
+    using GridType = dare::Cartesian<Dimension>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using Index = typename GridType::Index;
     using IndexGlobal = typename GridType::IndexGlobal;
     using SC = double;
-    using Field = dare::Data::Field<GridType, SC, N>;
+    using Field = dare::Field<GridType, SC, N>;
     using GridVector = typename Field::VectorType;
 
     void SetUp() {
@@ -77,7 +77,7 @@ public:
     }
 
     std::unique_ptr<GridType> grid;
-    dare::mpi::ExecutionManager exec_man;
+    dare::ExecutionManager exec_man;
 };
 
 using IntegrationCartesianField1D = IntegrationCartesianField<1>;

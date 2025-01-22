@@ -26,9 +26,9 @@
 
 #include <string>
 
-namespace dare::io::details {
+namespace dare::details {
 
-std::string VTKGetParallelOutputFileName(dare::mpi::ExecutionManager* exman,
+std::string VTKGetParallelOutputFileName(dare::ExecutionManager* exman,
                                  const std::string& output_path,
                                  const std::string& grid_name,
                                  int step,
@@ -40,7 +40,7 @@ std::string VTKGetParallelOutputFileName(dare::mpi::ExecutionManager* exman,
     os << grid_name
        << '_' << std::to_string(step)
        << "." << ext;
-    exman->Print(dare::mpi::Verbosity::Medium) << "Writing to file "
+    exman->Print(dare::Verbosity::Medium) << "Writing to file "
                                                << output_path << grid_name
                                                << '_' << std::to_string(step)
                                                << "." << ext
@@ -48,4 +48,4 @@ std::string VTKGetParallelOutputFileName(dare::mpi::ExecutionManager* exman,
     return os.str();
 }
 
-}  // end namespace dare::io::details
+}  // end namespace dare::details

@@ -27,7 +27,7 @@
 #include <vector>
 #include <iostream>
 
-namespace dare::Matrix {
+namespace dare {
 
 template <class ST, class MV, class OP>
 BiCGStab2<ST, MV, OP>::BiCGStab2(const Teuchos::RCP<Teuchos::ParameterList>& params)
@@ -586,4 +586,4 @@ bool BiCGStab2<ST, MV, OP>::Solve(const OP& A, MV& x, const MV& B) {  // NOLINT
     return convergence_check <= tol;
 }
 
-}  // end namespace dare::Matrix
+}  // end namespace dare

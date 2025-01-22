@@ -31,7 +31,7 @@
 #include "MPI/ExecutionManager.h"
 #include "Utilities/Errors.h"
 
-    namespace dare::io {
+    namespace dare {
 
 namespace details {
 class FileSystemManager_helper {
@@ -69,7 +69,7 @@ private:
 
 class FileSystemManager {
 public:
-    explicit FileSystemManager(dare::mpi::ExecutionManager* ex_man,
+    explicit FileSystemManager(dare::ExecutionManager* ex_man,
                                const Path& base_path = Path(""),
                                bool clear_contents = false,
                                bool overwrite_files = false,
@@ -93,9 +93,9 @@ public:
 
 private:
     std::shared_ptr<details::FileSystemManager_helper> settings;
-    dare::mpi::ExecutionManager* ex_man;
+    dare::ExecutionManager* ex_man;
 };
 
-}  // end namespace dare::io
+}  // end namespace dare
 
 #endif  // IO_FILESYSTEMMANAGER_H_

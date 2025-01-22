@@ -33,15 +33,15 @@
 namespace dare::test {
 
 template <std::size_t Dim, typename GO>
-dare::utils::Vector<Dim, GO> GetResolutionTestCartesianOperators() {
-    dare::utils::Vector<Dim, GO> res;
+dare::Vector<Dim, GO> GetResolutionTestCartesianOperators() {
+    dare::Vector<Dim, GO> res;
     for (std::size_t n{0}; n < Dim; n++)
         res[n] = 10 + n;
     return res;
 }
 template <std::size_t Dim, typename SC>
-dare::utils::Vector<Dim, SC> GetSizeTestCartesianOperators() {
-    dare::utils::Vector<Dim, SC> size;
+dare::Vector<Dim, SC> GetSizeTestCartesianOperators() {
+    dare::Vector<Dim, SC> size;
     for (std::size_t n{0}; n < Dim; n++)
         size[n] = 1. + n;
     return size;
@@ -57,25 +57,25 @@ template <std::size_t Dim>
 class IntegrationTestCartesianOperators : public testing::Test {
 public:
     static const std::size_t N{3};
-    using GridType = dare::Grid::Cartesian<Dim>;
+    using GridType = dare::Cartesian<Dim>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
-    using TimeDisc = dare::Matrix::EULER_BACKWARD;
+    using TimeDisc = dare::EULER_BACKWARD;
     using Index = typename GridType::Index;
-    using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, SC, N>;
-    using CenterMatrixStencil1C = dare::Data::CenterMatrixStencil<GridType, SC, 1>;
-    using CenterValueStencil = dare::Data::CenterValueStencil<GridType, SC, N>;
-    using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, SC, N>;
-    using FaceValueStencil = dare::Data::FaceValueStencil<GridType, SC, N>;
-    using Gradient = dare::Matrix::Gradient<GridType>;
-    using Divergence = dare::Matrix::Divergence<GridType, TimeDisc>;
+    using CenterMatrixStencil = dare::CenterMatrixStencil<GridType, SC, N>;
+    using CenterMatrixStencil1C = dare::CenterMatrixStencil<GridType, SC, 1>;
+    using CenterValueStencil = dare::CenterValueStencil<GridType, SC, N>;
+    using FaceMatrixStencil = dare::FaceMatrixStencil<GridType, SC, N>;
+    using FaceValueStencil = dare::FaceValueStencil<GridType, SC, N>;
+    using Gradient = dare::Gradient<GridType>;
+    using Divergence = dare::Divergence<GridType, TimeDisc>;
     template <typename FluxLimiter>
-    using TVD = dare::Matrix::TVD<GridType, SC, FluxLimiter>;
-    using MatrixBlock = dare::Matrix::MatrixBlock<GridType, LO, SC, N>;
-    using VecSC = dare::utils::Vector<Dim, SC>;
+    using TVD = dare::TVD<GridType, SC, FluxLimiter>;
+    using MatrixBlock = dare::MatrixBlock<GridType, LO, SC, N>;
+    using VecSC = dare::Vector<Dim, SC>;
     using Positions = typename Gradient::Positions;
-    using Field = dare::Data::GridVector<GridType, SC, N>;
+    using Field = dare::GridVector<GridType, SC, N>;
 
     void SetUp() {
         const LO num_ghost{2};
@@ -86,7 +86,7 @@ public:
     }
 
     std::unique_ptr<GridType> grid;         //!< the grid
-    dare::mpi::ExecutionManager exec_man;   //!< the execution manager
+    dare::ExecutionManager exec_man;   //!< the execution manager
 };
 
 using IntegrationTestCartesianOperators1D = IntegrationTestCartesianOperators<1>;
@@ -278,7 +278,7 @@ TEST_F(IntegrationTestCartesianOperators1D, GradientFaceValuesFromField) {
     }
 
     auto s1 = grad(field, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     double v_west = field.At(ind_w, 1);
     double v_center = field.At(ind, 1);
     double v_east = field.At(ind_e, 1);
@@ -325,7 +325,7 @@ TEST_F(IntegrationTestCartesianOperators2D, GradientFaceValuesFromField) {
     }
 
     auto s1 = grad(field, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     std::size_t n = 1;
     double v_south = field.At(ind_s, n);
     double v_center = field.At(ind, n);
@@ -379,7 +379,7 @@ TEST_F(IntegrationTestCartesianOperators3D, GradientFaceValuesFromField) {
     }
 
     auto s1 = grad(field, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     std::size_t n = 1;
 
     double v_bottom = field.At(ind_bot, n);
@@ -421,7 +421,7 @@ TEST_F(IntegrationTestCartesianOperators1D, GradientFaceValuesFromStencil) {
     }
 
     auto s1 = grad(s_c, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     EXPECT_EQ(s1.GetValue(Positions::WEST, 0), (v_center - v_west) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::EAST, 0), (v_east - v_center) * dn_r[0]);
 }
@@ -460,7 +460,7 @@ TEST_F(IntegrationTestCartesianOperators2D, GradientFaceValuesFromStencil) {
     }
 
     auto s1 = grad(s_c, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     EXPECT_EQ(s1.GetValue(Positions::WEST, 0), (v_center - v_west) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::EAST, 0), (v_east - v_center) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::SOUTH, 0), (v_center - v_south) * dn_r[1]);
@@ -507,7 +507,7 @@ TEST_F(IntegrationTestCartesianOperators3D, GradientFaceValuesFromStencil) {
     }
 
     auto s1 = grad(s_c, 1);
-    static_assert(std::is_same_v<decltype(s1), dare::Data::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(s1), dare::FaceValueStencil<GridType, SC, 1>>, "Type is wrong!");
     EXPECT_EQ(s1.GetValue(Positions::WEST, 0), (v_center - v_west) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::EAST, 0), (v_east - v_center) * dn_r[0]);
     EXPECT_EQ(s1.GetValue(Positions::SOUTH, 0), (v_center - v_south) * dn_r[1]);
@@ -532,7 +532,7 @@ TEST_F(IntegrationTestCartesianOperators1D, DivergenceFaceValueStencil) {
     }
 
     auto v_res = div(s_f);
-    static_assert(std::is_same_v<decltype(v_res), dare::utils::Vector<N, SC>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(v_res), dare::Vector<N, SC>>, "Type is wrong!");
 
     VecSC A = grid_rep.GetFaceArea();
 
@@ -561,7 +561,7 @@ TEST_F(IntegrationTestCartesianOperators2D, DivergenceFaceValueStencil) {
     }
 
     auto v_res = div(s_f);
-    static_assert(std::is_same_v<decltype(v_res), dare::utils::Vector<N, SC>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(v_res), dare::Vector<N, SC>>, "Type is wrong!");
 
     VecSC A = grid_rep.GetFaceArea();
 
@@ -595,7 +595,7 @@ TEST_F(IntegrationTestCartesianOperators3D, DivergenceFaceValueStencil) {
     }
 
     auto v_res = div(s_f);
-    static_assert(std::is_same_v<decltype(v_res), dare::utils::Vector<N, SC>>, "Type is wrong!");
+    static_assert(std::is_same_v<decltype(v_res), dare::Vector<N, SC>>, "Type is wrong!");
 
     VecSC A = grid_rep.GetFaceArea();
     VecSC dn_r;
@@ -721,7 +721,7 @@ TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockIntegration) {
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    dare::Vector<N, std::size_t> size_hint(3, 3, 3);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     Divergence div(grid_rep, ordinal_internal);
     Gradient grad(grid_rep, ordinal_internal);
@@ -745,7 +745,7 @@ TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockIntegration) {
     GridType::Options opt{0, 0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(5, 5, 5);
+    dare::Vector<N, std::size_t> size_hint(5, 5, 5);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     Divergence div(grid_rep, ordinal_internal);
     Gradient grad(grid_rep, ordinal_internal);
@@ -771,7 +771,7 @@ TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockSet) {
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    dare::Vector<N, std::size_t> size_hint(3, 3, 3);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     SC v_center = 2., v_west = -1., v_east = -2., v_rhs = 1.5;
     CenterMatrixStencil1C comp;
@@ -795,7 +795,7 @@ TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockSet) {
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    dare::Vector<N, std::size_t> size_hint(3, 3, 3);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     SC v_center = 2., v_west = -1., v_east = -2., v_south = -3., v_north = -4., v_rhs = 1.5;
     CenterMatrixStencil1C comp;
@@ -823,7 +823,7 @@ TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockSet) {
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    dare::Vector<N, std::size_t> size_hint(3, 3, 3);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     SC v_center = 2., v_west = -1., v_east = -2.,
        v_south = -3., v_north = -4.,
@@ -857,7 +857,7 @@ TEST_F(IntegrationTestCartesianOperators1D, MatrixBlockAdd) {
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    dare::Vector<N, std::size_t> size_hint(3, 3, 3);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     SC v_center = 2., v_west = -1., v_east = -2., v_rhs = 1.5;
     CenterMatrixStencil1C comp;
@@ -882,7 +882,7 @@ TEST_F(IntegrationTestCartesianOperators2D, MatrixBlockAdd) {
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    dare::Vector<N, std::size_t> size_hint(3, 3, 3);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     SC v_center = 2., v_west = -1., v_east = -2.,
        v_south = -3., v_north = -4., v_rhs = 1.5;
@@ -912,7 +912,7 @@ TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockAdd) {
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(3, 3, 3);
+    dare::Vector<N, std::size_t> size_hint(3, 3, 3);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     SC v_center = 2., v_west = -1., v_east = -2.,
        v_south = -3., v_north = -4.,
@@ -947,7 +947,7 @@ TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockIntegration) {
     GridType::Options opt{0, 0, 0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     LO ordinal_internal = 0;
-    dare::utils::Vector<N, std::size_t> size_hint(7, 7, 7);
+    dare::Vector<N, std::size_t> size_hint(7, 7, 7);
     MatrixBlock mb(&grid_rep, ordinal_internal, size_hint);
     Divergence div(grid_rep, ordinal_internal);
     Gradient grad(grid_rep, ordinal_internal);
@@ -972,8 +972,8 @@ TEST_F(IntegrationTestCartesianOperators3D, MatrixBlockIntegration) {
 }
 
 TEST_F(IntegrationTestCartesianOperators1D, TVDCDSValueTest) {
-    using Scheme = dare::Matrix::CDS;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using Scheme = dare::CDS;
+    using CNB = dare::CartesianNeighbor;
     const SC eps_tol{1e3};
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
@@ -990,7 +990,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDCDSValueTest) {
     }
 
     auto v = tvd.Interpolate(field);
-    static_assert(std::is_same_v<decltype(v), dare::Data::FaceValueStencil<GridType, SC, N>>);
+    static_assert(std::is_same_v<decltype(v), dare::FaceValueStencil<GridType, SC, N>>);
 
     Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
     for (std::size_t n{0}; n < N; n++) {
@@ -1021,8 +1021,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDCDSValueTest) {
 }
 
 TEST_F(IntegrationTestCartesianOperators1D, TVDCDSMatrixTest) {
-    using Scheme = dare::Matrix::CDS;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using Scheme = dare::CDS;
+    using CNB = dare::CartesianNeighbor;
     const SC eps_tol{1e3};
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
@@ -1039,7 +1039,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDCDSMatrixTest) {
     }
 
     auto v = tvd * field;
-    static_assert(std::is_same_v<decltype(v), dare::Data::FaceMatrixStencil<GridType, SC, N>>);
+    static_assert(std::is_same_v<decltype(v), dare::FaceMatrixStencil<GridType, SC, N>>);
 
     Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
     for (std::size_t n{0}; n < N; n++) {
@@ -1080,8 +1080,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDCDSMatrixTest) {
 }
 
 TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDValueTest) {
-    using Scheme = dare::Matrix::UPWIND;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using Scheme = dare::UPWIND;
+    using CNB = dare::CartesianNeighbor;
     const SC eps_tol{1e3};
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
@@ -1098,7 +1098,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDValueTest) {
     }
 
     auto v = tvd.Interpolate(field);
-    static_assert(std::is_same_v<decltype(v), dare::Data::FaceValueStencil<GridType, SC, N>>);
+    static_assert(std::is_same_v<decltype(v), dare::FaceValueStencil<GridType, SC, N>>);
 
     Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
     for (std::size_t n{0}; n < N; n++) {
@@ -1128,8 +1128,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDValueTest) {
 }
 
 TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDMatrixTest) {
-    using Scheme = dare::Matrix::UPWIND;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using Scheme = dare::UPWIND;
+    using CNB = dare::CartesianNeighbor;
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     VecSC velocity{1.};  // upwind velocity
@@ -1145,7 +1145,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDMatrixTest) {
     }
 
     auto v = tvd * field;
-    static_assert(std::is_same_v<decltype(v), dare::Data::FaceMatrixStencil<GridType, SC, N>>);
+    static_assert(std::is_same_v<decltype(v), dare::FaceMatrixStencil<GridType, SC, N>>);
 
     for (std::size_t n{0}; n < N; n++) {
         EXPECT_EQ(v.GetValueNeighbor(CNB::WEST, n), velocity[0]);
@@ -1176,8 +1176,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDMatrixTest) {
 }
 
 TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODValueTest) {
-    using Scheme = dare::Matrix::MINMOD;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using Scheme = dare::MINMOD;
+    using CNB = dare::CartesianNeighbor;
     const SC eps_tol{1e3};
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
@@ -1194,7 +1194,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODValueTest) {
     }
 
     auto v = tvd.Interpolate(field);
-    static_assert(std::is_same_v<decltype(v), dare::Data::FaceValueStencil<GridType, SC, N>>);
+    static_assert(std::is_same_v<decltype(v), dare::FaceValueStencil<GridType, SC, N>>);
 
     Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
     for (std::size_t n{0}; n < N; n++) {
@@ -1255,8 +1255,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODValueTest) {
 }
 
 TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODMatrixTest) {
-    using Scheme = dare::Matrix::MINMOD;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using Scheme = dare::MINMOD;
+    using CNB = dare::CartesianNeighbor;
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     VecSC velocity{1.};  // upwind velocity
@@ -1272,7 +1272,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODMatrixTest) {
     }
 
     auto v = tvd * field;
-    static_assert(std::is_same_v<decltype(v), dare::Data::FaceMatrixStencil<GridType, SC, N>>);
+    static_assert(std::is_same_v<decltype(v), dare::FaceMatrixStencil<GridType, SC, N>>);
 
     Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
     for (std::size_t n{0}; n < N; n++) {
@@ -1342,8 +1342,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODMatrixTest) {
 }
 
 TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAValueTest) {
-    using Scheme = dare::Matrix::VANALBADA;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using Scheme = dare::VANALBADA;
+    using CNB = dare::CartesianNeighbor;
     const SC eps_tol{1e3};
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
@@ -1360,7 +1360,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAValueTest) {
     }
 
     auto v = tvd.Interpolate(field);
-    static_assert(std::is_same_v<decltype(v), dare::Data::FaceValueStencil<GridType, SC, N>>);
+    static_assert(std::is_same_v<decltype(v), dare::FaceValueStencil<GridType, SC, N>>);
 
     Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
     for (std::size_t n{0}; n < N; n++) {
@@ -1421,8 +1421,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAValueTest) {
 }
 
 TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAMatrixTest) {
-    using Scheme = dare::Matrix::VANALBADA;
-    using CNB = dare::Grid::CartesianNeighbor;
+    using Scheme = dare::VANALBADA;
+    using CNB = dare::CartesianNeighbor;
     GridType::Options opt{0};  // not staggered
     auto grid_rep = grid->GetRepresentation(opt);
     VecSC velocity{1.};  // upwind velocity
@@ -1438,7 +1438,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAMatrixTest) {
     }
 
     auto v = tvd * field;
-    static_assert(std::is_same_v<decltype(v), dare::Data::FaceMatrixStencil<GridType, SC, N>>);
+    static_assert(std::is_same_v<decltype(v), dare::FaceMatrixStencil<GridType, SC, N>>);
 
     Index ind = grid_rep.MapOrdinalToIndexLocal(grid_rep.MapInternalToLocal(internal_ordinal));
     for (std::size_t n{0}; n < N; n++) {

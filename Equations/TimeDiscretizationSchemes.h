@@ -33,11 +33,11 @@ namespace dare {
 template <typename T, typename SC>
 concept TimeDiscretizationScheme =
     std::unsigned_integral<typename T::NUM_TIMESTEPS> && requires(T s) {
-        { s.template GetWeights<SC>() } -> std::same_as<dare::utils::Vector<T::NUM_TIMESTEPS + 1, SC>>;
+        { s.template GetWeights<SC>() } -> std::same_as<dare::Vector<T::NUM_TIMESTEPS + 1, SC>>;
     };  // NOLINT
 }  // namespace dare
 
-namespace dare::Matrix {
+namespace dare {
 
 /*! \struct EULER_BACKWARD
  * \brief EULER-backward time discretization
@@ -48,8 +48,8 @@ struct EULER_BACKWARD {
     static const std::size_t NUM_TIMESTEPS{0};
 
     template <typename SC>
-    static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(1.));
+    static constexpr dare::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
+        return dare::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(1.));
     }
 };
 
@@ -62,8 +62,8 @@ struct EULER_FORWARD {
     static const std::size_t NUM_TIMESTEPS{1};
 
     template <typename SC>
-    static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.), static_cast<SC>(1.));
+    static constexpr dare::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
+        return dare::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.), static_cast<SC>(1.));
     }
 };
 
@@ -76,8 +76,8 @@ struct CRANK_NICHOLSON {
     static const std::size_t NUM_TIMESTEPS{1};
 
     template <typename SC>
-    static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.5), static_cast<SC>(0.5));
+    static constexpr dare::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
+        return dare::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.5), static_cast<SC>(0.5));
     }
 };
 
@@ -90,8 +90,8 @@ struct ADAMS_BASHFORT {
     static const std::size_t NUM_TIMESTEPS{2};
 
     template <typename SC>
-    static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.),
+    static constexpr dare::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
+        return dare::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(0.),
                                                           static_cast<SC>(1.5),
                                                           static_cast<SC>(-0.5));
     }
@@ -106,13 +106,13 @@ struct ADAMS_MOULTON {
     static const std::size_t NUM_TIMESTEPS{2};
 
     template <typename SC>
-    constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(5. / 12.),
+    constexpr dare::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
+        return dare::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(5. / 12.),
                                                           static_cast<SC>(8. / 12.),
                                                           static_cast<SC>(-1. / 12.));
     }
 };
 
-}  // namespace dare::Matrix
+}  // namespace dare
 
 #endif  // EQUATIONS_TIMEDISCRETIZATIONSCHEMES_H_

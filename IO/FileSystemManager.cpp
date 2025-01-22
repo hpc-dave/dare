@@ -26,7 +26,7 @@
 #include <iostream>
 #include <string>
 
-namespace dare::io {
+namespace dare {
 
 namespace details {
 
@@ -82,7 +82,7 @@ void FileSystemManager_helper::CheckWithUser(bool check) {
 
 }  // end namespace details
 
-FileSystemManager::FileSystemManager(dare::mpi::ExecutionManager* ex,
+FileSystemManager::FileSystemManager(dare::ExecutionManager* ex,
                                      const Path& base_path,
                                      bool clear_contents,
                                      bool overwrite_files,
@@ -188,4 +188,4 @@ bool FileSystemManager::CreateCommonDirectory(const std::string& str_path) const
     Path path(str_path);
     return CreateCommonDirectory(path);
 }
-}  // end namespace dare::io
+}  // end namespace dare

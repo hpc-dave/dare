@@ -25,7 +25,7 @@
 #ifndef ALGORITHM_STATICINFORMATION_H_
 #define ALGORITHM_STATICINFORMATION_H_
 
-namespace dare::algorithm {
+namespace dare {
 
 template <typename T>
 concept ContainsViscosity = requires { typename T::viscosity; };  // NOLINT
@@ -59,6 +59,6 @@ concept ContainsContinuityIterations = requires { typename T::continuity_iterati
 
 template <typename T>
 concept ContainsTimeSchemeConvective = requires { typename T::time_scheme_convective; };  // NOLINT
-}  // namespace dare::algorithm
+}  // namespace dare
 
 #endif  // ALGORITHM_STATICINFORMATION_H_

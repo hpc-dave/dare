@@ -29,7 +29,7 @@
 #include <string>
 #include <utility>
 
-namespace dare::mpi {
+namespace dare {
 
 /*!
  * \brief A convenient way to swallow output
@@ -64,6 +64,6 @@ public:
     }
 };
 
-}  // namespace dare::mpi
+}  // namespace dare
 
 #endif  // MPI_OBLACKHOLESTREAM_H_

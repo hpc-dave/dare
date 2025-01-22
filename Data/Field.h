@@ -36,7 +36,7 @@
 #include "MPI/HaloBuffer.h"
 #include "Utilities/Errors.h"
 
-namespace dare::Data {
+namespace dare {
 
 namespace detail {
 /*!
@@ -62,7 +62,7 @@ public:
     using GridType = Grid;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
     using IndexType = typename GridType::Index;
-    using GridRepresentation = typename Grid::Representation;
+    using GridRepresentation = typename GridType::Representation;
     using ScalarType = SC;
     using VectorType = GridVector<Grid, SC, N>;
 
@@ -112,7 +112,7 @@ public:
     /*!
      * @brief getter for execution manager
      */
-    dare::mpi::ExecutionManager* GetExecutionManager();
+    dare::ExecutionManager* GetExecutionManager();
 
     /*!
      * @brief initializes cascade of copy steps
@@ -149,7 +149,7 @@ private:
     std::vector<VectorType> data;   //!< data of the field
 };
 
-}  // end namespace dare::Data
+}  // end namespace dare
 
 namespace dare {
 
@@ -157,7 +157,7 @@ namespace dare {
  * \brief concept to determine a Field
  */
 template <typename T>
-concept FieldType = std::is_base_of_v<Data::detail::FieldTag, std::remove_cv_t<T>>;
+concept FieldType = std::is_base_of_v<detail::FieldTag, std::remove_cv_t<T>>;
 
 
 /*!

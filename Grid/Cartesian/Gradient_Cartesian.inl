@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 
-namespace dare::Matrix {
+namespace dare {
 
 template <std::size_t Dim>
-Gradient<dare::Grid::Cartesian<Dim>>::Gradient(const GridRepresentation& _grid, LO ordinal_int)
+Gradient<dare::Cartesian<Dim>>::Gradient(const GridRepresentation& _grid, LO ordinal_int)
     : grid(&_grid), ordinal_internal(ordinal_int) {
     using SC = typename GridType::ScalarType;
     for (auto& e : dn_r)
@@ -35,10 +35,10 @@ Gradient<dare::Grid::Cartesian<Dim>>::Gradient(const GridRepresentation& _grid, 
 
 template <std::size_t Dim>
 template <typename SC, typename O, std::size_t N>
-dare::Data::FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-Gradient<dare::Grid::Cartesian<Dim>>::operator()(
+dare::FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+Gradient<dare::Cartesian<Dim>>::operator()(
     const MatrixBlock<GridType, O, SC, N>&) const {
-    dare::Data::FaceMatrixStencil<GridType, SC, N> s;
+    dare::FaceMatrixStencil<GridType, SC, N> s;
     s.SetValues(Positions::WEST, 0, -dn_r[0], dn_r[0]);
     s.SetValues(Positions::EAST, 0, dn_r[0], -dn_r[0]);
     if constexpr (Dim > 1) {
@@ -59,10 +59,10 @@ Gradient<dare::Grid::Cartesian<Dim>>::operator()(
 
 template <std::size_t Dim>
 template <typename SC, std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-Gradient<dare::Grid::Cartesian<Dim>>::operator()(
-    const dare::Data::GridVector<GridType, SC, N>& field) const {
-    dare::Data::FaceValueStencil<GridType, SC, N> s_f;
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+Gradient<dare::Cartesian<Dim>>::operator()(
+    const dare::GridVector<GridType, SC, N>& field) const {
+    dare::FaceValueStencil<GridType, SC, N> s_f;
     const LO ordinal_local = grid->MapInternalToLocal(ordinal_internal);
     Index ind = grid->MapOrdinalToIndexLocal(ordinal_local);
     for (std::size_t n{0}; n < N; n++) {
@@ -97,10 +97,10 @@ Gradient<dare::Grid::Cartesian<Dim>>::operator()(
 
 template <std::size_t Dim>
 template <typename SC, std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-Gradient<dare::Grid::Cartesian<Dim>>::operator()(
-    const dare::Data::CenterValueStencil<GridType, SC, N>& s_c) const {
-    dare::Data::FaceValueStencil<GridType, SC, N> s_f;
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+Gradient<dare::Cartesian<Dim>>::operator()(
+    const dare::CenterValueStencil<GridType, SC, N>& s_c) const {
+    dare::FaceValueStencil<GridType, SC, N> s_f;
     for (std::size_t n{0}; n < N; n++) {
         s_f.SetValue(Positions::WEST, n,
                      (s_c.GetValue(Positions::CENTER, n) - s_c.GetValue(Positions::WEST, n)) * dn_r[0]);
@@ -124,10 +124,10 @@ Gradient<dare::Grid::Cartesian<Dim>>::operator()(
 
 template <std::size_t Dim>
 template <typename SC, std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>
-Gradient<dare::Grid::Cartesian<Dim>>::operator()(
-    const dare::Data::GridVector<GridType, SC, N>& field, std::size_t n) const {
-    dare::Data::FaceValueStencil<GridType, SC, 1> s_f;
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, 1>
+Gradient<dare::Cartesian<Dim>>::operator()(
+    const dare::GridVector<GridType, SC, N>& field, std::size_t n) const {
+    dare::FaceValueStencil<GridType, SC, 1> s_f;
     const LO ordinal_local = grid->MapInternalToLocal(ordinal_internal);
     Index ind = grid->MapOrdinalToIndexLocal(ordinal_local);
 
@@ -161,10 +161,10 @@ Gradient<dare::Grid::Cartesian<Dim>>::operator()(
 
 template <std::size_t Dim>
 template <typename SC, std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>
-Gradient<dare::Grid::Cartesian<Dim>>::operator()(
-    const dare::Data::CenterValueStencil<GridType, SC, N>& s_c, std::size_t n) const {
-    dare::Data::FaceValueStencil<GridType, SC, 1> s_f;
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, 1>
+Gradient<dare::Cartesian<Dim>>::operator()(
+    const dare::CenterValueStencil<GridType, SC, N>& s_c, std::size_t n) const {
+    dare::FaceValueStencil<GridType, SC, 1> s_f;
 
     s_f.SetValue(Positions::WEST, 0,
                  (s_c.GetValue(Positions::CENTER, n) - s_c.GetValue(Positions::WEST, n)) * dn_r[0]);
@@ -185,4 +185,4 @@ Gradient<dare::Grid::Cartesian<Dim>>::operator()(
     return s_f;
 }
 
-}  // end namespace dare::Matrix
+}  // end namespace dare

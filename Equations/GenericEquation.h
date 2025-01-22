@@ -35,7 +35,7 @@
 #include "MatrixSystem/Trilinos.h"
 #include "MatrixSystem/TrilinosSolver.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 struct UpdateFieldCopy {
     template<typename EQ, typename MS>
@@ -57,21 +57,21 @@ public:
     using GridType = Grid;
     using GridRepresentation = typename GridType::Representation;
     using BoundaryStrategyType = BoundaryStrategy;
-    using SC = typename Grid::ScalarType;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
-    using Index = typename Grid::Index;
-    using IndexGlobal = typename Grid::IndexGlobal;
-    using FieldType = Data::Field<GridType, SC, 1>;
+    using SC = typename GridType::ScalarType;
+    using LO = typename GridType::LocalOrdinalType;
+    using GO = typename GridType::GlobalOrdinalType;
+    using Index = typename GridType::Index;
+    using IndexGlobal = typename GridType::IndexGlobal;
+    using FieldType = Field<GridType, SC, 1>;
     using CustomMemberType = CustomMember;
-    using MatrixSystemType = dare::Matrix::Trilinos<SC>;            // could be made a template parameter
-    using MatrixSolverType = dare::Matrix::TrilinosSolver<SC>;      // could be made a template parameter
+    using MatrixSystemType = dare::Trilinos<SC>;            // could be made a template parameter
+    using MatrixSolverType = dare::TrilinosSolver<SC>;      // could be made a template parameter
     using SolverNumericalPropertiesType = typename MatrixSolverType::NumericalPropertiesType;
     using SelfType = GenericEquation<Grid, BoundaryStrategy, CustomMember>;
 
     GenericEquation(const std::string& name,
                     GridRepresentation grid,
-                    dare::mpi::ExecutionManager* ex_man,
+                    dare::ExecutionManager* ex_man,
                     std::size_t num_tsteps,
                     BoundaryStrategy bc_strat);
 
@@ -112,7 +112,7 @@ public:
 
 private:
     GridRepresentation grep;
-    dare::mpi::ExecutionManager* exec_man;
+    dare::ExecutionManager* exec_man;
     BoundaryStrategyType boundary_strategy;
     FieldType field;
     CustomMemberType custom_member;
@@ -122,7 +122,7 @@ private:
     SolverNumericalPropertiesType solver_prop;
 };
 
-}  // namespace dare::Matrix
+}  // namespace dare
 
 #include "GenericEquation.inl"
 

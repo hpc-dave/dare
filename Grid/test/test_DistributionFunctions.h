@@ -28,9 +28,9 @@
 #include <vector>
 #include "Utilities/Vector.h"
 
-namespace dare::Grid::test {
+namespace dare::test {
 template <std::size_t Dim, typename T>
-using Vector = dare::utils::Vector<Dim, T>;
+using Vector = dare::Vector<Dim, T>;
 
 namespace details {
 
@@ -108,7 +108,7 @@ void TestForMissingCells(const Vector<Dim, GO>& resolution_global,
     }
 }
 }  // namespace details
-}  // namespace dare::Grid::test
+}  // namespace dare::test
 
 class ConsistencyTest : public testing::TestWithParam<int> {
     // You can implement all the usual fixture class members here.

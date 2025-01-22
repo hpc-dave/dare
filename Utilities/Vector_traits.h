@@ -29,7 +29,7 @@
 #include <type_traits>
 #include <array>
 
-namespace dare::utils {
+namespace dare {
 
 /*! \struct VectorDefaultInitializer
  * @tparam T type of the variable
@@ -261,6 +261,6 @@ public:
     T z() const { return this->_data[2]; }
 };
 
-}  // namespace dare::utils
+}  // namespace dare
 
 #endif  // UTILITIES_VECTOR_TRAITS_H_

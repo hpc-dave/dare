@@ -25,7 +25,7 @@
 #ifndef UTILITIES_PROPERTYINFORMATION_H_
 #define UTILITIES_PROPERTYINFORMATION_H_
 
-namespace dare::utils {
+namespace dare {
 
 template <bool Flag, typename TagType, TagType Tag>
 struct FlaggedInfo {
@@ -190,6 +190,6 @@ struct is_const_count : std::bool_constant<ConstCountType<T>> {
 template <typename T>
 constexpr bool is_const_count_v = is_const_count<T>::value;
 
-}  // namespace dare::utils
+}  // namespace dare
 
 #endif  // UTILITIES_PROPERTYINFORMATION_H_

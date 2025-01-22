@@ -25,7 +25,7 @@
 #ifndef UTILITIES_INITIALIZATIONTRACKER_H_
 #define UTILITIES_INITIALIZATIONTRACKER_H_
 
-namespace dare::utils {
+namespace dare {
 
 /*! \class InitializationTracker
  * @brief little helper to a keep track of initialization
@@ -76,6 +76,6 @@ private:
     bool is_initialized;    //!< identifier if initialized
 };
 
-}  // namespace dare::utils
+}  // namespace dare
 
 #endif  // UTILITIES_INITIALIZATIONTRACKER_H_

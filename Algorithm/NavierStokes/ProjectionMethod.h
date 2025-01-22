@@ -43,25 +43,25 @@
 #include "Utilities/InitializationTracker.h"
 #include "Equations/GenericEquation.h"
 
-namespace dare::algorithm {
+namespace dare {
 
 template <typename Grid>
 struct PMPropertyInfoDefault {
-    using FieldType = dare::Data::Field<Grid, typename Grid::ScalarType, 1>;
+    using FieldType = dare::Field<Grid, typename Grid::ScalarType, 1>;
     using density = PMDensityInfo<FieldType>;
     using viscosity = PMViscosityInfo<FieldType>;
-    using porosity = PMPorosityInfo<dare::utils::None>;
-    using implicit_force = PMImplicitForceInfo<dare::utils::None>;
-    using explicit_force = PMExplicitForceInfo<dare::utils::None>;
+    using porosity = PMPorosityInfo<dare::None>;
+    using implicit_force = PMImplicitForceInfo<dare::None>;
+    using explicit_force = PMExplicitForceInfo<dare::None>;
     using compressible = PMCompressibleInfo<false>;
 };
 
 struct PMNumericalInfoDefault {
-    using tvd = PMTVDInfo<dare::Matrix::MINMOD>;
+    using tvd = PMTVDInfo<dare::MINMOD>;
     using viscous_stress = PMViscousStressInfo<PMDefaultStressTensor>;
-    using momentum_iterations = PMMomentumIterationInfo<dare::algorithm::FixedPoint>;
-    using continuity_iterations = PMContinuityIterationInfo<dare::algorithm::Newton>;
-    using time_scheme_convective = PMTimeSchemeConvectiveInfo<dare::Matrix::EULER_BACKWARD>;
+    using momentum_iterations = PMMomentumIterationInfo<dare::FixedPoint>;
+    using continuity_iterations = PMContinuityIterationInfo<dare::Newton>;
+    using time_scheme_convective = PMTimeSchemeConvectiveInfo<dare::EULER_BACKWARD>;
 };
 
 /*!
@@ -81,7 +81,7 @@ struct PMNumericalInfoDefault {
  *
  */
 template <typename Grid, typename BoundaryStrategy, typename PropertyInfo, typename NumericalInfo>
-class ProjectionMethod : public dare::utils::InitializationTracker {
+class ProjectionMethod : public dare::InitializationTracker {
 public:
     enum {
         rho_init = 0b0000001,
@@ -93,12 +93,12 @@ public:
     // general types based on the grid
     using GridType = Grid;
     using BoundaryStrategyType = BoundaryStrategy;
-    using SC = typename Grid::ScalarType;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
-    using Index = typename Grid::Index;
-    using IndexGlobal = typename Grid::IndexGlobal;
-    using FieldType = Data::Field<GridType, SC, 1>;
+    using SC = typename GridType::ScalarType;
+    using LO = typename GridType::LocalOrdinalType;
+    using GO = typename GridType::GlobalOrdinalType;
+    using Index = typename GridType::Index;
+    using IndexGlobal = typename GridType::IndexGlobal;
+    using FieldType = Field<GridType, SC, 1>;
 
     // properties determined from the PropertyInfo type
     using PropertyTypeInfo = detail::PMAssembledPropertyInfoWithDefaults<
@@ -118,7 +118,7 @@ public:
     using ImplicitForceMemberType = detail::determine_implicit_force_member_variable_type_t<ImplicitForceInfo>;
     using ExplicitForceMemberType = detail::determine_explicit_force_member_variable_type_t<ExplicitForceInfo>;
     static const bool compressible = CompressibilityInfo::flag;
-    static const std::size_t dimension = Grid::Dimension;
+    static const std::size_t dimension = GridType::Dimension;
 
     // algorithm and discretization properties
     using NumericalTypeInfo = detail::PMAssembledNumericalInfoWithDefaults<
@@ -143,18 +143,18 @@ public:
         ExplicitForceMemberType beta_im;
         SC defect_max;
     };
-    using MomentumType = dare::Matrix::GenericEquation<GridType, BoundaryStrategyType, MomentumMembers>;
+    using MomentumType = dare::GenericEquation<GridType, BoundaryStrategyType, MomentumMembers>;
     using ContinuityType = PMContinuity<GridType, BoundaryStrategyType, ContinuityMembers>;
 
     ProjectionMethod()
         : ex_man(nullptr),
           max_iterations(100),
           status(0), status_finalized(rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init) {
-        if constexpr (dare::utils::is_none_v<PorosityVariableType>)
+        if constexpr (dare::is_none_v<PorosityVariableType>)
             status |= epsilon_init;
-        if constexpr (dare::utils::is_none_v<ImplicitForceVariableType>)
+        if constexpr (dare::is_none_v<ImplicitForceVariableType>)
             status |= beta_im_init;
-        if constexpr (dare::utils::is_none_v<ExplicitForceVariableType>)
+        if constexpr (dare::is_none_v<ExplicitForceVariableType>)
             status |= beta_ex_init;
 
         // method specific check for consistent compile time information
@@ -257,7 +257,7 @@ public:
         if (!IsInitialized()) {
             ex_man->Terminate(__func__, "Cannot add force terms prior to initialization");
         }
-        if constexpr (!dare::utils::is_none_v<ImplicitForceVariableType>) {
+        if constexpr (!dare::is_none_v<ImplicitForceVariableType>) {
             continuity.GetCustomMember()->beta_im.emplace(f);
             status |= beta_im_init;
         }
@@ -269,7 +269,7 @@ public:
         if (!IsInitialized()) {
             ex_man->Terminate(__func__, "Cannot add force terms prior to initialization");
         }
-        if constexpr (!dare::utils::is_none_v<ExplicitForceVariableType>) {
+        if constexpr (!dare::is_none_v<ExplicitForceVariableType>) {
             if ((dim < 1) || (dim >= dimension)) {
                 ex_man->Terminate(__func__, "Invalid dimension choses for the force");
             }
@@ -326,7 +326,7 @@ private:
         return free_pm_continuity_convergence(this, iteration);
     }
 
-    dare::mpi::ExecutionManager* ex_man;
+    dare::ExecutionManager* ex_man;
     DensityVariableType rho;
     ViscosityVariableType mu;
     PorosityVariableType epsilon;
@@ -340,7 +340,7 @@ private:
     char status_finalized;
 };
 
-}  // namespace dare::algorithm
+}  // namespace dare
 
 #include "ProjectionMethod.inl"
 

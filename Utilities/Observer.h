@@ -28,7 +28,7 @@
 #include <functional>
 #include <utility>
 
-namespace dare::utils {
+namespace dare {
 
 /*!
  * \brief a generic observer for implementation of the Observer pattern
@@ -64,6 +64,6 @@ private:
     OnUpdate onUpdate_;     //!< function pointer with the update function
 };
 
-}  // namespace dare::utils
+}  // namespace dare
 
 #endif  // UTILITIES_OBSERVER_H_
