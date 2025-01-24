@@ -188,7 +188,7 @@ struct pm_get_time_scheme_convective<TDict, TDictDefault> {
 };
 
 template <typename TDict, ContainsMomentumIterations TDictDefault>
-using pm_get_time_scheme_convective_t = pm_get_continuity_iterations<TDict, TDictDefault>::type;
+using pm_get_time_scheme_convective_t = pm_get_time_scheme_convective<TDict, TDictDefault>::type;
 
 template <typename PropertyInfoUser, typename PropertyInfoDefault>
 struct PMAssembledPropertyInfoWithDefaults {
@@ -208,11 +208,16 @@ struct PMAssembledPropertyInfoWithDefaults {
 
 template <typename NumericalInfoUser, typename NumericalInfoDefault>
 struct PMAssembledNumericalInfoWithDefaults {
-    using tvd = pm_get_tvd_t<NumericalInfoUser, NumericalInfoDefault>;
-    using viscous_stress = pm_get_viscous_stress_t<NumericalInfoUser, NumericalInfoDefault>;
-    using momentum_iterations = pm_get_momentum_iterations_t<NumericalInfoUser, NumericalInfoDefault>;
-    using continuity_iterations = pm_get_continuity_iterations_t<NumericalInfoUser, NumericalInfoDefault>;
-    using time_scheme_convective = pm_get_time_scheme_convective_t<NumericalInfoUser, NumericalInfoDefault>;
+    using _tvd = pm_get_tvd_t<NumericalInfoUser, NumericalInfoDefault>;
+    using _viscous_stress = pm_get_viscous_stress_t<NumericalInfoUser, NumericalInfoDefault>;
+    using _momentum_iterations = pm_get_momentum_iterations_t<NumericalInfoUser, NumericalInfoDefault>;
+    using _continuity_iterations = pm_get_continuity_iterations_t<NumericalInfoUser, NumericalInfoDefault>;
+    using _time_scheme_convective = pm_get_time_scheme_convective_t<NumericalInfoUser, NumericalInfoDefault>;
+    using tvd = default_convert_to_tagged_info_t<_tvd, PMNumerics, PMNumerics::TVD>;
+    using viscous_stress = default_convert_to_tagged_info_t<_viscous_stress, PMNumerics, PMNumerics::ViscousStress>;
+    using momentum_iterations = default_convert_to_tagged_info_t<_momentum_iterations, PMNumerics, PMNumerics::MomentumIterations>;             // NOLINT
+    using continuity_iterations = default_convert_to_tagged_info_t<_continuity_iterations, PMNumerics, PMNumerics::ContinuityIterations>;       // NOLINT
+    using time_scheme_convective = default_convert_to_tagged_info_t<_time_scheme_convective, PMNumerics, PMNumerics::TimeSchemeConvective>;     // NOLINT
 };
 
 template <typename T>

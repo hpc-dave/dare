@@ -64,6 +64,7 @@ struct PDict_compressible_only_raw {
 }  // namespace dare::test
 
 TEST(ProjectionMethodTest, PropertyInfo) {
+    // Static testing of the property propagation
     using GridType = dare::Cartesian<1>;
     using FieldType = dare::Field<GridType, typename GridType::ScalarType, 1>;
     using PDefault = dare::PMPropertyInfoDefault<GridType>;
@@ -431,5 +432,152 @@ TEST(ProjectionMethodTest, PropertyInfo) {
 }
 
 TEST(ProjectionMethodTest, NumericalInfo) {
-    
+    // Static testing of the property propagation
+    using GridType = dare::Cartesian<1>;
+    using PDefault = dare::PMPropertyInfoDefault<GridType>;
+    using SDefault = dare::PMNumericalInfoDefault;
+
+    struct SDict_empty {
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::TVDInfo,
+                  SDefault::tvd>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::TVDScheme,
+                  SDefault::tvd::type>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::ViscousStressInfo,
+                  SDefault::viscous_stress>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::ViscousStressTreatment,
+                  SDefault::viscous_stress::type>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::MomentumIterationInfo,
+                  SDefault::momentum_iterations>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::MomentumIterationType,
+                  SDefault::momentum_iterations::type>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::ContinuityIterationInfo,
+                  SDefault::continuity_iterations>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::ContinuityIterationType,
+                  SDefault::continuity_iterations::type>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::ConvectiveTimeSchemeInfo,
+                  SDefault::time_scheme_convective>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::ConvectiveTimeSchemeType,
+                  SDefault::time_scheme_convective::type>);
+
+    struct SDict_tvd_info_only {
+        using tvd = dare::PMTVDInfo<dare::VANALBADA>;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_tvd_info_only>::TVDInfo,
+                  dare::PMTVDInfo<dare::VANALBADA>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_tvd_info_only>::TVDScheme,
+                  dare::VANALBADA>);
+
+    struct SDict_tvd_info_only_raw {
+        using tvd = dare::VANALBADA;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_tvd_info_only_raw>::TVDInfo,
+                  dare::TaggedTypeInfo<dare::VANALBADA, dare::PMNumerics, dare::PMNumerics::TVD>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_tvd_info_only_raw>::TVDScheme,
+                  dare::VANALBADA>);
+
+    struct SDict_momentum_iteration_info_only {
+        using momentum_iterations = dare::PMMomentumIterationInfo<dare::Newton>;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_momentum_iteration_info_only>::MomentumIterationInfo,
+                  dare::PMMomentumIterationInfo<dare::Newton>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_momentum_iteration_info_only>::MomentumIterationType,
+                  dare::Newton>);
+
+    struct SDict_momentum_iteration_info_only_raw {
+        using momentum_iterations = dare::Newton;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_momentum_iteration_info_only_raw>::MomentumIterationInfo,
+                  dare::TaggedTypeInfo<dare::Newton, dare::PMNumerics, dare::PMNumerics::MomentumIterations>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_momentum_iteration_info_only_raw>::MomentumIterationType,
+                  dare::Newton>);
+
+    struct SDict_continuity_iteration_info_only {
+        using continuity_iterations = dare::PMContinuityIterationInfo<dare::Newton>;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_continuity_iteration_info_only>::ContinuityIterationInfo,
+                  dare::PMContinuityIterationInfo<dare::Newton>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_continuity_iteration_info_only>::ContinuityIterationType,
+                  dare::Newton>);
+
+    struct SDict_continuity_iteration_info_only_raw {
+        using continuity_iterations = dare::Newton;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_continuity_iteration_info_only_raw>::ContinuityIterationInfo,
+                  dare::TaggedTypeInfo<dare::Newton, dare::PMNumerics, dare::PMNumerics::ContinuityIterations>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_continuity_iteration_info_only_raw>::ContinuityIterationType,
+                  dare::Newton>);
+
+    struct SDict_ts_convective_info_only {
+        using time_scheme_convective = dare::PMTimeSchemeConvectiveInfo<dare::EULER_FORWARD>;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_ts_convective_info_only>::ConvectiveTimeSchemeInfo,
+                  dare::PMTimeSchemeConvectiveInfo<dare::EULER_FORWARD>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_ts_convective_info_only>::ConvectiveTimeSchemeType,
+                  dare::EULER_FORWARD>);
+
+    struct SDict_ts_convective_info_only_raw {
+        using time_scheme_convective = dare::EULER_FORWARD;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_ts_convective_info_only_raw>::ConvectiveTimeSchemeInfo,
+                  dare::TaggedTypeInfo<dare::EULER_FORWARD, dare::PMNumerics, dare::PMNumerics::TimeSchemeConvective>>);    // NOLINT
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_ts_convective_info_only_raw>::ConvectiveTimeSchemeType,
+                  dare::EULER_FORWARD>);
+
+    struct SDict_vstress_info_only {
+        using viscous_stress = dare::PMViscousStressInfo<dare::PMDijkhuizenStressTensor>;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_vstress_info_only>::ViscousStressInfo,
+                  dare::PMViscousStressInfo<dare::PMDijkhuizenStressTensor>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_vstress_info_only>::ViscousStressTreatment,
+                  dare::PMDijkhuizenStressTensor>);
+
+    struct SDict_vstress_info_only_raw {
+        using viscous_stress = dare::PMDijkhuizenStressTensor;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_vstress_info_only_raw>::ViscousStressInfo,
+                  dare::TaggedTypeInfo<dare::PMDijkhuizenStressTensor, dare::PMNumerics, dare::PMNumerics::ViscousStress>>);  // NOLINT
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_vstress_info_only_raw>::ViscousStressTreatment,
+                  dare::PMDijkhuizenStressTensor>);
 }
