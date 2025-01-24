@@ -130,8 +130,14 @@ concept PMDefaultStressTreatment =
 template <typename T>
 struct is_pm_dijkuizen_stress_tensor : std::bool_constant<PMDijkhuizenStressTreatment<T>> {};
 
+// template <typename T>
+// constexpr bool is_pm_dijkhuizen_stress_tensor_v = is_pm_dijkuizen_stress_tensor<T>::value;
+
 template <typename T>
 struct is_pm_default_stress_tensor : std::bool_constant<PMDefaultStressTreatment<T>> {};
+
+// template <typename T>
+// constexpr bool is_pm_default_stress_tensor_v = is_pm_default_stress_tensor<T>::value;
 
 }  // namespace dare
 

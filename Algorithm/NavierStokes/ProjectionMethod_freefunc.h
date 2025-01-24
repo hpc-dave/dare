@@ -21,59 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+#ifndef ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_FREEFUNC_H_
+#define ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_FREEFUNC_H_
+#include <utility>
+
 #include "Utilities/Errors.h"
 
 namespace dare {
 
 template <typename PM>
-void free_compile_time_check(PM) {
+void free_compile_time_check(PM*) {
     // by default this is empty and accepts everything, can be overloaded for certain properties
 }
 
 template <typename PM, typename Grid, typename... Args>
-void free_pm_initialize(PM* pm, const Grid& grid, Args&&... args) {
-    static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method and grid");   // NOLINT
+void free_pm_initialize(PM* pm, Grid* grid, Args&&... args) {
+    static_assert(dare::always_false<PM>, "Could not find the specialization for the initialization using the specified types of the projection method and grid");   // NOLINT
 }
 
-template <typename PM, std::size_t dir>
-void free_pm_build_momentum(PM* pm) {
+template <typename PM, dare::NaturalNumber Direction>
+void free_pm_build_momentum(PM* pm, Direction) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method");  // NOLINT
-    // using GridType = typename PMType;
-    // using LO = typename GridType::LocalOrdinalType;
-    // using DensityType = typename PM::DensityVariableType;
-    // using ViscosityType = typename PM::ViscosityVariableType;
-    // using PorosityType = typename PM::ViscosityVariableType;
-    // using IndexLocal = typename GridType::Index;
-    // using DDT = dare::DDT<GridType>;
-
-    // auto BuildStrategy = [= pm](auto mblock) {
-    //     auto g_r{mblock->GetRepresentation()};
-    //     LO o_loc{mblock->GetLocalOrdinal()};
-    //     IndexLocal ind{mblock->GetIndex()};
-
-    //     DDT ddt(*g_r, o_loc, pm->GetTimeStepSize());
-
-    //     DensityType rho{pm->GetDensity()};
-    //     ViscosityType mu{pm->GetViscosity()};
-    //     PorosityType epsilon{pm->GetPorosity()};
-    //     // accumulation
-    //     (*mblock) = ddt(epsilon, rho, *pm->GetMomentum(dir));
-    // };
-
-    // momentum[dir]->Build(BuildStrategy);
 }
 
-template <typename PM>
-std::pair<bool, int> free_pm_solve_momentum(PM* pm, std::size_t dir) {
-    using IterType = typename PM::MomentumIterationType;
+template <typename PM, dare::NaturalNumber Direction>
+std::pair<bool, int> free_pm_solve_momentum(PM* pm, Direction) {
+    static const std::size_t dir = Direction::value;
+    // using IterType = typename PM::MomentumIterationType;
     std::pair<bool, int> ret = std::make_pair(false, static_cast<int>(-1));
-    if constexpr (uses_fixed_point_iterations_v<IterType>) {
-        ret = pm->GetContinuity()->Solve(dare::UpdateFieldCopy{});
-    } else if constexpr (uses_newton_iterations_v<IterType>) {
-        ret = pm->GetContinuity()->Solve(dare::UpdateFieldAddInto{});
-    } else {
-        static_assert(dare::always_false<IterType>, "Solving the momentum equations is not implemented for the specified algorithm type");  // NOLINT
-    }
+    // if constexpr (uses_fixed_point_iterations_v<IterType>) {
+    //     ret = pm->GetContinuity()->Solve(dare::UpdateFieldCopy{});
+    // } else if constexpr (uses_newton_iterations_v<IterType>) {
+    //     ret = pm->GetContinuity()->Solve(dare::UpdateFieldAddInto{});
+    // } else {
+    //     static_assert(dare::always_false<IterType>, "Solving the momentum equations is not implemented for the specified algorithm type");  // NOLINT
+    // }
     return ret;
 }
 
@@ -120,3 +103,5 @@ bool free_pm_continuity_convergence(PM* pm, int iteration) {
 }
 
 }  // namespace dare
+
+#endif  // ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_FREEFUNC_H_

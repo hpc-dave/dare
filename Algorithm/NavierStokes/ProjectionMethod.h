@@ -42,6 +42,7 @@
 #include "Equations/TimeDiscretizationSchemes.h"
 #include "Utilities/InitializationTracker.h"
 #include "Equations/GenericEquation.h"
+#include "ProjectionMethod_freefunc.h"
 
 namespace dare {
 
@@ -134,7 +135,8 @@ public:
     using MomentumIterationType = typename MomentumIterationInfo::type;
     using ContinuityIterationType = typename ContinuityIterationInfo::type;
     using ConvectiveTimeSchemeType = typename ConvectiveTimeSchemeInfo::type;
-    static const std::size_t num_tsteps_momentum = std::max(ConvectiveTimeSchemeType::NUM_TSTEPS + 1, 2);
+    static const std::size_t num_tsteps_momentum = std::max(ConvectiveTimeSchemeType::NUM_TIMESTEPS + 1,
+                                                    static_cast<decltype(ConvectiveTimeSchemeType::NUM_TIMESTEPS)>(2));
 
     struct MomentumMembers{
         ExplicitForceMemberType beta_ex;
@@ -158,20 +160,30 @@ public:
             status |= beta_ex_init;
 
         // method specific check for consistent compile time information
-        free_check_compile_time_information(*this);
+        free_compile_time_check(this);
     }
 
     template<typename... Args>
-    void Initialize(const GridType& grid, Args&&... bc_args) {
-        ex_man = grid.GetExecutionManager();
+    void Initialize(GridType* grid, Args&&... bc_args) {
+        ex_man = grid->GetExecutionManager();
         free_pm_initialize(this, grid, bc_args...);
-        this->Initialize();
+        this->dare::InitializationTracker::Initialize();
+    }
+
+    template<typename... Args>
+    void Initialize(std::unique_ptr<GridType>& grid, Args&&... bc_args) {   // NOLINT
+        free_pm_initialize(this, grid.get(), bc_args...);
     }
 
     // for access in the free functions
     template <typename... Args>
-    void IntializeMomentum(std::size_t dim, Args&&... args) {
+    void InitializeMomentum(std::size_t dim, Args&&... args) {
         momentum[dim] = std::make_unique<MomentumType>(args...);
+    }
+
+    template <typename... Args>
+    void InitializeContinuity(Args&&... args) {
+        continuity = std::make_unique<ContinuityType>(args...);
     }
 
     void SolveFlowField() {
@@ -182,16 +194,16 @@ public:
         }
         // build momentum and solve subsequently
         // a bit more verbose, but easier to debug
-        BuildMomentum<0>();
+        BuildMomentum(dare::ZERO);
         auto [success, iter] = SolveMomentum(0);
         // add some output here
         if constexpr (dimension > 1) {
-            BuildMomentum<1>();
+            BuildMomentum(dare::ONE);
             auto [success, iter] = SolveMomentum(1);
             // add some output here
         }
         if constexpr (dimension > 2) {
-            BuildMomentum<2>();
+            BuildMomentum(dare::TWO);
             auto [success, iter] = SolveMomentum(2);
             // add some output here
         }
@@ -224,8 +236,8 @@ public:
     std::unique_ptr<MomentumType>& GetMomentum(std::size_t dim) { return momentum[dim]; }
     const std::unique_ptr<MomentumType>& GetMomentum(std::size_t dim) const { return momentum[dim]; }
 
-    ContinuityType* GetContinuity() { return &continuity; }
-    const ContinuityType& GetContinuity() const { return continuity; }
+    std::unique_ptr<ContinuityType>& GetContinuity() { return continuity; }
+    const ContinuityType& GetContinuity() const { return *continuity; }
 
     void SetDensity(DensityVariableType d) {
         rho = d;
@@ -297,13 +309,14 @@ public:
     }
 
 private:
-    template <std::size_t dim>
-    void BuildMomentum() {
-        free_pm_build_momentum<dim>(this);
+    template <dare::NaturalNumber Direction>
+    void BuildMomentum(Direction dir) {
+        free_pm_build_momentum(this, dir);
     }
 
-    std::pair<bool, int> SolveMomentum(std::size_t dim) {
-        return free_pm_solve_momentum(this, dim);
+    template <dare::NaturalNumber Direction>
+    std::pair<bool, int> SolveMomentum(Direction dir) {
+        return free_pm_solve_momentum(this, dir);
     }
 
     void BuildContinuity(int iteration) {
@@ -331,7 +344,7 @@ private:
     ViscosityVariableType mu;
     PorosityVariableType epsilon;
 
-    ContinuityType continuity;
+    std::unique_ptr<ContinuityType> continuity;
     std::array<std::unique_ptr<MomentumType>, dimension> momentum;
 
     SC dt;  // for now this is temporary, work with observer here!
@@ -341,7 +354,5 @@ private:
 };
 
 }  // namespace dare
-
-#include "ProjectionMethod.inl"
 
 #endif  // ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_H_

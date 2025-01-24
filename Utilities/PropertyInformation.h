@@ -190,6 +190,56 @@ struct is_const_count : std::bool_constant<ConstCountType<T>> {
 template <typename T>
 constexpr bool is_const_count_v = is_const_count<T>::value;
 
+template <typename T>
+concept IntegerNumber = std::integral<decltype(T::value)>;
+
+template <typename T>
+concept NaturalNumber =
+    IntegerNumber<T>
+    && requires {
+        T::value >= 0;
+};
+
+template <std::size_t N>
+struct StaticNumber_size_t {
+    using size_t = std::size_t;
+    static const size_t value = N;
+    constexpr operator size_t() const { return N; }
+    constexpr operator int() const { return static_cast<int>(N); }
+    template <IntegerNumber I>
+    constexpr bool operator==(I) {
+        return N == static_cast<size_t>(I::value);
+    }
+    template <IntegerNumber I>
+    constexpr bool operator<(I) {
+        return N < static_cast<size_t>(I::value);
+    }
+    template <IntegerNumber I>
+    constexpr bool operator<=(I) {
+        return N <= static_cast<size_t>(I::value);
+    }
+    template <IntegerNumber I>
+    constexpr bool operator>(I) {
+        return N > static_cast<size_t>(I::value);
+    }
+    template <IntegerNumber I>
+    constexpr bool operator>=(I) {
+        return N >= static_cast<size_t>(I::value);
+    }
+};
+
+static const StaticNumber_size_t<0> ZERO;
+static const StaticNumber_size_t<1> ONE;
+static const StaticNumber_size_t<2> TWO;
+static const StaticNumber_size_t<3> THREE;
+static const StaticNumber_size_t<4> FOUR;
+static const StaticNumber_size_t<5> FIVE;
+static const StaticNumber_size_t<6> SIX;
+static const StaticNumber_size_t<7> SEVEN;
+static const StaticNumber_size_t<8> EIGHT;
+static const StaticNumber_size_t<9> NINE;
+static const StaticNumber_size_t<10> TEN;
+
 }  // namespace dare
 
 #endif  // UTILITIES_PROPERTYINFORMATION_H_

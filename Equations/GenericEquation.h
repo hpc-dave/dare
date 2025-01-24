@@ -113,8 +113,8 @@ public:
 private:
     GridRepresentation grep;
     dare::ExecutionManager* exec_man;
-    BoundaryStrategyType boundary_strategy;
     FieldType field;
+    BoundaryStrategyType boundary_strategy;
     CustomMemberType custom_member;
     std::set<std::function<void(SelfType*)>> pre_step_strategy;
     std::set<std::function<void(SelfType*)>> post_step_strategy;
