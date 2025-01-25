@@ -48,7 +48,6 @@ public:
 
     PMContinuity(const std::string& name,
                  GridRepresentation grid,
-                 dare::ExecutionManager* ex_man,
                  std::size_t num_tsteps,
                  BoundaryStrategy bc_strat);
 

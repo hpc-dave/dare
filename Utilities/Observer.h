@@ -27,6 +27,7 @@
 
 #include <functional>
 #include <utility>
+#include <memory>
 
 namespace dare {
 
@@ -73,6 +74,54 @@ concept Observable =
         { t.Detach(o) } -> std::same_as<bool>;
         t.Notify();
     };  // NOLINT
+
+namespace detail {
+/*!
+ * @brief a concept class for external polymorphism to handle observers
+ *
+ * The class is empty, because we are only interested in the
+ * automatically generated virtual destructor. Otherwise the
+ * observer is not called by the owning object, only
+ * by the observed object, and that one knows the type!
+ */
+class ObserverHandleConcept {
+};
+
+}  // end namespace detail
+
+using UniqueObserverHandle = std::unique_ptr<detail::ObserverHandleConcept>;
+
+/*!
+ * @brief an observer handle for managing the lifetime of observers
+ * @tparam T an observer type
+ * No functions except the constructor are required, since the owning
+ * instance of an observer does not require any further direct access.
+ */
+template <typename Subject, typename StateTag>
+class ObserverHandleModel : public detail::ObserverHandleConcept {
+public:
+    using ObserverType = Observer<Subject, StateTag>;
+    explicit ObserverHandleModel(ObserverType observer) : obs(std::move(observer)) {}
+
+private:
+    ObserverType obs;  //!< actual instance of the observer
+};
+
+/*!
+ * @brief A convenience function to get an observer handle
+ * @tparam Lambda Update function type
+ * @tparam T the observable type
+ * @param on_update actual update function
+ */
+template<Observable T, typename Lambda>
+UniqueObserverHandle make_observer_handle(Lambda on_update) {
+    using ObserverType = T::ObserverType;
+    using TObsModel = dare::ObserverHandleModel<T, typename T::StateChange>;
+
+    ObserverType obs(on_update);
+    return std::make_unique<TObsModel>(std::move(obs));
+}
+
 }  // namespace dare
 
 #endif  // UTILITIES_OBSERVER_H_

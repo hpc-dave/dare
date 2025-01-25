@@ -33,6 +33,7 @@ template<typename T = dare::defaults::ScalarType>
 class ConstantTimeStep {
 public:
     enum class StateChange {
+        Update
     };
     using ValueType = T;
     using ObserverType = dare::Observer<ConstantTimeStep<T>, StateChange>;

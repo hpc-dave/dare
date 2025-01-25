@@ -712,6 +712,12 @@ CartesianRepresentation<Dim>::GetHaloBuffer() {
 }
 
 template <std::size_t Dim>
+dare::ExecutionManager*
+CartesianRepresentation<Dim>::GetExecutionManager() const {
+    return grid->GetExecutionManager();
+}
+
+template <std::size_t Dim>
 std::string CartesianRepresentation<Dim>::GetName() const {
     return name;
 }

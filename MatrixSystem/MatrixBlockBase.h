@@ -141,6 +141,18 @@ public:
     O GetRow(std::size_t n) const;
 
     /*!
+     * @brief provides rhs
+     * @param n ID of component
+     */
+    ScalarArrayN& GetRhs();
+
+    /*!
+     * @brief provides rhs
+     * @param n ID of component
+     */
+    const ScalarArrayN& GetRhs() const;
+
+    /*!
      * @brief provides rhs value of component n
      * @param n ID of component
      */

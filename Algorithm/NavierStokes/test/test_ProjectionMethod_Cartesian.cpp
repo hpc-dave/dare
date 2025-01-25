@@ -106,8 +106,9 @@ using ProjectionMethodCartesian3DTest = ProjectionMethodCartesianTest<3>;
 TEST_F(ProjectionMethodCartesian1DTest, Initialization) {
     dare::ProjectionMethod<GridType, BStrat, PDefault, NDefault> pm;
     dare::test::BStrat bstrat;
+    dare::ConstantTimeStep dt(1.);
     EXPECT_FALSE(pm.IsInitialized());
-    pm.Initialize(grid, bstrat);
+    pm.Initialize(grid, &dt, bstrat);
     EXPECT_TRUE(pm.IsInitialized());
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -118,8 +119,9 @@ TEST_F(ProjectionMethodCartesian1DTest, Initialization) {
 TEST_F(ProjectionMethodCartesian2DTest, Initialization) {
     dare::ProjectionMethod<GridType, BStrat, PDefault, NDefault> pm;
     dare::test::BStrat bstrat;
+    dare::ConstantTimeStep dt(1.);
     EXPECT_FALSE(pm.IsInitialized());
-    pm.Initialize(grid, bstrat);
+    pm.Initialize(grid, &dt, bstrat);
     EXPECT_TRUE(pm.IsInitialized());
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -129,9 +131,10 @@ TEST_F(ProjectionMethodCartesian2DTest, Initialization) {
 
 TEST_F(ProjectionMethodCartesian3DTest, Initialization) {
     dare::ProjectionMethod<GridType, BStrat, PDefault, NDefault> pm;
+    dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
     EXPECT_FALSE(pm.IsInitialized());
-    pm.Initialize(grid, bstrat);
+    pm.Initialize(grid, &dt, bstrat);
     EXPECT_TRUE(pm.IsInitialized());
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -146,13 +149,14 @@ TEST_F(ProjectionMethodCartesian1DTest, FinalizeWithForce) {
         using explicit_force = Field;
         using implicit_force = Field;
     };
+    dare::ConstantTimeStep dt(1.);
     Field rho("rho", grid->GetRepresentation(opt_s), 2);
     double mu = 1.;
     Field beta_im("beta_im", grid->GetRepresentation(opt_s), 1);
     Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, bstrat);
+    pm.Initialize(grid, &dt, bstrat);
     pm.AddImplicitForce(&beta_im);
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -172,13 +176,14 @@ TEST_F(ProjectionMethodCartesian2DTest, FinalizeWithForce) {
         using explicit_force = Field;
         using implicit_force = Field;
     };
+    dare::ConstantTimeStep dt(1.);
     Field rho("rho", grid->GetRepresentation(opt_s), 2);
     double mu = 1.;
     Field beta_im("beta_im", grid->GetRepresentation(opt_s), 1);
     Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, bstrat);
+    pm.Initialize(grid, &dt, bstrat);
     pm.AddImplicitForce(&beta_im);
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -198,13 +203,14 @@ TEST_F(ProjectionMethodCartesian3DTest, FinalizeWithForce) {
         using explicit_force = Field;
         using implicit_force = Field;
     };
+    dare::ConstantTimeStep dt(1.);
     Field rho("rho", grid->GetRepresentation(opt_s), 2);
     double mu = 1.;
     Field beta_im("beta_im", grid->GetRepresentation(opt_s), 1);
     Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, bstrat);
+    pm.Initialize(grid, &dt, bstrat);
     pm.AddImplicitForce(&beta_im);
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -226,11 +232,14 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_ddt_test) {
     };
     double rho = 1.;
     double mu = 0.;
-    dare::ConstantTimeStep dt(1.);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
+    dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, bstrat);
+    pm.Initialize(grid, &dt, bstrat);
     pm.SetDensity(rho);
     pm.SetViscosity(mu);
-    // pm.SetTimeStepSize(dt);
+    for (std::size_t d{0}; d < Dim; d++)
+        pm.GetMomentum(d)->GetField()->SetValues(0.);
+    pm.GetContinuity()->GetPressure()->SetValues(0.);
+    dare::free_pm_build_momentum(&pm, dare::ZERO);
 }

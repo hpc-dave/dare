@@ -164,16 +164,20 @@ public:
         free_compile_time_check(this);
     }
 
-    template<typename... Args>
-    void Initialize(GridType* grid, Args&&... bc_args) {
+    template<TimeStepper T, typename... Args>
+    void Initialize(GridType* grid, T* tstep, Args&&... bc_args) {
         ex_man = grid->GetExecutionManager();
+        auto dt_obs_func = [&](const T& stepper, typename T::StateChange tag) {
+            this->dt = stepper.GetTimeStepSize();
+        };
+        pimpl_dt_obs = dare::make_observer_handle<T>(dt_obs_func);
         free_pm_initialize(this, grid, bc_args...);
         this->dare::InitializationTracker::Initialize();
     }
 
-    template<typename... Args>
-    void Initialize(std::unique_ptr<GridType>& grid, Args&&... bc_args) {   // NOLINT
-        Initialize(grid.get(), bc_args...);
+    template<TimeStepper T, typename... Args>
+    void Initialize(std::unique_ptr<GridType>& grid, T* tstep, Args&&... bc_args) {   // NOLINT
+        Initialize(grid.get(), tstep, bc_args...);
     }
 
     // for access in the free functions
@@ -354,6 +358,7 @@ private:
     int max_iterations;
     char status;
     char status_finalized;
+    UniqueObserverHandle pimpl_dt_obs;
 };
 
 }  // namespace dare

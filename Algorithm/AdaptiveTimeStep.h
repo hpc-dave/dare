@@ -34,7 +34,7 @@ template<typename T = dare::defaults::ScalarType>
 class AdaptiveTimeStep {
 public:
     enum class StateChange {
-        Updated
+        Update
     };
     using ValueType = T;
     using ObserverType = dare::Observer<AdaptiveTimeStep<T>, StateChange>;

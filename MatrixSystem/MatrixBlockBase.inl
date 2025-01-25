@@ -116,6 +116,16 @@ O MatrixBlockBase<O, SC, N>::GetRow(std::size_t n) const {
 }
 
 template <typename O, typename SC, std::size_t N>
+typename MatrixBlockBase<O, SC, N>::ScalarArrayN& MatrixBlockBase<O, SC, N>::GetRhs() {
+    return rhs;
+}
+
+template <typename O, typename SC, std::size_t N>
+const typename MatrixBlockBase<O, SC, N>::ScalarArrayN& MatrixBlockBase<O, SC, N>::GetRhs() const {
+    return rhs;
+}
+
+template <typename O, typename SC, std::size_t N>
 SC MatrixBlockBase<O, SC, N>::GetRhs(std::size_t n) const {
     return rhs[n];
 }

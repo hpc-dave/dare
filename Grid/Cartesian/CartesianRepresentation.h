@@ -282,6 +282,11 @@ public:
     HaloBuffer<SC>& GetHaloBuffer();
 
     /*!
+     * @brief returns pointer to the underlying execution manager
+     */
+    dare::ExecutionManager* GetExecutionManager() const;
+
+    /*!
      * @brief provides name of the grid including options
      */
     std::string GetName() const;

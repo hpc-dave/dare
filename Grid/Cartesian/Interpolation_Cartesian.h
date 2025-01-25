@@ -620,10 +620,10 @@ dare::Vector<N, SC> InterpolateToPoint(const typename dare::Vector<Dim, SC>& poi
     return Interpolate(field, vlist, weights);
 }
 
-template <std::size_t Dim, typename T, std::size_t N>
+template <std::size_t Dim, typename T, std::size_t N, typename LO>
 [[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
 InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
-                         typename dare::Cartesian<Dim>::Index ind_target,
+                         dare::Vector<Dim, LO> ind_target,
                          const dare::GridVector<dare::Cartesian<Dim>, T, N>& field,
                          typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
     const auto STENCIL_SIZE = dare::Cartesian<Dim>::STENCIL_SIZE;
@@ -646,40 +646,47 @@ InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& gr
     return s;
 }
 
-template <std::size_t Dim, typename T, std::size_t N>
-    requires std::is_arithmetic_v<T>
+template <std::size_t Dim, typename T, std::size_t N, typename LO>
 [[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
 InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
-                         typename dare::Cartesian<Dim>::Index ind_target,
-                         T value,
+                         dare::Vector<Dim, LO> ind_target,
+                         const dare::GridVector<dare::Cartesian<Dim>, T, N>* field,
                          typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
-    const auto STENCIL_SIZE = dare::Cartesian<Dim>::STENCIL_SIZE;
-    dare::FaceValueStencil<dare::Cartesian<Dim>, T, N> s;
+    return InterpolateToFaceStencil(grid_target, ind_target, *field, distance);
+}
+
+template <std::size_t Dim, typename T, typename LO>
+    requires std::is_arithmetic_v<T>
+[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, 1>
+InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
+                         dare::Vector<Dim, LO> ind_target,
+                         T value,
+                         LO distance = 0) {
+    dare::FaceValueStencil<dare::Cartesian<Dim>, T, 1> s;
     s.SetAll(value);
     return s;
 }
 
-template <std::size_t Dim, std::size_t N>
-[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, dare::defaults::ScalarType, N>
+template <std::size_t Dim, typename LO>
+[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, dare::defaults::ScalarType, 1>
 InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
-                         typename dare::Cartesian<Dim>::Index ind_target,
+                         dare::Vector<Dim, LO> ind_target,
                          dare::None v,
                          typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
-    const auto STENCIL_SIZE = dare::Cartesian<Dim>::STENCIL_SIZE;
-    dare::FaceValueStencil<dare::Cartesian<Dim>, dare::defaults::ScalarType, N> s;
+    dare::FaceValueStencil<dare::Cartesian<Dim>, dare::defaults::ScalarType, 1> s;
     s.SetAll(1.);
     return s;
 }
 
-template <std::size_t Dim, typename T, std::size_t N>
+template <std::size_t Dim, typename T, std::size_t N, typename LO>
 [[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
 InterpolateToCenterStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
-                           typename dare::Cartesian<Dim>::Index ind_target,
+                           dare::Vector<Dim, LO> ind_target,
                            const dare::GridVector<dare::Cartesian<Dim>, T, N>& field,
                            typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
     const auto STENCIL_SIZE = dare::Cartesian<Dim>::STENCIL_SIZE;
     dare::CenterValueStencil<dare::Cartesian<Dim>, T, N> s;
-    ERROR << "This function is not appicable at the moment" << ERROR_CLOSE;
+    ERROR << "This function is not applicable at the moment" << ERROR_CLOSE;
     for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
         typename dare::Cartesian<Dim>::Index ind(ind_target);
         // This little black magic here is actually quite simple
@@ -698,6 +705,14 @@ InterpolateToCenterStencil(const typename dare::Cartesian<Dim>::Representation& 
     return s;
 }
 
+template <std::size_t Dim, typename T, std::size_t N, typename LO>
+[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
+InterpolateToCenterStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
+                           dare::Vector<Dim, LO> ind_target,
+                           const dare::GridVector<dare::Cartesian<Dim>, T, N>* field,
+                           typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
+    return InterpolateToCenterStencil(grid_target, ind_target, *field, distance);
+}
 }  // end namespace dare
 
 #endif  // GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_

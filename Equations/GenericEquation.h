@@ -34,6 +34,8 @@
 #include "MPI/ExecutionManager.h"
 #include "MatrixSystem/Trilinos.h"
 #include "MatrixSystem/TrilinosSolver.h"
+#include "Utilities/Observer.h"
+#include "Algorithm/AlgorithmTraits.h"
 
 namespace dare {
 
@@ -71,7 +73,6 @@ public:
 
     GenericEquation(const std::string& name,
                     GridRepresentation grid,
-                    dare::ExecutionManager* ex_man,
                     std::size_t num_tsteps,
                     BoundaryStrategy bc_strat);
 

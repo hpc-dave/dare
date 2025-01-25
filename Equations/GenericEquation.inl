@@ -27,13 +27,16 @@ namespace dare {
 template <typename Grid, typename BS, typename CM>
 GenericEquation<Grid, BS, CM>::GenericEquation(const std::string& name,
                                                GridRepresentation grid,
-                                               dare::ExecutionManager* ex_man,
                                                std::size_t num_tsteps,
                                                BS bc_strat)
     : grep(std::move(grid)),
-      exec_man(ex_man),
+      exec_man(nullptr),
       field(name, grid, num_tsteps),
       boundary_strategy(std::move(bc_strat)) {
+    exec_man = grep.GetExecutionManager();
+    if (!exec_man) {
+        ERROR << "Execution Manager is nullptr!" << ERROR_CLOSE;
+    }
     matrix_system.Initialize(exec_man);
 }
 
@@ -47,7 +50,7 @@ template <typename Grid, typename BS, typename CM>
 template <typename BuildStrategy>
 void GenericEquation<Grid, BS, CM>::Build(BuildStrategy build_lambda) {
     const bool rebuild{false};
-    matrix_system.Build(grep, field, build_lambda, rebuild);
+    matrix_system.Build(grep, field.GetDataVector(), build_lambda, rebuild);
 }
 
 template <typename Grid, typename BS, typename CM>
