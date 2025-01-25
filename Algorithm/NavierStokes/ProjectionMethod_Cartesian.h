@@ -270,6 +270,7 @@ typename PM::SC pm_explicit_force_Cartesian(PM* pm,
 }
 
 template <typename PM, dare::NaturalNumber Direction>
+    requires(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>)
 void free_pm_build_momentum(PM* pm, Direction direction) {
     static_assert(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>, "Inconsistent dimensions");
     static const std::size_t dir = Direction::value;
