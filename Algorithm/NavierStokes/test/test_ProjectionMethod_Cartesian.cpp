@@ -24,11 +24,13 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <type_traits>
 
 #include "Algorithm/NavierStokes/ProjectionMethod.h"
 #include "Grid/Cartesian.h"
 #include "Algorithm/NavierStokes/ProjectionMethod_Cartesian.h"
+#include "Algorithm/ConstantTimeStep.h"
 
 
 namespace dare::test {
@@ -60,16 +62,17 @@ struct BStrat {
  * @brief Fixture for testing the interpolation functions with the Cartesian Grid
  */
 template<std::size_t D>
-class ProjectionMethodCartesianTestFixture : public testing::Test {
+class ProjectionMethodCartesianTest : public testing::Test {
 public:
     static const std::size_t Dim{D};
-    static const std::size_t N{Dim};
+    static const std::size_t N{1};
     using GridType = dare::Cartesian<Dim>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
     using Index = typename GridType::Index;
-    using Field = dare::GridVector<GridType, SC, N>;
+    using GridVector = dare::GridVector<GridType, SC, N>;
+    using Field = dare::Field<GridType, SC, N>;
     using Options = typename GridType::Options;
 
     using PDefault = dare::PMPropertyInfoDefault<GridType>;
@@ -82,18 +85,152 @@ public:
                                           dare::test::GetResolutionTestPMCartesian<Dim>(),
                                           dare::test::GetSizeTestPMCartesian<Dim>(),
                                           num_ghost);
+        for (std::size_t d{0}; d < Dim; d++) {
+            opt_s[d] = 0;
+            for (std::size_t e{0}; e < Dim; e++) {
+                opt_m[d][e] = e == d;
+            }
+        }
     }
 
     std::unique_ptr<GridType> grid;   //!< the grid
     dare::ExecutionManager exec_man;  //!< the execution manager
+    Options opt_s;                    //!< options scalar grid
+    std::array<Options, Dim> opt_m;   //!< options momentum grid
 };
 
-using ProjectionMethodCartesian1DFixture = ProjectionMethodCartesianTestFixture<1>;
-using ProjectionMethodCartesian2DFixture = ProjectionMethodCartesianTestFixture<2>;
-using ProjectionMethodCartesian3DFixture = ProjectionMethodCartesianTestFixture<3>;
+using ProjectionMethodCartesian1DTest = ProjectionMethodCartesianTest<1>;
+using ProjectionMethodCartesian2DTest = ProjectionMethodCartesianTest<2>;
+using ProjectionMethodCartesian3DTest = ProjectionMethodCartesianTest<3>;
 
-TEST_F(ProjectionMethodCartesian1DFixture, Initialization) {
+TEST_F(ProjectionMethodCartesian1DTest, Initialization) {
     dare::ProjectionMethod<GridType, BStrat, PDefault, NDefault> pm;
     dare::test::BStrat bstrat;
+    EXPECT_FALSE(pm.IsInitialized());
     pm.Initialize(grid, bstrat);
+    EXPECT_TRUE(pm.IsInitialized());
+    EXPECT_FALSE(pm.CheckStatus());
+    for (std::size_t d{0}; d < Dim; d++) {
+        EXPECT_TRUE(pm.GetMomentum(d)->GetGridRepresentation()->GetOptions() == opt_m[d]);
+    }
+}
+
+TEST_F(ProjectionMethodCartesian2DTest, Initialization) {
+    dare::ProjectionMethod<GridType, BStrat, PDefault, NDefault> pm;
+    dare::test::BStrat bstrat;
+    EXPECT_FALSE(pm.IsInitialized());
+    pm.Initialize(grid, bstrat);
+    EXPECT_TRUE(pm.IsInitialized());
+    EXPECT_FALSE(pm.CheckStatus());
+    for (std::size_t d{0}; d < Dim; d++) {
+        EXPECT_TRUE(pm.GetMomentum(d)->GetGridRepresentation()->GetOptions() == opt_m[d]);
+    }
+}
+
+TEST_F(ProjectionMethodCartesian3DTest, Initialization) {
+    dare::ProjectionMethod<GridType, BStrat, PDefault, NDefault> pm;
+    dare::test::BStrat bstrat;
+    EXPECT_FALSE(pm.IsInitialized());
+    pm.Initialize(grid, bstrat);
+    EXPECT_TRUE(pm.IsInitialized());
+    EXPECT_FALSE(pm.CheckStatus());
+    for (std::size_t d{0}; d < Dim; d++) {
+        EXPECT_TRUE(pm.GetMomentum(d)->GetGridRepresentation()->GetOptions() == opt_m[d]);
+    }
+}
+
+TEST_F(ProjectionMethodCartesian1DTest, FinalizeWithForce) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using explicit_force = Field;
+        using implicit_force = Field;
+    };
+    Field rho("rho", grid->GetRepresentation(opt_s), 2);
+    double mu = 1.;
+    Field beta_im("beta_im", grid->GetRepresentation(opt_s), 1);
+    Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, bstrat);
+    pm.AddImplicitForce(&beta_im);
+    EXPECT_FALSE(pm.CheckStatus());
+    for (std::size_t d{0}; d < Dim; d++) {
+        pm.AddExplicitForce(&beta_ex, d);
+        EXPECT_FALSE(pm.CheckStatus());
+    }
+    pm.SetDensity(&rho);
+    EXPECT_FALSE(pm.CheckStatus());
+    pm.SetViscosity(mu);
+    EXPECT_TRUE(pm.CheckStatus());
+}
+
+TEST_F(ProjectionMethodCartesian2DTest, FinalizeWithForce) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using explicit_force = Field;
+        using implicit_force = Field;
+    };
+    Field rho("rho", grid->GetRepresentation(opt_s), 2);
+    double mu = 1.;
+    Field beta_im("beta_im", grid->GetRepresentation(opt_s), 1);
+    Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, bstrat);
+    pm.AddImplicitForce(&beta_im);
+    EXPECT_FALSE(pm.CheckStatus());
+    for (std::size_t d{0}; d < Dim; d++) {
+        pm.AddExplicitForce(&beta_ex, d);
+        EXPECT_FALSE(pm.CheckStatus());
+    }
+    pm.SetDensity(&rho);
+    EXPECT_FALSE(pm.CheckStatus());
+    pm.SetViscosity(mu);
+    EXPECT_TRUE(pm.CheckStatus());
+}
+
+TEST_F(ProjectionMethodCartesian3DTest, FinalizeWithForce) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using explicit_force = Field;
+        using implicit_force = Field;
+    };
+    Field rho("rho", grid->GetRepresentation(opt_s), 2);
+    double mu = 1.;
+    Field beta_im("beta_im", grid->GetRepresentation(opt_s), 1);
+    Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, bstrat);
+    pm.AddImplicitForce(&beta_im);
+    EXPECT_FALSE(pm.CheckStatus());
+    for (std::size_t d{0}; d < Dim; d++) {
+        pm.AddExplicitForce(&beta_ex, d);
+        EXPECT_FALSE(pm.CheckStatus());
+    }
+    pm.SetDensity(&rho);
+    EXPECT_FALSE(pm.CheckStatus());
+    pm.SetViscosity(mu);
+    EXPECT_TRUE(pm.CheckStatus());
+}
+
+TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_ddt_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = double;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    double rho = 1.;
+    double mu = 0.;
+    dare::ConstantTimeStep dt(1.);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, bstrat);
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    // pm.SetTimeStepSize(dt);
 }

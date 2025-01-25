@@ -25,6 +25,12 @@
 #ifndef ALGORITHM_ALGORITHMTRAITS_H_
 #define ALGORITHM_ALGORITHMTRAITS_H_
 
+#include <concepts>
+#include <type_traits>
+
+#include "Data/DefaultTypes.h"
+#include "Utilities/Observer.h"
+
 namespace dare {
 
 /*!
@@ -58,6 +64,21 @@ struct uses_fixed_point_iterations : std::bool_constant<FixedPointIterations<T>>
 
 template <typename T>
 constexpr bool uses_fixed_point_iterations_v = uses_fixed_point_iterations<T>::value;
+
+template <typename T>
+concept TimeStepper =
+    dare::Observable<T>
+    && requires {
+        typename T::ValueType;
+    } && requires(const T t) {
+        { t.GetTimeStepSize() } -> std::same_as<typename T::ValueType>;
+    };  // NOLINT
+
+template <typename T>
+concept AdaptiveTimeStepper = TimeStepper<T> &&
+    requires(T t, T::ValueType dt) {
+        t.AdaptTimeStepSize(dt);
+    };  // NOLINT
 
 }  // namespace dare
 

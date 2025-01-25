@@ -44,7 +44,7 @@ void free_compile_time_check(PM*) {
 template <typename PM, std::size_t Dim, typename... Args>
 void free_pm_initialize(PM* pm, dare::Cartesian<Dim>* grid, Args&&... bc_args) {
     static_assert(PM::dimension == Dim, "The projection method and grid do not have the same dimension!");  // NOLINT
-    static_assert(PM::dimension < 3, "Not equipped for higher dimensions");
+    static_assert(PM::dimension < 4, "Not equipped for higher dimensions");
     static const std::size_t num_tsteps_momentum = PM::num_tsteps_momentum;
     std::string m_names[] = {"u", "v", "w"};
     typename PM::GridType::Options opt;
@@ -140,28 +140,28 @@ template<typename PM, dare::NaturalNumber Direction>
     requires(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>)
 typename PM::SC pm_pressure_force_Cartesian(
     PM* pm,
-    Direction,
+    Direction direction,
     const typename PM::IndexLocal& ind,
     const dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>& epsilon) {
-    static const std::size_t dir = Direction::value;
+    // static const std::size_t dir = Direction::value;
     using SC = typename PM::SC;
     using Index = typename PM::IndexLocal;
     using CNB = typename dare::CartesianNeighbor;
     Index ind_nb(ind);
-    ind_nb[dir] -= 1;
+    ind_nb[direction] -= 1;
     SC eps{0.};
-    if constexpr(dir == 0)
+    if constexpr(direction == 0)
         eps = epsilon.GetValue(CNB::WEST, 0);
-    else if constexpr(dir == 1)
+    else if constexpr(direction == 1)
         eps = epsilon.GetValue(CNB::SOUTH, 0);
-    else if constexpr(dir == 2)
+    else if constexpr(direction == 2)
         eps = epsilon.GetValue(CNB::BOTTOM, 0);
     else
         static_assert(dare::always_false<PM>, "ONLY UP TO 3D, STUPID!");
 
     SC delta_p = pm->GetContinuity()->GetPressure().At(ind) - pm->GetContinuity()->GetPressure().At(ind_nb);
     SC dV = pm->GetContinuity()->GetRepresentation()->GetCellVolume();
-    SC dx = pm->GetContinuity()->GetRepresentation()->GetDistances()[dir];
+    SC dx = pm->GetContinuity()->GetRepresentation()->GetDistances()[direction];
     return -eps * delta_p / dx * dV;
 }
 

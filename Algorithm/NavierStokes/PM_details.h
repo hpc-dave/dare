@@ -235,8 +235,8 @@ struct DetermineDensityVariableType<T> {
 };
 
 template <FieldType T>
-    requires(T::NUM_COMPONENTS == 1)  // NOLINT
 struct DetermineDensityVariableType<T> {
+    static_assert(T::NUM_COMPONENTS == 1, "Cannot deal with more than one component right now");
     using type = const T*;
 };
 
@@ -259,8 +259,8 @@ struct DetermineViscosityVariableType<T> {
 };
 
 template <FieldType T>
-    requires(T::NUM_COMPONENTS == 1)  // NOLINT
 struct DetermineViscosityVariableType<T> {
+    static_assert(T::NUM_COMPONENTS == 1, "Cannot deal with more than one component right now");
     using type = const T*;
 };
 
@@ -288,8 +288,8 @@ struct DeterminePorosityVariableType<T> {
 };
 
 template <FieldType T>
-    requires(T::NUM_COMPONENTS == 1)  // NOLINT
 struct DeterminePorosityVariableType<T> {
+    static_assert(T::NUM_COMPONENTS == 1, "Cannot deal with more than one component right now");
     using type = const T*;
 };
 
@@ -308,8 +308,8 @@ struct DetermineImplicitForceVariableType<T> {
 };
 
 template <FieldType T>
-    requires(T::NUM_COMPONENTS == 1)  // NOLINT
 struct DetermineImplicitForceVariableType<T> {
+    static_assert(T::NUM_COMPONENTS == 1, "Cannot deal with more than one component right now");
     using type = const T*;
     using member_type = std::set<type>;
 };
@@ -333,8 +333,8 @@ struct DetermineExplicitForceVariableType<T> {
 };
 
 template <FieldType T>
-    requires(T::NUM_COMPONENTS == 1)  // NOLINT
 struct DetermineExplicitForceVariableType<T> {
+    static_assert(T::NUM_COMPONENTS == 1, "Cannot deal with more than one component right now");
     using type = const T*;
     using member_type = std::set<type>;
 };

@@ -191,7 +191,7 @@ template <typename T>
 constexpr bool is_const_count_v = is_const_count<T>::value;
 
 template <typename T>
-concept IntegerNumber = std::integral<decltype(T::value)>;
+concept IntegerNumber = std::integral<decltype(T::value)> && std::is_convertible_v<T, int>;
 
 template <typename T>
 concept NaturalNumber =
@@ -205,27 +205,6 @@ struct StaticNumber_size_t {
     using size_t = std::size_t;
     static const size_t value = N;
     constexpr operator size_t() const { return N; }
-    constexpr operator int() const { return static_cast<int>(N); }
-    template <IntegerNumber I>
-    constexpr bool operator==(I) {
-        return N == static_cast<size_t>(I::value);
-    }
-    template <IntegerNumber I>
-    constexpr bool operator<(I) {
-        return N < static_cast<size_t>(I::value);
-    }
-    template <IntegerNumber I>
-    constexpr bool operator<=(I) {
-        return N <= static_cast<size_t>(I::value);
-    }
-    template <IntegerNumber I>
-    constexpr bool operator>(I) {
-        return N > static_cast<size_t>(I::value);
-    }
-    template <IntegerNumber I>
-    constexpr bool operator>=(I) {
-        return N >= static_cast<size_t>(I::value);
-    }
 };
 
 static const StaticNumber_size_t<0> ZERO;
@@ -242,4 +221,13 @@ static const StaticNumber_size_t<10> TEN;
 
 }  // namespace dare
 
+
+// lets add some static tests
+static_assert(dare::ZERO < dare::ONE);
+static_assert(dare::ONE <= dare::ONE);
+static_assert(dare::TEN > dare::TWO);
+static_assert(dare::TEN >= dare::TWO);
+static_assert(dare::THREE == 3);
+static_assert(dare::IntegerNumber<decltype(dare::ZERO)>);
+static_assert(dare::NaturalNumber<decltype(dare::ONE)>);
 #endif  // UTILITIES_PROPERTYINFORMATION_H_

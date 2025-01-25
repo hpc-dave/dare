@@ -56,7 +56,7 @@ public:
      * @param subject reference to the subject
      * @param property the state that was changed
      */
-    void update(const Subject& subject, StateTag property) {
+    void Update(const Subject& subject, StateTag property) {
         onUpdate_(subject, property);
     }
 
@@ -64,6 +64,15 @@ private:
     OnUpdate onUpdate_;     //!< function pointer with the update function
 };
 
+template <typename T>
+concept Observable =
+    requires {
+        typename T::StateChange;
+    } && requires(T t, Observer<T, typename T::StateChange>* o) {
+        { t.Attach(o) } -> std::same_as<bool>;
+        { t.Detach(o) } -> std::same_as<bool>;
+        t.Notify();
+    };  // NOLINT
 }  // namespace dare
 
 #endif  // UTILITIES_OBSERVER_H_

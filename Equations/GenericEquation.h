@@ -91,6 +91,9 @@ public:
 
     void PostStep();
 
+    GridRepresentation* GetGridRepresentation();
+    const GridRepresentation& GetGridRepresentation() const;
+
     BoundaryStrategyType* GetBoundaryStrategy();
     const BoundaryStrategyType& GetBoundaryStrategy() const;
 

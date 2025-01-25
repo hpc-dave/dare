@@ -150,6 +150,7 @@ public:
 
     ProjectionMethod()
         : ex_man(nullptr),
+          dt(0.),
           max_iterations(100),
           status(0), status_finalized(rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init) {
         if constexpr (dare::is_none_v<PorosityVariableType>)
@@ -172,7 +173,7 @@ public:
 
     template<typename... Args>
     void Initialize(std::unique_ptr<GridType>& grid, Args&&... bc_args) {   // NOLINT
-        free_pm_initialize(this, grid.get(), bc_args...);
+        Initialize(grid.get(), bc_args...);
     }
 
     // for access in the free functions
@@ -194,8 +195,11 @@ public:
         }
         // build momentum and solve subsequently
         // a bit more verbose, but easier to debug
-        BuildMomentum(dare::ZERO);
-        auto [success, iter] = SolveMomentum(0);
+        // put it in a scope to limit variable lifetime
+        {
+            BuildMomentum(dare::ZERO);
+            auto [success, iter] = SolveMomentum(0);
+        }
         // add some output here
         if constexpr (dimension > 1) {
             BuildMomentum(dare::ONE);
@@ -270,8 +274,7 @@ public:
             ex_man->Terminate(__func__, "Cannot add force terms prior to initialization");
         }
         if constexpr (!dare::is_none_v<ImplicitForceVariableType>) {
-            continuity.GetCustomMember()->beta_im.emplace(f);
-            status |= beta_im_init;
+            continuity->GetCustomMember()->beta_im.emplace(f);
         }
         status |= beta_im_init;
     }
@@ -282,15 +285,15 @@ public:
             ex_man->Terminate(__func__, "Cannot add force terms prior to initialization");
         }
         if constexpr (!dare::is_none_v<ExplicitForceVariableType>) {
-            if ((dim < 1) || (dim >= dimension)) {
+            if (dim >= dimension) {
                 ex_man->Terminate(__func__, "Invalid dimension choses for the force");
             }
             momentum[dim]->GetCustomMember()->beta_ex.emplace(f);
 
             // check if all explicit force members were set
-            bool all_init{true};
+            char all_init{beta_ex_init};
             for (auto& m : momentum)
-                all_init &= m->GetCustomMember()->beta_ex.empty();
+                all_init &= !m->GetCustomMember()->beta_ex.empty()? beta_ex_init : 0;
             status |= (beta_ex_init & all_init);
         }
     }

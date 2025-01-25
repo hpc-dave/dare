@@ -80,6 +80,19 @@ void GenericEquation<Grid, BS, CM>::PostStep() {
 }
 
 template <typename Grid, typename BS, typename CM>
+typename GenericEquation<Grid, BS, CM>::GridRepresentation*
+GenericEquation<Grid, BS, CM>::GetGridRepresentation() {
+    return &grep;
+}
+
+template <typename Grid, typename BS, typename CM>
+const typename GenericEquation<Grid, BS, CM>::GridRepresentation&
+GenericEquation<Grid, BS, CM>::GetGridRepresentation() const {
+    return grep;
+}
+
+
+template <typename Grid, typename BS, typename CM>
 BS* GenericEquation<Grid, BS, CM>::GetBoundaryStrategy() {
     return &boundary_strategy;
 }
