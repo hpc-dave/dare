@@ -23,6 +23,7 @@
  */
 #include <tuple>
 #include <type_traits>
+#include "Utilities/CompileTimeFunctions.h"
 
 namespace dare {
 
@@ -98,7 +99,7 @@ void DDT<Grid, TimeDiscretization>::Iterate(
         // Note, this is a convenient choice here, so we don't need to make a decision in the initial call of
         // this recursive function
     } else {
-        using Type = std::remove_reference_t<decltype(std::get<I>(args))>;
+        using Type = std::remove_cv_t<std::remove_reference_t<decltype(std::get<I>(args))>>;
 
         auto arg = std::get<I>(args);
         typename Grid::Index ind = grep->MapOrdinalToIndexLocal(local_ordinal);
@@ -107,11 +108,8 @@ void DDT<Grid, TimeDiscretization>::Iterate(
             for (std::size_t t{0}; t < NUM_TFIELDS; t++) {
                 // maybe work with overloads here in future
                 SC v{0.};
-                if constexpr (dare::is_field_v<Type>) {
-                    v = dare::InterpolateToCenter(*grep, ind, arg.GetDataVector(t), n);
-                } else if constexpr (std::is_pointer_v<Type>                        // NOLINT
-                                     && dare::is_field_v<std::remove_cv_t<Type>>) {
-                    v = dare::InterpolateToCenter(*grep, ind, arg->GetDataVector(t), n);
+                if constexpr (dare::is_field_v<std::remove_pointer_t<Type>>) {
+                    v = dare::InterpolateToCenter(*grep, ind, dare::convert_to_ref(arg).GetDataVector(t), n);
                 } else if constexpr (std::is_arithmetic_v<Type>) {
                     v = arg;
                 } else if constexpr (dare::is_none_v<Type>) {

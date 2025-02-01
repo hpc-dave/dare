@@ -171,6 +171,7 @@ public:
             this->dt = stepper.GetTimeStepSize();
         };
         pimpl_dt_obs = dare::make_observer_handle<T>(dt_obs_func);
+        dt = tstep->GetTimeStepSize();
         free_pm_initialize(this, grid, bc_args...);
         this->dare::InitializationTracker::Initialize();
     }

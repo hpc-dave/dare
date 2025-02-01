@@ -226,26 +226,36 @@ TEST_F(ProjectionMethodCartesian3DTest, FinalizeWithForce) {
 
 TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_ddt_test) {
     struct PDict {
-        using density = double;
+        using density = Field;
         using viscosity = double;
+        using porosity = Field;
         using explicit_force = dare::None;
         using implicit_force = dare::None;
     };
-    double rho = 1.;
+    auto g_s = grid->GetRepresentation(opt_s);
     double mu = 0.;
+    const double tol_eps = 1e2;
+    Field rho("rho", g_s, 2);
+    Field epsilon("epsilon", g_s, 2);
     dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
     rd.SetPreFactor(1e-4);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
     pm.Initialize(grid, &dt, bstrat);
-    pm.SetDensity(rho);
+    pm.SetDensity(&rho);
     pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
     for (std::size_t d{0}; d < Dim; d++) {
         for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++)
             pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
     }
-    pm.GetContinuity()->GetPressure()->SetValues(0.);
+    for (std::size_t i{0}; i < rho.GetDataVector().GetSize(); i++) {
+        rho.GetDataVector().At(i) = rd.Generate();
+        rho.GetDataVector(1).At(i) = rd.Generate();
+        epsilon.GetDataVector().At(i) = rd.Generate();
+        epsilon.GetDataVector(1).At(i) = rd.Generate();
+    }
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
 
     Index ind_loc(1);
@@ -257,6 +267,16 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_ddt_test) {
 
     SC dV_dt = g_x->GetCellVolume()/dt;
     SC u = pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0);
-    EXPECT_EQ(s.Center(0), rho * dV_dt);
-    EXPECT_EQ(s.GetRhs(0), rho * dV_dt * u);
+    Index ind_nb(ind);
+    ind_nb.i() -= 1;
+    SC rho_0 = 0.5 * (rho.GetDataVector(0).At(ind, 0) + rho.GetDataVector(0).At(ind_nb, 0));
+    SC rho_1 = 0.5 * (rho.GetDataVector(1).At(ind, 0) + rho.GetDataVector(1).At(ind_nb, 0));
+    SC eps_0 = 0.5 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_nb, 0));
+    SC eps_1 = 0.5 * (epsilon.GetDataVector(1).At(ind, 0) + epsilon.GetDataVector(1).At(ind_nb, 0));
+    SC v_0 = eps_0 * rho_0 * dV_dt;
+    SC v_1 = eps_1 * rho_1 * dV_dt * u;
+    EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
+    EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
+    for (auto face : g_x->GetFaces())
+        EXPECT_EQ(s.GetValue(face, 0), 0.);
 }
