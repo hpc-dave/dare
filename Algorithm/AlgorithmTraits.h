@@ -67,11 +67,11 @@ constexpr bool uses_fixed_point_iterations_v = uses_fixed_point_iterations<T>::v
 
 template <typename T>
 concept TimeStepper =
-    dare::Observable<T>
-    && requires {
+    dare::Observable<T> && requires {
         typename T::ValueType;
     } && requires(const T t) {
         { t.GetTimeStepSize() } -> std::same_as<typename T::ValueType>;
+        static_cast<typename T::ValueType>(t);
     };  // NOLINT
 
 template <typename T>

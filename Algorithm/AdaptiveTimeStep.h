@@ -59,6 +59,8 @@ public:
         }
     }
 
+    operator ValueType() { return dt; }
+
 private:
     ValueType dt;
     std::set<ObserverType*> observers;

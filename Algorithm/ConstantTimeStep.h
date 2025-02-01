@@ -61,6 +61,8 @@ public:
         // empty, nothing to notify
     }
 
+    operator ValueType() const { return dt; }
+
 private:
     ValueType dt;
 };
