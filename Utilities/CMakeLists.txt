@@ -8,6 +8,7 @@ set(DaRe_HEADER_FILES
     "Hashes.h"
     "InitializationTracker.h"
     "Observer.h"
+    "RandomNumberGenerator.h"
     "Errors.h"
 )
 

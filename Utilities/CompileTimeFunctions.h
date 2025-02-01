@@ -42,6 +42,58 @@ constexpr auto convert_tuple_to_array(tuple_t&& tuple) {
     return std::apply(get_array, std::forward<tuple_t>(tuple));
 }
 
+/*!
+ * @brief converts a given pointer to a reference
+ * @tparam T type with pointer
+ * @param t provided instance
+ * @return reference
+ * 
+ * \note const is implicitly kept, with the overload, references will be kept
+ */
+template<typename T>
+constexpr T& convert_to_ref(T* t) {
+    return *t;
+}
+
+/*!
+ * @brief provides a reference
+ * @tparam T type of reference
+ * @param t provided instance
+ * @return reference
+ *
+ * \note const is implicitly kept, with the overload, references will be kept
+ */
+template <typename T>
+constexpr T& convert_to_ref(T& t) {   // NOLINT
+    return t;
+}
+
+/*!
+ * @brief converts a given reference to a pointer
+ * @tparam T type of reference
+ * @param t provided instance
+ * @return pointer
+ *
+ * \note const is implicitly kept, with the overload, references will be kept
+ */
+template <typename T>
+constexpr T* convert_to_ptr(T& t) {   // NOLINT
+    return &t;
+}
+
+/*!
+ * @brief pointer is forwarded
+ * @tparam T type of ponter
+ * @param t provided instance
+ * @return pointer
+ *
+ * \note const is implicitly kept, with the overload, references will be kept
+ */
+template <typename T>
+constexpr T* convert_to_ptr(T* t) {
+    return t;
+}
+
 }  // namespace dare
 
 #endif  // UTILITIES_COMPILETIMEFUNCTIONS_H_
