@@ -67,9 +67,50 @@ void free_pm_initialize(PM* pm, dare::Cartesian<Dim>* grid, Args&&... bc_args) {
                              bc_args...);
 }
 
+template <typename PM, dare::NaturalNumber Direction, std::integral LO>
+dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1>
+free_pm_ddt_Cartesian(PM* pm,
+            Direction dir,
+            const typename PM::GridType::Representation& g_r,
+            LO o_loc) {
+    static_assert(std::is_same_v<LO, typename PM::GridType::LocalOrdinalType>);
+    using GridType = typename PM::GridType;
+    using DDT = dare::DDT<GridType>;
 
-template<typename PM, dare::NaturalNumber Direction>
-typename PM::SC pm_pressure_force_Cartesian(
+    DDT ddt(g_r, o_loc, pm->GetTimeStepSize());
+
+    return ddt(pm->GetPorosity(), pm->GetDensity(), pm->GetMomentum(dir)->GetField());
+}
+
+template <typename PM, dare::NaturalNumber Direction, std::integral LO>
+dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1>
+free_pm_convection_Cartesian(
+    PM* pm,
+    Direction dir,
+    const typename PM::GridType::Representation& g_r,
+    LO o_loc,
+    const dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>& epsilon,
+    const dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>& rho,
+    const dare::Vector<PM::dimension, dare::GridVector<typename PM::GridType, typename PM::SC, 1>>& velocities) {
+    static_assert(std::is_same_v<LO, typename PM::GridType::LocalOrdinalType>);
+    static_assert(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>);
+    using GridType = typename PM::GridType;
+    using SC = typename PM::SC;
+    using Divergence = dare::Divergence<GridType, typename PM::ConvectiveTimeSchemeType>;
+    using FluxLimiter = typename PM::TVDScheme;
+    using TVD = dare::TVD<GridType, SC, FluxLimiter>;
+
+    Divergence div(g_r, o_loc);
+    TVD tvd(*g_r, o_loc, velocities);
+
+    return div(tvd.Interpolate(epsilon),
+               tvd.Interpolate(rho),
+               tvd.Interpolate(*velocities[dir]),
+               *pm->GetMomentum(dir)->GetField());
+}
+
+template <typename PM, dare::NaturalNumber Direction>
+dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1> free_pm_pressure_force_Cartesian(
     PM* pm,
     Direction direction,
     const typename PM::Index& ind,
@@ -94,13 +135,14 @@ typename PM::SC pm_pressure_force_Cartesian(
                  - pm->GetContinuity()->GetPressure()->GetDataVector().At(ind_nb, 0);
     SC dV = pm->GetContinuity()->GetGridRepresentation()->GetCellVolume();
     SC dx = pm->GetContinuity()->GetGridRepresentation()->GetDistances()[direction];
-    return -eps * delta_p / dx * dV;
+    dare::CenterMatrixStencil<typename PM::GridType, SC, 1> stencil;
+    stencil.SetRhs(0) = -eps * delta_p / dx * dV;
+    return stencil;
 }
 
 template <typename PM, dare::NaturalNumber Direction>
-std::pair<dare::FaceMatrixStencil<typename PM::GridType, typename PM::SC, 1>,
-          dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>>
-pm_viscious_stress_Cartesian(
+dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1>
+free_pm_viscious_stress_Cartesian(
     PM* pm,
     Direction,
     const typename PM::GridType::Representation& grep,
@@ -109,11 +151,15 @@ pm_viscious_stress_Cartesian(
     const dare::Vector<PM::dimension, const dare::GridVector<typename PM::GridType, typename PM::SC, 1>*>& v) {
     static const std::size_t dim = PM::dimension;
     static const std::size_t dir = Direction::value;
+    using SC = typename PM::SC;
+    using LO = typename PM::LO;
+    using GridType = typename PM::GridType;
     using Treatment = typename PM::ViscousStressTreatment;
-    using FMStencil = dare::FaceMatrixStencil<typename PM::GridType, typename PM::SC, 1>;
-    using FVStencil = dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>;
+    using FMStencil = dare::FaceMatrixStencil<GridType, SC, 1>;
+    using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
     using CNB = dare::CartesianNeighbor;
     using Index = typename PM::Index;
+    using Divergence = dare::Divergence<GridType, typename PM::ConvectiveTimeSchemeType>;
     static_assert(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>, "Inconsistent dimensions");
     static_assert(dim < 4, "limited to 3 dimensions");
 
@@ -245,28 +291,48 @@ pm_viscious_stress_Cartesian(
             tau_ex *= dn_r[dare::ToFace(face) / 2];
         }
         tau_ex *= eps_mu_f;
-        return std::make_pair(tau_im, tau_ex);
+
+        LO o_loc = grep.MapIndexToOrdinalLocalInternal(grep.MapLocalToInternal(ind));
+        Divergence div(grep, o_loc);
+
+        dare::CenterMatrixStencil<GridType, SC, 1> s = div(tau_im);
+        s.GetRhs() = -div(tau_ex);
+        return s;
     }
 }
 
-template<typename PM, NaturalNumber Direction>
-typename PM::SC pm_explicit_force_Cartesian(PM* pm,
-                                            Direction,
-                                            const typename PM::MomentumType& m,
-                                            const typename PM::Index& ind) {
+template <typename PM, NaturalNumber Direction>
+dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1>
+pm_explicit_force_Cartesian(PM* pm,
+                            Direction dir,
+                            const typename PM::MomentumType& m,
+                            const typename PM::Index& ind) {
     static_assert(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>, "Inconsistent dimensions");
     using VType = std::remove_cv_t<std::remove_pointer_t<typename PM::ExplicitForceVariableType>>;
     using SC = typename PM::SC;
+    dare::CenterMatrixStencil<typename PM::GridType, SC, 1> s;
     if constexpr (is_none_v<VType>) {
-        return 0.;
+        // Do nothing
     } else {
         static_assert(FieldType<VType>, "Can only work with fields!");
         SC v{0.};
         for (auto& it : m.GetCustomMember().beta_ex) {
+            // Interpolate! Or test at least! How about a field wrapper?
+#ifndef DARE_NDEBUG
+            auto opt_f = it->GetGridRepresentation().GetOptions();
+            auto opt_m = pm->GetMomentum(dir)->GetField()->GetGridRepresentation().GetOptions();
+            if (opt_f != opt_m) {
+                ERROR << "At the moment, the explicit forces provided to the momentum equations "
+                      << "need to be located on the cell center of the staggered grid" << ERROR_CLOSE;
+                pm->GetExecutionManager()->Terminate(__func__, "Invalid option combination");
+            }
+#endif
             v += it->GetDataVector().At(ind, 0);
         }
-        return v;
+        v *= pm->GetMomentum(dir)->GetField()->GetGridRepresentation().GetCellVolume();
+        s.SetRhs(0, v);
     }
+    return s;
 }
 
 template <typename PM, dare::NaturalNumber Direction>
@@ -280,13 +346,8 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     using DensityType = typename PM::DensityVariableType;
     using ViscosityType = typename PM::ViscosityVariableType;
     using PorosityType = typename PM::PorosityVariableType;
-    using FluxLimiter = typename PM::TVDScheme;
     using IndexLocal = typename GridType::Index;
     using GridVectorType = dare::GridVector<GridType, SC, 1>;
-    using DDT = dare::DDT<GridType>;
-    using TVD = dare::TVD<GridType, SC, FluxLimiter>;
-    using DivergenceVStress = dare::Divergence<GridType, dare::EULER_BACKWARD>;
-    using DivergenceAdvection = dare::Divergence<GridType, typename PM::ConvectiveTimeSchemeType>;
     using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
 
     dare::Vector<PM::dimension, const GridVectorType*> velocities;
@@ -299,11 +360,9 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
         IndexLocal ind{mblock->GetIndex()};
 
-        DDT ddt(*g_r, o_loc, pm->GetTimeStepSize());
-        DivergenceAdvection div_a(*g_r, o_loc);
-        DivergenceVStress div_v(*g_r, o_loc);
+        // DDT ddt(*g_r, o_loc, pm->GetTimeStepSize());
         // check here with is_pointer_v
-        TVD tvd(*g_r, o_loc, velocities);
+        // TVD tvd(*g_r, o_loc, velocities);
 
         const DensityType rho{pm->GetDensity()};
         const ViscosityType mu{pm->GetViscosity()};
@@ -313,24 +372,26 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         FVStencil mu_f = dare::InterpolateToFaceStencil(*g_r, ind, mu);
         FVStencil epsilon_f = dare::InterpolateToFaceStencil(*g_r, ind, epsilon);
         // accumulation
-        (*mblock) = ddt(epsilon, rho, *pm->GetMomentum(dir)->GetField());
+        (*mblock) += free_pm_ddt_Cartesian(pm, direction, *g_r, o_loc);
 
         // advection
-        (*mblock) += div_a(tvd.Interpolate(epsilon),
-                           tvd.Interpolate(rho),
-                           tvd.Interpolate(*velocities[dir]),
-                           *pm->GetMomentum(dir)->GetField());
+        (*mblock) += free_pm_convection_Cartesian(pm, *g_r, o_loc, epsilon, rho, velocities);
+        // (*mblock) += div_a(tvd.Interpolate(epsilon),
+        //                    tvd.Interpolate(rho),
+        //                    tvd.Interpolate(*velocities[dir]),
+        //                    *pm->GetMomentum(dir)->GetField());
 
         // pressure force
-        mblock->GetRhs(0) += pm_pressure_force_Cartesian(pm, direction, ind, epsilon_f);
+        (*mblock) += free_pm_pressure_force_Cartesian(pm, direction, ind, epsilon_f);
 
         // viscous stress
-        auto [tau_im, tau_ex] = pm_viscious_stress_Cartesian(pm, direction, *g_r, ind, epsilon_f * mu_f, velocities);
-        (*mblock) += div_v(tau_im);
-        mblock->GetRhs() -= div_v(tau_ex);
+        (*mblock) += free_pm_viscious_stress_Cartesian(pm, direction, *g_r, ind, epsilon_f * mu_f, velocities);
+        // auto [tau_im, tau_ex] = free_pm_viscious_stress_Cartesian(pm, direction, *g_r, ind, epsilon_f * mu_f, velocities);
+        // (*mblock) += div_v(tau_im);
+        // mblock->GetRhs() -= div_v(tau_ex);
 
         // explicit forcing
-        mblock->GetRhs(0) += pm_explicit_force_Cartesian(pm, direction, *pm->GetMomentum(dir), ind);
+        (*mblock) += pm_explicit_force_Cartesian(pm, direction, *pm->GetMomentum(dir), ind);
     };
 
     pm->GetMomentum(dir)->Build(BuildStrategy);

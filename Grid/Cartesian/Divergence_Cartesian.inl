@@ -187,22 +187,22 @@ Divergence<dare::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
 
     // Add explicit components (e.g. from TVD Schemes)
     for (std::size_t n{0}; n < N; n++) {
-        s_c.GetRHS(n) = A[0] * (s[0].GetRHS(Positions::EAST, n) - s[0].GetRHS(Positions::WEST, n));
+        s_c.GetRhs(n) = A[0] * (s[0].GetRhs(Positions::EAST, n) - s[0].GetRhs(Positions::WEST, n));
         if constexpr(Dim > 1)
-            s_c.GetRHS(n) += A[1] * (s[0].GetRHS(Positions::NORTH, n) - s[0].GetRHS(Positions::SOUTH, n));
+            s_c.GetRhs(n) += A[1] * (s[0].GetRhs(Positions::NORTH, n) - s[0].GetRhs(Positions::SOUTH, n));
         if constexpr(Dim > 2)
-            s_c.GetRHS(n) += A[2] * (s[0].GetRHS(Positions::TOP, n) - s[0].GetRHS(Positions::BOTTOM, n));
+            s_c.GetRhs(n) += A[2] * (s[0].GetRhs(Positions::TOP, n) - s[0].GetRhs(Positions::BOTTOM, n));
     }
 
     // the remaining components are explicit
     for (std::size_t t{1}; t < NUM_TFIELDS; t++) {
         for (std::size_t n{0}; n < N; n++) {
             const SC coef_td = TimeDiscretization::template GetWeights<SC>()[t];
-            s_c.GetRHS(n) += coef_td * A[0] * (s[t].GetRHS(Positions::EAST, n) - s[t].GetRHS(Positions::WEST, n));
+            s_c.GetRhs(n) += coef_td * A[0] * (s[t].GetRhs(Positions::EAST, n) - s[t].GetRhs(Positions::WEST, n));
             if constexpr (Dim > 1)
-                s_c.GetRHS(n) += coef_td * A[1] * (s[t].GetRHS(Positions::NORTH, n) - s[t].GetRHS(Positions::SOUTH, n));
+                s_c.GetRhs(n) += coef_td * A[1] * (s[t].GetRhs(Positions::NORTH, n) - s[t].GetRhs(Positions::SOUTH, n));
             if constexpr (Dim > 2)
-                s_c.GetRHS(n) += coef_td * A[2] * (s[t].GetRHS(Positions::TOP, n) - s[t].GetRHS(Positions::BOTTOM, n));
+                s_c.GetRhs(n) += coef_td * A[2] * (s[t].GetRhs(Positions::TOP, n) - s[t].GetRhs(Positions::BOTTOM, n));
             }
     }
     return s_c;
@@ -248,13 +248,13 @@ Divergence<dare::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
 //         SC coef_f = s.GetValueNeighbor(Positions::EAST, n);
 //         s_c.GetValue(Positions::EAST, n) = A[0] * coef_f;
 //         s_c.GetValue(Positions::CENTER, n) = A[0] * coef_c;
-//         s_c.GetRHS(n) = A[0] * s.GetRHS(Positions::EAST, n);
+//         s_c.GetRhs(n) = A[0] * s.GetRhs(Positions::EAST, n);
 
 //         coef_c = s.GetValueCenter(Positions::WEST, n);
 //         coef_f = s.GetValueNeighbor(Positions::WEST, n);
 //         s_c.GetValue(Positions::WEST, n) = -A[0] * coef_f;
 //         s_c.GetValue(Positions::CENTER, n) -= A[0] * coef_c;
-//         s_c.GetRHS(n) -= A[0] * s.GetRHS(Positions::WEST, n);
+//         s_c.GetRhs(n) -= A[0] * s.GetRhs(Positions::WEST, n);
 
 //         // Divergence in Y
 //         if constexpr (Dim > 1) {
@@ -262,13 +262,13 @@ Divergence<dare::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
 //             SC coef_f = s.GetValueNeighbor(Positions::NORTH, n);
 //             s_c.GetValue(Positions::NORTH, n) = A[1] * coef_f;
 //             s_c.GetValue(Positions::CENTER, n) += A[1] * coef_c;
-//             s_c.GetRHS(n) += A[1] * s.GetRHS(Positions::NORTH, n);
+//             s_c.GetRhs(n) += A[1] * s.GetRhs(Positions::NORTH, n);
 
 //             coef_c = s.GetValueCenter(Positions::SOUTH, n);
 //             coef_f = s.GetValueNeighbor(Positions::SOUTH, n);
 //             s_c.GetValue(Positions::SOUTH, n) = -A[1] * coef_f;
 //             s_c.GetValue(Positions::CENTER, n) -= A[1] * coef_c;
-//             s_c.GetRHS(n) -= A[1] * s.GetRHS(Positions::SOUTH, n);
+//             s_c.GetRhs(n) -= A[1] * s.GetRhs(Positions::SOUTH, n);
 //         }
 
 //         // Divergence in Z
@@ -277,13 +277,13 @@ Divergence<dare::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
 //             SC coef_f = s.GetValueNeighbor(Positions::TOP, n);
 //             s_c.GetValue(Positions::TOP, n) = A[2] * coef_f;
 //             s_c.GetValue(Positions::CENTER, n) += A[2] * coef_c;
-//             s_c.GetRHS(n) += A[2] * s.GetRHS(Positions::TOP, n);
+//             s_c.GetRhs(n) += A[2] * s.GetRhs(Positions::TOP, n);
 
 //             coef_c = s.GetValueCenter(Positions::BOTTOM, n);
 //             coef_f = s.GetValueNeighbor(Positions::BOTTOM, n);
 //             s_c.GetValue(Positions::BOTTOM, n) = -A[2] * coef_f;
 //             s_c.GetValue(Positions::CENTER, n) -= A[2] * coef_c;
-//             s_c.GetRHS(n) -= A[2] * s.GetRHS(Positions::BOTTOM, n);
+//             s_c.GetRhs(n) -= A[2] * s.GetRhs(Positions::BOTTOM, n);
 //         }
 //     }
 //     return s_c;

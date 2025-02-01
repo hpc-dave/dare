@@ -1051,10 +1051,10 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDCDSMatrixTest) {
         Index ind_l{ind};
         ind_l.i() -= 1;
         SC v_ex = -0.5 * (field.At(ind, n) - field.At(ind_l, n)) * velocity[0];
-        EXPECT_NEAR(v.GetRHS(CNB::WEST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v.GetRhs(CNB::WEST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
         ind_l.i() += 2;
         v_ex = -0.5 * (field.At(ind_l, n) - field.At(ind, n)) * velocity[0];
-        EXPECT_NEAR(v.GetRHS(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v.GetRhs(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
     }
 
     // Downwind velocity
@@ -1072,10 +1072,10 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDCDSMatrixTest) {
         Index ind_l{ind};
         ind_l.i() -= 1;
         SC v_ex = -0.5 * (field.At(ind_l, n) - field.At(ind, n)) * velocity[0];
-        EXPECT_NEAR(v.GetRHS(CNB::WEST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v.GetRhs(CNB::WEST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
         ind_l.i() += 2;
         v_ex = -0.5 * (field.At(ind, n) - field.At(ind_l, n)) * velocity[0];
-        EXPECT_NEAR(v.GetRHS(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v.GetRhs(CNB::EAST, n), v_ex, eps_tol * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
     }
 }
 
@@ -1154,8 +1154,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDMatrixTest) {
         EXPECT_EQ(v.GetValueCenter(CNB::EAST, n), velocity[0]);
 
         SC v_ex = 0.;
-        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex);
-        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex);
+        EXPECT_EQ(v.GetRhs(CNB::WEST, n), v_ex);
+        EXPECT_EQ(v.GetRhs(CNB::EAST, n), v_ex);
     }
 
     // Downwind velocity
@@ -1170,8 +1170,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDUPWINDMatrixTest) {
         EXPECT_EQ(v.GetValueCenter(CNB::EAST, n), 0.);
 
         SC v_ex = 0.;
-        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex);
-        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex);
+        EXPECT_EQ(v.GetRhs(CNB::WEST, n), v_ex);
+        EXPECT_EQ(v.GetRhs(CNB::EAST, n), v_ex);
     }
 }
 
@@ -1301,8 +1301,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODMatrixTest) {
             r_e = 0.;
         r_e = std::max(0., std::min(r_e, 1.));
         SC v_ex_e = -0.5 * r_e * (phi_e - phi_c) * velocity[0];
-        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex_w);
-        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex_e);
+        EXPECT_EQ(v.GetRhs(CNB::WEST, n), v_ex_w);
+        EXPECT_EQ(v.GetRhs(CNB::EAST, n), v_ex_e);
     }
 
     // Downwind velocity
@@ -1336,8 +1336,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDMINMODMatrixTest) {
             r_e = 0.;
         r_e = std::max(0., std::min(r_e, 1.));
         SC v_ex_e = -0.5 * r_e * (phi_c - phi_e) * velocity[0];
-        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex_w);
-        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex_e);
+        EXPECT_EQ(v.GetRhs(CNB::WEST, n), v_ex_w);
+        EXPECT_EQ(v.GetRhs(CNB::EAST, n), v_ex_e);
     }
 }
 
@@ -1467,8 +1467,8 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAMatrixTest) {
             r_e = 0.;
         r_e = (r_e + r_e * r_e) / (1. + r_e * r_e);
         SC v_ex_e = -0.5 * r_e * (phi_e - phi_c) * velocity[0];
-        EXPECT_EQ(v.GetRHS(CNB::WEST, n), v_ex_w);
-        EXPECT_EQ(v.GetRHS(CNB::EAST, n), v_ex_e);
+        EXPECT_EQ(v.GetRhs(CNB::WEST, n), v_ex_w);
+        EXPECT_EQ(v.GetRhs(CNB::EAST, n), v_ex_e);
     }
 
     // Downwind velocity
@@ -1502,7 +1502,7 @@ TEST_F(IntegrationTestCartesianOperators1D, TVDVANALBADAMatrixTest) {
             r_e = 0.;
         r_e = (r_e + r_e * r_e) / (1. + r_e * r_e);
         SC v_ex_e = -0.5 * r_e * (phi_c - phi_e) * velocity[0];
-        EXPECT_NEAR(v.GetRHS(CNB::WEST, n), v_ex_w, 1e-14);
-        EXPECT_NEAR(v.GetRHS(CNB::EAST, n), v_ex_e, 1e-14);
+        EXPECT_NEAR(v.GetRhs(CNB::WEST, n), v_ex_w, 1e-14);
+        EXPECT_NEAR(v.GetRhs(CNB::EAST, n), v_ex_e, 1e-14);
     }
 }

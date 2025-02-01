@@ -31,6 +31,7 @@
 #include "Grid/Cartesian.h"
 #include "Algorithm/NavierStokes/ProjectionMethod_Cartesian.h"
 #include "Algorithm/ConstantTimeStep.h"
+#include "Utilities/RandomNumberGenerator.h"
 
 
 namespace dare::test {
@@ -232,14 +233,30 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_ddt_test) {
     };
     double rho = 1.;
     double mu = 0.;
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
     pm.Initialize(grid, &dt, bstrat);
     pm.SetDensity(rho);
     pm.SetViscosity(mu);
-    for (std::size_t d{0}; d < Dim; d++)
-        pm.GetMomentum(d)->GetField()->SetValues(0.);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++)
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+    }
     pm.GetContinuity()->GetPressure()->SetValues(0.);
-    dare::free_pm_build_momentum(&pm, dare::ZERO);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+
+    Index ind_loc(1);
+    Index ind = g_x->MapInternalToLocal(ind_loc);
+    LO o_loc = g_x->MapIndexToOrdinalLocalInternal(ind_loc);
+    auto s = dare::free_pm_ddt_Cartesian(&pm, dare::ZERO, *g_x, o_loc);
+
+    static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+    SC dV_dt = g_x->GetCellVolume()/dt;
+    SC u = pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0);
+    EXPECT_EQ(s.Center(0), rho * dV_dt);
+    EXPECT_EQ(s.GetRhs(0), rho * dV_dt * u);
 }

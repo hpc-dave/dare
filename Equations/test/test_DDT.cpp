@@ -105,16 +105,16 @@ TEST_F(DDTTest, EulerBackward) {
 
     for (std::size_t n{0}; n < N; n++) {
         EXPECT_NEAR(s_1.Center(n), dV_dt, std::numeric_limits<SC>::epsilon());
-        EXPECT_NEAR(s_1.GetRHS(n), dV_dt * 2. * phi_base, std::numeric_limits<SC>::epsilon());
+        EXPECT_NEAR(s_1.GetRhs(n), dV_dt * 2. * phi_base, std::numeric_limits<SC>::epsilon());
     }
 
     for (std::size_t n{0}; n < N; n++) {
         EXPECT_NEAR(s_2.Center(n), p1_base  * dV_dt, std::numeric_limits<SC>::epsilon());
-        EXPECT_NEAR(s_2.GetRHS(n), dV_dt * p1_base * 4. * phi_base, std::numeric_limits<SC>::epsilon());
+        EXPECT_NEAR(s_2.GetRhs(n), dV_dt * p1_base * 4. * phi_base, std::numeric_limits<SC>::epsilon());
     }
     for (std::size_t n{0}; n < N; n++) {
         EXPECT_NEAR(s_3.Center(n), p2_base * p1_base * dV_dt, std::numeric_limits<SC>::epsilon());
-        EXPECT_NEAR(s_3.GetRHS(n), dV_dt * p2_base * p1_base * 8. * phi_base, std::numeric_limits<SC>::epsilon());
+        EXPECT_NEAR(s_3.GetRhs(n), dV_dt * p2_base * p1_base * 8. * phi_base, std::numeric_limits<SC>::epsilon());
     }
 }
 
@@ -155,7 +155,7 @@ TEST_F(DDTTest, EulerBackwardStaggered) {
 
     for (std::size_t n{0}; n < N; n++) {
         SC v_0 = s_1.Center(n);
-        SC v_1 = s_1.GetRHS(n);
+        SC v_1 = s_1.GetRhs(n);
         SC v_0_ex = dV_dt;
         SC v_1_ex = dV_dt * field_phi.GetDataVector(1).At(ind, n);
         EXPECT_NEAR(v_0, v_0_ex, std::numeric_limits<SC>::epsilon());
@@ -166,7 +166,7 @@ TEST_F(DDTTest, EulerBackwardStaggered) {
         SC p1_0 = 0.5 * (field_p1.GetDataVector().At(ind, n) + field_p1.GetDataVector().At(ind_nb, n));
         SC p1_1 = 0.5 * (field_p1.GetDataVector(1).At(ind, n) + field_p1.GetDataVector(1).At(ind_nb, n));
         SC v_0 = s_2.Center(n);
-        SC v_1 = s_2.GetRHS(n);
+        SC v_1 = s_2.GetRhs(n);
         SC v_0_ex = p1_0 * dV_dt;
         SC v_1_ex = p1_1 * dV_dt * field_phi.GetDataVector(1).At(ind, n);
         EXPECT_NEAR(v_0, v_0_ex, std::numeric_limits<SC>::epsilon());
@@ -179,7 +179,7 @@ TEST_F(DDTTest, EulerBackwardStaggered) {
         SC p2_0 = 0.5 * (field_p2.GetDataVector().At(ind, n) + field_p2.GetDataVector().At(ind_nb, n));
         SC p2_1 = 0.5 * (field_p2.GetDataVector(1).At(ind, n) + field_p2.GetDataVector(1).At(ind_nb, n));
         SC v_0 = s_3.Center(n);
-        SC v_1 = s_3.GetRHS(n);
+        SC v_1 = s_3.GetRhs(n);
         SC v_0_ex = p2_0 * p1_0 * dV_dt;
         SC v_1_ex = p2_1 * p1_1 * dV_dt * field_phi.GetDataVector(1).At(ind, n);
         EXPECT_NEAR(v_0, v_0_ex, std::numeric_limits<SC>::epsilon());

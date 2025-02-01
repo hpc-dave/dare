@@ -216,24 +216,24 @@ public:
     /*!
      * @brief getter for right hand side
      */
-    RHSType& GetRHS();
+    RHSType& GetRhs();
 
     /*!
      * @brief const getter for right hand side
      */
-    const RHSType& GetRHS() const;
+    const RHSType& GetRhs() const;
 
     /*!
      * @brief getter for right hand side
      * @param n component ID
      */
-    SC& GetRHS(std::size_t n);
+    SC& GetRhs(std::size_t n);
 
     /*!
      * @brief const getter for right hand side
      * @param n component ID
      */
-    SC GetRHS(std::size_t n) const;
+    SC GetRhs(std::size_t n) const;
 
     CenterMatrixStencil<GridType, SC, 1> GetSlice(std::size_t n) const;
 
@@ -507,14 +507,14 @@ public:
      * @param pos position of value
      * @param n component ID
      */
-    SC& GetRHS(Positions pos, std::size_t n);
+    SC& GetRhs(Positions pos, std::size_t n);
 
     /*!
      * @brief constant getter for contributions at face
      * @param pos position of value
      * @param n component ID
      */
-    SC GetRHS(Positions pos, std::size_t n) const;
+    SC GetRhs(Positions pos, std::size_t n) const;
 
     /*!
      * @brief returns raw data array
@@ -532,12 +532,12 @@ public:
     /*!
      * @brief getter for right hand side
      */
-    RHSType& GetRHS();
+    RHSType& GetRhs();
 
     /*!
      * @brief const getter for right hand side
      */
-    const RHSType& GetRHS() const;
+    const RHSType& GetRhs() const;
 
     FaceMatrixStencil<GridType, SC, 1> GetSlice(std::size_t n) const;
 

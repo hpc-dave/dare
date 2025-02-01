@@ -48,14 +48,16 @@ auto DDT<Grid, TimeDiscretization>::operator()(const Args&... args) {
     const int LAST_POS{sizeof...(args) - 1};
     static_assert(LAST_POS >= 0, "minimally one argument (the relevant field) is required!");
     auto tuple_val = std::forward_as_tuple(args...);
-    using LastType = std::remove_reference_t<decltype(std::get<LAST_POS>(tuple_val))>;
+    using LastType_NOREF = std::remove_reference_t<decltype(std::get<LAST_POS>(tuple_val))>;
+    using LastType = std::remove_pointer_t<LastType_NOREF>;
     static_assert(dare::is_field_v<LastType>, "The last element needs to be a field!");
     const std::size_t NUM_COMPONENTS{LastType::NUM_COMPONENTS};
     using TransientTerms = dare::Vector<NUM_TFIELDS, SC>;
     using ComponentVector = dare::Vector<NUM_COMPONENTS, TransientTerms>;
 
+    const LastType* phi{dare::convert_to_ptr(std::get<LAST_POS>(tuple_val))};
 #ifndef DARE_NDEBUG
-    std::size_t num_last_timesteps = std::get<LAST_POS>(std::forward_as_tuple(args...)).GetNumberTimesteps();
+    std::size_t num_last_timesteps = phi->GetNumberTimesteps();
     if (num_last_timesteps < NUM_TFIELDS) {
         ERROR << "The provided field does not store enough time-steps! Minimally required for "
         << typeid(TimeDiscretization).name() << " " << (NUM_TFIELDS > 1?"are": "is") << " " << NUM_TFIELDS
@@ -78,9 +80,9 @@ auto DDT<Grid, TimeDiscretization>::operator()(const Args&... args) {
     for (std::size_t n{0}; n < NUM_COMPONENTS; n++) {
         stencil.Center(n) = transient_terms[n][0];
         for (std::size_t t{1}; t < NUM_TFIELDS; t++) {
-            SC phi_loc = std::get<LAST_POS>(tuple_val).GetDataVector(t).At(local_ordinal, n);
+            SC phi_loc = phi->GetDataVector(t).At(local_ordinal, n);
             SC v_trans = transient_terms[n][t];
-            stencil.GetRHS(n) += v_trans * phi_loc;
+            stencil.GetRhs(n) += v_trans * phi_loc;
         }
     }
     return stencil;

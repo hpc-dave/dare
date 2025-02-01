@@ -315,6 +315,10 @@ public:
         return dt;
     }
 
+    dare::ExecutionManager* GetExecutionManager() const {
+        return ex_man;
+    }
+
 private:
     template <dare::NaturalNumber Direction>
     void BuildMomentum(Direction dir) {

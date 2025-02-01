@@ -615,7 +615,7 @@ MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Set(const dare::CenterMatrixStencil
             Get<CartesianNeighbor::BOTTOM>(n, n) = s.GetValue(CartesianNeighbor::BOTTOM, n);
             Get<CartesianNeighbor::TOP>(n, n) = s.GetValue(CartesianNeighbor::TOP, n);
         }
-        this->GetRhs(n) = s.GetRHS()[n];
+        this->GetRhs(n) = s.GetRhs()[n];
     }
     return *this;
 }
@@ -635,7 +635,7 @@ MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Set(std::size_t n,
         Get<CartesianNeighbor::BOTTOM>(n, n) = s.GetValue(CartesianNeighbor::BOTTOM, 0);
         Get<CartesianNeighbor::TOP>(n, n) = s.GetValue(CartesianNeighbor::TOP, 0);
     }
-    this->GetRhs(n) = s.GetRHS()[0];
+    this->GetRhs(n) = s.GetRhs()[0];
     return *this;
 }
 
@@ -662,7 +662,7 @@ MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Add(
             Get<CartesianNeighbor::BOTTOM>(n, n) += s.GetValue(CartesianNeighbor::BOTTOM, n);
             Get<CartesianNeighbor::TOP>(n, n) += s.GetValue(CartesianNeighbor::TOP, n);
         }
-        this->GetRhs(n) += s.GetRHS()[n];
+        this->GetRhs(n) += s.GetRhs()[n];
     }
     return *this;
 }
@@ -682,7 +682,7 @@ MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Add(std::size_t n,
         Get<CartesianNeighbor::BOTTOM>(n, n) += s.GetValue(CartesianNeighbor::BOTTOM, 0);
         Get<CartesianNeighbor::TOP>(n, n) += s.GetValue(CartesianNeighbor::TOP, 0);
     }
-    this->GetRhs(n) += s.GetRHS()[0];
+    this->GetRhs(n) += s.GetRhs()[0];
     return *this;
 }
 
