@@ -123,7 +123,8 @@ template <std::size_t N>
 dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
 TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
     const dare::GridVector<GridType, SC, N>& field) const {
-    return Interpolate(ComputeExtendedValueStencil(field, field));
+    const bool ignore_last{true};
+    return Interpolate(ComputeExtendedValueStencil(!ignore_last, field, field));
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
@@ -192,12 +193,23 @@ auto TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Apply(const Args&... args) cons
     auto tuple_val = std::forward_as_tuple(args...);
     using LastType = std::remove_cvref_t<decltype(std::get<sizeof...(args) - 1>(tuple_val))>;
     static const std::size_t N = dare::detail::free_tvd_cartesian_extract_num_components<LastType>::GetValue();
+    const bool ignore_last{true};
     dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>
-        phi = ComputeExtendedValueStencil(dare::convert_to_ref(std::get<sizeof...(args) - 1>(tuple_val)), args...);
+        phi_reduced = ComputeExtendedValueStencil(ignore_last,
+                                        dare::convert_to_ref(std::get<sizeof...(args) - 1>(tuple_val)), args...);
+    dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>
+        phi_target = ComputeExtendedValueStencil(!ignore_last,
+                                        dare::convert_to_ref(std::get<sizeof...(args) - 1>(tuple_val)),
+                                        dare::convert_to_ref(std::get<sizeof...(args) - 1>(tuple_val)));
+    dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>
+        phi;
+    phi.first = phi_reduced.first * phi_target.first;
+    phi.second = phi_reduced.second * phi_target.second;
 
     // for readability, compiler will optimize out (hopefully :) )
     const dare::CenterValueStencil<GridType, SC, N>& phi_close = phi.first;
     const dare::CenterValueStencil<GridType, SC, N>& phi_far = phi.second;
+    const dare::CenterValueStencil<GridType, SC, N>& phir_close = phi_reduced.first;
 
     dare::FaceMatrixStencil<GridType, SC, N> s;
     dare::Vector<N, SC> ONES, phi_UU, phi_U, phi_D, r_f, flux_lim;
@@ -230,8 +242,8 @@ auto TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Apply(const Args&... args) cons
         flux_lim = FluxLimiter::GetValue(r_f);
 
         // 4) Set upwind scheme
-        s.SetValueNeighbor(face_low, vel_pos * vel * ONES);
-        s.SetValueCenter(face_low, vel_neg * vel * ONES);
+        s.SetValueNeighbor(face_low, vel_pos * vel * phir_close.GetValues(face_low));
+        s.SetValueCenter(face_low, vel_neg * vel * phir_close.GetValues(center));
 
         // 5) add deferred correction, note the negative sign to account for rhs
         auto phi_explicit = -0.5 * flux_lim * (phi_D - phi_U) * vel;
@@ -255,8 +267,8 @@ auto TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Apply(const Args&... args) cons
         flux_lim = FluxLimiter::GetValue(r_f);
 
         // 4) Set Upwind scheme
-        s.SetValueNeighbor(face_up, vel_neg * vel * ONES);
-        s.SetValueCenter(face_up, vel_pos * vel * ONES);
+        s.SetValueNeighbor(face_up, vel_neg * vel * phir_close.GetValues(face_up));
+        s.SetValueCenter(face_up, vel_pos * vel * phir_close.GetValues(center));
 
         // deferred correction, note the negative sign to account for rhs
         phi_explicit = -0.5 * flux_lim * (phi_D - phi_U) * vel;
@@ -269,6 +281,7 @@ template <std::size_t Dim, typename SC, typename FluxLimiter>
 template <std::size_t N, typename... Args>
 dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>
 TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::ComputeExtendedValueStencil(
+    bool ignore_last,
     const dare::GridVector<GridType, SC, N>& f,
     const Args&... values) const {
     const std::size_t NUM_VALUES = sizeof...(values);
@@ -277,7 +290,7 @@ TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::ComputeExtendedValueStencil(
     dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>> s;
     s.first.SetAll(1.);
     s.second.SetAll(1.);
-    detail::free_tvd_cartesian_get_extended_stencil(*grep, ind, &s, values...);
+    detail::free_tvd_cartesian_get_extended_stencil(*grep, ind, ignore_last, &s, values...);
     return s;
 }
 

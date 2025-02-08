@@ -203,7 +203,8 @@ private:
      */
     template <std::size_t N, typename... Args>
     dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>
-    ComputeExtendedValueStencil(const dare::GridVector<GridType, SC, N>& for_num_components,
+    ComputeExtendedValueStencil(bool ignore_last,
+                                const dare::GridVector<GridType, SC, N>& for_num_components,
                                 const Args&... values) const;
 
     Index ind;                                         //!< triplet of indices
@@ -234,6 +235,7 @@ template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
 void free_tvd_cartesian_get_extended_stencil(
     const typename dare::Cartesian<Dim>::Representation& grep,
     const typename dare::Cartesian<Dim>::Index& ind,
+    bool ignore_last,
     dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
     const Args&... args) {
     static_assert(sizeof...(args) == 0, "Cannot interpret the provided arguments!");
@@ -255,10 +257,15 @@ template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
 void free_tvd_cartesian_get_extended_stencil(
     const typename dare::Cartesian<Dim>::Representation& grep,
     const typename dare::Cartesian<Dim>::Index& ind,
+    bool ignore_last,
     dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
     const typename dare::GridVector<dare::Cartesian<Dim>, SC, N>& data,
     const Args&... args) {
-    free_tvd_cartesian_get_extended_stencil(grep, ind, s, args...);
+    if constexpr (sizeof...(args) == 0) {
+        if (ignore_last)
+            return;
+    }
+    free_tvd_cartesian_get_extended_stencil(grep, ind, ignore_last, s, args...);
     s->first *= dare::InterpolateToCenterStencil(grep, ind, data, 0);
     s->second *= dare::InterpolateToCenterStencil(grep, ind, data, 1);
 }
@@ -279,10 +286,11 @@ template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
 void free_tvd_cartesian_get_extended_stencil(
     const typename dare::Cartesian<Dim>::Representation& grep,
     const typename dare::Cartesian<Dim>::Index& ind,
+    bool ignore_last,
     dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
     const typename dare::GridVector<dare::Cartesian<Dim>, SC, N>* data,
     const Args&... args) {
-    free_tvd_cartesian_get_extended_stencil(grep, ind, s, *data, args...);
+    free_tvd_cartesian_get_extended_stencil(grep, ind, ignore_last, s, *data, args...);
 }
 
 /*!
@@ -303,10 +311,15 @@ template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
 void free_tvd_cartesian_get_extended_stencil(
     const typename dare::Cartesian<Dim>::Representation& grep,
     const typename dare::Cartesian<Dim>::Index& ind,
+    bool ignore_last,
     dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
     const typename dare::Field<dare::Cartesian<Dim>, SC, N>& data,
     const Args&... args) {
-    free_tvd_cartesian_get_extended_stencil(grep, ind, s, data.GetDataVector(), args...);
+    if constexpr (sizeof...(args) == 0) {
+        if (ignore_last)
+            return;
+    }
+    free_tvd_cartesian_get_extended_stencil(grep, ind, ignore_last, s, data.GetDataVector(), args...);
 }
 
 /*!
@@ -327,10 +340,11 @@ template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
 void free_tvd_cartesian_get_extended_stencil(
     const typename dare::Cartesian<Dim>::Representation& grep,
     const typename dare::Cartesian<Dim>::Index& ind,
+    bool ignore_last,
     dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
     const typename dare::Field<dare::Cartesian<Dim>, SC, N>* data,
     const Args&... args) {
-    free_tvd_cartesian_get_extended_stencil(grep, ind, s, *data, args...);
+    free_tvd_cartesian_get_extended_stencil(grep, ind, ignore_last, s, *data, args...);
 }
 
 /*!
@@ -349,12 +363,17 @@ template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
 void free_tvd_cartesian_get_extended_stencil(
     const typename dare::Cartesian<Dim>::Representation& grep,
     const typename dare::Cartesian<Dim>::Index& ind,
+    bool ignore_last,
     dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
     SC value,
     const Args&... args) {
+    if constexpr (sizeof...(args) == 0) {
+        if (ignore_last)
+            return;
+    }
     s->first *= value;
     s->second *= value;
-    free_tvd_cartesian_get_extended_stencil(grep, ind, s, args...);
+    free_tvd_cartesian_get_extended_stencil(grep, ind, ignore_last, s, args...);
 }
 
 /*!
@@ -373,10 +392,11 @@ template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
 void free_tvd_cartesian_get_extended_stencil(
     const typename dare::Cartesian<Dim>::Representation& grep,
     const typename dare::Cartesian<Dim>::Index& ind,
+    bool ignore_last,
     dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
     dare::None value,
     const Args&... args) {
-    free_tvd_cartesian_get_extended_stencil(grep, ind, s, args...);
+    free_tvd_cartesian_get_extended_stencil(grep, ind, ignore_last, s, args...);
 }
 
 /*!

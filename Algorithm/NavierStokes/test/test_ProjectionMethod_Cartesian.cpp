@@ -473,7 +473,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_ddt_test) {
     }
 }
 
-TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_test) {
+TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_upwind_test) {
     struct PDict {
         using density = Field;
         using viscosity = double;
@@ -482,15 +482,16 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_test) {
         using implicit_force = dare::None;
     };
     struct NDict {
-        using tvd = dare::MINMOD;
+        using tvd = dare::UPWIND;
         using time_scheme_convective = dare::EULER_BACKWARD;
     };
-    using TVD = dare::TVD<GridType, SC, dare::MINMOD>;
-    using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+    using TVD = dare::TVD<GridType, SC, dare::CDS>;
+    // using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+    using CNB = dare::CartesianNeighbor;
 
     auto g_s = grid->GetRepresentation(opt_s);
     double mu = 0.;
-    // const double tol_eps = 1e2;
+    const double tol_eps = 1e2;
     Field rho("rho", g_s, 2);
     Field epsilon("epsilon", g_s, 2);
     dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
@@ -523,11 +524,11 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_test) {
         velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
     }
 
-    // dare::Vector<Dim, SC> dA = g_x->GetFaceArea();
-    // in x-direction
+    dare::Vector<Dim, SC> dA = g_x->GetFaceArea();
+    // in X-momentum
     for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
-        // Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
-        // Index ind = g_x->MapInternalToLocal(ind_loc);
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
 
         TVD tvd(*g_x, n_loc, velocities);
 
@@ -535,23 +536,38 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_test) {
 
         static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
 
-        // SC u = pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0);
-        // Index ind_nb(ind);
-        // ind_nb.i() -= 1;
-        FVStencil rho_s = tvd.Interpolate(rho.GetDataVector(1));
-        FVStencil eps_s = tvd.Interpolate(epsilon.GetDataVector(1));
-        FVStencil uloc = tvd.Interpolate(pm.GetMomentum(0)->GetField()->GetDataVector(1));
+        Index ind_w(ind), ind_ww(ind), ind_e(ind);
+        ind_w.i() -= 1;
+        ind_ww.i() -= 2;
+        ind_e.i() += 1;
+        SC rho_w = 0.5 * (rho.GetDataVector().At(ind_w, 0) + rho.GetDataVector().At(ind_ww, 0));
+        SC rho_c = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_w, 0));
+        SC rho_e = 0.5 * (rho.GetDataVector().At(ind_e, 0) + rho.GetDataVector().At(ind, 0));
+        SC eps_w = 0.5 * (epsilon.GetDataVector().At(ind_w, 0) + epsilon.GetDataVector().At(ind_ww, 0));
+        SC eps_c = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_w, 0));
+        SC eps_e = 0.5 * (epsilon.GetDataVector().At(ind_e, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC u_w = 0.5 * (velocities[0]->At(ind_w, 0) + velocities[0]->At(ind, 0));
+        SC u_e = 0.5 * (velocities[0]->At(ind_e, 0) + velocities[0]->At(ind, 0));
 
-        FVStencil mom_loc = eps_s * rho_s * uloc;
+        SC v_w{0.}, v_c{0.}, v_e{0.};
+        if (u_w < 0) {
+            // downwind west
+            v_c += eps_c * rho_c * u_w * dA[0];
+        } else {
+            // upwind west
+            v_w -= eps_w * rho_w * u_w * dA[0];
+        }
 
-        // SC rho_w = rho.GetDataVector(0).At(ind_nb, 0);
-        // SC eps_e = epsilon.GetDataVector(0).At(ind, 0);
-        // SC eps_w = epsilon.GetDataVector(0).At(ind_nb, 0);
-        // SC v_0 = eps_0 * rho_0 * dV_dt;
-        // SC v_1 = eps_1 * rho_1 * dV_dt * u;
-        // EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
-        // EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
-        // for (auto face : g_x->GetFaces())
-        //     EXPECT_EQ(s.GetValue(face, 0), 0.);
+        if (u_e < 0) {
+            // downwind east
+            v_e -= eps_e * rho_e * u_e * dA[0];
+        } else {
+            // upwind east
+            v_c += eps_c * rho_c * u_e * dA[0];
+        }
+        EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
+        EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
+        EXPECT_EQ(s.GetRhs(0), 0.);
     }
 }
