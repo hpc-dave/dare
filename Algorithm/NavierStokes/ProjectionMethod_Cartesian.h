@@ -89,9 +89,9 @@ free_pm_convection_Cartesian(
     Direction dir,
     const typename PM::GridType::Representation& g_r,
     LO o_loc,
-    const dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>& epsilon,
-    const dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>& rho,
-    const dare::Vector<PM::dimension, dare::GridVector<typename PM::GridType, typename PM::SC, 1>>& velocities) {
+    const typename PM::PorosityVariableType epsilon,
+    const typename PM::DensityVariableType rho,
+    const dare::Vector<PM::dimension, const dare::GridVector<typename PM::GridType, typename PM::SC, 1>*>& velocities) {
     static_assert(std::is_same_v<LO, typename PM::GridType::LocalOrdinalType>);
     static_assert(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>);
     using GridType = typename PM::GridType;
@@ -101,12 +101,8 @@ free_pm_convection_Cartesian(
     using TVD = dare::TVD<GridType, SC, FluxLimiter>;
 
     Divergence div(g_r, o_loc);
-    TVD tvd(*g_r, o_loc, velocities);
-
-    return div(tvd.Interpolate(epsilon),
-               tvd.Interpolate(rho),
-               tvd.Interpolate(*velocities[dir]),
-               *pm->GetMomentum(dir)->GetField());
+    TVD tvd(g_r, o_loc, velocities);
+    return div(tvd(epsilon, rho, pm->GetMomentum(dir)->GetField()->GetDataVector(1)));
 }
 
 template <typename PM, dare::NaturalNumber Direction>

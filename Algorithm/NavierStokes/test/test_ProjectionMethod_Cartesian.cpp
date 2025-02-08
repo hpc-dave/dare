@@ -258,25 +258,300 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_ddt_test) {
     }
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
 
-    Index ind_loc(1);
-    Index ind = g_x->MapInternalToLocal(ind_loc);
-    LO o_loc = g_x->MapIndexToOrdinalLocalInternal(ind_loc);
-    auto s = dare::free_pm_ddt_Cartesian(&pm, dare::ZERO, *g_x, o_loc);
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        LO o_loc = g_x->MapIndexToOrdinalLocalInternal(ind_loc);
+        auto s = dare::free_pm_ddt_Cartesian(&pm, dare::ZERO, *g_x, o_loc);
 
-    static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
 
-    SC dV_dt = g_x->GetCellVolume()/dt;
-    SC u = pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0);
-    Index ind_nb(ind);
-    ind_nb.i() -= 1;
-    SC rho_0 = 0.5 * (rho.GetDataVector(0).At(ind, 0) + rho.GetDataVector(0).At(ind_nb, 0));
-    SC rho_1 = 0.5 * (rho.GetDataVector(1).At(ind, 0) + rho.GetDataVector(1).At(ind_nb, 0));
-    SC eps_0 = 0.5 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_nb, 0));
-    SC eps_1 = 0.5 * (epsilon.GetDataVector(1).At(ind, 0) + epsilon.GetDataVector(1).At(ind_nb, 0));
-    SC v_0 = eps_0 * rho_0 * dV_dt;
-    SC v_1 = eps_1 * rho_1 * dV_dt * u;
-    EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
-    EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
-    for (auto face : g_x->GetFaces())
-        EXPECT_EQ(s.GetValue(face, 0), 0.);
+        SC dV_dt = g_x->GetCellVolume() / dt;
+        SC u = pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0);
+        Index ind_nb(ind);
+        ind_nb.i() -= 1;
+        SC rho_0 = 0.5 * (rho.GetDataVector(0).At(ind, 0) + rho.GetDataVector(0).At(ind_nb, 0));
+        SC rho_1 = 0.5 * (rho.GetDataVector(1).At(ind, 0) + rho.GetDataVector(1).At(ind_nb, 0));
+        SC eps_0 = 0.5 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_nb, 0));
+        SC eps_1 = 0.5 * (epsilon.GetDataVector(1).At(ind, 0) + epsilon.GetDataVector(1).At(ind_nb, 0));
+        SC v_0 = eps_0 * rho_0 * dV_dt;
+        SC v_1 = eps_1 * rho_1 * dV_dt * u;
+        EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
+        EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
+        for (auto face : g_x->GetFaces())
+            EXPECT_EQ(s.GetValue(face, 0), 0.);
+    }
+}
+
+TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_ddt_test) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    auto g_s = grid->GetRepresentation(opt_s);
+    double mu = 0.;
+    const double tol_eps = 1e2;
+    Field rho("rho", g_s, 2);
+    Field epsilon("epsilon", g_s, 2);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    pm.SetDensity(&rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++)
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+    }
+    for (std::size_t i{0}; i < rho.GetDataVector().GetSize(); i++) {
+        rho.GetDataVector().At(i) = rd.Generate();
+        rho.GetDataVector(1).At(i) = rd.Generate();
+        epsilon.GetDataVector().At(i) = rd.Generate();
+        epsilon.GetDataVector(1).At(i) = rd.Generate();
+    }
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
+
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        // LO o_loc = g_x->MapIndexToOrdinalLocalInternal(ind_loc);
+        auto s = dare::free_pm_ddt_Cartesian(&pm, dare::ZERO, *g_x, n_loc);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        SC dV_dt = g_x->GetCellVolume() / dt;
+        SC u = pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0);
+        Index ind_nb(ind);
+        ind_nb.i() -= 1;
+        SC rho_0 = 0.5 * (rho.GetDataVector(0).At(ind, 0) + rho.GetDataVector(0).At(ind_nb, 0));
+        SC rho_1 = 0.5 * (rho.GetDataVector(1).At(ind, 0) + rho.GetDataVector(1).At(ind_nb, 0));
+        SC eps_0 = 0.5 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_nb, 0));
+        SC eps_1 = 0.5 * (epsilon.GetDataVector(1).At(ind, 0) + epsilon.GetDataVector(1).At(ind_nb, 0));
+        SC v_0 = eps_0 * rho_0 * dV_dt;
+        SC v_1 = eps_1 * rho_1 * dV_dt * u;
+        EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
+        EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
+        for (auto face : g_x->GetFaces())
+            EXPECT_EQ(s.GetValue(face, 0), 0.);
+    }
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+        LO o_loc = g_y->MapIndexToOrdinalLocalInternal(ind_loc);
+        auto s = dare::free_pm_ddt_Cartesian(&pm, dare::ONE, *g_y, o_loc);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        SC dV_dt = g_y->GetCellVolume() / dt;
+        SC u = pm.GetMomentum(1)->GetField()->GetDataVector(1).At(ind, 0);
+        Index ind_nb(ind);
+        ind_nb.j() -= 1;
+        SC rho_0 = 0.5 * (rho.GetDataVector(0).At(ind, 0) + rho.GetDataVector(0).At(ind_nb, 0));
+        SC rho_1 = 0.5 * (rho.GetDataVector(1).At(ind, 0) + rho.GetDataVector(1).At(ind_nb, 0));
+        SC eps_0 = 0.5 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_nb, 0));
+        SC eps_1 = 0.5 * (epsilon.GetDataVector(1).At(ind, 0) + epsilon.GetDataVector(1).At(ind_nb, 0));
+        SC v_0 = eps_0 * rho_0 * dV_dt;
+        SC v_1 = eps_1 * rho_1 * dV_dt * u;
+        EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
+        EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
+        for (auto face : g_y->GetFaces())
+            EXPECT_EQ(s.GetValue(face, 0), 0.);
+    }
+}
+
+TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_ddt_test) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    auto g_s = grid->GetRepresentation(opt_s);
+    double mu = 0.;
+    const double tol_eps = 1e2;
+    Field rho("rho", g_s, 2);
+    Field epsilon("epsilon", g_s, 2);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    pm.SetDensity(&rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++)
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+    }
+    for (std::size_t i{0}; i < rho.GetDataVector().GetSize(); i++) {
+        rho.GetDataVector().At(i) = rd.Generate();
+        rho.GetDataVector(1).At(i) = rd.Generate();
+        epsilon.GetDataVector().At(i) = rd.Generate();
+        epsilon.GetDataVector(1).At(i) = rd.Generate();
+    }
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
+    auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
+
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        LO o_loc = g_x->MapIndexToOrdinalLocalInternal(ind_loc);
+        auto s = dare::free_pm_ddt_Cartesian(&pm, dare::ZERO, *g_x, o_loc);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        SC dV_dt = g_x->GetCellVolume() / dt;
+        SC u = pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0);
+        Index ind_nb(ind);
+        ind_nb.i() -= 1;
+        SC rho_0 = 0.5 * (rho.GetDataVector(0).At(ind, 0) + rho.GetDataVector(0).At(ind_nb, 0));
+        SC rho_1 = 0.5 * (rho.GetDataVector(1).At(ind, 0) + rho.GetDataVector(1).At(ind_nb, 0));
+        SC eps_0 = 0.5 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_nb, 0));
+        SC eps_1 = 0.5 * (epsilon.GetDataVector(1).At(ind, 0) + epsilon.GetDataVector(1).At(ind_nb, 0));
+        SC v_0 = eps_0 * rho_0 * dV_dt;
+        SC v_1 = eps_1 * rho_1 * dV_dt * u;
+        EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
+        EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
+        for (auto face : g_x->GetFaces())
+            EXPECT_EQ(s.GetValue(face, 0), 0.);
+    }
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+        LO o_loc = g_y->MapIndexToOrdinalLocalInternal(ind_loc);
+        auto s = dare::free_pm_ddt_Cartesian(&pm, dare::ONE, *g_y, o_loc);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        SC dV_dt = g_y->GetCellVolume() / dt;
+        SC u = pm.GetMomentum(1)->GetField()->GetDataVector(1).At(ind, 0);
+        Index ind_nb(ind);
+        ind_nb.j() -= 1;
+        SC rho_0 = 0.5 * (rho.GetDataVector(0).At(ind, 0) + rho.GetDataVector(0).At(ind_nb, 0));
+        SC rho_1 = 0.5 * (rho.GetDataVector(1).At(ind, 0) + rho.GetDataVector(1).At(ind_nb, 0));
+        SC eps_0 = 0.5 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_nb, 0));
+        SC eps_1 = 0.5 * (epsilon.GetDataVector(1).At(ind, 0) + epsilon.GetDataVector(1).At(ind_nb, 0));
+        SC v_0 = eps_0 * rho_0 * dV_dt;
+        SC v_1 = eps_1 * rho_1 * dV_dt * u;
+        EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
+        EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
+        for (auto face : g_y->GetFaces())
+            EXPECT_EQ(s.GetValue(face, 0), 0.);
+    }
+    for (LO n_loc = 0; n_loc < g_z->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_z->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_z->MapInternalToLocal(ind_loc);
+        LO o_loc = g_z->MapIndexToOrdinalLocalInternal(ind_loc);
+        auto s = dare::free_pm_ddt_Cartesian(&pm, dare::TWO, *g_z, o_loc);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        SC dV_dt = g_z->GetCellVolume() / dt;
+        SC u = pm.GetMomentum(2)->GetField()->GetDataVector(1).At(ind, 0);
+        Index ind_nb(ind);
+        ind_nb.k() -= 1;
+        SC rho_0 = 0.5 * (rho.GetDataVector(0).At(ind, 0) + rho.GetDataVector(0).At(ind_nb, 0));
+        SC rho_1 = 0.5 * (rho.GetDataVector(1).At(ind, 0) + rho.GetDataVector(1).At(ind_nb, 0));
+        SC eps_0 = 0.5 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_nb, 0));
+        SC eps_1 = 0.5 * (epsilon.GetDataVector(1).At(ind, 0) + epsilon.GetDataVector(1).At(ind_nb, 0));
+        SC v_0 = eps_0 * rho_0 * dV_dt;
+        SC v_1 = eps_1 * rho_1 * dV_dt * u;
+        EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
+        EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
+        for (auto face : g_z->GetFaces())
+            EXPECT_EQ(s.GetValue(face, 0), 0.);
+    }
+}
+
+TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_test) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    struct NDict {
+        using tvd = dare::MINMOD;
+        using time_scheme_convective = dare::EULER_BACKWARD;
+    };
+    using TVD = dare::TVD<GridType, SC, dare::MINMOD>;
+    using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+
+    auto g_s = grid->GetRepresentation(opt_s);
+    double mu = 0.;
+    // const double tol_eps = 1e2;
+    Field rho("rho", g_s, 2);
+    Field epsilon("epsilon", g_s, 2);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    pm.SetDensity(&rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    SC v_step{1.};
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            Index ind = g_x->MapOrdinalToIndexLocal(i);
+            SC vloc = ind[d] * v_step;
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = vloc;
+        }
+    }
+    for (std::size_t i{0}; i < rho.GetDataVector().GetSize(); i++) {
+        rho.GetDataVector().At(i) = rd.Generate();
+        rho.GetDataVector(1).At(i) = rd.Generate();
+        epsilon.GetDataVector().At(i) = rd.Generate();
+        epsilon.GetDataVector(1).At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    // dare::Vector<Dim, SC> dA = g_x->GetFaceArea();
+    // in x-direction
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        // Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        // Index ind = g_x->MapInternalToLocal(ind_loc);
+
+        TVD tvd(*g_x, n_loc, velocities);
+
+        auto s = dare::free_pm_convection_Cartesian(&pm, dare::ZERO, *g_x, n_loc, &epsilon, &rho, velocities);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        // SC u = pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0);
+        // Index ind_nb(ind);
+        // ind_nb.i() -= 1;
+        FVStencil rho_s = tvd.Interpolate(rho.GetDataVector(1));
+        FVStencil eps_s = tvd.Interpolate(epsilon.GetDataVector(1));
+        FVStencil uloc = tvd.Interpolate(pm.GetMomentum(0)->GetField()->GetDataVector(1));
+
+        FVStencil mom_loc = eps_s * rho_s * uloc;
+
+        // SC rho_w = rho.GetDataVector(0).At(ind_nb, 0);
+        // SC eps_e = epsilon.GetDataVector(0).At(ind, 0);
+        // SC eps_w = epsilon.GetDataVector(0).At(ind_nb, 0);
+        // SC v_0 = eps_0 * rho_0 * dV_dt;
+        // SC v_1 = eps_1 * rho_1 * dV_dt * u;
+        // EXPECT_NEAR(s.Center(0), v_0, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_0));
+        // EXPECT_NEAR(s.GetRhs(0), v_1, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_1));
+        // for (auto face : g_x->GetFaces())
+        //     EXPECT_EQ(s.GetValue(face, 0), 0.);
+    }
 }

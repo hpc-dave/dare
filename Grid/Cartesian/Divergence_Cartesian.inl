@@ -67,7 +67,7 @@ auto Divergence<dare::Cartesian<Dim>, TimeDiscretization>::operator()(const Args
 
         // apply divergence
         return ApplyDivergence(f);
-    } if constexpr (dare::is_face_value_stencil_v<LastType> || dare::is_gridvector_v<LastType>) {
+    } else if constexpr (dare::is_face_value_stencil_v<LastType> || dare::is_gridvector_v<LastType>) {
         dare::FaceValueStencil<GridType, SC, NUM_COMPONENTS> f;
         if constexpr (dare::is_gridvector_v<LastType>) {
             f = PopulateFaceValueFromField(std::get<LAST_POS>(tuple_val));
@@ -83,7 +83,7 @@ auto Divergence<dare::Cartesian<Dim>, TimeDiscretization>::operator()(const Args
     } else {
         // bit of a workaround, since some compilers have issues if there is a 'false'
         // provided directly
-        // static_assert(dare::always_false<>, "No implementation provided for this type");
+        static_assert(dare::always_false<>, "No implementation provided for this type");
     }
 }
 
@@ -236,97 +236,12 @@ Divergence<dare::Cartesian<Dim>, TimeDiscretization>::ApplyDivergence(
     return div_v;
 }
 
-// template <std::size_t Dim, typename TimeDiscretization>
-// template <typename SC, std::size_t N>
-// dare::CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>
-// Divergence<dare::Cartesian<Dim>, TimeDiscretization>::Apply(
-//     const dare::FaceMatrixStencil<GridType, SC, N>& s) const {
-//     dare::CenterMatrixStencil<GridType, SC, N> s_c;
-//     for (std::size_t n{0}; n < N; n++) {
-//         // Divergence in X
-//         SC coef_c = s.GetValueCenter(Positions::EAST, n);
-//         SC coef_f = s.GetValueNeighbor(Positions::EAST, n);
-//         s_c.GetValue(Positions::EAST, n) = A[0] * coef_f;
-//         s_c.GetValue(Positions::CENTER, n) = A[0] * coef_c;
-//         s_c.GetRhs(n) = A[0] * s.GetRhs(Positions::EAST, n);
-
-//         coef_c = s.GetValueCenter(Positions::WEST, n);
-//         coef_f = s.GetValueNeighbor(Positions::WEST, n);
-//         s_c.GetValue(Positions::WEST, n) = -A[0] * coef_f;
-//         s_c.GetValue(Positions::CENTER, n) -= A[0] * coef_c;
-//         s_c.GetRhs(n) -= A[0] * s.GetRhs(Positions::WEST, n);
-
-//         // Divergence in Y
-//         if constexpr (Dim > 1) {
-//             SC coef_c = s.GetValueCenter(Positions::NORTH, n);
-//             SC coef_f = s.GetValueNeighbor(Positions::NORTH, n);
-//             s_c.GetValue(Positions::NORTH, n) = A[1] * coef_f;
-//             s_c.GetValue(Positions::CENTER, n) += A[1] * coef_c;
-//             s_c.GetRhs(n) += A[1] * s.GetRhs(Positions::NORTH, n);
-
-//             coef_c = s.GetValueCenter(Positions::SOUTH, n);
-//             coef_f = s.GetValueNeighbor(Positions::SOUTH, n);
-//             s_c.GetValue(Positions::SOUTH, n) = -A[1] * coef_f;
-//             s_c.GetValue(Positions::CENTER, n) -= A[1] * coef_c;
-//             s_c.GetRhs(n) -= A[1] * s.GetRhs(Positions::SOUTH, n);
-//         }
-
-//         // Divergence in Z
-//         if constexpr (Dim > 2) {
-//             SC coef_c = s.GetValueCenter(Positions::TOP, n);
-//             SC coef_f = s.GetValueNeighbor(Positions::TOP, n);
-//             s_c.GetValue(Positions::TOP, n) = A[2] * coef_f;
-//             s_c.GetValue(Positions::CENTER, n) += A[2] * coef_c;
-//             s_c.GetRhs(n) += A[2] * s.GetRhs(Positions::TOP, n);
-
-//             coef_c = s.GetValueCenter(Positions::BOTTOM, n);
-//             coef_f = s.GetValueNeighbor(Positions::BOTTOM, n);
-//             s_c.GetValue(Positions::BOTTOM, n) = -A[2] * coef_f;
-//             s_c.GetValue(Positions::CENTER, n) -= A[2] * coef_c;
-//             s_c.GetRhs(n) -= A[2] * s.GetRhs(Positions::BOTTOM, n);
-//         }
-//     }
-//     return s_c;
-// }
-
 template <std::size_t Dim, typename TimeDiscretization>
 template <typename SC, std::size_t N>
 dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
 Divergence<dare::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFromField(
     const dare::GridVector<GridType, SC, N>& f) const {
     return dare::InterpolateToFaceStencil(*grep, ind, f);
-
-    // static_assert(dare::always_false<>, "need to interpolated those values!");
-    // using Pos = typename dare::Cartesian<Dim>::NeighborID;
-    // Index ind_nb{ind};
-    // dare::FaceValueStencil<GridType, SC, N> s;
-
-    // ind_nb.i()--;
-    // auto v = dare::InterpolateToFace(*grep, ind, Pos::WEST, f);
-    // for (std::size_t n{0}; n < N; n++)
-    //     s.SetValue(Pos::WEST, v[n]);
-    // ind_nb.i() += 2;
-    // for (std::size_t n{0}; n < N; n++)
-    //     s.SetValue(Pos::EAST, f.At(ind_nb, n));
-    // if constexpr (Dim > 1) {
-    //     ind_nb.i()--;
-    //     ind_nb.j()--;
-    //     for (std::size_t n{0}; n < N; n++)
-    //         s.SetValue(Pos::SOUTH, f.At(ind_nb, n));
-    //     ind_nb.j() += 2;
-    //     for (std::size_t n{0}; n < N; n++)
-    //         s.SetValue(Pos::NORTH, f.At(ind_nb, n));
-    // }
-    // if constexpr (Dim > 2) {
-    //     ind_nb.j()--;
-    //     ind_nb.k()--;
-    //     for (std::size_t n{0}; n < N; n++)
-    //         s.SetValue(Pos::BOTTOM, f.At(ind_nb, n));
-    //     ind_nb.k() += 2;
-    //     for (std::size_t n{0}; n < N; n++)
-    //         s.SetValue(Pos::TOP, f.At(ind_nb, n));
-    // }
-    // return s;
 }
 
 template <std::size_t Dim, typename TimeDiscretization>

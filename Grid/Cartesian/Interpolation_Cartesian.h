@@ -549,6 +549,18 @@ InterpolateToCenter(const typename Cartesian<Dim>::Representation& target,
     return 0.5 * (v_a + v_b);
 }
 
+/*!
+ * @brief interpolates a component linearly to the center of the target from the source field
+ * @tparam SC type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @param point point to which it should be interpolated
+ * @param field reference to the field, from which the value is interpolated
+ * @param n component id
+ * @return interpolated values the point
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ */
 template <std::size_t Dim, typename SC, std::size_t N>
 SC InterpolateToPoint(const typename dare::Vector<Dim, SC>& point,
                       const dare::GridVector<dare::Cartesian<Dim>, SC, N>& field,
@@ -585,6 +597,17 @@ SC InterpolateToPoint(const typename dare::Vector<Dim, SC>& point,
     return Interpolate(field, vlist, weights, n);
 }
 
+/*!
+ * @brief interpolates all components linearly to the center of the target from the source field
+ * @tparam SC type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @param point point to which it should be interpolated
+ * @param field reference to the field, from which the value is interpolated
+ * @return interpolated values the point
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ */
 template <std::size_t Dim, typename SC, std::size_t N>
 dare::Vector<N, SC> InterpolateToPoint(const typename dare::Vector<Dim, SC>& point,
                                        const dare::GridVector<dare::Cartesian<Dim>, SC, N>& field) {
@@ -620,6 +643,21 @@ dare::Vector<N, SC> InterpolateToPoint(const typename dare::Vector<Dim, SC>& poi
     return Interpolate(field, vlist, weights);
 }
 
+/*!
+ * @brief interpolates all components linearly to the faces of the target from the source field
+ * @tparam SC type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param field reference to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a face stencil with interpolated values
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ * The distance parameter allows to get values at the 'far' faces, e.g. distance = 1 refers to the west face
+ * of the neighboring cell of ind_target
+ */
 template <std::size_t Dim, typename T, std::size_t N, typename LO>
 [[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
 InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
@@ -646,6 +684,19 @@ InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& gr
     return s;
 }
 
+/*!
+ * @brief interpolates all components linearly to the faces of the target from the source field
+ * @tparam T type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param field pointer to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a face stencil with interpolated values
+ * \note this is an overload for dealing with pointers
+ */
 template <std::size_t Dim, typename T, std::size_t N, typename LO>
 [[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
 InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
@@ -655,6 +706,19 @@ InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& gr
     return InterpolateToFaceStencil(grid_target, ind_target, *field, distance);
 }
 
+/*!
+ * @brief provides a face stencil filled with a single value
+ * @tparam T type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param value reference to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a face stencil with interpolated values
+ * \note This is a convenience overload for constant values, providing a face stencil
+ * filled only with a single value
+ */
 template <std::size_t Dim, typename T, typename LO>
     requires std::is_arithmetic_v<T>
 [[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, 1>
@@ -667,6 +731,16 @@ InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& gr
     return s;
 }
 
+/*!
+ * @brief provides a default value stencil for a None value
+ * @tparam Dim dimension of the grid
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param v the None value
+ * @param distance an indicator if a remote stencil is required
+ * @return a face stencil with interpolated values
+ */
 template <std::size_t Dim, typename LO>
 [[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, dare::defaults::ScalarType, 1>
 InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
@@ -678,15 +752,31 @@ InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& gr
     return s;
 }
 
+/*!
+ * @brief interpolates all components linearly to the center of the target from the source field
+ * @tparam T type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param field reference to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a center stencil with interpolated values
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ * The distance parameter allows to get values at the 'far' faces, e.g. distance = 1 refers to the west face
+ * of the neighboring cell of ind_target
+ */
 template <std::size_t Dim, typename T, std::size_t N, typename LO>
-[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
+[[nodiscard]] dare::CenterValueStencil<dare::Cartesian<Dim>, T, N>
 InterpolateToCenterStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
                            dare::Vector<Dim, LO> ind_target,
                            const dare::GridVector<dare::Cartesian<Dim>, T, N>& field,
                            typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
     const auto STENCIL_SIZE = dare::Cartesian<Dim>::STENCIL_SIZE;
     dare::CenterValueStencil<dare::Cartesian<Dim>, T, N> s;
-    ERROR << "This function is not applicable at the moment" << ERROR_CLOSE;
+    s.SetValues(CartesianNeighbor::CENTER, dare::InterpolateToCenter(grid_target, ind_target, field));
     for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
         typename dare::Cartesian<Dim>::Index ind(ind_target);
         // This little black magic here is actually quite simple
@@ -696,23 +786,38 @@ InterpolateToCenterStencil(const typename dare::Cartesian<Dim>::Representation& 
         // To be sure for the future, we test here the compliance with this method at compile time
         static_assert(static_cast<char>(dare::CartesianNeighbor::WEST) == 1, "The west neighbor needs to be 1!");
         static_assert(static_cast<char>(dare::CartesianNeighbor::EAST) == 2, "The east neighbor needs to be 2!");
-        ind[(face_id - 1) / 2] += (((face_id + 1) % 2) - (face_id % 2)) * distance;
-        for (std::size_t n{0}; n < N; n++) {
-            const auto face = dare::ToCartesianNeighbor(face_id);
-            s.SetValue(face, n, dare::InterpolateToFace(grid_target, ind, face, field, n));
-        }
+        ind[(face_id - 1) / 2] += (((face_id + 1) % 2) - (face_id % 2)) * (distance + 1);
+        const auto face = dare::ToCartesianNeighbor(face_id);
+        s.SetValues(face, dare::InterpolateToCenter(grid_target, ind, field));
     }
     return s;
 }
 
+/*!
+ * @brief interpolates all components linearly to the center of the target from the source field
+ * @tparam T type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param field pointer to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a center stencil with interpolated values
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ * The distance parameter allows to get values at the 'far' faces, e.g. distance = 1 refers to the west face
+ * of the neighboring cell of ind_target
+ */
 template <std::size_t Dim, typename T, std::size_t N, typename LO>
-[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
+[[nodiscard]] dare::CenterValueStencil<dare::Cartesian<Dim>, T, N>
 InterpolateToCenterStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
                            dare::Vector<Dim, LO> ind_target,
                            const dare::GridVector<dare::Cartesian<Dim>, T, N>* field,
                            typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
     return InterpolateToCenterStencil(grid_target, ind_target, *field, distance);
 }
+
 }  // end namespace dare
 
 #endif  // GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_

@@ -170,6 +170,13 @@ public:
     void SetValue(Positions pos, std::size_t n, SC v);
 
     /*!
+     * @brief sets a multiple components at specific face of the stencil
+     * @param pos position of the value (e.g. CENTER)
+     * @param v value
+     */
+    void SetValues(Positions pos, const dare::Vector<N, SC>& v);
+
+    /*!
      * @brief sets value at the rhs
      * @param n component ID
      * @param v value to set
@@ -475,6 +482,12 @@ public:
     void SetAll(SC v);
 
     /*!
+     * @brief sets the whole stencil to a certain value per component
+     * @param v value
+     */
+    void SetAll(const dare::Vector<N, SC>& v);
+
+    /*!
      * @brief returns reference to value of face
      * @param pos position of value (e.g. WEST)
      * @param n component ID
@@ -709,6 +722,12 @@ public:
      * @param v value
      */
     void SetAll(SC v);
+
+    /*!
+     * @brief sets the whole stencil to a certain value
+     * @param v value
+     */
+    void SetAll(const dare::Vector<N, SC>& v);
 
     /*!
      * @brief returns reference to value

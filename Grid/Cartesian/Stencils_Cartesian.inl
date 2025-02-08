@@ -180,6 +180,12 @@ void CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValue(Positions pos, s
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>
+void CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetValues(Positions pos, const dare::Vector<N, SC>& v) {
+    for (std::size_t n{0}; n < N; n++)
+        SetValue(pos, n, v[n]);
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
 void CenterMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetRHS(
     std::size_t n, SC v) {
     rhs[n] = v;
@@ -480,6 +486,15 @@ void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetAll(SC v) {
         for (auto& e : a)
             e = v;
 }
+template <std::size_t Dim, typename SC, std::size_t N>
+void FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::SetAll(const dare::Vector<N, SC>& v) {
+    for (std::size_t n{0}; n < N;  n++)
+        for (auto& e : coefficients_c[n])
+            e = v[n];
+    for (std::size_t n{0}; n < N; n++)
+        for (auto& e : coefficients_nb[n])
+            e = v[n];
+}
 
 template <std::size_t Dim, typename SC, std::size_t N>
 SC& FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>::GetValueCenter(Positions pos, std::size_t n) {
@@ -747,6 +762,13 @@ void FaceValueStencil<dare::Cartesian<Dim>, SC, N>::SetAll(SC v) {
     for (auto& a : coefficients)
         for (auto& e : a)
             e = v;
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+void FaceValueStencil<dare::Cartesian<Dim>, SC, N>::SetAll(const dare::Vector<N, SC>& v) {
+    for (std::size_t n{0}; n < N; n++)
+        for (auto& e : coefficients[n])
+            e = v[n];
 }
 
 template <std::size_t Dim, typename SC, std::size_t N>

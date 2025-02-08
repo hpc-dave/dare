@@ -25,6 +25,7 @@
 #ifndef DATA_GRIDVECTOR_H_
 #define DATA_GRIDVECTOR_H_
 
+#include <concepts>
 #include <string>
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>

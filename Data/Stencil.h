@@ -26,6 +26,7 @@
 #define DATA_STENCIL_H_
 
 #include <string>
+#include <utility>
 
 namespace dare {
 
@@ -67,6 +68,9 @@ class FaceMatrixStencil {
 template <typename Grid, typename SC, std::size_t N>
 class FaceValueStencil {
 };
+
+template<typename Stencil>
+using ExtendedStencil = std::pair<Stencil, Stencil>;
 
 // operators for improved use
 

@@ -24,6 +24,9 @@
 #ifndef GRID_CARTESIAN_TVD_CARTESIAN_H_
 #define GRID_CARTESIAN_TVD_CARTESIAN_H_
 
+#include <utility>
+
+#include "Utilities/CompileTimeFunctions.h"
 #include "Data/GridVector.h"
 #include "Equations/Operators.h"
 #include "Grid/Cartesian/Interpolation_Cartesian.h"
@@ -79,8 +82,7 @@ public:
      */
     template <std::size_t N>
     [[nodiscard]] dare::FaceValueStencil<GridType, SC, N> Interpolate(
-        const dare::CenterValueStencil<GridType, SC, N>& s_close,
-        const dare::CenterValueStencil<GridType, SC, N>& s_far) const;
+        const dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>& s) const;
 
     /*!
      * @brief When used for interpolation from a field
@@ -92,6 +94,17 @@ public:
     template <std::size_t N>
     [[nodiscard]] dare::FaceValueStencil<GridType, SC, N> Interpolate(
         const dare::GridVector<GridType, SC, N>& field) const;
+
+    /*!
+     * @brief When used for interpolation from a field
+     * @tparam N number of components
+     * @param field field
+     * Here, the face values are computed according to the TVD scheme,
+     * excluding the velocity component
+     */
+    template <std::size_t N>
+    [[nodiscard]] dare::FaceValueStencil<GridType, SC, N> Interpolate(
+        const dare::GridVector<GridType, SC, N>* field) const;
 
     /*!
      * @brief When used for interpolation from a field
@@ -135,7 +148,7 @@ public:
      *   TVD<...> u(...);
      *   FaceValueStencil<...> rho;
      *
-     *   FaceMatrixStenci<...> J = rho * u * phi
+     *   FaceMatrixStencil<...> J = rho * u * phi
      *
      * @endcode
      */
@@ -144,18 +157,280 @@ public:
         const dare::GridVector<GridType, SC, N>& field) const;
 
     /*!
+     * @brief a convenience function for accessing the Apply  function
+     * @tparam ...Args parameter types going in
+     * @param ...args the parameter pack
+     * @return a FaceMatrixStencil
+     */
+    template <typename... Args>
+    auto operator()(const Args&... args) const;
+
+    /*!
+     * @brief Applies the TVD scheme to a set of parameters and computes the Fluxes at the faces
+     * @tparam ...Args parameter types to go in
+     * @param ...args parameters to evaluation
+     * @return A FaceMatrixStencils representing the fluxes at the faces
+     * \note This function already applies the velocity at the faces, do not add those to the arguments!
+     * 
+     * @code{.cpp}
+     *     // assuming that epsilon, rho and cp are parameters of type
+     *     // GridVector, double, None or dare::Vector<N, SC>
+     *     // we can compute the fluxes of epsilon * rho * cp * T * u by:
+     *     J = tvd.Apply(epsilon, rho, cp, T->GetField()->GetDataVector(1))
+     * @endcode
+     */
+    template <typename... Args>
+    auto Apply(const Args&... args) const;
+
+    /*!
      * @brief returns the velocity values
      */
-    [[nodiscard]] const dare::FaceValueStencil<GridType, SC, 1>& GetVelocities() const;
+    [[nodiscard]] const dare::FaceValueStencil<GridType, SC, 1>& GetVelocityStencil() const;
+
+    /*!
+     * @brief returns local index
+     */
+    [[nodiscard]] const Index& GetIndex() const;
 
 private:
-    Index ind;                                               //!< triplet of indices
+    /*!
+     * @brief computes an extended stencil (close and far) by multiplying the relevant values
+     * @tparam ...Args parameter pack types
+     * @tparam N number of components
+     * @param for_num_components just provided for giving the number of components, not used!
+     * @param ...values the values which will be multiplied at the faces
+     * @return an extended stencil (std::pair, where first -> close FaceValueStencil and second -> far FaceValueStencil)
+     */
+    template <std::size_t N, typename... Args>
+    dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>
+    ComputeExtendedValueStencil(const dare::GridVector<GridType, SC, N>& for_num_components,
+                                const Args&... values) const;
+
+    Index ind;                                         //!< triplet of indices
     dare::FaceValueStencil<GridType, SC, 1> velocity;  //!< stencil with velocity
-    dare::Vector<NUM_FACES, bool> upwind;             //!< identifier for upwind at each face
-#ifndef DARE_NDEBUG
-    const GridRepresentation* grep_debug;                           //!< debugging helper with grid information
-#endif
+    dare::Vector<NUM_FACES, bool> upwind;              //!< identifier for upwind at each face
+    const GridRepresentation* grep;                    //!< grid information
 };
+
+namespace detail {
+
+/*!
+ * @brief end point for parameter unpacking of the extended stencils
+ * @tparam SC scalar type
+ * @tparam ...Args parameter types
+ * @tparam Dim dimension of the Cartesian grid
+ * @tparam N number of components
+ * @param grep representation of the target grid
+ * @param ind triplet of indices of the center value
+ * @param s stencil to multiply with
+ * @param ...args value for multiplying with the stencil
+ * 
+ * This is the endpoint for unpacking of the parameters. It also serves
+ * as an elegant way for checking, if we actually can use a provided value
+ * for determining the extended stencil. If no appropriate overload is provided,
+ * the compiler will end up here and throw an error in the static_assert!
+ */
+template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
+void free_tvd_cartesian_get_extended_stencil(
+    const typename dare::Cartesian<Dim>::Representation& grep,
+    const typename dare::Cartesian<Dim>::Index& ind,
+    dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
+    const Args&... args) {
+    static_assert(sizeof...(args) == 0, "Cannot interpret the provided arguments!");
+}
+
+/*!
+ * @brief overload for a multiplying the stencil with the appropriate GridVector values
+ * @tparam SC scalar type
+ * @tparam ...Args parameter types
+ * @tparam Dim dimension of the Cartesian grid
+ * @tparam N number of components
+ * @param grep representation of the target grid
+ * @param ind triplet of indices of the center value
+ * @param s stencil to multiply with
+ * @param data reference to the grid vector
+ * @param ...args remaining values for multiplying with the stencil
+ */
+template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
+void free_tvd_cartesian_get_extended_stencil(
+    const typename dare::Cartesian<Dim>::Representation& grep,
+    const typename dare::Cartesian<Dim>::Index& ind,
+    dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
+    const typename dare::GridVector<dare::Cartesian<Dim>, SC, N>& data,
+    const Args&... args) {
+    free_tvd_cartesian_get_extended_stencil(grep, ind, s, args...);
+    s->first *= dare::InterpolateToCenterStencil(grep, ind, data, 0);
+    s->second *= dare::InterpolateToCenterStencil(grep, ind, data, 1);
+}
+
+/*!
+ * @brief overload for a multiplying the stencil with the appropriate GridVector values
+ * @tparam SC scalar type
+ * @tparam ...Args parameter types
+ * @tparam Dim dimension of the Cartesian grid
+ * @tparam N number of components
+ * @param grep representation of the target grid
+ * @param ind triplet of indices of the center value
+ * @param s stencil to multiply with
+ * @param data pointer to the grid vector
+ * @param ...args remaining values for multiplying with the stencil
+ */
+template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
+void free_tvd_cartesian_get_extended_stencil(
+    const typename dare::Cartesian<Dim>::Representation& grep,
+    const typename dare::Cartesian<Dim>::Index& ind,
+    dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
+    const typename dare::GridVector<dare::Cartesian<Dim>, SC, N>* data,
+    const Args&... args) {
+    free_tvd_cartesian_get_extended_stencil(grep, ind, s, *data, args...);
+}
+
+/*!
+ * @brief overload for a multiplying the stencil with the appropriate Field values
+ * @tparam SC scalar type
+ * @tparam ...Args parameter types
+ * @tparam Dim dimension of the Cartesian grid
+ * @tparam N number of components
+ * @param grep representation of the target grid
+ * @param ind triplet of indices of the center value
+ * @param s stencil to multiply with
+ * @param data reference to the field
+ * @param ...args remaining values for multiplying with the stencil
+ * 
+ * \note The newest timestep of the Field will be used to compute the stencil!
+ */
+template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
+void free_tvd_cartesian_get_extended_stencil(
+    const typename dare::Cartesian<Dim>::Representation& grep,
+    const typename dare::Cartesian<Dim>::Index& ind,
+    dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
+    const typename dare::Field<dare::Cartesian<Dim>, SC, N>& data,
+    const Args&... args) {
+    free_tvd_cartesian_get_extended_stencil(grep, ind, s, data.GetDataVector(), args...);
+}
+
+/*!
+ * @brief overload for a multiplying the stencil with the appropriate Field values
+ * @tparam SC scalar type
+ * @tparam ...Args parameter types
+ * @tparam Dim dimension of the Cartesian grid
+ * @tparam N number of components
+ * @param grep representation of the target grid
+ * @param ind triplet of indices of the center value
+ * @param s stencil to multiply with
+ * @param data pointer to the field
+ * @param ...args remaining values for multiplying with the stencil
+ *
+ * \note The newest timestep of the Field will be used to compute the stencil!
+ */
+template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
+void free_tvd_cartesian_get_extended_stencil(
+    const typename dare::Cartesian<Dim>::Representation& grep,
+    const typename dare::Cartesian<Dim>::Index& ind,
+    dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
+    const typename dare::Field<dare::Cartesian<Dim>, SC, N>* data,
+    const Args&... args) {
+    free_tvd_cartesian_get_extended_stencil(grep, ind, s, *data, args...);
+}
+
+/*!
+ * @brief overload for a multiplying the stencil with a certain value
+ * @tparam SC scalar type
+ * @tparam ...Args parameter types
+ * @tparam Dim dimension of the Cartesian grid
+ * @tparam N number of components
+ * @param grep representation of the target grid
+ * @param ind triplet of indices of the center value
+ * @param s stencil to multiply with
+ * @param value value to multiply the stencil with
+ * @param ...args remaining values for multiplying with the stencil
+ */
+template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
+void free_tvd_cartesian_get_extended_stencil(
+    const typename dare::Cartesian<Dim>::Representation& grep,
+    const typename dare::Cartesian<Dim>::Index& ind,
+    dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
+    SC value,
+    const Args&... args) {
+    s->first *= value;
+    s->second *= value;
+    free_tvd_cartesian_get_extended_stencil(grep, ind, s, args...);
+}
+
+/*!
+ * @brief overload for ignoring a None value
+ * @tparam SC scalar type
+ * @tparam ...Args parameter types
+ * @tparam Dim dimension of the Cartesian grid
+ * @tparam N number of components
+ * @param grep representation of the target grid
+ * @param ind triplet of indices of the center value
+ * @param s stencil to multiply with
+ * @param value value to multiply the stencil with
+ * @param ...args remaining values for multiplying with the stencil
+ */
+template <std::size_t Dim, typename SC, std::size_t N, typename... Args>
+void free_tvd_cartesian_get_extended_stencil(
+    const typename dare::Cartesian<Dim>::Representation& grep,
+    const typename dare::Cartesian<Dim>::Index& ind,
+    dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>* s,
+    dare::None value,
+    const Args&... args) {
+    free_tvd_cartesian_get_extended_stencil(grep, ind, s, args...);
+}
+
+/*!
+ * @brief a helper for extracting the number of component values
+ * @tparam T
+ * 
+ * This is the default and will stop compilation, because no appropriate
+ * specialization was found to get the value
+ */
+template<typename T>
+struct free_tvd_cartesian_extract_num_components {
+    /*!
+     * @brief compile time function for getting the number of components (stops compilation)
+     */
+    static constexpr std::size_t GetValue() {
+        static_assert(dare::always_false<T>, "Cannot extract the number of components from provided type");
+        return 0;
+    }
+};
+
+/*!
+ * @brief a helper for extracting the number of component values
+ * @tparam SC type of scalar value
+ * @tparam Dim dimension fo the Cartesian grid
+ * @tparam N number of components
+ */
+template <std::size_t Dim, typename SC, std::size_t N>
+struct free_tvd_cartesian_extract_num_components<dare::GridVector<dare::Cartesian<Dim>, SC, N>> {
+    /*!
+     * @brief compile time function for getting the number of components
+     */
+    static constexpr std::size_t GetValue() {
+        return N;
+    }
+};
+
+/*!
+ * @brief a helper for extracting the number of component values
+ * @tparam SC type of scalar value
+ * @tparam Dim dimension fo the Cartesian grid
+ * @tparam N number of components
+ */
+template <std::size_t Dim, typename SC, std::size_t N>
+struct free_tvd_cartesian_extract_num_components<
+    dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>> {
+    /*!
+     * @brief compile time function for getting the number of components
+     */
+    static constexpr std::size_t GetValue() {
+        return N;
+    }
+};
+
+}  // namespace detail
 
 }  // end namespace dare
 
