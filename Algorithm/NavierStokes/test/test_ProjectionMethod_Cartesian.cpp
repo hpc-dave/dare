@@ -597,6 +597,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_conv_upwind_test) {
     dare::test::BStrat bstrat;
     pm.Initialize(grid, &dt, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -690,6 +691,464 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_conv_upwind_test) {
         EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
         EXPECT_NEAR(s.GetValue(CNB::SOUTH, 0), v_s, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_s));
         EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetValue(CNB::NORTH, 0), v_n, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_n));
+        EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
+        EXPECT_EQ(s.GetRhs(0), 0.);
+    }
+
+    dA = g_y->GetFaceArea();
+    // in Y-momentum
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+
+        TVD tvd(*g_y, n_loc, velocities);
+
+        auto s = dare::free_pm_convection_Cartesian(&pm, dare::ONE, *g_y, n_loc, &epsilon, &rho, velocities);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        Index ind_w(ind), ind_ss(ind), ind_s(ind), ind_sw(ind), ind_n(ind), ind_se(ind), ind_e(ind);
+        ind_s.j() -= 1;
+        ind_ss.j() -= 2;
+        ind_w.i() -= 1;
+        ind_sw.i() -= 1;
+        ind_sw.j() -= 1;
+        ind_n.j() += 1;
+        ind_se.i() += 1;
+        ind_se.j() -= 1;
+        ind_e.i() += 1;
+        SC rho_w = 0.5 * (rho.GetDataVector().At(ind_sw, 0) + rho.GetDataVector().At(ind_w, 0));
+        SC rho_s = 0.5 * (rho.GetDataVector().At(ind_ss, 0) + rho.GetDataVector().At(ind_s, 0));
+        SC rho_c = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_s, 0));
+        SC rho_e = 0.5 * (rho.GetDataVector().At(ind_se, 0) + rho.GetDataVector().At(ind_e, 0));
+        SC rho_n = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_n, 0));
+        SC eps_w = 0.5 * (epsilon.GetDataVector().At(ind_sw, 0) + epsilon.GetDataVector().At(ind_w, 0));
+        SC eps_s = 0.5 * (epsilon.GetDataVector().At(ind_ss, 0) + epsilon.GetDataVector().At(ind_s, 0));
+        SC eps_c = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_s, 0));
+        SC eps_e = 0.5 * (epsilon.GetDataVector().At(ind_se, 0) + epsilon.GetDataVector().At(ind_e, 0));
+        SC eps_n = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_n, 0));
+        SC u_w = 0.5 * (velocities[0]->At(ind_s, 0) + velocities[0]->At(ind, 0));
+        SC u_e = 0.5 * (velocities[0]->At(ind_se, 0) + velocities[0]->At(ind_e, 0));
+        SC u_s = 0.5 * (velocities[1]->At(ind_s, 0) + velocities[1]->At(ind, 0));
+        SC u_n = 0.5 * (velocities[1]->At(ind_n, 0) + velocities[1]->At(ind, 0));
+
+        SC v_w{0.}, v_s{0.}, v_c{0.}, v_e{0.}, v_n{0.};
+        if (u_w < 0) {
+            // downwind west
+            v_c -= eps_c * rho_c * u_w * dA[0];
+        } else {
+            // upwind west
+            v_w -= eps_w * rho_w * u_w * dA[0];
+        }
+
+        if (u_e < 0) {
+            // downwind east
+            v_e += eps_e * rho_e * u_e * dA[0];
+        } else {
+            // upwind east
+            v_c += eps_c * rho_c * u_e * dA[0];
+        }
+
+        if (u_s < 0) {
+            // downwind south
+            v_c -= eps_c * rho_c * u_s * dA[1];
+        } else {
+            // upwind south
+            v_s -= eps_s * rho_s * u_s * dA[1];
+        }
+
+        if (u_n < 0) {
+            // downwind north
+            v_n += eps_n * rho_n * u_n * dA[1];
+        } else {
+            // upwind north
+            v_c += eps_c * rho_c * u_n * dA[1];
+        }
+
+        EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
+        EXPECT_NEAR(s.GetValue(CNB::SOUTH, 0), v_s, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_s));
+        EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetValue(CNB::NORTH, 0), v_n, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_n));
+        EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
+        EXPECT_EQ(s.GetRhs(0), 0.);
+    }
+}
+
+TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_conv_upwind_test) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    struct NDict {
+        using tvd = dare::UPWIND;
+        using time_scheme_convective = dare::EULER_BACKWARD;
+    };
+    using TVD = dare::TVD<GridType, SC, dare::CDS>;
+    using CNB = dare::CartesianNeighbor;
+
+    auto g_s = grid->GetRepresentation(opt_s);
+    double mu = 0.;
+    const double tol_eps = 1e2;
+    Field rho("rho", g_s, 2);
+    Field epsilon("epsilon", g_s, 2);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
+    auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
+    pm.SetDensity(&rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < rho.GetDataVector().GetSize(); i++) {
+        rho.GetDataVector().At(i) = rd.Generate();
+        rho.GetDataVector(1).At(i) = rd.Generate();
+        epsilon.GetDataVector().At(i) = rd.Generate();
+        epsilon.GetDataVector(1).At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    dare::Vector<Dim, SC> dA = g_x->GetFaceArea();
+    // in X-momentum
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+
+        TVD tvd(*g_x, n_loc, velocities);
+
+        auto s = dare::free_pm_convection_Cartesian(&pm, dare::ZERO, *g_x, n_loc, &epsilon, &rho, velocities);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        Index ind_w(ind), ind_ww(ind), ind_s(ind), ind_sw(ind), ind_n(ind), ind_nw(ind), ind_e(ind),
+              ind_b(ind), ind_bw(ind), ind_t(ind), ind_tw(ind);
+        ind_w.i() -= 1;
+        ind_ww.i() -= 2;
+        ind_s.j() -= 1;
+        ind_sw.i() -= 1;
+        ind_sw.j() -= 1;
+        ind_n.j() += 1;
+        ind_nw.i() -= 1;
+        ind_nw.j() += 1;
+        ind_e.i() += 1;
+        ind_b.k() -= 1;
+        ind_bw.i() -= 1;
+        ind_bw.k() -= 1;
+        ind_tw.i() -= 1;
+        ind_tw.k() += 1;
+        ind_t.k() += 1;
+        SC rho_w = 0.5 * (rho.GetDataVector().At(ind_w, 0) + rho.GetDataVector().At(ind_ww, 0));
+        SC rho_s = 0.5 * (rho.GetDataVector().At(ind_s, 0) + rho.GetDataVector().At(ind_sw, 0));
+        SC rho_b = 0.5 * (rho.GetDataVector().At(ind_b, 0) + rho.GetDataVector().At(ind_bw, 0));
+        SC rho_c = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_w, 0));
+        SC rho_t = 0.5 * (rho.GetDataVector().At(ind_t, 0) + rho.GetDataVector().At(ind_tw, 0));
+        SC rho_e = 0.5 * (rho.GetDataVector().At(ind_e, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_n = 0.5 * (rho.GetDataVector().At(ind_n, 0) + rho.GetDataVector().At(ind_nw, 0));
+        SC eps_w = 0.5 * (epsilon.GetDataVector().At(ind_w, 0) + epsilon.GetDataVector().At(ind_ww, 0));
+        SC eps_s = 0.5 * (epsilon.GetDataVector().At(ind_s, 0) + epsilon.GetDataVector().At(ind_sw, 0));
+        SC eps_b = 0.5 * (epsilon.GetDataVector().At(ind_b, 0) + epsilon.GetDataVector().At(ind_bw, 0));
+        SC eps_c = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_w, 0));
+        SC eps_t = 0.5 * (epsilon.GetDataVector().At(ind_t, 0) + epsilon.GetDataVector().At(ind_tw, 0));
+        SC eps_e = 0.5 * (epsilon.GetDataVector().At(ind_e, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_n = 0.5 * (epsilon.GetDataVector().At(ind_n, 0) + epsilon.GetDataVector().At(ind_nw, 0));
+        SC u_w = 0.5 * (velocities[0]->At(ind_w, 0) + velocities[0]->At(ind, 0));
+        SC u_e = 0.5 * (velocities[0]->At(ind_e, 0) + velocities[0]->At(ind, 0));
+        SC u_s = 0.5 * (velocities[1]->At(ind_w, 0) + velocities[1]->At(ind, 0));
+        SC u_n = 0.5 * (velocities[1]->At(ind_nw, 0) + velocities[1]->At(ind_n, 0));
+        SC u_b = 0.5 * (velocities[2]->At(ind_w, 0) + velocities[2]->At(ind, 0));
+        SC u_t = 0.5 * (velocities[2]->At(ind_tw, 0) + velocities[2]->At(ind_t, 0));
+
+        SC v_w{0.}, v_s{0.}, v_c{0.}, v_e{0.}, v_n{0.}, v_t{0.}, v_b{0.};
+        if (u_w < 0) {
+            // downwind west
+            v_c -= eps_c * rho_c * u_w * dA[0];
+        } else {
+            // upwind west
+            v_w -= eps_w * rho_w * u_w * dA[0];
+        }
+
+        if (u_e < 0) {
+            // downwind east
+            v_e += eps_e * rho_e * u_e * dA[0];
+        } else {
+            // upwind east
+            v_c += eps_c * rho_c * u_e * dA[0];
+        }
+
+        if (u_s < 0) {
+            // downwind south
+            v_c -= eps_c * rho_c * u_s * dA[1];
+        } else {
+            // upwind south
+            v_s -= eps_s * rho_s * u_s * dA[1];
+        }
+
+        if (u_n < 0) {
+            // downwind north
+            v_n += eps_n * rho_n * u_n * dA[1];
+        } else {
+            // upwind north
+            v_c += eps_c * rho_c * u_n * dA[1];
+        }
+
+        if (u_b < 0) {
+            // downwind bottom
+            v_c -= eps_c * rho_c * u_b * dA[2];
+        } else {
+            // upwind bottom
+            v_b -= eps_b * rho_b * u_b * dA[2];
+        }
+
+        if (u_t < 0) {
+            // downwind top
+            v_t += eps_t * rho_t * u_t * dA[2];
+        } else {
+            // upwind top
+            v_c += eps_c * rho_c * u_t * dA[2];
+        }
+
+        EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
+        EXPECT_NEAR(s.GetValue(CNB::SOUTH, 0), v_s, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_s));
+        EXPECT_NEAR(s.GetValue(CNB::BOTTOM, 0), v_b, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_b));
+        EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetValue(CNB::TOP, 0), v_t, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_t));
+        EXPECT_NEAR(s.GetValue(CNB::NORTH, 0), v_n, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_n));
+        EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
+        EXPECT_EQ(s.GetRhs(0), 0.);
+    }
+
+    dA = g_y->GetFaceArea();
+    // in Y-momentum
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+
+        TVD tvd(*g_y, n_loc, velocities);
+
+        auto s = dare::free_pm_convection_Cartesian(&pm, dare::ONE, *g_y, n_loc, &epsilon, &rho, velocities);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        Index ind_w(ind), ind_ss(ind), ind_s(ind), ind_sw(ind), ind_n(ind), ind_se(ind), ind_e(ind),
+              ind_b(ind), ind_bs(ind), ind_t(ind), ind_ts(ind);
+
+        ind_s.j() -= 1;
+        ind_ss.j() -= 2;
+        ind_w.i() -= 1;
+        ind_sw.i() -= 1;
+        ind_sw.j() -= 1;
+        ind_n.j() += 1;
+        ind_se.i() += 1;
+        ind_se.j() -= 1;
+        ind_e.i() += 1;
+        ind_b.k() -= 1;
+        ind_bs.j() -= 1;
+        ind_bs.k() -= 1;
+        ind_ts.j() -= 1;
+        ind_ts.k() += 1;
+        ind_t.k() += 1;
+        SC rho_w = 0.5 * (rho.GetDataVector().At(ind_sw, 0) + rho.GetDataVector().At(ind_w, 0));
+        SC rho_s = 0.5 * (rho.GetDataVector().At(ind_ss, 0) + rho.GetDataVector().At(ind_s, 0));
+        SC rho_b = 0.5 * (rho.GetDataVector().At(ind_b, 0) + rho.GetDataVector().At(ind_bs, 0));
+        SC rho_c = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_s, 0));
+        SC rho_t = 0.5 * (rho.GetDataVector().At(ind_t, 0) + rho.GetDataVector().At(ind_ts, 0));
+        SC rho_e = 0.5 * (rho.GetDataVector().At(ind_se, 0) + rho.GetDataVector().At(ind_e, 0));
+        SC rho_n = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_n, 0));
+        SC eps_w = 0.5 * (epsilon.GetDataVector().At(ind_sw, 0) + epsilon.GetDataVector().At(ind_w, 0));
+        SC eps_s = 0.5 * (epsilon.GetDataVector().At(ind_ss, 0) + epsilon.GetDataVector().At(ind_s, 0));
+        SC eps_b = 0.5 * (epsilon.GetDataVector().At(ind_b, 0) + epsilon.GetDataVector().At(ind_bs, 0));
+        SC eps_c = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_s, 0));
+        SC eps_t = 0.5 * (epsilon.GetDataVector().At(ind_t, 0) + epsilon.GetDataVector().At(ind_ts, 0));
+        SC eps_e = 0.5 * (epsilon.GetDataVector().At(ind_se, 0) + epsilon.GetDataVector().At(ind_e, 0));
+        SC eps_n = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_n, 0));
+        SC u_w = 0.5 * (velocities[0]->At(ind_s, 0) + velocities[0]->At(ind, 0));
+        SC u_e = 0.5 * (velocities[0]->At(ind_se, 0) + velocities[0]->At(ind_e, 0));
+        SC u_s = 0.5 * (velocities[1]->At(ind_s, 0) + velocities[1]->At(ind, 0));
+        SC u_n = 0.5 * (velocities[1]->At(ind_n, 0) + velocities[1]->At(ind, 0));
+        SC u_b = 0.5 * (velocities[2]->At(ind_s, 0) + velocities[2]->At(ind, 0));
+        SC u_t = 0.5 * (velocities[2]->At(ind_ts, 0) + velocities[2]->At(ind_t, 0));
+
+        SC v_w{0.}, v_s{0.}, v_c{0.}, v_e{0.}, v_n{0.}, v_b{0.}, v_t{0.};
+        if (u_w < 0) {
+            // downwind west
+            v_c -= eps_c * rho_c * u_w * dA[0];
+        } else {
+            // upwind west
+            v_w -= eps_w * rho_w * u_w * dA[0];
+        }
+
+        if (u_e < 0) {
+            // downwind east
+            v_e += eps_e * rho_e * u_e * dA[0];
+        } else {
+            // upwind east
+            v_c += eps_c * rho_c * u_e * dA[0];
+        }
+
+        if (u_s < 0) {
+            // downwind south
+            v_c -= eps_c * rho_c * u_s * dA[1];
+        } else {
+            // upwind south
+            v_s -= eps_s * rho_s * u_s * dA[1];
+        }
+
+        if (u_n < 0) {
+            // downwind north
+            v_n += eps_n * rho_n * u_n * dA[1];
+        } else {
+            // upwind north
+            v_c += eps_c * rho_c * u_n * dA[1];
+        }
+
+        if (u_b < 0) {
+            // downwind bottom
+            v_c -= eps_c * rho_c * u_b * dA[2];
+        } else {
+            // upwind bottom
+            v_b -= eps_b * rho_b * u_b * dA[2];
+        }
+
+        if (u_t < 0) {
+            // downwind top
+            v_t += eps_t * rho_t * u_t * dA[2];
+        } else {
+            // upwind top
+            v_c += eps_c * rho_c * u_t * dA[2];
+        }
+
+        EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
+        EXPECT_NEAR(s.GetValue(CNB::SOUTH, 0), v_s, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_s));
+        EXPECT_NEAR(s.GetValue(CNB::BOTTOM, 0), v_b, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_b));
+        EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetValue(CNB::TOP, 0), v_t, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_t));
+        EXPECT_NEAR(s.GetValue(CNB::NORTH, 0), v_n, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_n));
+        EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
+        EXPECT_EQ(s.GetRhs(0), 0.);
+    }
+
+    dA = g_z->GetFaceArea();
+    // in Z-momentum
+    for (LO n_loc = 0; n_loc < g_z->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_z->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_z->MapInternalToLocal(ind_loc);
+
+        TVD tvd(*g_z, n_loc, velocities);
+
+        auto s = dare::free_pm_convection_Cartesian(&pm, dare::TWO, *g_z, n_loc, &epsilon, &rho, velocities);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        Index ind_w(ind), ind_s(ind), ind_b(ind), ind_bb(ind),
+            ind_bw(ind), ind_be(ind), ind_bs(ind), ind_bn(ind),
+            ind_t(ind), ind_n(ind), ind_e(ind);
+        ind_w.i() -= 1;
+        ind_s.j() -= 1;
+        ind_b.k() -= 1;
+        ind_bb.k() -= 2;
+        ind_bw.i() -= 1;
+        ind_bw.k() -= 1;
+        ind_be.i() += 1;
+        ind_be.k() -= 1;
+        ind_bs.j() -= 1;
+        ind_bs.k() -= 1;
+        ind_bn.j() += 1;
+        ind_bn.k() -= 1;
+        ind_t.k() += 1;
+        ind_n.j() += 1;
+        ind_e.i() += 1;
+
+        SC rho_w = 0.5 * (rho.GetDataVector().At(ind_bw, 0) + rho.GetDataVector().At(ind_w, 0));
+        SC rho_s = 0.5 * (rho.GetDataVector().At(ind_bs, 0) + rho.GetDataVector().At(ind_s, 0));
+        SC rho_b = 0.5 * (rho.GetDataVector().At(ind_bb, 0) + rho.GetDataVector().At(ind_b, 0));
+        SC rho_c = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_b, 0));
+        SC rho_t = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_t, 0));
+        SC rho_e = 0.5 * (rho.GetDataVector().At(ind_be, 0) + rho.GetDataVector().At(ind_e, 0));
+        SC rho_n = 0.5 * (rho.GetDataVector().At(ind_bn, 0) + rho.GetDataVector().At(ind_n, 0));
+        SC eps_w = 0.5 * (epsilon.GetDataVector().At(ind_bw, 0) + epsilon.GetDataVector().At(ind_w, 0));
+        SC eps_s = 0.5 * (epsilon.GetDataVector().At(ind_bs, 0) + epsilon.GetDataVector().At(ind_s, 0));
+        SC eps_b = 0.5 * (epsilon.GetDataVector().At(ind_bb, 0) + epsilon.GetDataVector().At(ind_b, 0));
+        SC eps_c = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_b, 0));
+        SC eps_t = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_t, 0));
+        SC eps_e = 0.5 * (epsilon.GetDataVector().At(ind_be, 0) + epsilon.GetDataVector().At(ind_e, 0));
+        SC eps_n = 0.5 * (epsilon.GetDataVector().At(ind_bn, 0) + epsilon.GetDataVector().At(ind_n, 0));
+        SC u_w = 0.5 * (velocities[0]->At(ind_b, 0) + velocities[0]->At(ind, 0));
+        SC u_e = 0.5 * (velocities[0]->At(ind_be, 0) + velocities[0]->At(ind_e, 0));
+        SC u_s = 0.5 * (velocities[1]->At(ind_s, 0) + velocities[1]->At(ind, 0));
+        SC u_n = 0.5 * (velocities[1]->At(ind_bn, 0) + velocities[1]->At(ind_n, 0));
+        SC u_b = 0.5 * (velocities[2]->At(ind_b, 0) + velocities[2]->At(ind, 0));
+        SC u_t = 0.5 * (velocities[2]->At(ind_t, 0) + velocities[2]->At(ind, 0));
+
+        SC v_w{0.}, v_s{0.}, v_c{0.}, v_e{0.}, v_n{0.}, v_b{0.}, v_t{0.};
+        if (u_w < 0) {
+            // downwind west
+            v_c -= eps_c * rho_c * u_w * dA[0];
+        } else {
+            // upwind west
+            v_w -= eps_w * rho_w * u_w * dA[0];
+        }
+
+        if (u_e < 0) {
+            // downwind east
+            v_e += eps_e * rho_e * u_e * dA[0];
+        } else {
+            // upwind east
+            v_c += eps_c * rho_c * u_e * dA[0];
+        }
+
+        if (u_s < 0) {
+            // downwind south
+            v_c -= eps_c * rho_c * u_s * dA[1];
+        } else {
+            // upwind south
+            v_s -= eps_s * rho_s * u_s * dA[1];
+        }
+
+        if (u_n < 0) {
+            // downwind north
+            v_n += eps_n * rho_n * u_n * dA[1];
+        } else {
+            // upwind north
+            v_c += eps_c * rho_c * u_n * dA[1];
+        }
+
+        if (u_b < 0) {
+            // downwind bottom
+            v_c -= eps_c * rho_c * u_b * dA[2];
+        } else {
+            // upwind bottom
+            v_b -= eps_b * rho_b * u_b * dA[2];
+        }
+
+        if (u_t< 0) {
+            // downwind top
+            v_t += eps_t * rho_t * u_t * dA[2];
+        } else {
+            // upwind top
+            v_c += eps_c * rho_c * u_t * dA[2];
+        }
+
+        EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
+        EXPECT_NEAR(s.GetValue(CNB::SOUTH, 0), v_s, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_s));
+        EXPECT_NEAR(s.GetValue(CNB::BOTTOM, 0), v_b, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_b));
+        EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetValue(CNB::TOP, 0), v_t, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_t));
         EXPECT_NEAR(s.GetValue(CNB::NORTH, 0), v_n, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_n));
         EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
         EXPECT_EQ(s.GetRhs(0), 0.);
