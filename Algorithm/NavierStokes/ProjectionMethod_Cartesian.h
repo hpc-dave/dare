@@ -153,6 +153,7 @@ free_pm_viscious_stress_Cartesian(
     using Treatment = typename PM::ViscousStressTreatment;
     using FMStencil = dare::FaceMatrixStencil<GridType, SC, 1>;
     using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+    using CMStencil = dare::CenterMatrixStencil<GridType, typename PM::SC, 1>;
     using CNB = dare::CartesianNeighbor;
     using Index = typename PM::Index;
     using Divergence = dare::Divergence<GridType, typename PM::ConvectiveTimeSchemeType>;
@@ -160,9 +161,7 @@ free_pm_viscious_stress_Cartesian(
     static_assert(dim < 4, "limited to 3 dimensions");
 
     if constexpr(dim < 2) {
-        FMStencil m_empty;
-        FVStencil f_empty;
-        return std::make_pair(m_empty, f_empty);
+        return CMStencil{};
     } else {
         auto dn_r = 1. / grep->GetDistances();
 
@@ -356,10 +355,6 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
         IndexLocal ind{mblock->GetIndex()};
 
-        // DDT ddt(*g_r, o_loc, pm->GetTimeStepSize());
-        // check here with is_pointer_v
-        // TVD tvd(*g_r, o_loc, velocities);
-
         const DensityType rho{pm->GetDensity()};
         const ViscosityType mu{pm->GetViscosity()};
         const PorosityType epsilon{pm->GetPorosity()};
@@ -372,19 +367,12 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
 
         // advection
         (*mblock) += free_pm_convection_Cartesian(pm, *g_r, o_loc, epsilon, rho, velocities);
-        // (*mblock) += div_a(tvd.Interpolate(epsilon),
-        //                    tvd.Interpolate(rho),
-        //                    tvd.Interpolate(*velocities[dir]),
-        //                    *pm->GetMomentum(dir)->GetField());
 
         // pressure force
         (*mblock) += free_pm_pressure_force_Cartesian(pm, direction, ind, epsilon_f);
 
         // viscous stress
         (*mblock) += free_pm_viscious_stress_Cartesian(pm, direction, *g_r, ind, epsilon_f * mu_f, velocities);
-        // auto [tau_im, tau_ex] = free_pm_viscious_stress_Cartesian(pm, direction, *g_r, ind, epsilon_f * mu_f, velocities);
-        // (*mblock) += div_v(tau_im);
-        // mblock->GetRhs() -= div_v(tau_ex);
 
         // explicit forcing
         (*mblock) += pm_explicit_force_Cartesian(pm, direction, *pm->GetMomentum(dir), ind);

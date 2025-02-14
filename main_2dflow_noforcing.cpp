@@ -186,7 +186,8 @@ int main(int argc, char* argv[]) {
 
                     SC coeff_du_dy_ex = 0.;
                     if (!Dijkhuizen)
-                        coeff_du_dy_ex = (s_mu_eps(CNB::NORTH, 0) * du_y_n - s_mu_eps(CNB::SOUTH, 0) * du_y_s) * A_dn.y();
+                        coeff_du_dy_ex = (s_mu_eps(CNB::NORTH, 0) * du_y_n
+                            - s_mu_eps(CNB::SOUTH, 0) * du_y_s) * A_dn.y();
 
                     SC coef_dv_dx_ex =
                         (s_mu_eps(CNB::NORTH, 0) * dv_x_n - s_mu_eps(CNB::SOUTH, 0) * dv_x_s) * A_dn.x();
@@ -306,7 +307,7 @@ int main(int argc, char* argv[]) {
                     FVStencil coef_faces;
                     coef_faces(CNB::WEST, 0) = -s_mu_eps(CNB::WEST, 0) * A_dn.x();
                     coef_faces(CNB::EAST, 0) = -s_mu_eps(CNB::EAST, 0) * A_dn.x();
-                    if(Dijkhuizen) {
+                    if (Dijkhuizen) {
                         coef_faces(CNB::SOUTH, 0) = -2.*s_mu_eps(CNB::SOUTH, 0) * A_dn.y();
                         coef_faces(CNB::NORTH, 0) = -2.*s_mu_eps(CNB::NORTH, 0) * A_dn.y();
                     }
@@ -766,4 +767,4 @@ int main(int argc, char* argv[]) {
             }
     }
     return 0;
-}
+}   // NOLINT
