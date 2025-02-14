@@ -1090,7 +1090,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_conv_upwind_test) {
         SC eps_n = 0.5 * (epsilon.GetDataVector().At(ind_bn, 0) + epsilon.GetDataVector().At(ind_n, 0));
         SC u_w = 0.5 * (velocities[0]->At(ind_b, 0) + velocities[0]->At(ind, 0));
         SC u_e = 0.5 * (velocities[0]->At(ind_be, 0) + velocities[0]->At(ind_e, 0));
-        SC u_s = 0.5 * (velocities[1]->At(ind_s, 0) + velocities[1]->At(ind, 0));
+        SC u_s = 0.5 * (velocities[1]->At(ind_b, 0) + velocities[1]->At(ind, 0));
         SC u_n = 0.5 * (velocities[1]->At(ind_bn, 0) + velocities[1]->At(ind_n, 0));
         SC u_b = 0.5 * (velocities[2]->At(ind_b, 0) + velocities[2]->At(ind, 0));
         SC u_t = 0.5 * (velocities[2]->At(ind_t, 0) + velocities[2]->At(ind, 0));
