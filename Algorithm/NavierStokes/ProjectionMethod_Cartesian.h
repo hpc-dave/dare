@@ -225,7 +225,7 @@ free_pm_viscious_stress_Cartesian(
                 ind_up.j() -= 1;
                 ind_low.k() += 1;
                 ind_up.k() += 1;
-                tau_ex(CNB::TOP, 0) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0) * dn_r[0];  // check sign
+                tau_ex(CNB::TOP, 0) += (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[0];  // check sign
             }
         }
         if constexpr (dir == 1) {
@@ -264,7 +264,7 @@ free_pm_viscious_stress_Cartesian(
                 ind_up.k() += 1;
                 tau_ex(CNB::TOP, 0) += (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[1];
             }
-        } if constexpr(dir > 2) {
+        } if constexpr(dir == 2) {
             // z-direction
             if constexpr (dare::PMDefaultStressTreatment<Treatment>) {
                 // dw/dx
@@ -272,19 +272,19 @@ free_pm_viscious_stress_Cartesian(
                 tau_ex(CNB::WEST, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[0];
                 ind_low.i() += 1;
                 ind_up.i() += 1;
-                tau_ex(CNB::EAST, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * *dn_r[0];
+                tau_ex(CNB::EAST, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[0];
                 // dw/dy
                 ind_low = ind_up = ind;
                 ind_low.j() -= 1;
                 tau_ex(CNB::SOUTH, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[1];
                 ind_low.j() += 1;
                 ind_up.j() += 1;
-                tau_ex(CNB::NORTH, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * *dn_r[1];
+                tau_ex(CNB::NORTH, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[1];
                 ind_low = ind_up = ind;
             }
             ind_low.k() -= 1;
             // du/dz
-            tau_ex(CNB::WEST, 0) += (v[0]->At(ind_up, 0) = v[0]->At(ind_low, 0)) * dn_r[2];  // check sign
+            tau_ex(CNB::WEST, 0) += (v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0)) * dn_r[2];  // check sign
             // dv/dz
             tau_ex(CNB::SOUTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[2];  // check sign
             ind_low.i() += 1;
