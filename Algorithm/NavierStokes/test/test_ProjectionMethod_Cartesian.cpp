@@ -2219,3 +2219,278 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_stress_standard_test) {
         EXPECT_NEAR(s.GetRhs(0), rhs_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(rhs_e));
     }
 }
+
+TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_stress_Dijkhuizen_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = Field;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    struct NDict {
+        using tvd = dare::CDS;
+        using time_scheme_convective = dare::EULER_BACKWARD;
+        using viscous_stress = dare::PMDijkhuizenStressTensor;
+    };
+    using CNB = dare::CartesianNeighbor;
+    using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+
+    SC tol_eps = 1e4;
+    auto g_s = grid->GetRepresentation(opt_s);
+    double rho = 0.;
+    Field mu("mu", g_s, 2);
+    Field epsilon("epsilon", g_s, 2);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
+    auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
+    pm.SetDensity(rho);
+    pm.SetViscosity(&mu);
+    pm.SetPorosity(&epsilon);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < mu.GetDataVector().GetSize(); i++) {
+        mu.GetDataVector().At(i) = std::abs(rd.Generate());
+        mu.GetDataVector(1).At(i) = std::abs(rd.Generate());
+        epsilon.GetDataVector().At(i) = std::abs(rd.Generate());
+        epsilon.GetDataVector(1).At(i) = std::abs(rd.Generate());
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    dare::Vector<Dim, SC> dA = g_x->GetFaceArea();
+    dare::Vector<Dim, SC> dn = g_x->GetDistances();
+    // in X-momentum
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+
+        FVStencil mu_f = dare::InterpolateToFaceStencil(*g_x, ind, mu.GetDataVector(0));
+        FVStencil epsilon_f = dare::InterpolateToFaceStencil(*g_x, ind, epsilon.GetDataVector(0));
+        FVStencil eps_mu_f = mu_f * epsilon_f;
+
+        auto s = dare::free_pm_viscious_stress_Cartesian(&pm, dare::ZERO, *g_x, ind, eps_mu_f, velocities);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+
+        Index ind_w(ind), ind_s(ind), ind_sw(ind), ind_b(ind), ind_bw(ind), ind_e(ind),
+            ind_n(ind), ind_nw(ind), ind_t(ind), ind_tw(ind);
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        ind_s.j() -= 1;
+        ind_sw.i() -= 1;
+        ind_sw.j() -= 1;
+        ind_b.k() -= 1;
+        ind_bw.i() -= 1;
+        ind_bw.k() -= 1;
+        ind_n.j() += 1;
+        ind_nw.i() -= 1;
+        ind_nw.j() += 1;
+        ind_t.k() += 1;
+        ind_tw.i() -= 1;
+        ind_tw.k() += 1;
+        SC mu_w = mu.GetDataVector(0).At(ind_w, 0);
+        SC mu_e = mu.GetDataVector(0).At(ind, 0);
+        SC mu_s = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_w, 0)
+                        + mu.GetDataVector(0).At(ind_sw, 0) + mu.GetDataVector(0).At(ind_s, 0));
+        SC mu_n = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_w, 0)
+                        + mu.GetDataVector(0).At(ind_nw, 0) + mu.GetDataVector(0).At(ind_n, 0));
+        SC mu_b = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_w, 0)
+                        + mu.GetDataVector(0).At(ind_bw, 0) + mu.GetDataVector(0).At(ind_b, 0));
+        SC mu_t = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_w, 0)
+                        + mu.GetDataVector(0).At(ind_tw, 0) + mu.GetDataVector(0).At(ind_t, 0));
+        SC eps_w = epsilon.GetDataVector(0).At(ind_w, 0);
+        SC eps_e = epsilon.GetDataVector(0).At(ind, 0);
+        SC eps_s = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_w, 0)
+                         + epsilon.GetDataVector(0).At(ind_sw, 0) + epsilon.GetDataVector(0).At(ind_s, 0));
+        SC eps_n = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_w, 0)
+                         + epsilon.GetDataVector(0).At(ind_nw, 0) + epsilon.GetDataVector(0).At(ind_n, 0));
+        SC eps_b = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_w, 0)
+                         + epsilon.GetDataVector(0).At(ind_bw, 0) + epsilon.GetDataVector(0).At(ind_b, 0));
+        SC eps_t = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_w, 0)
+                         + epsilon.GetDataVector(0).At(ind_tw, 0) + epsilon.GetDataVector(0).At(ind_t, 0));
+        SC dv_s = velocities[1]->At(ind, 0) - velocities[1]->At(ind_w, 0);
+        SC dv_n = velocities[1]->At(ind_n, 0) - velocities[1]->At(ind_nw, 0);
+        SC dw_b = velocities[2]->At(ind, 0) - velocities[2]->At(ind_w, 0);
+        SC dw_t = velocities[2]->At(ind_t, 0) - velocities[2]->At(ind_tw, 0);
+
+        SC v_c{0.}, v_w{0.}, v_e{0.}, v_s{0.}, v_n{0.}, v_b{0.}, v_t{0.}, rhs_e{0.};
+        v_w = -2. * eps_w * mu_w * dA.x() / dn.x();
+        v_e = -2. * eps_e * mu_e * dA.x() / dn.x();
+        v_s = -eps_s * mu_s * dA.y() / dn.y();
+        v_n = -eps_n * mu_n * dA.y() / dn.y();
+        v_b = -eps_b * mu_b * dA.z() / dn.z();
+        v_t = -eps_t * mu_t * dA.z() / dn.z();
+        v_c = -v_w - v_e - v_s - v_n - v_b - v_t;
+        rhs_e += mu_n * eps_n * (dv_n)*dA.y() / dn.x();
+        rhs_e -= mu_s * eps_s * (dv_s)*dA.y() / dn.x();
+        rhs_e += mu_t * eps_t * (dw_t)*dA.z() / dn.x();
+        rhs_e -= mu_b * eps_b * (dw_b)*dA.z() / dn.x();
+        EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
+        EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
+        EXPECT_NEAR(s.GetValue(CNB::SOUTH, 0), v_s, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_s));
+        EXPECT_NEAR(s.GetValue(CNB::NORTH, 0), v_n, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_n));
+        EXPECT_NEAR(s.GetValue(CNB::BOTTOM, 0), v_b, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_b));
+        EXPECT_NEAR(s.GetValue(CNB::TOP, 0), v_t, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_t));
+        EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetRhs(0), rhs_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(rhs_e));
+    }
+
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+
+        FVStencil mu_f = dare::InterpolateToFaceStencil(*g_y, ind, mu.GetDataVector(0));
+        FVStencil epsilon_f = dare::InterpolateToFaceStencil(*g_y, ind, epsilon.GetDataVector(0));
+        FVStencil eps_mu_f = mu_f * epsilon_f;
+
+        auto s = dare::free_pm_viscious_stress_Cartesian(&pm, dare::ONE, *g_y, ind, eps_mu_f, velocities);
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        Index ind_w(ind), ind_s(ind), ind_sw(ind), ind_sb(ind), ind_e(ind), ind_n(ind), ind_se(ind),
+            ind_st(ind), ind_b(ind), ind_t(ind);
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        ind_s.j() -= 1;
+        ind_sw.i() -= 1;
+        ind_sw.j() -= 1;
+        ind_sb.j() -= 1;
+        ind_sb.k() -= 1;
+        ind_n.j() += 1;
+        ind_se.i() += 1;
+        ind_se.j() -= 1;
+        ind_t.k() += 1;
+        ind_b.k() -= 1;
+        ind_st.j() -= 1;
+        ind_st.k() += 1;
+        SC mu_w = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_w, 0)
+                        + mu.GetDataVector(0).At(ind_sw, 0) + mu.GetDataVector(0).At(ind_s, 0));
+        SC mu_e = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_e, 0)
+                        + mu.GetDataVector(0).At(ind_se, 0) + mu.GetDataVector(0).At(ind_s, 0));
+        SC mu_s = mu.GetDataVector(0).At(ind_s, 0);
+        SC mu_n = mu.GetDataVector(0).At(ind, 0);
+        SC mu_b = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_b, 0)
+                        + mu.GetDataVector(0).At(ind_sb, 0) + mu.GetDataVector(0).At(ind_s, 0));
+        SC mu_t = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_t, 0)
+                        + mu.GetDataVector(0).At(ind_st, 0) + mu.GetDataVector(0).At(ind_s, 0));
+        SC eps_w = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_w, 0)
+                         + epsilon.GetDataVector(0).At(ind_sw, 0) + epsilon.GetDataVector(0).At(ind_s, 0));
+        SC eps_e = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_e, 0)
+                         + epsilon.GetDataVector(0).At(ind_se, 0) + epsilon.GetDataVector(0).At(ind_s, 0));
+        SC eps_s = epsilon.GetDataVector(0).At(ind_s, 0);
+        SC eps_n = epsilon.GetDataVector(0).At(ind, 0);
+        SC eps_b = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_b, 0)
+                         + epsilon.GetDataVector(0).At(ind_sb, 0) + epsilon.GetDataVector(0).At(ind_s, 0));
+        SC eps_t = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_t, 0)
+                         + epsilon.GetDataVector(0).At(ind_st, 0) + epsilon.GetDataVector(0).At(ind_s, 0));
+        SC du_w = velocities[0]->At(ind, 0) - velocities[0]->At(ind_s, 0);
+        SC du_e = velocities[0]->At(ind_e, 0) - velocities[0]->At(ind_se, 0);
+        SC dw_b = velocities[2]->At(ind, 0) - velocities[2]->At(ind_s, 0);
+        SC dw_t = velocities[2]->At(ind_t, 0) - velocities[2]->At(ind_st, 0);
+
+        SC v_c{0.}, v_w{0.}, v_e{0.}, v_s{0.}, v_n{0.}, v_b{0.}, v_t{0.}, rhs_e{0.};
+        v_w = -eps_w * mu_w * dA.x() / dn.x();
+        v_e = -eps_e * mu_e * dA.x() / dn.x();
+        v_s = -2. * eps_s * mu_s * dA.y() / dn.y();
+        v_n = -2. * eps_n * mu_n * dA.y() / dn.y();
+        v_b = -eps_b * mu_b * dA.z() / dn.z();
+        v_t = -eps_t * mu_t * dA.z() / dn.z();
+        v_c = -v_w - v_e - v_s - v_n - v_b - v_t;
+        rhs_e += mu_e * eps_e * (du_e)*dA.x() / dn.y();
+        rhs_e -= mu_w * eps_w * (du_w)*dA.x() / dn.y();
+        rhs_e += mu_t * eps_t * (dw_t)*dA.z() / dn.y();
+        rhs_e -= mu_b * eps_b * (dw_b)*dA.z() / dn.y();
+        EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
+        EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
+        EXPECT_NEAR(s.GetValue(CNB::SOUTH, 0), v_s, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_s));
+        EXPECT_NEAR(s.GetValue(CNB::NORTH, 0), v_n, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_n));
+        EXPECT_NEAR(s.GetValue(CNB::BOTTOM, 0), v_b, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_b));
+        EXPECT_NEAR(s.GetValue(CNB::TOP, 0), v_t, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_t));
+        EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetRhs(0), rhs_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(rhs_e));
+    }
+
+    for (LO n_loc = 0; n_loc < g_z->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_z->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_z->MapInternalToLocal(ind_loc);
+
+        FVStencil mu_f = dare::InterpolateToFaceStencil(*g_z, ind, mu.GetDataVector(0));
+        FVStencil epsilon_f = dare::InterpolateToFaceStencil(*g_z, ind, epsilon.GetDataVector(0));
+        FVStencil eps_mu_f = mu_f * epsilon_f;
+
+        auto s = dare::free_pm_viscious_stress_Cartesian(&pm, dare::TWO, *g_z, ind, eps_mu_f, velocities);
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        Index ind_w(ind), ind_s(ind), ind_bw(ind), ind_bs(ind), ind_e(ind), ind_n(ind), ind_be(ind),
+            ind_bn(ind), ind_b(ind), ind_t(ind);
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        ind_s.j() -= 1;
+        ind_bw.i() -= 1;
+        ind_bw.k() -= 1;
+        ind_bs.j() -= 1;
+        ind_bs.k() -= 1;
+        ind_n.j() += 1;
+        ind_be.i() += 1;
+        ind_be.k() -= 1;
+        ind_t.k() += 1;
+        ind_b.k() -= 1;
+        ind_bn.j() += 1;
+        ind_bn.k() -= 1;
+        SC mu_w = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_w, 0)
+                        + mu.GetDataVector(0).At(ind_bw, 0) + mu.GetDataVector(0).At(ind_b, 0));
+        SC mu_e = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_e, 0)
+                        + mu.GetDataVector(0).At(ind_be, 0) + mu.GetDataVector(0).At(ind_b, 0));
+        SC mu_s = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_s, 0)
+                        + mu.GetDataVector(0).At(ind_bs, 0) + mu.GetDataVector(0).At(ind_b, 0));
+        SC mu_n = 0.25 * (mu.GetDataVector(0).At(ind, 0) + mu.GetDataVector(0).At(ind_n, 0)
+                        + mu.GetDataVector(0).At(ind_bn, 0) + mu.GetDataVector(0).At(ind_b, 0));
+        SC mu_b = mu.GetDataVector(0).At(ind_b, 0);
+        SC mu_t = mu.GetDataVector(0).At(ind, 0);
+        SC eps_w = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_w, 0)
+                         + epsilon.GetDataVector(0).At(ind_bw, 0) + epsilon.GetDataVector(0).At(ind_b, 0));
+        SC eps_e = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_e, 0)
+                         + epsilon.GetDataVector(0).At(ind_be, 0) + epsilon.GetDataVector(0).At(ind_b, 0));
+        SC eps_s = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_s, 0)
+                         + epsilon.GetDataVector(0).At(ind_bs, 0) + epsilon.GetDataVector(0).At(ind_b, 0));
+        SC eps_n = 0.25 * (epsilon.GetDataVector(0).At(ind, 0) + epsilon.GetDataVector(0).At(ind_n, 0)
+                         + epsilon.GetDataVector(0).At(ind_bn, 0) + epsilon.GetDataVector(0).At(ind_b, 0));
+        SC eps_b = epsilon.GetDataVector(0).At(ind_b, 0);
+        SC eps_t = epsilon.GetDataVector(0).At(ind, 0);
+        SC du_w = velocities[0]->At(ind, 0) - velocities[0]->At(ind_b, 0);
+        SC du_e = velocities[0]->At(ind_e, 0) - velocities[0]->At(ind_be, 0);
+        SC dv_s = velocities[1]->At(ind, 0) - velocities[1]->At(ind_b, 0);
+        SC dv_n = velocities[1]->At(ind_n, 0) - velocities[1]->At(ind_bn, 0);
+
+        SC v_c{0.}, v_w{0.}, v_e{0.}, v_s{0.}, v_n{0.}, v_b{0.}, v_t{0.}, rhs_e{0.};
+        v_w = -eps_w * mu_w * dA.x() / dn.x();
+        v_e = -eps_e * mu_e * dA.x() / dn.x();
+        v_s = -eps_s * mu_s * dA.y() / dn.y();
+        v_n = -eps_n * mu_n * dA.y() / dn.y();
+        v_b = -2. * eps_b * mu_b * dA.z() / dn.z();
+        v_t = -2. * eps_t * mu_t * dA.z() / dn.z();
+        v_c = -v_w - v_e - v_s - v_n - v_b - v_t;
+        rhs_e += mu_e * eps_e * (du_e)*dA.x() / dn.z();
+        rhs_e -= mu_w * eps_w * (du_w)*dA.x() / dn.z();
+        rhs_e += mu_n * eps_n * (dv_n)*dA.y() / dn.z();
+        rhs_e -= mu_s * eps_s * (dv_s)*dA.y() / dn.z();
+        EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
+        EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
+        EXPECT_NEAR(s.GetValue(CNB::SOUTH, 0), v_s, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_s));
+        EXPECT_NEAR(s.GetValue(CNB::NORTH, 0), v_n, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_n));
+        EXPECT_NEAR(s.GetValue(CNB::BOTTOM, 0), v_b, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_b));
+        EXPECT_NEAR(s.GetValue(CNB::TOP, 0), v_t, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_t));
+        EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
+        EXPECT_NEAR(s.GetRhs(0), rhs_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(rhs_e));
+    }
+}
