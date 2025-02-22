@@ -164,6 +164,11 @@ public:
     Vector<N, T> operator-(const T& val) const;
 
     /*!
+     * provides negative of the values
+     */
+    Vector<N, T> operator-() const;
+
+    /*!
      * -= operator
      * @param other other vector
      */
@@ -427,7 +432,12 @@ dare::Vector<N, T> operator*(const T& v1, const dare::Vector<N, T>& v2) {
  */
 template <std::size_t N, typename T>
 dare::Vector<N, T> operator/(const T& v1, const dare::Vector<N, T>& v2) {
-    return v2 / v1;
+    dare::Vector<N, T> v;
+    v.SetAllValues(v1);
+    for (std::size_t n{0}; n < N; n++) {
+        v[n] /= v2[n];
+    }
+    return v;
 }
 
 }  // namespace dare

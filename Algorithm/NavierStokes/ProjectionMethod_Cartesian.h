@@ -163,7 +163,7 @@ free_pm_viscious_stress_Cartesian(
     if constexpr(dim < 2) {
         return CMStencil{};
     } else {
-        auto dn_r = 1. / grep->GetDistances();
+        auto dn_r = 1. / grep.GetDistances();
 
         // implicit component
         FVStencil coef_faces;
@@ -174,9 +174,9 @@ free_pm_viscious_stress_Cartesian(
         // if constexpr (dare::is_pm_dijkhuizen_stress_tensor_v<Treatment>) {
         if constexpr (dare::PMDijkhuizenStressTreatment<Treatment>) {
             for (auto face : grep.GetFaces())
-                coef_faces(face, 0) = eps_mu_f(face, 0) * dn_r[dare::ToFace(face) / 2];
+                coef_faces(face, 0) = dare::ToNormal(face) * eps_mu_f(face, 0) * dn_r[dare::ToFace(face) / 2];
         } else if constexpr (dare::PMDefaultStressTreatment<Treatment>) {
-            coef_faces(f_low, 0) = eps_mu_f(f_low, 0) * dn_r[dir];
+            coef_faces(f_low, 0) = -eps_mu_f(f_low, 0) * dn_r[dir];
             coef_faces(f_up, 0) = eps_mu_f(f_up, 0) * dn_r[dir];
         }
         // and again for the main diagonal
@@ -196,94 +196,105 @@ free_pm_viscious_stress_Cartesian(
             if constexpr (dare::PMDefaultStressTreatment<Treatment>) {
                 // du/dy
                 ind_low.j() -= 1;
-                tau_ex(CNB::SOUTH) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
+                tau_ex(CNB::SOUTH, 0) = (v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0)) * dn_r[1];
                 ind_low.j() += 1;
                 ind_up.j() += 1;
-                tau_ex(CNB::NORTH) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
+                tau_ex(CNB::NORTH, 0) = (v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0)) * dn_r[1];
                 if constexpr(dim > 2) {
                 // du/dz
                     ind_low = ind_up = ind;
                     ind_low.k() -= 1;
-                    tau_ex(CNB::BOTTOM) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
+                    tau_ex(CNB::BOTTOM, 0) = (v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0)) * dn_r[2];
                     ind_low.k() += 1;
                     ind_up.k() += 1;
-                    tau_ex(CNB::TOP) = v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);
+                    tau_ex(CNB::TOP, 0) = (v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0)) * dn_r[2];
                 }
                 ind_low = ind_up = ind;
             }
             ind_low.i() -= 1;
             // dv/dx
-            tau_ex(CNB::SOUTH) += v[1]->At(ind_up, 0) = v[1]->At(ind_low, 0);  // check sign
+            tau_ex(CNB::SOUTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[0];  // check sign
             // dw/dx
             if constexpr (dim > 2)
-                tau_ex(CNB::BOTTOM) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
-            ind_low.i() += 1;
-            ind_up.i() += 1;
-            tau_ex(CNB::NORTH) += v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);  // check sign
-            if constexpr(dim > 2)
-                tau_ex(CNB::TOP) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
+                tau_ex(CNB::BOTTOM, 0) += (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[0];  // check sign
+            ind_low.j() += 1;
+            ind_up.j() += 1;
+            tau_ex(CNB::NORTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[0];  // check sign
+            if constexpr (dim > 2) {
+                ind_low.j() -= 1;
+                ind_up.j() -= 1;
+                ind_low.k() += 1;
+                ind_up.k() += 1;
+                tau_ex(CNB::TOP, 0) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0) * dn_r[0];  // check sign
+            }
         }
         if constexpr (dir == 1) {
             // y-direction
             if constexpr (dare::PMDefaultStressTreatment<Treatment>) {
                 // dv/dx
                 ind_low.i() -= 1;
-                tau_ex(CNB::WEST) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
+                tau_ex(CNB::WEST, 0) = (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[0];
                 ind_low.i() += 1;
                 ind_up.i() += 1;
-                tau_ex(CNB::EAST) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
+                tau_ex(CNB::EAST, 0) = (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[0];
                 if constexpr (dim > 2) {
                     // dv/dz
                     ind_low = ind_up = ind;
                     ind_low.k() -= 1;
-                    tau_ex(CNB::BOTTOM) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
+                    tau_ex(CNB::BOTTOM, 0) = (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[2];
                     ind_low.k() += 1;
                     ind_up.k() += 1;
-                    tau_ex(CNB::TOP) = v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);
+                    tau_ex(CNB::TOP, 0) = (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[2];
                 }
                 ind_low = ind_up = ind;
             }
             ind_low.j() -= 1;
             // du/dy
-            tau_ex(CNB::WEST) += v[0]->At(ind_up, 0) = v[0]->At(ind_low, 0);  // check sign
+            tau_ex(CNB::WEST, 0) += (v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0)) * dn_r[1];
             // dw/dy
             if constexpr (dim > 2)
-                tau_ex(CNB::BOTTOM) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
-            ind_low.j() += 1;
-            ind_up.j() += 1;
-            tau_ex(CNB::EAST) += v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);  // check sign
-            if constexpr (dim > 2)
-                tau_ex(CNB::TOP) += v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);  // check sign
+                tau_ex(CNB::BOTTOM, 0) += (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[1];
+            ind_low.i() += 1;
+            ind_up.i() += 1;
+            tau_ex(CNB::EAST, 0) += (v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0)) * dn_r[1];
+            if constexpr (dim > 2) {
+                ind_low.i() -= 1;
+                ind_up.i() -= 1;
+                ind_low.k() += 1;
+                ind_up.k() += 1;
+                tau_ex(CNB::TOP, 0) += (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[1];
+            }
         } if constexpr(dir > 2) {
             // z-direction
             if constexpr (dare::PMDefaultStressTreatment<Treatment>) {
                 // dw/dx
                 ind_low.i() -= 1;
-                tau_ex(CNB::WEST) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
+                tau_ex(CNB::WEST, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[0];
                 ind_low.i() += 1;
                 ind_up.i() += 1;
-                tau_ex(CNB::EAST) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
+                tau_ex(CNB::EAST, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * *dn_r[0];
                 // dw/dy
                 ind_low = ind_up = ind;
                 ind_low.j() -= 1;
-                tau_ex(CNB::SOUTH) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
+                tau_ex(CNB::SOUTH, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[1];
                 ind_low.j() += 1;
                 ind_up.j() += 1;
-                tau_ex(CNB::NORTH) = v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0);
+                tau_ex(CNB::NORTH, 0) = (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * *dn_r[1];
                 ind_low = ind_up = ind;
             }
             ind_low.k() -= 1;
             // du/dz
-            tau_ex(CNB::WEST) += v[0]->At(ind_up, 0) = v[0]->At(ind_low, 0);  // check sign
+            tau_ex(CNB::WEST, 0) += (v[0]->At(ind_up, 0) = v[0]->At(ind_low, 0)) * dn_r[2];  // check sign
             // dv/dz
-            tau_ex(CNB::SOUTH) += v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);  // check sign
-            ind_low.k() += 1;
-            ind_up.k() += 1;
-            tau_ex(CNB::EAST) += v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0);  // check sign
-            tau_ex(CNB::NORTH) += v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0);  // check sign
-        }
-        for (auto face : grep.GetFaces()) {
-            tau_ex *= dn_r[dare::ToFace(face) / 2];
+            tau_ex(CNB::SOUTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[2];  // check sign
+            ind_low.i() += 1;
+            ind_up.i() += 1;
+            tau_ex(CNB::EAST, 0) += (v[0]->At(ind_up, 0) - v[0]->At(ind_low, 0)) * dn_r[2];  // check sign
+            ind_low.i() -= 1;
+            ind_up.i() -= 1;
+            ind_low.j() += 1;
+            ind_up.j() += 1;
+            tau_ex(CNB::NORTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[2];  // check sign
         }
         tau_ex *= eps_mu_f;
 
@@ -291,7 +302,7 @@ free_pm_viscious_stress_Cartesian(
         Divergence div(grep, o_loc);
 
         dare::CenterMatrixStencil<GridType, SC, 1> s = div(tau_im);
-        s.GetRhs() = -div(tau_ex);
+        s.GetRhs() = div(tau_ex);
         return s;
     }
 }
@@ -376,6 +387,8 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
 
         // explicit forcing
         (*mblock) += pm_explicit_force_Cartesian(pm, direction, *pm->GetMomentum(dir), ind);
+
+        // Boundary conditions and normalization
     };
 
     pm->GetMomentum(dir)->Build(BuildStrategy);

@@ -147,6 +147,11 @@ Vector<N, T> Vector<N, T>::operator-(const T& val) const {
 }
 
 template <std::size_t N, typename T>
+Vector<N, T> Vector<N, T>::operator-() const {
+    return *this * static_cast<T>(-1);
+}
+
+template <std::size_t N, typename T>
 void Vector<N, T>::operator-=(const Vector<N, T>& other) {
     for (std::size_t i{0}; i < N; ++i) {
         this->_data[i] -= other[i];
