@@ -110,29 +110,25 @@ dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1> free_pm_pre
     PM* pm,
     Direction direction,
     const typename PM::Index& ind,
-    const dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>& epsilon) {
+    const typename PM::PorosityVariableType epsilon) {
     static_assert(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>, "Inconsistent dimensions");
+    using PorosityType = std::remove_cv_t<std::remove_pointer_t<decltype(epsilon)>>;
     using SC = typename PM::SC;
     using Index = typename PM::Index;
-    using CNB = typename dare::CartesianNeighbor;
     Index ind_nb(ind);
     ind_nb[direction] -= 1;
-    SC eps{0.};
-    if constexpr(direction == 0)
-        eps = epsilon.GetValue(CNB::WEST, 0);
-    else if constexpr(direction == 1)
-        eps = epsilon.GetValue(CNB::SOUTH, 0);
-    else if constexpr(direction == 2)
-        eps = epsilon.GetValue(CNB::BOTTOM, 0);
-    else
-        static_assert(dare::always_false<PM>, "ONLY UP TO 3D, STUPID!");
+    SC eps{1.};
+    if constexpr (dare::is_field_v<PorosityType>)
+        eps = 0.5 * (epsilon->GetDataVector().At(ind, 0) + epsilon->GetDataVector().At(ind_nb, 0));
+    else if constexpr(!dare::is_none_v<PorosityType>)
+        eps = epsilon;
 
     SC delta_p = pm->GetContinuity()->GetPressure()->GetDataVector().At(ind, 0)
                  - pm->GetContinuity()->GetPressure()->GetDataVector().At(ind_nb, 0);
     SC dV = pm->GetContinuity()->GetGridRepresentation()->GetCellVolume();
     SC dx = pm->GetContinuity()->GetGridRepresentation()->GetDistances()[direction];
     dare::CenterMatrixStencil<typename PM::GridType, SC, 1> stencil;
-    stencil.SetRhs(0) = -eps * delta_p / dx * dV;
+    stencil.GetRhs(0) = -eps * delta_p / dx * dV;
     return stencil;
 }
 
@@ -380,7 +376,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         (*mblock) += free_pm_convection_Cartesian(pm, *g_r, o_loc, epsilon, rho, velocities);
 
         // pressure force
-        (*mblock) += free_pm_pressure_force_Cartesian(pm, direction, ind, epsilon_f);
+        (*mblock) += free_pm_pressure_force_Cartesian(pm, direction, ind, epsilon);
 
         // viscous stress
         (*mblock) += free_pm_viscious_stress_Cartesian(pm, direction, *g_r, ind, epsilon_f * mu_f, velocities);

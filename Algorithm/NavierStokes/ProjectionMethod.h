@@ -248,6 +248,9 @@ public:
     std::unique_ptr<ContinuityType>& GetContinuity() { return continuity; }
     const ContinuityType& GetContinuity() const { return *continuity; }
 
+    FieldType* GetPressure() { return continuity->GetPressure(); }
+    const FieldType& GetPressure() const { return continuity->GetPressure(); }
+
     void SetDensity(DensityVariableType d) {
         rho = d;
         status |= rho_init;

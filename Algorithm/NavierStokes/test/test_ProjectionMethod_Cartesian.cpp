@@ -2494,3 +2494,245 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_stress_Dijkhuizen_test) {
         EXPECT_NEAR(s.GetRhs(0), rhs_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(rhs_e));
     }
 }
+
+TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_pressure_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    using NDict = dare::PMNumericalInfoDefault;
+
+
+    SC tol_eps = 1e2;
+    auto g_s = grid->GetRepresentation(opt_s);
+    double rho = 0.;
+    double mu = 0;
+    Field epsilon("epsilon", g_s, 2);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < epsilon.GetDataVector().GetSize(); i++) {
+        epsilon.GetDataVector().At(i) = std::abs(rd.Generate());
+        epsilon.GetDataVector(1).At(i) = std::abs(rd.Generate());
+        pm.GetPressure()->GetDataVector().At(i) = rd.Generate();
+        pm.GetPressure()->GetDataVector(1).At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    SC dV = g_x->GetCellVolume();
+    dare::Vector<Dim, SC> dn = g_x->GetDistances();
+    // in X-momentum
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_pressure_force_Cartesian(&pm, dare::ZERO, ind, &epsilon);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        Index ind_low(ind);
+        ind_low[0] -= 1;
+        SC dp = pm.GetPressure()->GetDataVector().At(ind, 0) - pm.GetPressure()->GetDataVector().At(ind_low, 0);
+        SC grad_p = dp / dn[0];
+        SC eps_f = 0.5 * (epsilon.GetDataVector().At(ind, 0)
+                        + epsilon.GetDataVector().At(ind_low, 0));
+        SC e_grad_p = -eps_f * grad_p * dV;
+        EXPECT_NEAR(s.GetRhs(0), e_grad_p, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(e_grad_p));
+    }
+}
+
+TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_pressure_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    using NDict = dare::PMNumericalInfoDefault;
+
+    SC tol_eps = 1e2;
+    auto g_s = grid->GetRepresentation(opt_s);
+    double rho = 0.;
+    double mu = 0;
+    Field epsilon("epsilon", g_s, 2);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < epsilon.GetDataVector().GetSize(); i++) {
+        epsilon.GetDataVector().At(i) = std::abs(rd.Generate());
+        epsilon.GetDataVector(1).At(i) = std::abs(rd.Generate());
+        pm.GetPressure()->GetDataVector().At(i) = rd.Generate();
+        pm.GetPressure()->GetDataVector(1).At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    SC dV = g_x->GetCellVolume();
+    dare::Vector<Dim, SC> dn = g_x->GetDistances();
+    // in X-momentum
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_pressure_force_Cartesian(&pm, dare::ZERO, ind, &epsilon);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        Index ind_low(ind);
+        ind_low[0] -= 1;
+        SC dp = pm.GetPressure()->GetDataVector().At(ind, 0) - pm.GetPressure()->GetDataVector().At(ind_low, 0);
+        SC grad_p = dp / dn[0];
+        SC eps_f = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_low, 0));
+        SC e_grad_p = -eps_f * grad_p * dV;
+        EXPECT_NEAR(s.GetRhs(0), e_grad_p, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(e_grad_p));
+    }
+
+    dV = g_y->GetCellVolume();
+    dn = g_y->GetDistances();
+    // in Y-momentum
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_pressure_force_Cartesian(&pm, dare::ONE, ind, &epsilon);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        Index ind_low(ind);
+        ind_low[1] -= 1;
+        SC dp = pm.GetPressure()->GetDataVector().At(ind, 0) - pm.GetPressure()->GetDataVector().At(ind_low, 0);
+        SC grad_p = dp / dn[1];
+        SC eps_f = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_low, 0));
+        SC e_grad_p = -eps_f * grad_p * dV;
+        EXPECT_NEAR(s.GetRhs(0), e_grad_p, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(e_grad_p));
+    }
+}
+
+TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_pressure_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = dare::None;
+    };
+    using NDict = dare::PMNumericalInfoDefault;
+
+    SC tol_eps = 1e2;
+    auto g_s = grid->GetRepresentation(opt_s);
+    double rho = 0.;
+    double mu = 0;
+    Field epsilon("epsilon", g_s, 2);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
+    auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < epsilon.GetDataVector().GetSize(); i++) {
+        epsilon.GetDataVector().At(i) = std::abs(rd.Generate());
+        epsilon.GetDataVector(1).At(i) = std::abs(rd.Generate());
+        pm.GetPressure()->GetDataVector().At(i) = rd.Generate();
+        pm.GetPressure()->GetDataVector(1).At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    SC dV = g_x->GetCellVolume();
+    dare::Vector<Dim, SC> dn = g_x->GetDistances();
+    // in X-momentum
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_pressure_force_Cartesian(&pm, dare::ZERO, ind, &epsilon);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        Index ind_low(ind);
+        ind_low[0] -= 1;
+        SC dp = pm.GetPressure()->GetDataVector().At(ind, 0) - pm.GetPressure()->GetDataVector().At(ind_low, 0);
+        SC grad_p = dp / dn[0];
+        SC eps_f = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_low, 0));
+        SC e_grad_p = -eps_f * grad_p * dV;
+        EXPECT_NEAR(s.GetRhs(0), e_grad_p, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(e_grad_p));
+    }
+
+    dV = g_y->GetCellVolume();
+    dn = g_y->GetDistances();
+    // in Y-momentum
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_pressure_force_Cartesian(&pm, dare::ONE, ind, &epsilon);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        Index ind_low(ind);
+        ind_low[1] -= 1;
+        SC dp = pm.GetPressure()->GetDataVector().At(ind, 0) - pm.GetPressure()->GetDataVector().At(ind_low, 0);
+        SC grad_p = dp / dn[1];
+        SC eps_f = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_low, 0));
+        SC e_grad_p = -eps_f * grad_p * dV;
+        EXPECT_NEAR(s.GetRhs(0), e_grad_p, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(e_grad_p));
+    }
+
+    dV = g_z->GetCellVolume();
+    dn = g_z->GetDistances();
+    // in Z-momentum
+    for (LO n_loc = 0; n_loc < g_z->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_z->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_z->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_pressure_force_Cartesian(&pm, dare::TWO, ind, &epsilon);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        Index ind_low(ind);
+        ind_low[2] -= 1;
+        SC dp = pm.GetPressure()->GetDataVector().At(ind, 0) - pm.GetPressure()->GetDataVector().At(ind_low, 0);
+        SC grad_p = dp / dn[2];
+        SC eps_f = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_low, 0));
+        SC e_grad_p = -eps_f * grad_p * dV;
+        EXPECT_NEAR(s.GetRhs(0), e_grad_p, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(e_grad_p));
+    }
+}
