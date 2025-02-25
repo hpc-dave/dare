@@ -305,7 +305,7 @@ free_pm_viscious_stress_Cartesian(
 
 template <typename PM, NaturalNumber Direction>
 dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1>
-pm_explicit_force_Cartesian(PM* pm,
+free_pm_explicit_force_Cartesian(PM* pm,
                             Direction dir,
                             const typename PM::MomentumType& m,
                             const typename PM::Index& ind) {
@@ -332,7 +332,7 @@ pm_explicit_force_Cartesian(PM* pm,
             v += it->GetDataVector().At(ind, 0);
         }
         v *= pm->GetMomentum(dir)->GetField()->GetGridRepresentation().GetCellVolume();
-        s.SetRhs(0, v);
+        s.SetRHS(0, v);
     }
     return s;
 }
@@ -382,7 +382,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         (*mblock) += free_pm_viscious_stress_Cartesian(pm, direction, *g_r, ind, epsilon_f * mu_f, velocities);
 
         // explicit forcing
-        (*mblock) += pm_explicit_force_Cartesian(pm, direction, *pm->GetMomentum(dir), ind);
+        (*mblock) += free_pm_explicit_force_Cartesian(pm, direction, *pm->GetMomentum(dir), ind);
 
         // Boundary conditions and normalization
     };

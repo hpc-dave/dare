@@ -2736,3 +2736,218 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_pressure_test) {
         EXPECT_NEAR(s.GetRhs(0), e_grad_p, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(e_grad_p));
     }
 }
+
+TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_explicit_force_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = double;
+        using porosity = dare::None;
+        using explicit_force = Field;
+        using implicit_force = dare::None;
+    };
+    using NDict = dare::PMNumericalInfoDefault;
+
+    SC tol_eps = 1e2;
+    auto g_s = grid->GetRepresentation(opt_s);
+    double rho = 0.;
+    double mu = 0;
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    Field beta_ex("beta_ex", *g_x, 1);
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    pm.AddExplicitForce(&beta_ex, 0);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            beta_ex.GetDataVector().At(i) = rd.Generate();
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < pm.GetPressure()->GetDataVector().GetSize(); i++) {
+        pm.GetPressure()->GetDataVector().At(i) = rd.Generate();
+        pm.GetPressure()->GetDataVector(1).At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    // in X-momentum
+    SC dV = g_x->GetCellVolume();
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, *pm.GetMomentum(0), ind);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        SC beta = beta_ex.GetDataVector().At(ind, 0) * dV;
+        EXPECT_NEAR(s.GetRhs(0), beta, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(beta));
+    }
+}
+
+TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_explicit_force_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = double;
+        using porosity = dare::None;
+        using explicit_force = Field;
+        using implicit_force = dare::None;
+    };
+    using NDict = dare::PMNumericalInfoDefault;
+
+    SC tol_eps = 1e2;
+    auto g_s = grid->GetRepresentation(opt_s);
+    double rho = 0.;
+    double mu = 0;
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
+    Field beta_x("beta_x", *g_x, 1);
+    Field beta_y("beta_y", *g_y, 1);
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    pm.AddExplicitForce(&beta_x, 0);
+    pm.AddExplicitForce(&beta_y, 1);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            if (d == 0)
+                beta_x.GetDataVector().At(i) = rd.Generate();
+            else if (d == 1)
+                beta_y.GetDataVector().At(i) = rd.Generate();
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < pm.GetPressure()->GetDataVector().GetSize(); i++) {
+        pm.GetPressure()->GetDataVector().At(i) = rd.Generate();
+        pm.GetPressure()->GetDataVector(1).At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    // in X-momentum
+    SC dV = g_x->GetCellVolume();
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, *pm.GetMomentum(0), ind);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        SC beta = beta_x.GetDataVector().At(ind, 0) * dV;
+        EXPECT_NEAR(s.GetRhs(0), beta, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(beta));
+    }
+
+    // in Y-momentum
+    dV = g_y->GetCellVolume();
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ONE, *pm.GetMomentum(1), ind);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        SC beta = beta_y.GetDataVector().At(ind, 0) * dV;
+        EXPECT_NEAR(s.GetRhs(0), beta, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(beta));
+    }
+}
+
+TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_explicit_force_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = double;
+        using porosity = dare::None;
+        using explicit_force = Field;
+        using implicit_force = dare::None;
+    };
+    using NDict = dare::PMNumericalInfoDefault;
+
+    SC tol_eps = 1e2;
+    auto g_s = grid->GetRepresentation(opt_s);
+    double rho = 0.;
+    double mu = 0;
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
+    auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
+    Field beta_x("beta_x", *g_x, 1);
+    Field beta_y("beta_y", *g_y, 1);
+    Field beta_z("beta_z", *g_z, 1);
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    pm.AddExplicitForce(&beta_x, 0);
+    pm.AddExplicitForce(&beta_y, 1);
+    pm.AddExplicitForce(&beta_z, 2);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            if (d == 0)
+                beta_x.GetDataVector().At(i) = rd.Generate();
+            else if (d == 1)
+                beta_y.GetDataVector().At(i) = rd.Generate();
+            else if (d == 2)
+                beta_z.GetDataVector().At(i) = rd.Generate();
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < pm.GetPressure()->GetDataVector().GetSize(); i++) {
+        pm.GetPressure()->GetDataVector().At(i) = rd.Generate();
+        pm.GetPressure()->GetDataVector(1).At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    // in X-momentum
+    SC dV = g_x->GetCellVolume();
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, *pm.GetMomentum(0), ind);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        SC beta = beta_x.GetDataVector().At(ind, 0) * dV;
+        EXPECT_NEAR(s.GetRhs(0), beta, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(beta));
+    }
+
+    // in Y-momentum
+    dV = g_y->GetCellVolume();
+    for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ONE, *pm.GetMomentum(1), ind);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        SC beta = beta_y.GetDataVector().At(ind, 0) * dV;
+        EXPECT_NEAR(s.GetRhs(0), beta, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(beta));
+    }
+
+    // in Z-momentum
+    dV = g_z->GetCellVolume();
+    for (LO n_loc = 0; n_loc < g_z->GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_z->MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_z->MapInternalToLocal(ind_loc);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::TWO, *pm.GetMomentum(2), ind);
+
+        static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
+        SC beta = beta_z.GetDataVector().At(ind, 0) * dV;
+        EXPECT_NEAR(s.GetRhs(0), beta, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(beta));
+    }
+}
