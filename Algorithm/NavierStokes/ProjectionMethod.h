@@ -63,6 +63,8 @@ struct PMNumericalInfoDefault {
     using momentum_iterations = PMMomentumIterationInfo<dare::FixedPoint>;
     using continuity_iterations = PMContinuityIterationInfo<dare::Newton>;
     using time_scheme_convective = PMTimeSchemeConvectiveInfo<dare::EULER_BACKWARD>;
+    using momentum_normalizer = PMMomentumNormalizerInfo<double>;
+    using continuity_normalizer = PMContinuityNormalizerInfo<double>;
 };
 
 /*!
@@ -130,20 +132,27 @@ public:
     using MomentumIterationInfo = typename NumericalTypeInfo::momentum_iterations;
     using ContinuityIterationInfo = typename NumericalTypeInfo::continuity_iterations;
     using ConvectiveTimeSchemeInfo = typename NumericalTypeInfo::time_scheme_convective;
+    using MomentumNormalizerInfo = typename NumericalTypeInfo::momentum_normalizer;
+    using ContinuityNormalizerInfo = typename NumericalTypeInfo::continuity_normalizer;
     using TVDScheme = typename TVDInfo::type;
     using ViscousStressTreatment = typename ViscousStressInfo::type;
     using MomentumIterationType = typename MomentumIterationInfo::type;
     using ContinuityIterationType = typename ContinuityIterationInfo::type;
     using ConvectiveTimeSchemeType = typename ConvectiveTimeSchemeInfo::type;
-    static const std::size_t num_tsteps_momentum = std::max(ConvectiveTimeSchemeType::NUM_TIMESTEPS + 1,
-                                                    static_cast<decltype(ConvectiveTimeSchemeType::NUM_TIMESTEPS)>(2));
+    using MomentumNormalizerType = typename MomentumNormalizerInfo::type;
+    using ContinuityNormalizerType = typename ContinuityNormalizerInfo::type;
+    static const std::size_t num_tsteps_momentum
+        = std::max(ConvectiveTimeSchemeType::NUM_TIMESTEPS + 1,
+            static_cast<decltype(ConvectiveTimeSchemeType::NUM_TIMESTEPS)>(2));
 
     struct MomentumMembers{
         ExplicitForceMemberType beta_ex;
+        MomentumNormalizerType normalizer;
     };
     struct ContinuityMembers {
         ExplicitForceMemberType beta_im;
         SC defect_max;
+        ContinuityNormalizerType normalizer;
     };
     using MomentumType = dare::GenericEquation<GridType, BoundaryStrategyType, MomentumMembers>;
     using ContinuityType = PMContinuity<GridType, BoundaryStrategyType, ContinuityMembers>;
@@ -173,6 +182,13 @@ public:
         pimpl_dt_obs = dare::make_observer_handle<T>(dt_obs_func);
         dt = tstep->GetTimeStepSize();
         free_pm_initialize(this, grid, bc_args...);
+        if constexpr(std::is_arithmetic_v<MomentumNormalizerType>) {
+            for (auto& e : momentum)
+                e->GetCustomMember()->normalizer = 1;
+        }
+        if constexpr (std::is_arithmetic_v<MomentumNormalizerType>) {
+            continuity->GetCustomMember()->normalizer = 1;
+        }
         this->dare::InitializationTracker::Initialize();
     }
 

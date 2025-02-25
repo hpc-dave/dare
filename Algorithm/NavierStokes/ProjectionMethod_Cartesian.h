@@ -306,9 +306,8 @@ free_pm_viscious_stress_Cartesian(
 template <typename PM, NaturalNumber Direction>
 dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1>
 free_pm_explicit_force_Cartesian(PM* pm,
-                            Direction dir,
-                            const typename PM::MomentumType& m,
-                            const typename PM::Index& ind) {
+                                 Direction dir,
+                                 const typename PM::Index& ind) {
     static_assert(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>, "Inconsistent dimensions");
     using VType = std::remove_cv_t<std::remove_pointer_t<typename PM::ExplicitForceVariableType>>;
     using SC = typename PM::SC;
@@ -318,7 +317,7 @@ free_pm_explicit_force_Cartesian(PM* pm,
     } else {
         static_assert(FieldType<VType>, "Can only work with fields!");
         SC v{0.};
-        for (auto& it : m.GetCustomMember().beta_ex) {
+        for (auto& it : pm->GetMomentum(dir)->GetCustomMember()->beta_ex) {
             // Interpolate! Or test at least! How about a field wrapper?
 #ifndef DARE_NDEBUG
             auto opt_f = it->GetGridRepresentation().GetOptions();
@@ -382,7 +381,11 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         (*mblock) += free_pm_viscious_stress_Cartesian(pm, direction, *g_r, ind, epsilon_f * mu_f, velocities);
 
         // explicit forcing
-        (*mblock) += free_pm_explicit_force_Cartesian(pm, direction, *pm->GetMomentum(dir), ind);
+        (*mblock) += free_pm_explicit_force_Cartesian(pm, direction, ind);
+
+        // normalize
+
+        // set initial guess
 
         // Boundary conditions and normalization
     };

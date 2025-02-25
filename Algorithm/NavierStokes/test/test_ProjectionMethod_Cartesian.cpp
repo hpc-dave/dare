@@ -2783,7 +2783,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_explicit_force_test) {
     for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
         Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
         Index ind = g_x->MapInternalToLocal(ind_loc);
-        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, *pm.GetMomentum(0), ind);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, ind);
 
         static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
         SC beta = beta_ex.GetDataVector().At(ind, 0) * dV;
@@ -2843,7 +2843,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_explicit_force_test) {
     for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
         Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
         Index ind = g_x->MapInternalToLocal(ind_loc);
-        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, *pm.GetMomentum(0), ind);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, ind);
 
         static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
         SC beta = beta_x.GetDataVector().At(ind, 0) * dV;
@@ -2855,7 +2855,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_explicit_force_test) {
     for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
         Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
         Index ind = g_y->MapInternalToLocal(ind_loc);
-        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ONE, *pm.GetMomentum(1), ind);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ONE, ind);
 
         static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
         SC beta = beta_y.GetDataVector().At(ind, 0) * dV;
@@ -2920,7 +2920,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_explicit_force_test) {
     for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
         Index ind_loc = g_x->MapOrdinalToIndexLocalInternal(n_loc);
         Index ind = g_x->MapInternalToLocal(ind_loc);
-        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, *pm.GetMomentum(0), ind);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ZERO, ind);
 
         static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
         SC beta = beta_x.GetDataVector().At(ind, 0) * dV;
@@ -2932,7 +2932,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_explicit_force_test) {
     for (LO n_loc = 0; n_loc < g_y->GetNumberLocalCellsInternal(); n_loc++) {
         Index ind_loc = g_y->MapOrdinalToIndexLocalInternal(n_loc);
         Index ind = g_y->MapInternalToLocal(ind_loc);
-        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ONE, *pm.GetMomentum(1), ind);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::ONE, ind);
 
         static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
         SC beta = beta_y.GetDataVector().At(ind, 0) * dV;
@@ -2944,7 +2944,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_explicit_force_test) {
     for (LO n_loc = 0; n_loc < g_z->GetNumberLocalCellsInternal(); n_loc++) {
         Index ind_loc = g_z->MapOrdinalToIndexLocalInternal(n_loc);
         Index ind = g_z->MapInternalToLocal(ind_loc);
-        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::TWO, *pm.GetMomentum(2), ind);
+        auto s = dare::free_pm_explicit_force_Cartesian(&pm, dare::TWO, ind);
 
         static_assert(std::is_same_v<decltype(s), dare::CenterMatrixStencil<GridType, SC, 1>>);
         SC beta = beta_z.GetDataVector().At(ind, 0) * dV;

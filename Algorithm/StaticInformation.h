@@ -59,6 +59,12 @@ concept ContainsContinuityIterations = requires { typename T::continuity_iterati
 
 template <typename T>
 concept ContainsTimeSchemeConvective = requires { typename T::time_scheme_convective; };  // NOLINT
+
+template <typename T>
+concept ContainsMomentumNormalizer = requires { typename T::momentum_normalizer; };  // NOLINT
+
+template <typename T>
+concept ContainsContinuityNormalizer = requires { typename T::continuity_normalizer; };  // NOLINT
 }  // namespace dare
 
 #endif  // ALGORITHM_STATICINFORMATION_H_

@@ -51,7 +51,9 @@ enum class PMNumerics {
     ViscousStress,
     TimeSchemeConvective,
     MomentumIterations,
-    ContinuityIterations
+    ContinuityIterations,
+    MomentumNormalizer,
+    ContinuityNormalizer
 };
 
 /*!
@@ -110,6 +112,12 @@ struct PMContinuityIterationInfo : PMNumericsInfo<Type, PMNumerics::ContinuityIt
 
 template <typename Type>
 struct PMTimeSchemeConvectiveInfo : PMNumericsInfo<Type, PMNumerics::TimeSchemeConvective> {};
+
+template <typename Type>
+struct PMMomentumNormalizerInfo : PMNumericsInfo<Type, PMNumerics::MomentumNormalizer> {};
+
+template <typename Type>
+struct PMContinuityNormalizerInfo : PMNumericsInfo<Type, PMNumerics::ContinuityNormalizer> {};
 
 /*!
  * \brief concept for determining Dijkhuizens stress treatment

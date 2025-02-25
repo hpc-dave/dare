@@ -580,4 +580,26 @@ TEST(ProjectionMethodTest, NumericalInfo) {
     static_assert(std::is_same_v<
                   dare::test::PM<GridType, PDefault, SDict_vstress_info_only_raw>::ViscousStressTreatment,
                   dare::PMDijkhuizenStressTensor>);
+
+    struct SDict_mom_normalizer_info_only {
+        using momentum_normalizer = dare::PMMomentumNormalizerInfo<int>;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_mom_normalizer_info_only>::MomentumNormalizerInfo,
+                  dare::PMMomentumNormalizerInfo<int>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_mom_normalizer_info_only>::MomentumNormalizerType,
+                  int>);
+
+    struct SDict_mom_normalizer_info_only_raw {
+        using momentum_normalizer = int;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_mom_normalizer_info_only_raw>::MomentumNormalizerInfo,
+                  dare::TaggedTypeInfo<int, dare::PMNumerics, dare::PMNumerics::MomentumNormalizer>>);  // NOLINT
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_mom_normalizer_info_only_raw>::MomentumNormalizerType,
+                  int>);
 }

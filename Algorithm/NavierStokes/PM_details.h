@@ -190,6 +190,34 @@ struct pm_get_time_scheme_convective<TDict, TDictDefault> {
 template <typename TDict, ContainsMomentumIterations TDictDefault>
 using pm_get_time_scheme_convective_t = pm_get_time_scheme_convective<TDict, TDictDefault>::type;
 
+template <typename TDict, ContainsMomentumNormalizer TDictDefault>
+struct pm_get_normalizer_momentum {
+    using type = TDictDefault::momentum_normalizer;
+};
+
+template <ContainsMomentumNormalizer TDict, ContainsMomentumNormalizer TDictDefault>
+struct pm_get_normalizer_momentum<TDict, TDictDefault> {
+    using type = TDict::momentum_normalizer;
+};
+
+template <typename TDict, ContainsMomentumNormalizer TDictDefault>
+using pm_get_normalizer_momentum_t = pm_get_normalizer_momentum<TDict, TDictDefault>::type;
+
+
+template <typename TDict, ContainsContinuityNormalizer TDictDefault>
+struct pm_get_normalizer_continuity {
+    using type = TDictDefault::continuity_normalizer;
+};
+
+template <ContainsContinuityNormalizer TDict, ContainsContinuityNormalizer TDictDefault>
+struct pm_get_normalizer_continuity<TDict, TDictDefault> {
+    using type = TDict::continuity_normalizer;
+};
+
+template <typename TDict, ContainsContinuityNormalizer TDictDefault>
+using pm_get_normalizer_continuity_t = pm_get_normalizer_continuity<TDict, TDictDefault>::type;
+
+
 template <typename PropertyInfoUser, typename PropertyInfoDefault>
 struct PMAssembledPropertyInfoWithDefaults {
     using _density_t = pm_get_density_t<PropertyInfoUser, PropertyInfoDefault>;
@@ -213,11 +241,15 @@ struct PMAssembledNumericalInfoWithDefaults {
     using _momentum_iterations = pm_get_momentum_iterations_t<NumericalInfoUser, NumericalInfoDefault>;
     using _continuity_iterations = pm_get_continuity_iterations_t<NumericalInfoUser, NumericalInfoDefault>;
     using _time_scheme_convective = pm_get_time_scheme_convective_t<NumericalInfoUser, NumericalInfoDefault>;
+    using _norm_momentum = pm_get_normalizer_momentum_t<NumericalInfoUser, NumericalInfoDefault>;
+    using _norm_continuity = pm_get_normalizer_continuity_t<NumericalInfoUser, NumericalInfoDefault>;
     using tvd = default_convert_to_tagged_info_t<_tvd, PMNumerics, PMNumerics::TVD>;
     using viscous_stress = default_convert_to_tagged_info_t<_viscous_stress, PMNumerics, PMNumerics::ViscousStress>;
     using momentum_iterations = default_convert_to_tagged_info_t<_momentum_iterations, PMNumerics, PMNumerics::MomentumIterations>;             // NOLINT
     using continuity_iterations = default_convert_to_tagged_info_t<_continuity_iterations, PMNumerics, PMNumerics::ContinuityIterations>;       // NOLINT
     using time_scheme_convective = default_convert_to_tagged_info_t<_time_scheme_convective, PMNumerics, PMNumerics::TimeSchemeConvective>;     // NOLINT
+    using momentum_normalizer = default_convert_to_tagged_info_t<_norm_momentum, PMNumerics, PMNumerics::MomentumNormalizer>;     // NOLINT
+    using continuity_normalizer = default_convert_to_tagged_info_t<_norm_momentum, PMNumerics, PMNumerics::ContinuityNormalizer>;     // NOLINT
 };
 
 template <typename T>
