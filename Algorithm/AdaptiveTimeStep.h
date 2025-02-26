@@ -39,6 +39,8 @@ public:
     using ValueType = T;
     using ObserverType = dare::Observer<AdaptiveTimeStep<T>, StateChange>;
 
+    explicit AdaptiveTimeStep(ValueType _dt) : dt(dt) {}
+
     ValueType GetTimeStepSize() const {
         return dt;
     }
@@ -49,14 +51,19 @@ public:
     }
 
     bool Detach(ObserverType* o) {
-        return (observers.erase(observer) > 0U);
+        return (observers.erase(o) > 0U);
     }
 
-    void Notify() {
+    void Notify(StateChange property) {
         for (auto iter = observers.begin(); iter != observers.end();) {
             auto const pos = iter++;
             (*pos)->Update(*this, property);
         }
+    }
+
+    void AdaptTimeStepSize(ValueType _dt) {
+        dt = _dt;
+        Notify(StateChange::Update);
     }
 
     operator ValueType() { return dt; }
@@ -68,6 +75,6 @@ private:
 }  // namespace dare
 
 // static test
-static_assert(dare::TimeStepper<ConstantTimeStep<double>>, "does not fullfill requirements");
+static_assert(dare::TimeStepper<AdaptiveTimeStep<double>>, "does not fullfill requirements");
 
 #endif  // ALGORITHM_ADAPTIVETIMESTEP_H_

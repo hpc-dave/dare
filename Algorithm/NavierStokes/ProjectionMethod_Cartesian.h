@@ -383,11 +383,12 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         // explicit forcing
         (*mblock) += free_pm_explicit_force_Cartesian(pm, direction, ind);
 
-        // normalize
-
         // set initial guess
 
-        // Boundary conditions and normalization
+        // Boundary conditions
+
+        // normalize
+        free_pm_apply_normalizer(pm, direction, pm->GetMomentum(direction)->GetCustomMember()->normalizer, mblock);
     };
 
     pm->GetMomentum(dir)->Build(BuildStrategy);

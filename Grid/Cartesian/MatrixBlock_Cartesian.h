@@ -316,6 +316,8 @@ public:
         return os;
     }
 
+    SelfType& operator*=(SC value);
+
 private:
     /*!
      * @brief Getter for raw neighbor array
@@ -390,8 +392,8 @@ private:
     char GetNeighborBitSet(std::size_t nr, std::size_t nc) const;
 
     const GridRepresentation* g_rep;                      //!< reference to grid representation
-    dare::Array<N, N, ScalarArray> neighbors;      //!< holds values referencing to neighbor coefficients
-    dare::Array<N, N, char> neighbor_set;          //!< identifiers, if the neighbors were set
+    dare::Array<N, N, ScalarArray> neighbors;             //!< holds values referencing to neighbor coefficients
+    dare::Array<N, N, char> neighbor_set;                 //!< identifiers, if the neighbors were set
     Index ind_internal;                                   //!< indices of internal grid
     Index ind_full;                                       //!< indices of grid including halo/ghost cells
 };

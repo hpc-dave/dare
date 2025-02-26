@@ -733,6 +733,17 @@ MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetLocalOrdinal() const {
         return g_rep->MapGlobalToLocalInternal(this->GetNode());
 }
 
+template <std::size_t Dim, typename O, typename SC, std::size_t N>
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::operator*=(SC value) {
+    neighbors *= value;
+    this->GetRhs() *= value;
+    for (std::size_t n{0}; n < N; n++)
+        for (std::size_t pos{0}; pos < this->GetNumEntries(n); pos++)
+            this->GetCoefficientByPosition(n, pos) *= value;
+    return *this;
+}
+
 }  // end namespace dare
 
 // template <std::size_t Dim, typename O, typename SC, std::size_t N>

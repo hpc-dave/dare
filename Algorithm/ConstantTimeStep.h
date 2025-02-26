@@ -57,7 +57,7 @@ public:
         return true;
     }
 
-    void Notify() {
+    void Notify(StateChange s) {
         // empty, nothing to notify
     }
 

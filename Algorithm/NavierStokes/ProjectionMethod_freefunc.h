@@ -45,6 +45,12 @@ void free_pm_build_momentum(PM* pm, Direction) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method");  // NOLINT
 }
 
+template<typename PM, dare::NaturalNumber Direction, typename Normalizer, typename MatrixBlock>
+    requires std::is_arithmetic_v<Normalizer>
+void free_pm_apply_normalizer(PM* pm, Direction dir, Normalizer normalizer, MatrixBlock* mb) {
+    (*mb) *= normalizer;
+}
+
 template <typename PM, dare::NaturalNumber Direction>
 std::pair<bool, int> free_pm_solve_momentum(PM* pm, Direction) {
     static const std::size_t dir = Direction::value;

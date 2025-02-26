@@ -69,10 +69,10 @@ template <typename T>
 concept Observable =
     requires {
         typename T::StateChange;
-    } && requires(T t, Observer<T, typename T::StateChange>* o) {
+    } && requires(T t, Observer<T, typename T::StateChange>* o, typename T::StateChange s) {
         { t.Attach(o) } -> std::same_as<bool>;
         { t.Detach(o) } -> std::same_as<bool>;
-        t.Notify();
+        t.Notify(s);
     };  // NOLINT
 
 namespace detail {

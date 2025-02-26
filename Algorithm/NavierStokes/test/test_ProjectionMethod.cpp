@@ -602,4 +602,26 @@ TEST(ProjectionMethodTest, NumericalInfo) {
     static_assert(std::is_same_v<
                   dare::test::PM<GridType, PDefault, SDict_mom_normalizer_info_only_raw>::MomentumNormalizerType,
                   int>);
+
+    struct SDict_cont_normalizer_info_only {
+        using continuity_normalizer = dare::PMContinuityNormalizerInfo<int>;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_cont_normalizer_info_only>::ContinuityNormalizerInfo,
+                  dare::PMContinuityNormalizerInfo<int>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_cont_normalizer_info_only>::ContinuityNormalizerType,
+                  int>);
+
+    struct SDict_cont_normalizer_info_only_raw {
+        using continuity_normalizer = int;
+    };
+
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_cont_normalizer_info_only_raw>::ContinuityNormalizerInfo,
+                  dare::TaggedTypeInfo<int, dare::PMNumerics, dare::PMNumerics::ContinuityNormalizer>>);  // NOLINT
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_cont_normalizer_info_only_raw>::ContinuityNormalizerType,
+                  int>);
 }

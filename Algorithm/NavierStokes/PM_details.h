@@ -249,7 +249,7 @@ struct PMAssembledNumericalInfoWithDefaults {
     using continuity_iterations = default_convert_to_tagged_info_t<_continuity_iterations, PMNumerics, PMNumerics::ContinuityIterations>;       // NOLINT
     using time_scheme_convective = default_convert_to_tagged_info_t<_time_scheme_convective, PMNumerics, PMNumerics::TimeSchemeConvective>;     // NOLINT
     using momentum_normalizer = default_convert_to_tagged_info_t<_norm_momentum, PMNumerics, PMNumerics::MomentumNormalizer>;     // NOLINT
-    using continuity_normalizer = default_convert_to_tagged_info_t<_norm_momentum, PMNumerics, PMNumerics::ContinuityNormalizer>;     // NOLINT
+    using continuity_normalizer = default_convert_to_tagged_info_t<_norm_continuity, PMNumerics, PMNumerics::ContinuityNormalizer>;     // NOLINT
 };
 
 template <typename T>
