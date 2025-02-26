@@ -350,6 +350,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     using IndexLocal = typename GridType::Index;
     using GridVectorType = dare::GridVector<GridType, SC, 1>;
     using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+    using CNB = dare::CartesianNeighbor;
 
     dare::Vector<PM::dimension, const GridVectorType*> velocities;
     for (std::size_t d{0}; d < PM::dimension; d++) {
@@ -384,6 +385,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         (*mblock) += free_pm_explicit_force_Cartesian(pm, direction, ind);
 
         // set initial guess
+        free_pm_momentum_initialguess(pm, mblock->template Get<CNB::CENTER>(0, 0), mblock);
 
         // Boundary conditions
 

@@ -56,6 +56,7 @@ public:
     using OrdinalArray = std::vector<OrdinalType>;
     using ScalarArray = std::vector<ScalarType>;
     using ScalarArrayN = dare::Vector<N, SC>;
+    static const std::size_t NUM_COMPONENTS{N};
 
     /*!
      * @brief default constructor

@@ -470,6 +470,12 @@ TEST(ProjectionMethodTest, NumericalInfo) {
     static_assert(std::is_same_v<
                   dare::test::PM<GridType, PDefault, SDict_empty>::ConvectiveTimeSchemeType,
                   SDefault::time_scheme_convective::type>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::MomentumNormalizerInfo,
+                  dare::PMMomentumNormalizerInfo<dare::None>>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDefault, SDict_empty>::ContinuityNormalizerInfo,
+                  dare::PMContinuityNormalizerInfo<dare::None>>);
 
     struct SDict_tvd_info_only {
         using tvd = dare::PMTVDInfo<dare::VANALBADA>;

@@ -63,8 +63,8 @@ struct PMNumericalInfoDefault {
     using momentum_iterations = PMMomentumIterationInfo<dare::FixedPoint>;
     using continuity_iterations = PMContinuityIterationInfo<dare::Newton>;
     using time_scheme_convective = PMTimeSchemeConvectiveInfo<dare::EULER_BACKWARD>;
-    using momentum_normalizer = PMMomentumNormalizerInfo<double>;
-    using continuity_normalizer = PMContinuityNormalizerInfo<double>;
+    using momentum_normalizer = PMMomentumNormalizerInfo<dare::None>;
+    using continuity_normalizer = PMContinuityNormalizerInfo<dare::None>;
 };
 
 /*!

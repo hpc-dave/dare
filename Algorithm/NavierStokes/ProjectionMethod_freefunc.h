@@ -45,10 +45,23 @@ void free_pm_build_momentum(PM* pm, Direction) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method");  // NOLINT
 }
 
+template <typename PM, dare::NaturalNumber Direction, typename Normalizer, typename MatrixBlock>
+void free_pm_apply_normalizer(PM* pm, Direction dir, Normalizer normalizer, MatrixBlock* mb) {
+    if constexpr (!dare::is_none_v<Normalizer>)
+        static_assert(dare::always_false<Normalizer>, "Unknown normalizer treatment");
+}
+
 template<typename PM, dare::NaturalNumber Direction, typename Normalizer, typename MatrixBlock>
     requires std::is_arithmetic_v<Normalizer>
 void free_pm_apply_normalizer(PM* pm, Direction dir, Normalizer normalizer, MatrixBlock* mb) {
     (*mb) *= normalizer;
+}
+
+template <typename PM, typename MatrixBlock>
+void free_pm_momentum_initialguess(PM* pm,
+                                   typename PM::SC center_coef,
+                                   MatrixBlock* mb) {
+    mb->GetInitialGuess(0) += mb->GetRhs(0) / center_coef;
 }
 
 template <typename PM, dare::NaturalNumber Direction>
