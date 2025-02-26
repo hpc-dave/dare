@@ -388,6 +388,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         free_pm_momentum_initialguess(pm, mblock->template Get<CNB::CENTER>(0, 0), mblock);
 
         // Boundary conditions
+        free_pm_apply_boundary_conditions(pm, *pm->GetMomentum(direction), mblock);
 
         // normalize
         free_pm_apply_normalizer(pm, direction, pm->GetMomentum(direction)->GetCustomMember()->normalizer, mblock);

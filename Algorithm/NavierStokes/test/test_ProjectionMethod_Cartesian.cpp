@@ -54,7 +54,7 @@ dare::Vector<Dim, defaults::ScalarType> GetSizeTestPMCartesian() {
 // a dummy for the boundary strategy
 struct BStrat {
     template <typename T>
-    void operator()(T t) {}
+    void Apply(T* t) {}
 };
 
 }  // namespace dare::test
@@ -2950,4 +2950,17 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_explicit_force_test) {
         SC beta = beta_z.GetDataVector().At(ind, 0) * dV;
         EXPECT_NEAR(s.GetRhs(0), beta, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(beta));
     }
+}
+
+TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_explicit_force_test) {
+    struct PDict {
+        using density = double;
+        using viscosity = double;
+        using porosity = dare::None;
+        using explicit_force = Field;
+        using implicit_force = dare::None;
+    };
+    struct NDict {
+        using momentum_normalizer = double;
+    };
 }

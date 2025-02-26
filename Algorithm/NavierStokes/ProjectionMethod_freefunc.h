@@ -45,16 +45,30 @@ void free_pm_build_momentum(PM* pm, Direction) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method");  // NOLINT
 }
 
-template <typename PM, dare::NaturalNumber Direction, typename Normalizer, typename MatrixBlock>
-void free_pm_apply_normalizer(PM* pm, Direction dir, Normalizer normalizer, MatrixBlock* mb) {
+template <typename PM, typename Normalizer, typename MatrixBlock>
+void free_pm_apply_normalizer(PM* pm, Normalizer normalizer, MatrixBlock* mb) {
     if constexpr (!dare::is_none_v<Normalizer>)
         static_assert(dare::always_false<Normalizer>, "Unknown normalizer treatment");
 }
 
-template<typename PM, dare::NaturalNumber Direction, typename Normalizer, typename MatrixBlock>
+template<typename PM, typename Normalizer, typename MatrixBlock>
     requires std::is_arithmetic_v<Normalizer>
-void free_pm_apply_normalizer(PM* pm, Direction dir, Normalizer normalizer, MatrixBlock* mb) {
+void free_pm_apply_normalizer(PM* pm, Normalizer normalizer, MatrixBlock* mb) {
     (*mb) *= normalizer;
+}
+
+template <typename PM, typename Normalizer, typename DataVector>
+void free_pm_revert_normalizer(PM* pm, Normalizer normalizer, DataVector* vec) {
+    if constexpr (!dare::is_none_v<Normalizer>)
+        static_assert(dare::always_false<Normalizer>, "Unknown normalizer treatment");
+}
+
+template <typename PM, typename Normalizer, typename DataVector>
+    requires std::is_arithmetic_v<Normalizer>
+void free_pm_revert_normalizer(PM* pm, Normalizer normalizer, DataVector* vec) {
+    Normalizer r_norm{1. / normalizer};
+    for (std::size_t n{0}; n < vec->GetSize(); n++)
+        (*vec)[n] *= r_norm;
 }
 
 template <typename PM, typename MatrixBlock>
@@ -64,18 +78,27 @@ void free_pm_momentum_initialguess(PM* pm,
     mb->GetInitialGuess(0) += mb->GetRhs(0) / center_coef;
 }
 
+template <typename PM, typename MatrixBlock>
+void free_pm_momentum_apply_boundary_conditions(PM* pm,
+                                                const typename PM::MomentumType& momentum,
+                                                MatrixBlock* mb) {
+    momentum.GetBoundaryStrategy().Apply(mb);
+}
+
 template <typename PM, dare::NaturalNumber Direction>
-std::pair<bool, int> free_pm_solve_momentum(PM* pm, Direction) {
-    static const std::size_t dir = Direction::value;
-    // using IterType = typename PM::MomentumIterationType;
+std::pair<bool, int> free_pm_solve_momentum(PM* pm, Direction dir) {
+    using IterType = typename PM::MomentumIterationType;
     std::pair<bool, int> ret = std::make_pair(false, static_cast<int>(-1));
-    // if constexpr (uses_fixed_point_iterations_v<IterType>) {
-    //     ret = pm->GetContinuity()->Solve(dare::UpdateFieldCopy{});
-    // } else if constexpr (uses_newton_iterations_v<IterType>) {
-    //     ret = pm->GetContinuity()->Solve(dare::UpdateFieldAddInto{});
-    // } else {
-    //     static_assert(dare::always_false<IterType>, "Solving the momentum equations is not implemented for the specified algorithm type");  // NOLINT
-    // }
+    if constexpr (uses_fixed_point_iterations_v<IterType>) {
+        ret = pm->GetMomentum(dir)->Solve(dare::UpdateFieldCopy{});
+    } else {
+        static_assert(dare::always_false<IterType>, "Solving the momentum equations is not implemented for the specified algorithm type");  // NOLINT
+    }
+
+    // Reverse normalization
+    free_pm_revert_normalizer(pm,
+                              pm->GetMomentum(dir)->GetCustomMember()->normalizer,
+                              pm->GetMomentum()->GetField()->GetDataVector());
     return ret;
 }
 
