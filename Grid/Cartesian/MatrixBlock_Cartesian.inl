@@ -736,7 +736,9 @@ MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetLocalOrdinal() const {
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
 MatrixBlock<dare::Cartesian<Dim>, O, SC, N>&
 MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::operator*=(SC value) {
-    neighbors *= value;
+    for (std::size_t n{0}; n < N; n++)
+        for (std::size_t m{0}; m < N; m++)
+            neighbors[n][m] *= value;
     this->GetRhs() *= value;
     for (std::size_t n{0}; n < N; n++)
         for (std::size_t pos{0}; pos < this->GetNumEntries(n); pos++)

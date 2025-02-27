@@ -2952,7 +2952,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_explicit_force_test) {
     }
 }
 
-TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_explicit_force_test) {
+TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_normalization_test) {
     struct PDict {
         using density = double;
         using viscosity = double;
@@ -2962,5 +2962,34 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_explicit_force_test) {
     };
     struct NDict {
         using momentum_normalizer = double;
+        using continuity_normalizer = double;
     };
+    using CNB = dare::CartesianNeighbor;
+    auto g_s = grid->GetRepresentation(opt_s);
+    double rho = 0.;
+    double mu = 0;
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
+    Field beta_x("beta_x", *g_x, 1);
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+
+    SC w_base{-1.}, e_base{1.}, c_base{1.2};
+    for (LO n_loc = 0; n_loc < g_x->GetNumberLocalCellsInternal(); n_loc++) {
+        dare::MatrixBlock<GridType, LO, SC, 1> mblock(g_x, n_loc, dare::Vector<1, SC>{3});
+        SC normalizer = rd.Generate();
+        mblock.Get(0, 0, CNB::CENTER) = c_base;
+        mblock.Get(0, 0, CNB::WEST) = w_base;
+        mblock.Get(0, 0, CNB::EAST) = e_base;
+        pm.GetMomentum(0)->GetCustomMember()->normalizer = normalizer;
+        dare::free_pm_apply_normalizer(&pm, pm.GetMomentum(0)->GetCustomMember()->normalizer, &mblock);
+        EXPECT_EQ(mblock.Get(0, 0, CNB::CENTER), c_base * normalizer);
+        EXPECT_EQ(mblock.Get(0, 0, CNB::WEST), w_base * normalizer);
+        EXPECT_EQ(mblock.Get(0, 0, CNB::EAST), e_base * normalizer);
+    }
 }
