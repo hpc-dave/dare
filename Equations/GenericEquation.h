@@ -84,6 +84,9 @@ public:
     template <typename BuildStrategy>
     void Build(BuildStrategy build);
 
+    template <typename BuildStrategy>
+    void UpdateRhs(BuildStrategy build);
+
     template <typename Lambda>
     std::pair<bool, int> Solve(Lambda UpdateStrategy =
                                    UpdateFieldCopy{});

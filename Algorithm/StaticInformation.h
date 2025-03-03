@@ -42,8 +42,11 @@ concept ContainsImplicitForce = requires { typename T::implicit_force; };  // NO
 template <typename T>
 concept ContainsExplicitForce = requires { typename T::explicit_force; };  // NOLINT
 
+// template <typename T>
+// concept ContainsCompressible = requires { typename T::compressible; } || std::is_same_v<std::remove_cv_t<decltype(T::compressible)>, bool>;  // NOLINT
+
 template <typename T>
-concept ContainsCompressible = requires { typename T::compressible; } || std::is_same_v<std::remove_cv_t<decltype(T::compressible)>, bool>;  // NOLINT
+concept ContainsDensityDerivative = requires { typename T::density_derivative; };  // NOLINT
 
 template <typename T>
 concept ContainsTVD = requires { typename T::tvd; };  // NOLINT

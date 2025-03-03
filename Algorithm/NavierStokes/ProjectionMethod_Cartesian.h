@@ -397,6 +397,206 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     pm->GetMomentum(dir)->Build(BuildStrategy);
 }
 
+template <typename PM, bool IsFirst>
+typename PM::SC free_pm_defect_compressible_Cartesian(
+    PM* pm,
+    typename PM::LO ordinal_internal,
+    const typename PM::Index& ind,
+    const dare::Vector<PM::dimension, const dare::GridVector<typename PM::GridType, typename PM::SC, 1>*>& v,
+    typename PM::DensityVariableType rho,
+    typename PM::PorosityVariableType epsilon) {
+    using Divergence = dare::Divergence<typename PM::GridType, dare::EULER_BACKWARD>;
+    using TVD = dare::TVD<typename PM::GridType, typename PM::SC, typename PM::TVDScheme>;
+    using FVStencil = dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>;
+    using DensityType = std::remove_cv_t<std::remove_pointer_t<typename PM::DensityVariableType>>;
+    using PorosityType = std::remove_cv_t<std::remove_pointer_t<typename PM::PorosityVariableType>>;
+    auto g_s = &pm->GetContinuity()->GetField()->GetGridRepresentation();
+    TVD tvd(pm->GetContinuity()->GetField()->GetGridRepresentation(), ordinal_internal, v);
+    Divergence div(pm->GetContinuity()->GetField()->GetGridRepresentation(), ordinal_internal);
+    FVStencil eps_f = tvd.Interpolate(epsilon);
+    FVStencil rho_f = tvd.Interpolate(rho);
+    typename PM::SC defect = div(eps_f, rho_f, tvd.GetVelocityStencil())[0];
+    typename PM::SC eps_rho{1.}, eps_rho_old{1.};
+    if constexpr(dare::is_field_v<DensityType>) {
+        eps_rho *= pm->GetDensity()->GetDataVector().At(ind, 0);
+        eps_rho_old *= pm->GetDensity()->GetDataVector(1).At(ind, 0);
+    } else if constexpr (std::is_arithmetic_v<DensityType>) {
+        eps_rho *= pm->GetDensity();
+        eps_rho_old *= pm->GetDensity();
+    } else if constexpr (!dare::is_none_v<DensityType>) {
+        static_assert(dare::always_false<DensityType>, "no way defined to get the variable");
+    }
+    if constexpr (dare::is_field_v<PorosityType>) {
+        eps_rho *= pm->GetPorosity()->GetDataVector().At(ind, 0);
+        eps_rho_old *= pm->GetPorosity()->GetDataVector(1).At(ind, 0);
+    } else if constexpr (std::is_arithmetic_v<DensityType>) {
+        eps_rho *= pm->GetPorosity();
+        eps_rho_old *= pm->GetPorosity();
+    } else if constexpr (!dare::is_none_v<DensityType>) {
+        static_assert(dare::always_false<DensityType>, "no way defined to get the variable");
+    }
+    defect += (eps_rho - eps_rho_old) * g_s->GetCellVolume() / pm->GetTimeStepSize();
+    return defect;
+}
+
+template <typename PM, bool IsFirst>
+typename PM::SC free_pm_defect_incompressible_Cartesian(
+    PM* pm,
+    const typename PM::LO ordinal_internal,
+    const typename PM::Index& ind,
+    const dare::Vector<PM::dimension, const dare::GridVector<typename PM::GridType, typename PM::SC, 1>*>& v,
+    typename PM::PorosityVariableType epsilon) {
+    using Divergence = dare::Divergence<typename PM::GridType, dare::EULER_BACKWARD>;
+    using TVD = dare::TVD<typename PM::GridType, typename PM::SC, dare::CDS>;
+    using FVStencil = dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>;
+    auto g_s = &pm->GetContinuity()->GetField()->GetGridRepresentation();
+    FVStencil eps_f = dare::InterpolateToFaceStencil(*g_s, ind, epsilon);
+    Divergence div(pm->GetContinuity()->GetField()->GetGridRepresentation(), ordinal_internal);
+    TVD tvd(pm->GetContinuity()->GetField()->GetGridRepresentation(), ordinal_internal, v);
+    typename PM::SC defect = div(tvd(eps_f))[0];
+    return defect;
+}
+
+template <typename PM>
+dare::CenterMatrixStencil<typename PM::GridType, typename PM::SC, 1>
+free_pm_continuity_Jacobian_Cartesian(
+    PM* pm,
+    typename PM::LO ordinal_internal,
+    const typename PM::Index& ind,
+    typename PM::DensityVariableType rho,
+    typename PM::PorosityVariableType epsilon) {
+    using GridType = typename PM::GridType;
+    using SC = PM::SC;
+    using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+    using CMStencil = dare::CenterMatrixStencil<GridType, SC, 1>;
+    using CNB = dare::CartesianNeighbor;
+    using ForceType = std::remove_cv_t<std::remove_pointer_t<typename PM::ImplicitForceType>>;
+    using PorosityType = std::remove_cv_t<std::remove_pointer_t<decltype(epsilon)>>;
+    using Divergence = dare::Divergence<GridType, dare::EULER_BACKWARD>;
+    using Gradient = dare::Gradient<GridType>;
+
+    auto g_s = &pm->GetContinuity()->GetField()->GetGridRepresentation();
+    typename PM::SC dt = pm->GetTimeStepSize();
+    Divergence div(*g_s, ordinal_internal);
+    Gradient grad(*g_s, ordinal_internal);
+    FVStencil rho_f = dare::InterpolateToFaceStencil(*g_s, ind, rho);
+    FVStencil beta_f;
+    beta_f.SetAll(0.);
+    if constexpr (dare::is_field_v<ForceType>) {
+        for (auto b : pm->GetContinuity()->GetCustomMember()->beta_im)
+            beta_f += dare::InterpolateToFaceStencil(*g_s, ind, *b);
+    } else if constexpr (!dare::is_none_v<ForceType>) {
+        static_assert(dare::always_false<ForceType>, "This type is not supported for forces");
+    }
+    FVStencil eps_f = dare::InterpolateToFaceStencil(*g_s, ind, epsilon);
+    CMStencil s;
+
+    if constexpr (pm->IsCompressible()) {
+        FVStencil coef_f = -eps_f * dt / (1. - beta_f * dt / (eps_f * rho_f));
+        s = div(coef_f, grad());
+
+        // Main diagonal with density-derivative
+        SC dd_dp = pm->GetContinuity()->GetDensityDerivative(ind);
+        SC eps_c{1.};
+        if constexpr (dare::is_field_v<PorosityType>) {
+            eps_c = epsilon->GetDataVector()->At(ind, 0);
+        } else if constexpr (std::is_arithmetic_v<PorosityType>) {
+            eps_c = epsilon;
+        }
+        dd_dp *= eps_c;
+        dd_dp *= g_s->GetCellVolume() / dt;
+        s(CNB::CENTER, 0) += dd_dp;
+    } else {
+        FVStencil coef_f = -eps_f * dt / (rho_f - beta_f / eps_f * dt);
+        s = div(coef_f, grad());
+    }
+
+    return s;
+}
+
+template <typename PM>
+    requires(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>)
+void free_pm_compute_defect(PM* pm) {
+    using LO = typename PM::LO;
+    using Index = typename PM::Index;
+    using GridVectorType = dare::GridVector<typename PM::GridType, typename PM::SC, 1>;
+    using DefectType = GridVectorType;
+    auto g_s = &pm->GetPressure()->GetGridRepresentation();
+    DefectType* defect = &pm->GetContinuity()->GetDefect()->GetDataVector();
+    dare::Vector<PM::dimension, const GridVectorType*> velocities;
+    for (std::size_t d{0}; d < PM::dimension; d++) {
+        velocities[d] = &pm->GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+#pragma omp parallel for
+    for (LO n = 0; n < g_s->GetNumberLocalCellsInternal(); n++) {
+        Index ind_internal{g_s->MapOrdinalToIndexLocalInternal(n)};
+        Index ind{g_s->MapInternalToLocal(ind_internal)};
+        if constexpr (pm->IsCompressible()) {
+            defect->At(ind, 0) = free_pm_defect_compressible_Cartesian(pm,
+                                                                       n,
+                                                                       ind,
+                                                                       velocities,
+                                                                       pm->GetDensity(),
+                                                                       pm->GetPorosity());
+        } else {
+            defect->At(ind, 0) = free_pm_defect_incompressible_Cartesian(pm,
+                                                                         n,
+                                                                         ind,
+                                                                         velocities,
+                                                                         pm->GetPorosity());
+        }
+    }
+}
+
+template <typename PM>
+    requires(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>)
+void free_pm_build_continuity(PM* pm, int iteration) {
+    static_assert(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>, "Inconsistent dimensions");
+    using GridType = typename PM::GridType;
+    using LO = typename GridType::LocalOrdinalType;
+    using SC = typename GridType::ScalarType;
+    using DensityType = typename PM::DensityVariableType;
+    using PorosityType = typename PM::PorosityVariableType;
+    using IndexLocal = typename GridType::Index;
+    using GridVectorType = dare::GridVector<GridType, SC, 1>;
+
+    dare::Vector<PM::dimension, const GridVectorType*> velocities;
+    for (std::size_t d{0}; d < PM::dimension; d++) {
+        velocities[d] = &pm->GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    if (iteration == 0) {
+        auto BuildStrategy = [=](auto mblock) {
+            const typename GridType::Representation* g_r{mblock->GetRepresentation()};
+            LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
+            IndexLocal ind{mblock->GetIndex()};
+
+            const DensityType rho{pm->GetDensity()};
+            const PorosityType epsilon{pm->GetPorosity()};
+
+            (*mblock) = free_pm_continuity_Jacobian_Cartesian(pm, ind, rho, epsilon);
+            mblock->GetRhs(0) = -1. * pm->GetContinuity()->GetDefect()->GetDataVector().At(ind, 0);
+
+            // Apply Boundary conditions
+            pm->GetContinuity()->GetBoundaryStrategy()->Apply(mblock);
+        };
+        pm->GetContinuity()->Build(BuildStrategy);
+    } else {
+        auto BuildStrategy = [=](auto mblock) {
+            const typename GridType::Representation* g_r{mblock->GetRepresentation()};
+            LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
+            IndexLocal ind{mblock->GetIndex()};
+
+            mblock->GetRhs(0) = -1. * pm->GetContinuity()->GetDefect()->GetDataVector().At(ind, 0);
+
+            // Apply Boundary conditions
+            pm->GetContinuity()->GetBoundaryStrategy()->Apply(mblock);
+        };
+        pm->GetContinuity()->UpdateRhs(BuildStrategy);
+    }
+}
+
 }  // namespace dare
 
 #endif  // ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_CARTESIAN_H_

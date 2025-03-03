@@ -54,7 +54,8 @@ struct PMPropertyInfoDefault {
     using porosity = PMPorosityInfo<dare::None>;
     using implicit_force = PMImplicitForceInfo<dare::None>;
     using explicit_force = PMExplicitForceInfo<dare::None>;
-    using compressible = PMCompressibleInfo<false>;
+    // using compressible = PMCompressibleInfo<false>;
+    using density_derivative = PMDensityDerivativeInfo<dare::None>;
 };
 
 struct PMNumericalInfoDefault {
@@ -112,7 +113,8 @@ public:
     using PorosityInfo = typename PropertyTypeInfo::porosity;
     using ImplicitForceInfo = typename PropertyTypeInfo::implicit_force;
     using ExplicitForceInfo = typename PropertyTypeInfo::explicit_force;
-    using CompressibilityInfo = typename PropertyTypeInfo::compressible;
+    // using CompressibilityInfo = typename PropertyTypeInfo::compressible;
+    using DensityDerivativeInfo = typename PropertyTypeInfo::density_derivative;
     using DensityVariableType = detail::determine_density_variable_type_t<DensityInfo>;
     using ViscosityVariableType = detail::determine_viscosity_variable_type_t<ViscosityInfo>;
     using PorosityVariableType = detail::determine_porosity_variable_type_t<PorosityInfo>;
@@ -120,7 +122,9 @@ public:
     using ExplicitForceVariableType = detail::determine_explicit_force_variable_type_t<ExplicitForceInfo>;
     using ImplicitForceMemberType = detail::determine_implicit_force_member_variable_type_t<ImplicitForceInfo>;
     using ExplicitForceMemberType = detail::determine_explicit_force_member_variable_type_t<ExplicitForceInfo>;
-    static const bool compressible = CompressibilityInfo::flag;
+    using DensityDerivativeMemberType = detail::determine_density_derivative_member_variable_type_t<DensityDerivativeInfo>; // NOLINT
+    // consider removing this boolean and check simply for equation of state
+    static const bool compressible = !dare::is_none_v<DensityDerivativeMemberType>;
     static const std::size_t dimension = GridType::Dimension;
 
     // algorithm and discretization properties
@@ -238,11 +242,13 @@ public:
         // or in the case of no additional term this is just
         // the very first iteration
         int iteration = 0;
+        ComputeDefect();
         for (; iteration < max_iterations; iteration++) {
             BuildContinuity(iteration);
             auto [success, iter] = SolveContinuity(iteration);
             UpdatePressure(iteration);
             UpdateVelocity(iteration);
+            ComputeDefect();
             if (ContinuityConvergence(iteration))
                 break;
         }
@@ -366,6 +372,10 @@ private:
         free_pm_update_velocity(this, iteration);
     }
 
+    void ComputeDefect() {
+        free_pm_compute_defect(this);
+    }
+
     bool ContinuityConvergence(int iteration) {
         return free_pm_continuity_convergence(this, iteration);
     }
@@ -374,6 +384,7 @@ private:
     DensityVariableType rho;
     ViscosityVariableType mu;
     PorosityVariableType epsilon;
+    DensityDerivativeMemberType density_derivative;
 
     std::unique_ptr<ContinuityType> continuity;
     std::array<std::unique_ptr<MomentumType>, dimension> momentum;

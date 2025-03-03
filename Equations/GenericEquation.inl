@@ -54,6 +54,12 @@ void GenericEquation<Grid, BS, CM>::Build(BuildStrategy build_lambda) {
 }
 
 template <typename Grid, typename BS, typename CM>
+template <typename BuildStrategy>
+void GenericEquation<Grid, BS, CM>::UpdateRhs(BuildStrategy build_lambda) {
+    matrix_system.SetB(grep, field.GetDataVector(), build_lambda);
+}
+
+template <typename Grid, typename BS, typename CM>
 template<typename UpdateStrategy>
 std::pair<bool, int> GenericEquation<Grid, BS, CM>::Solve(UpdateStrategy strat_update) {
     MatrixSolverType solver;

@@ -100,30 +100,43 @@ struct pm_get_explicit_force<TDict, TDictDefault> {
 template <typename TDict, ContainsExplicitForce TDictDefault>
 using pm_get_explicit_force_t = pm_get_explicit_force<TDict, TDictDefault>::type;
 
-template <typename TDict, ContainsCompressible TDictDefault>
-struct pm_get_compressible {
-    static const bool value = TDictDefault::compressible::flag;
-    using type = bool;
+// template <typename TDict, ContainsCompressible TDictDefault>
+// struct pm_get_compressible {
+//     static const bool value = TDictDefault::compressible::flag;
+//     using type = bool;
+// };
+
+// template <ContainsCompressible TDict, ContainsCompressible TDictDefault>
+// struct pm_get_compressible<TDict, TDictDefault> {
+//     using type = typename TDict::compressible;
+//     static const bool value = type::flag;
+// };
+
+// template <ContainsCompressible TDict, ContainsCompressible TDictDefault>
+//     requires std::is_same_v<decltype(TDict::compressible), const bool>
+// struct pm_get_compressible<TDict, TDictDefault> {
+//     using type = bool;
+//     static const bool value = TDict::compressible;
+// };
+
+template <typename TDict, ContainsDensityDerivative TDictDefault>
+struct pm_get_density_derivative {
+    using type = typename TDictDefault::density_derivative;
 };
 
-template <ContainsCompressible TDict, ContainsCompressible TDictDefault>
-struct pm_get_compressible<TDict, TDictDefault> {
-    using type = typename TDict::compressible;
-    static const bool value = type::flag;
+template <ContainsDensityDerivative TDict, ContainsDensityDerivative TDictDefault>
+struct pm_get_density_derivative<TDict, TDictDefault> {
+    using type = typename TDict::density_derivative;
 };
 
-template <ContainsCompressible TDict, ContainsCompressible TDictDefault>
-    requires std::is_same_v<decltype(TDict::compressible), const bool>
-struct pm_get_compressible<TDict, TDictDefault> {
-    using type = bool;
-    static const bool value = TDict::compressible;
-};
+template <typename TDict, ContainsExplicitForce TDictDefault>
+using pm_get_density_derivative_t = pm_get_density_derivative<TDict, TDictDefault>::type;
 
-template <typename TDict, ContainsCompressible TDictDefault>
-constexpr bool pm_get_compressible_v = pm_get_compressible<TDict, TDictDefault>::value;
+// template <typename TDict, ContainsCompressible TDictDefault>
+// constexpr bool pm_get_compressible_v = pm_get_compressible<TDict, TDictDefault>::value;
 
-template <typename TDict, ContainsCompressible TDictDefault>
-using pm_get_compressible_t = pm_get_compressible<TDict, TDictDefault>::type;
+// template <typename TDict, ContainsCompressible TDictDefault>
+// using pm_get_compressible_t = pm_get_compressible<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsTVD TDictDefault>
 struct pm_get_tvd {
@@ -225,13 +238,15 @@ struct PMAssembledPropertyInfoWithDefaults {
     using _porosity_t = pm_get_porosity_t<PropertyInfoUser, PropertyInfoDefault>;
     using _implicit_force_t = pm_get_implicit_force_t<PropertyInfoUser, PropertyInfoDefault>;
     using _explicit_force_t = pm_get_explicit_force_t<PropertyInfoUser, PropertyInfoDefault>;
-    static const bool _compressibility_v = pm_get_compressible_v<PropertyInfoUser, PropertyInfoDefault>;
+    // static const bool _compressibility_v = pm_get_compressible_v<PropertyInfoUser, PropertyInfoDefault>;
+    using _density_derivative_t = pm_get_density_derivative_t<PropertyInfoUser, PropertyInfoDefault>;
     using density = default_convert_to_tagged_info_t<_density_t, PMProperties, PMProperties::Density>;
     using viscosity = default_convert_to_tagged_info_t<_viscosity_t, PMProperties, PMProperties::Viscosity>;
     using porosity = default_convert_to_tagged_info_t<_porosity_t, PMProperties, PMProperties::Porosity>;
     using implicit_force = default_convert_to_tagged_info_t<_implicit_force_t, PMProperties, PMProperties::ImplicitForce>;   // NOLINT
     using explicit_force = default_convert_to_tagged_info_t<_explicit_force_t, PMProperties, PMProperties::ExplicitForce>;   // NOLINT
-    using compressible = FlaggedInfo<_compressibility_v, PMProperties, PMProperties::Compressible>;    // NOLINT
+    // using compressible = FlaggedInfo<_compressibility_v, PMProperties, PMProperties::Compressible>;    // NOLINT
+    using density_derivative = default_convert_to_tagged_info_t<_density_derivative_t, PMProperties, PMProperties::DensityDerivative>;  // NOLINT
 };
 
 template <typename NumericalInfoUser, typename NumericalInfoDefault>
@@ -379,6 +394,20 @@ template <typename T>
     requires(requires { typename T::type; })  // NOLINT
 using determine_explicit_force_member_variable_type_t
     = typename DetermineExplicitForceVariableType<typename T::type>::member_type;
+
+template<typename T>
+struct DetermineDensityDerivativeVariableType {
+    using type = T;
+    using member_type = T;
+};
+
+template <typename T>
+    requires(requires { typename T::type; })  // NOLINT
+using determine_density_derivative_variable_type_t = typename DetermineDensityDerivativeVariableType<typename T::type>::type;  // NOLINT
+
+template <typename T>
+    requires(requires { typename T::type; })  // NOLINT
+using determine_density_derivative_member_variable_type_t = typename DetermineDensityDerivativeVariableType<typename T::type>::member_type;    // NOLINT
 
 }  // namespace dare::detail
 

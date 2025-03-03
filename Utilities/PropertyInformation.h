@@ -201,11 +201,7 @@ concept NaturalNumber =
 };
 
 template <std::size_t N>
-struct StaticNumber_size_t {
-    using size_t = std::size_t;
-    static const size_t value = N;
-    constexpr operator size_t() const { return N; }
-};
+using StaticNumber_size_t = std::integral_constant<std::size_t, N>;
 
 static const StaticNumber_size_t<0> ZERO;
 static const StaticNumber_size_t<1> ONE;

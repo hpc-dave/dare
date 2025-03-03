@@ -25,6 +25,7 @@
 #ifndef GRID_CARTESIAN_GRADIENT_CARTESIAN_H_
 #define GRID_CARTESIAN_GRADIENT_CARTESIAN_H_
 
+#include "Utilities/PropertyInformation.h"
 #include "Data/GridVector.h"
 #include "Equations/Operators.h"
 #include "Grid/Cartesian/Interpolation_Cartesian.h"
@@ -56,6 +57,17 @@ public:
      * @param ordinal_internal the internal ordinal of the center cell in the stencil
      */
     Gradient(const GridRepresentation& grid, LO ordinal_internal);
+
+    /*!
+     * @brief provide matrix stencil
+     * @tparam O ordinal type used in the MatrixBlock instance
+     * @tparam N number of components
+     * @param mb dummy parameter
+     * By using a matrix block as an argument, we can determine the number of components in a
+     * convenient way without too much code smell.
+     */
+    template<dare::NaturalNumber N = std::integral_constant<std::size_t, 1>>
+    dare::FaceMatrixStencil<GridType, typename GridType::ScalarType, N::value> operator()(N) const;
 
     /*!
      * @brief provide matrix stencil

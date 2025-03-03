@@ -99,6 +99,9 @@ std::pair<bool, int> free_pm_solve_momentum(PM* pm, Direction dir) {
     free_pm_revert_normalizer(pm,
                               pm->GetMomentum(dir)->GetCustomMember()->normalizer,
                               pm->GetMomentum()->GetField()->GetDataVector());
+
+    // update halo cells
+    pm->GetMomentum(dir)->GetField()->ExchangeHaloCells();
     return ret;
 }
 
@@ -118,6 +121,9 @@ std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
             m.CopyTo(&pm->GetContinuity()->GetdP()->GetDataVector());
         };
         ret = pm->GetContinuity()->Solve(UpdateStrategy);
+        free_pm_revert_normalizer(pm,
+                                  pm->GetContinuity()->GetCustomMember()->normalizer,
+                                  pm->GetContinuity()->GetdP()->GetDataVector());
     } else {
         static_assert(dare::always_false<IterType>, "Updating the pressure is not implemented for anything except Newton iterations");  // NOLINT
     }
@@ -127,10 +133,11 @@ std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
 template <typename PM>
 void free_pm_update_pressure(PM* pm, int iteration) {
     if constexpr (uses_newton_iterations_v<typename PM::ContinuityIterationType>) {
-        *(pm->GetContinuity()->GetPressure()) += *(pm->GetContinuity()->GetdP());
+        *(pm->GetPressure()) += *(pm->GetContinuity()->GetdP());
     } else {
         static_assert(dare::always_false<PM>, "Updating the pressure is not implemented for anything except Newton iterations");  // NOLINT
     }
+    pm->GetPressure()->ExchangeHaloCells();
 }
 
 template <typename PM>
@@ -142,6 +149,11 @@ template <typename PM>
 bool free_pm_continuity_convergence(PM* pm, int iteration) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method and grid");  // NOLINT
     return false;
+}
+
+template <typename PM>
+void free_pm_compute_defect(PM* pm) {
+    static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method and grid");  // NOLINT
 }
 
 }  // namespace dare

@@ -44,8 +44,11 @@ using ImplicitForceInfo = dare::PMImplicitForceInfo<T>;
 template <typename T>
 using ExplicitForceInfo = dare::PMExplicitForceInfo<T>;
 
-template <bool Flag>
-using CompressibleInfo = dare::PMCompressibleInfo<Flag>;
+template <typename T>
+using DensityDerivativeInfo = dare::PMDensityDerivativeInfo<T>;
+
+// template <bool Flag>
+// using CompressibleInfo = dare::PMCompressibleInfo<Flag>;
 
 // a dummy for the boundary strategy
 struct BStrat{
@@ -56,10 +59,10 @@ struct BStrat{
 template <typename GridType, typename PDict, typename SDict>
 using PM = dare::ProjectionMethod<GridType, BStrat, PDict, SDict>;
 
-// that one needs to be here, as it cannot be declared locally
-struct PDict_compressible_only_raw {
-    static const bool compressible = true;
-};
+// // that one needs to be here, as it cannot be declared locally
+// struct PDict_compressible_only_raw {
+//     static const bool compressible = true;
+// };
 
 }  // namespace dare::test
 
@@ -104,8 +107,12 @@ TEST(ProjectionMethodTest, PropertyInfo) {
                   dare::None>);
 
     static_assert(std::is_same_v<
-                  dare::test::PM<GridType, PDict_empty, SDefault>::CompressibilityInfo,
-                  dare::FlaggedInfo<PDefault::compressible::flag, PMProperties, PMProperties::Compressible>>);
+                  dare::test::PM<GridType, PDict_empty, SDefault>::DensityDerivativeInfo,
+                  PDefault::density_derivative>);
+    static_assert(std::is_same_v<
+                  dare::test::PM<GridType, PDict_empty, SDefault>::DensityDerivativeInfo::type,
+                  dare::None>);
+    static_assert(!dare::test::PM<GridType, PDict_empty, SDefault>::compressible);
 
     using dare::test::DensityInfo;
     struct PDict_density_only_double_raw {
@@ -415,20 +422,40 @@ TEST(ProjectionMethodTest, PropertyInfo) {
                   dare::test::PM<GridType, PDict_exforce_only_field_raw, SDefault>::ExplicitForceMemberType,  // NOLINT
                   std::set<const FieldType*>>);
 
-    using dare::test::CompressibleInfo;
-    struct PDict_compressible_only {
-        using compressible = CompressibleInfo<true>;
+    // using dare::test::CompressibleInfo;
+    // struct PDict_compressible_only {
+    //     using compressible = CompressibleInfo<true>;
+    // };
+
+    // static_assert(std::is_same_v<
+    //               dare::test::PM<GridType, PDict_compressible_only, SDefault>::CompressibilityInfo,
+    //               dare::FlaggedInfo<true, PMProperties, PMProperties::Compressible>>);
+    // static_assert(dare::test::PM<GridType, PDict_compressible_only, SDefault>::compressible);
+
+    // static_assert(std::is_same_v<
+    //               dare::test::PM<GridType,dare::test::PDict_compressible_only_raw, SDefault>::CompressibilityInfo,    // NOLINT
+    //               dare::FlaggedInfo<true, PMProperties, PMProperties::Compressible>>);
+    // static_assert(dare::test::PM<GridType, dare::test::PDict_compressible_only_raw, SDefault>::compressible);         // NOLINT
+
+    using dare::test::DensityDerivativeInfo;
+    struct density_derivative_functor {
+    };
+    struct PDict_dder_only {
+        using density_derivative = DensityDerivativeInfo<density_derivative_functor>;
     };
 
     static_assert(std::is_same_v<
-                  dare::test::PM<GridType, PDict_compressible_only, SDefault>::CompressibilityInfo,
-                  dare::FlaggedInfo<true, PMProperties, PMProperties::Compressible>>);
-    static_assert(dare::test::PM<GridType, PDict_compressible_only, SDefault>::compressible);
-
+                  dare::test::PM<GridType, PDict_dder_only, SDefault>::DensityDerivativeInfo,
+                  dare::PMDensityDerivativeInfo<density_derivative_functor>>);
     static_assert(std::is_same_v<
-                  dare::test::PM<GridType,dare::test::PDict_compressible_only_raw, SDefault>::CompressibilityInfo,    // NOLINT
-                  dare::FlaggedInfo<true, PMProperties, PMProperties::Compressible>>);
-    static_assert(dare::test::PM<GridType, dare::test::PDict_compressible_only_raw, SDefault>::compressible);         // NOLINT
+                  dare::test::PM<GridType, PDict_dder_only, SDefault>::DensityDerivativeMemberType,
+                  density_derivative_functor>);
+    static_assert(dare::test::PM<GridType, PDict_dder_only, SDefault>::compressible);
+
+    // static_assert(std::is_same_v<
+    //               dare::test::PM<GridType,dare::test::PDict_compressible_only_raw, SDefault>::CompressibilityInfo,    // NOLINT
+    //               dare::FlaggedInfo<true, PMProperties, PMProperties::Compressible>>);
+    // static_assert(dare::test::PM<GridType, dare::test::PDict_compressible_only_raw, SDefault>::compressible);         // NOLINT
 }
 
 TEST(ProjectionMethodTest, NumericalInfo) {

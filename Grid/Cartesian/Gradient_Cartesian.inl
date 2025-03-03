@@ -34,11 +34,11 @@ Gradient<dare::Cartesian<Dim>>::Gradient(const GridRepresentation& _grid, LO ord
 }
 
 template <std::size_t Dim>
-template <typename SC, typename O, std::size_t N>
-dare::FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
-Gradient<dare::Cartesian<Dim>>::operator()(
-    const MatrixBlock<GridType, O, SC, N>&) const {
-    dare::FaceMatrixStencil<GridType, SC, N> s;
+template <dare::NaturalNumber N>
+dare::FaceMatrixStencil<dare::Cartesian<Dim>, typename dare::Cartesian<Dim>::ScalarType, N::value>
+Gradient<dare::Cartesian<Dim>>::operator()(N) const {
+    using SC = typename GridType::ScalarType;
+    dare::FaceMatrixStencil<GridType, SC, N::value> s;
     s.SetValues(Positions::WEST, 0, -dn_r[0], dn_r[0]);
     s.SetValues(Positions::EAST, 0, dn_r[0], -dn_r[0]);
     if constexpr (Dim > 1) {
@@ -50,11 +50,19 @@ Gradient<dare::Cartesian<Dim>>::operator()(
         s.SetValues(Positions::TOP, 0, dn_r[2], -dn_r[2]);
     }
 
-    for (std::size_t n{1}; n < N; n++) {
+    for (std::size_t n{1}; n < N::value; n++) {
         s.GetDataCenter()[n] = s.GetDataCenter()[n - 1];
         s.GetDataNeighbor()[n] = s.GetDataNeighbor()[n - 1];
     }
     return s;
+}
+
+template <std::size_t Dim>
+template <typename SC, typename O, std::size_t N>
+dare::FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+Gradient<dare::Cartesian<Dim>>::operator()(
+    const MatrixBlock<GridType, O, SC, N>&) const {
+    return (*this)(std::integral_constant<std::size_t, N>{});
 }
 
 template <std::size_t Dim>
