@@ -35,6 +35,8 @@
 #include "GridVector.h"
 #include "MPI/HaloBuffer.h"
 #include "Utilities/Errors.h"
+#include "Utilities/PropertyInformation.h"
+#include "Utilities/CompileTimeFunctions.h"
 
 namespace dare {
 

@@ -397,7 +397,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     pm->GetMomentum(dir)->Build(BuildStrategy);
 }
 
-template <typename PM, bool IsFirst>
+template <typename PM>
 typename PM::SC free_pm_defect_compressible_Cartesian(
     PM* pm,
     typename PM::LO ordinal_internal,
@@ -413,9 +413,16 @@ typename PM::SC free_pm_defect_compressible_Cartesian(
     auto g_s = &pm->GetContinuity()->GetField()->GetGridRepresentation();
     TVD tvd(pm->GetContinuity()->GetField()->GetGridRepresentation(), ordinal_internal, v);
     Divergence div(pm->GetContinuity()->GetField()->GetGridRepresentation(), ordinal_internal);
-    FVStencil eps_f = tvd.Interpolate(epsilon);
-    FVStencil rho_f = tvd.Interpolate(rho);
-    typename PM::SC defect = div(eps_f, rho_f, tvd.GetVelocityStencil())[0];
+    FVStencil fluxes = tvd.GetVelocityStencil();
+    if constexpr (dare::is_field_v<DensityType>)
+        fluxes *= tvd.Interpolate(dare::convert_to_ptr(rho)->GetDataVector());
+    else if constexpr(!dare::is_none_v<DensityType>)
+        fluxes *= tvd.Interpolate(rho);
+    if constexpr (dare::is_field_v<PorosityType>)
+        fluxes *= tvd.Interpolate(dare::convert_to_ptr(epsilon)->GetDataVector());
+    else if constexpr (!dare::is_none_v<PorosityType>)
+        fluxes *= tvd.Interpolate(epsilon);
+    typename PM::SC defect = div(fluxes)[0];
     typename PM::SC eps_rho{1.}, eps_rho_old{1.};
     if constexpr(dare::is_field_v<DensityType>) {
         eps_rho *= pm->GetDensity()->GetDataVector().At(ind, 0);
@@ -429,23 +436,23 @@ typename PM::SC free_pm_defect_compressible_Cartesian(
     if constexpr (dare::is_field_v<PorosityType>) {
         eps_rho *= pm->GetPorosity()->GetDataVector().At(ind, 0);
         eps_rho_old *= pm->GetPorosity()->GetDataVector(1).At(ind, 0);
-    } else if constexpr (std::is_arithmetic_v<DensityType>) {
+    } else if constexpr (std::is_arithmetic_v<PorosityType>) {
         eps_rho *= pm->GetPorosity();
         eps_rho_old *= pm->GetPorosity();
-    } else if constexpr (!dare::is_none_v<DensityType>) {
-        static_assert(dare::always_false<DensityType>, "no way defined to get the variable");
+    } else if constexpr (!dare::is_none_v<PorosityType>) {
+        static_assert(dare::always_false<PorosityType>, "no way defined to get the variable");
     }
     defect += (eps_rho - eps_rho_old) * g_s->GetCellVolume() / pm->GetTimeStepSize();
     return defect;
 }
 
-template <typename PM, bool IsFirst>
+template <typename PM, typename PorosityVariableType>
 typename PM::SC free_pm_defect_incompressible_Cartesian(
     PM* pm,
     const typename PM::LO ordinal_internal,
     const typename PM::Index& ind,
     const dare::Vector<PM::dimension, const dare::GridVector<typename PM::GridType, typename PM::SC, 1>*>& v,
-    typename PM::PorosityVariableType epsilon) {
+    PorosityVariableType epsilon) {
     using Divergence = dare::Divergence<typename PM::GridType, dare::EULER_BACKWARD>;
     using TVD = dare::TVD<typename PM::GridType, typename PM::SC, dare::CDS>;
     using FVStencil = dare::FaceValueStencil<typename PM::GridType, typename PM::SC, 1>;
@@ -453,8 +460,23 @@ typename PM::SC free_pm_defect_incompressible_Cartesian(
     FVStencil eps_f = dare::InterpolateToFaceStencil(*g_s, ind, epsilon);
     Divergence div(pm->GetContinuity()->GetField()->GetGridRepresentation(), ordinal_internal);
     TVD tvd(pm->GetContinuity()->GetField()->GetGridRepresentation(), ordinal_internal, v);
-    typename PM::SC defect = div(tvd(eps_f))[0];
+    typename PM::SC defect = div(eps_f * tvd.GetVelocityStencil())[0];
     return defect;
+}
+
+template <typename PM, typename PorosityVariableType>
+    requires dare::is_field_v<std::remove_cv_t<std::remove_pointer_t<PorosityVariableType>>>
+typename PM::SC free_pm_defect_incompressible_Cartesian(
+    PM* pm,
+    const typename PM::LO ordinal_internal,
+    const typename PM::Index& ind,
+    const dare::Vector<PM::dimension, const dare::GridVector<typename PM::GridType, typename PM::SC, 1>*>& v,
+    PorosityVariableType epsilon) {
+    return free_pm_defect_incompressible_Cartesian(pm,
+                                                   ordinal_internal,
+                                                   ind,
+                                                   v,
+                                                   dare::convert_to_ptr(epsilon)->GetDataVector());
 }
 
 template <typename PM>
@@ -532,7 +554,7 @@ void free_pm_compute_defect(PM* pm) {
     for (LO n = 0; n < g_s->GetNumberLocalCellsInternal(); n++) {
         Index ind_internal{g_s->MapOrdinalToIndexLocalInternal(n)};
         Index ind{g_s->MapInternalToLocal(ind_internal)};
-        if constexpr (pm->IsCompressible()) {
+        if constexpr (PM::compressible) {
             defect->At(ind, 0) = free_pm_defect_compressible_Cartesian(pm,
                                                                        n,
                                                                        ind,

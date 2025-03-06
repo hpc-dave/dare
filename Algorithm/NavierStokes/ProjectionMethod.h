@@ -54,7 +54,6 @@ struct PMPropertyInfoDefault {
     using porosity = PMPorosityInfo<dare::None>;
     using implicit_force = PMImplicitForceInfo<dare::None>;
     using explicit_force = PMExplicitForceInfo<dare::None>;
-    // using compressible = PMCompressibleInfo<false>;
     using density_derivative = PMDensityDerivativeInfo<dare::None>;
 };
 
@@ -92,7 +91,8 @@ public:
         mu_init = 0b0000010,
         epsilon_init = 0b0000100,
         beta_im_init = 0b0001000,
-        beta_ex_init = 0b0010000
+        beta_ex_init = 0b0010000,
+        density_derivative_init = 0b0100000
     };
     // general types based on the grid
     using GridType = Grid;
@@ -165,13 +165,16 @@ public:
         : ex_man(nullptr),
           dt(0.),
           max_iterations(100),
-          status(0), status_finalized(rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init) {
+          status(0),
+          status_finalized(rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init | density_derivative_init) {
         if constexpr (dare::is_none_v<PorosityVariableType>)
             status |= epsilon_init;
         if constexpr (dare::is_none_v<ImplicitForceVariableType>)
             status |= beta_im_init;
         if constexpr (dare::is_none_v<ExplicitForceVariableType>)
             status |= beta_ex_init;
+        if constexpr(dare::is_none_v<DensityDerivativeMemberType>)
+            status |= density_derivative_init;
 
         // method specific check for consistent compile time information
         free_compile_time_check(this);
@@ -286,6 +289,19 @@ public:
         status |= epsilon_init;
     }
 
+    void SetDensityDerivative(DensityDerivativeMemberType dd) {
+        density_derivative = std::move(dd);
+        status |= density_derivative_init;
+    }
+
+    const DensityDerivativeMemberType& GetDensityDerivative() const {
+        return density_derivative;
+    }
+
+    SC GetDensityDerivative(Index ind) const {
+        return density_derivative(ind);
+    }
+
     DensityVariableType GetDensity() const {
         return rho;
     }
@@ -344,6 +360,15 @@ public:
     dare::ExecutionManager* GetExecutionManager() const {
         return ex_man;
     }
+
+    // template<typename T, dare::NaturalNumber N>
+    // decltype(auto) Extract(const T& var, N tstep) {
+    //     if (dare::is_field_v<std::remove_cv_t<std::remove_pointer_t<T>>>) {
+    //         return dare::convert_to_ptr(var)->GetDataVector(tstep);
+    //     } else {
+    //         return var;
+    //     }
+    // }
 
 private:
     template <dare::NaturalNumber Direction>

@@ -685,28 +685,6 @@ InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& gr
 }
 
 /*!
- * @brief interpolates all components linearly to the faces of the target from the source field
- * @tparam T type of scalar to interpolate
- * @tparam Dim dimension of the grid
- * @tparam N number of components
- * @tparam LO local ordinal type
- * @param grid_target representation of the target grid
- * @param ind_target the target node of the grid in the form of indices
- * @param field pointer to the field, from which the value is interpolated
- * @param distance an indicator if a remote stencil is required
- * @return a face stencil with interpolated values
- * \note this is an overload for dealing with pointers
- */
-template <std::size_t Dim, typename T, std::size_t N, typename LO>
-[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
-InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
-                         dare::Vector<Dim, LO> ind_target,
-                         const dare::GridVector<dare::Cartesian<Dim>, T, N>* field,
-                         typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
-    return InterpolateToFaceStencil(grid_target, ind_target, *field, distance);
-}
-
-/*!
  * @brief provides a face stencil filled with a single value
  * @tparam T type of scalar to interpolate
  * @tparam Dim dimension of the grid

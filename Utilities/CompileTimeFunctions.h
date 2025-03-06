@@ -87,7 +87,7 @@ constexpr T* convert_to_ptr(T& t) {   // NOLINT
  * @param t provided instance
  * @return pointer
  *
- * \note const is implicitly kept, with the overload, references will be kept
+ * \note const is implicitly kept, with the overload, pointer will be kept
  */
 template <typename T>
 constexpr T* convert_to_ptr(T* t) {
