@@ -154,7 +154,7 @@ public:
         MomentumNormalizerType normalizer;
     };
     struct ContinuityMembers {
-        ExplicitForceMemberType beta_im;
+        ImplicitForceMemberType beta_im;
         SC defect_max;
         ContinuityNormalizerType normalizer;
     };
@@ -360,15 +360,6 @@ public:
     dare::ExecutionManager* GetExecutionManager() const {
         return ex_man;
     }
-
-    // template<typename T, dare::NaturalNumber N>
-    // decltype(auto) Extract(const T& var, N tstep) {
-    //     if (dare::is_field_v<std::remove_cv_t<std::remove_pointer_t<T>>>) {
-    //         return dare::convert_to_ptr(var)->GetDataVector(tstep);
-    //     } else {
-    //         return var;
-    //     }
-    // }
 
 private:
     template <dare::NaturalNumber Direction>

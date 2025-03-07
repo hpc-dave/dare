@@ -492,8 +492,9 @@ free_pm_continuity_Jacobian_Cartesian(
     using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
     using CMStencil = dare::CenterMatrixStencil<GridType, SC, 1>;
     using CNB = dare::CartesianNeighbor;
-    using ForceType = std::remove_cv_t<std::remove_pointer_t<typename PM::ImplicitForceType>>;
+    using ForceType = std::remove_cv_t<std::remove_pointer_t<typename PM::ImplicitForceVariableType>>;
     using PorosityType = std::remove_cv_t<std::remove_pointer_t<decltype(epsilon)>>;
+    using DensityType = std::remove_cv_t<std::remove_pointer_t<decltype(rho)>>;
     using Divergence = dare::Divergence<GridType, dare::EULER_BACKWARD>;
     using Gradient = dare::Gradient<GridType>;
 
@@ -501,21 +502,28 @@ free_pm_continuity_Jacobian_Cartesian(
     typename PM::SC dt = pm->GetTimeStepSize();
     Divergence div(*g_s, ordinal_internal);
     Gradient grad(*g_s, ordinal_internal);
-    FVStencil rho_f = dare::InterpolateToFaceStencil(*g_s, ind, rho);
+    FVStencil eps_f, rho_f;
+    if constexpr (dare::is_field_v<DensityType>)
+        rho_f = dare::InterpolateToFaceStencil(*g_s, ind, dare::convert_to_ptr(rho)->GetDataVector());
+    else
+        rho_f = dare::InterpolateToFaceStencil(*g_s, ind, rho);
+    if constexpr (dare::is_field_v<PorosityType>)
+        eps_f = dare::InterpolateToFaceStencil(*g_s, ind, dare::convert_to_ptr(epsilon)->GetDataVector());
+    else
+        eps_f = dare::InterpolateToFaceStencil(*g_s, ind, epsilon);
     FVStencil beta_f;
     beta_f.SetAll(0.);
     if constexpr (dare::is_field_v<ForceType>) {
         for (auto b : pm->GetContinuity()->GetCustomMember()->beta_im)
-            beta_f += dare::InterpolateToFaceStencil(*g_s, ind, *b);
+            beta_f += dare::InterpolateToFaceStencil(*g_s, ind, b->GetDataVector());
     } else if constexpr (!dare::is_none_v<ForceType>) {
         static_assert(dare::always_false<ForceType>, "This type is not supported for forces");
     }
-    FVStencil eps_f = dare::InterpolateToFaceStencil(*g_s, ind, epsilon);
-    CMStencil s;
 
-    if constexpr (pm->IsCompressible()) {
-        FVStencil coef_f = -eps_f * dt / (1. - beta_f * dt / (eps_f * rho_f));
-        s = div(coef_f, grad());
+    CMStencil s;
+    if constexpr (PM::compressible) {
+        FVStencil coef_f = -1. * eps_f * dt / (1. - beta_f * dt / (eps_f * rho_f));
+        s = div(coef_f, grad(dare::ONE));
 
         // Main diagonal with density-derivative
         SC dd_dp = pm->GetContinuity()->GetDensityDerivative(ind);
@@ -529,8 +537,8 @@ free_pm_continuity_Jacobian_Cartesian(
         dd_dp *= g_s->GetCellVolume() / dt;
         s(CNB::CENTER, 0) += dd_dp;
     } else {
-        FVStencil coef_f = -eps_f * dt / (rho_f - beta_f / eps_f * dt);
-        s = div(coef_f, grad());
+        FVStencil coef_f = -1. * eps_f * dt / (rho_f - beta_f / eps_f * dt);
+        s = div(coef_f, grad(dare::ONE));
     }
 
     return s;

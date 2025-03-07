@@ -66,7 +66,7 @@ public:
      * By using a matrix block as an argument, we can determine the number of components in a
      * convenient way without too much code smell.
      */
-    template<dare::NaturalNumber N = std::integral_constant<std::size_t, 1>>
+    template<dare::NaturalNumber N>
     dare::FaceMatrixStencil<GridType, typename GridType::ScalarType, N::value> operator()(N) const;
 
     /*!
