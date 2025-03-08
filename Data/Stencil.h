@@ -38,7 +38,7 @@ template <typename Grid, typename SC, std::size_t N>
 class CenterMatrixStencil {
     /*!
      * @brief dummy operator for compilation
-     * @param v 
+     * @param v value 
      */
     CenterMatrixStencil operator*(SC v) const {
         return *this;
@@ -75,10 +75,22 @@ using ExtendedStencil = std::pair<Stencil, Stencil>;
 // operators for improved use
 
 /*!
+ * @brief addition operator with scalars
+ * @tparam Grid
+ * @param v value
+ * @param s stencil
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+CenterMatrixStencil<Grid, SC, N> operator+(SC v, const CenterMatrixStencil<Grid, SC, N>& s) {
+    return s + v;
+}
+
+/*!
  * @brief multiplication operator with doubles
  * @tparam Grid 
- * @param v 
- * @param s 
+ * @param v value 
+ * @param s stencil 
  * @return 
  */
 template <typename Grid, typename SC, std::size_t N>
@@ -87,10 +99,22 @@ CenterMatrixStencil<Grid, SC, N> operator*(SC v, const CenterMatrixStencil<Grid,
 }
 
 /*!
+ * @brief addition operator with Scalar
+ * @tparam Grid
+ * @param v value
+ * @param s stencil
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+CenterValueStencil<Grid, SC, N> operator+(SC v, const CenterValueStencil<Grid, SC, N>& s) {
+    return s + v;
+}
+
+/*!
  * @brief multiplication operator with doubles
  * @tparam Grid
- * @param v
- * @param s
+ * @param v value
+ * @param s stencil
  * @return
  */
 template <typename Grid, typename SC, std::size_t N>
@@ -101,8 +125,8 @@ CenterValueStencil<Grid, SC, N> operator*(SC v, const CenterValueStencil<Grid, S
 /*!
  * @brief multiplication operator with doubles
  * @tparam Grid
- * @param v
- * @param s
+ * @param v value
+ * @param s stencil
  * @return
  */
 template <typename Grid, typename SC, std::size_t N>
@@ -111,10 +135,22 @@ FaceMatrixStencil<Grid, SC, N> operator*(SC v, const FaceMatrixStencil<Grid, SC,
 }
 
 /*!
+ * @brief addition operator with doubles
+ * @tparam Grid
+ * @param v value
+ * @param s stencil
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+FaceValueStencil<Grid, SC, N> operator+(SC v, const FaceValueStencil<Grid, SC, N>& s) {
+    return s + v;
+}
+
+/*!
  * @brief multiplication operator with doubles
  * @tparam Grid
- * @param v
- * @param s
+ * @param v value
+ * @param s stencil
  * @return
  */
 template <typename Grid, typename SC, std::size_t N>

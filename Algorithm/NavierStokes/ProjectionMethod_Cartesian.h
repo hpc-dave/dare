@@ -522,22 +522,22 @@ free_pm_continuity_Jacobian_Cartesian(
 
     CMStencil s;
     if constexpr (PM::compressible) {
-        FVStencil coef_f = -1. * eps_f * dt / (1. - beta_f * dt / (eps_f * rho_f));
+        FVStencil coef_f = -1. * eps_f * dt / (1. + beta_f * dt / (eps_f * rho_f));
         s = div(coef_f, grad(dare::ONE));
 
         // Main diagonal with density-derivative
-        SC dd_dp = pm->GetContinuity()->GetDensityDerivative(ind);
+        SC dd_dp = pm->GetDensityDerivative(ind);
         SC eps_c{1.};
         if constexpr (dare::is_field_v<PorosityType>) {
-            eps_c = epsilon->GetDataVector()->At(ind, 0);
+            eps_c = epsilon->GetDataVector().At(ind, 0);
         } else if constexpr (std::is_arithmetic_v<PorosityType>) {
             eps_c = epsilon;
         }
         dd_dp *= eps_c;
         dd_dp *= g_s->GetCellVolume() / dt;
-        s(CNB::CENTER, 0) += dd_dp;
+        s.GetValue(CNB::CENTER, 0) += dd_dp;
     } else {
-        FVStencil coef_f = -1. * eps_f * dt / (rho_f - beta_f / eps_f * dt);
+        FVStencil coef_f = -1. * eps_f * dt / (rho_f + beta_f / eps_f * dt);
         s = div(coef_f, grad(dare::ONE));
     }
 

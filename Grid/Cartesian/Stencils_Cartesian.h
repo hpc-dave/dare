@@ -297,6 +297,7 @@ public:
         MatrixStencil::operator=(source);
         return *this;
     }
+
 };
 
 
@@ -659,6 +660,18 @@ public:
      * @param other stencil to add from
      */
     FaceValueStencil<GridType, SC, N> operator+(const FaceValueStencil<GridType, SC, N>& other) const;
+
+    /*!
+     * @brief addition operator for scalar value
+     * @param value value to add to the stencil
+     */
+    FaceValueStencil<GridType, SC, N>& operator+=(SC value);
+
+    /*!
+     * @brief addition operator for scalar value
+     * @param value value to add to the stencil
+     */
+    FaceValueStencil<GridType, SC, N> operator+(SC value) const;
 
     /*!
      * @brief subtraction assignment of other stencil

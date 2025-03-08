@@ -684,6 +684,23 @@ FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator+(
 
 template <std::size_t Dim, typename SC, std::size_t N>
 FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator+=(SC value) {
+    for (auto& n : coefficients)
+        for (auto& f : n)
+            f += value;
+    return *this;
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator+(SC value) const {
+    FaceValueStencil<dare::Cartesian<Dim>, SC, N> tmp{*this};
+    tmp += value;
+    return tmp;
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+FaceValueStencil<dare::Cartesian<Dim>, SC, N>&
 FaceValueStencil<dare::Cartesian<Dim>, SC, N>::operator-=(
     const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& other) {
     coefficients -= other.coefficients;
