@@ -1514,3 +1514,225 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityJacobianIncompressible) {
         EXPECT_NEAR(J.GetValue(CNB::CENTER, 0), c_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(c_ex));
     }
 }
+
+TEST_F(ProjectionMethodCartesian2DTest, ContinuityJacobianIncompressible) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = Field;
+    };
+    struct NDict {
+        using tvd = dare::UPWIND;
+        using time_scheme_convective = dare::EULER_BACKWARD;
+    };
+    using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+    using CNB = dare::CartesianNeighbor;
+
+    auto g_s = grid->GetRepresentation(opt_s);
+    double mu = 0.;
+    const double tol_eps = 1e2;
+    Field rho("rho", g_s, 2);
+    Field epsilon("epsilon", g_s, 2);
+    Field beta("beta", g_s, 1);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    static_assert(!pm.IsCompressible(), "This is for the incompressible approach!");
+
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    pm.SetDensity(&rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    pm.AddImplicitForce(&beta);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < rho.GetDataVector().GetSize(); i++) {
+        rho.GetDataVector().At(i) = rd.Generate();
+        rho.GetDataVector(1).At(i) = rd.Generate();
+        epsilon.GetDataVector().At(i) = rd.Generate();
+        epsilon.GetDataVector(1).At(i) = rd.Generate();
+        beta.GetDataVector().At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    dare::Vector<Dim, SC> dA = g_s.GetFaceArea();
+    dare::Vector<Dim, SC> dn_r = 1. / g_s.GetDistances();
+
+    for (LO n_loc = 0; n_loc < g_s.GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_s.MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_s.MapInternalToLocal(ind_loc);
+        auto J = free_pm_continuity_Jacobian_Cartesian(&pm, n_loc, ind, pm.GetDensity(), pm.GetPorosity());
+        static_assert(std::is_same_v<decltype(J), dare::CenterMatrixStencil<GridType, SC, 1>>,
+                      "Should be a center matrix stencil");
+
+        Index ind_w(ind), ind_e(ind), ind_s(ind), ind_n(ind);
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        ind_s.j() -= 1;
+        ind_n.j() += 1;
+        FVStencil coef_faces;
+        SC eps_w = 0.5 * (epsilon.GetDataVector().At(ind_w, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_e = 0.5 * (epsilon.GetDataVector().At(ind_e, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_s = 0.5 * (epsilon.GetDataVector().At(ind_s, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_n = 0.5 * (epsilon.GetDataVector().At(ind_n, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC rho_w = 0.5 * (rho.GetDataVector().At(ind_w, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_e = 0.5 * (rho.GetDataVector().At(ind_e, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_s = 0.5 * (rho.GetDataVector().At(ind_s, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_n = 0.5 * (rho.GetDataVector().At(ind_n, 0) + rho.GetDataVector().At(ind, 0));
+        SC beta_w = 0.5 * (beta.GetDataVector().At(ind_w, 0) + beta.GetDataVector().At(ind, 0));
+        SC beta_e = 0.5 * (beta.GetDataVector().At(ind_e, 0) + beta.GetDataVector().At(ind, 0));
+        SC beta_s = 0.5 * (beta.GetDataVector().At(ind_s, 0) + beta.GetDataVector().At(ind, 0));
+        SC beta_n = 0.5 * (beta.GetDataVector().At(ind_n, 0) + beta.GetDataVector().At(ind, 0));
+
+        coef_faces(CNB::WEST, 0) = -dt * eps_w / (rho_w - beta_w * dt / eps_w);
+        coef_faces(CNB::EAST, 0) = -dt * eps_e / (rho_e - beta_e * dt / eps_e);
+        coef_faces(CNB::SOUTH, 0) = -dt * eps_s / (rho_s - beta_s * dt / eps_s);
+        coef_faces(CNB::NORTH, 0) = -dt * eps_n / (rho_n - beta_n * dt / eps_n);
+
+        SC c_ex{0.};
+        for (auto face : g_s.GetFaces()) {
+            coef_faces(face, 0) *= dA[dare::MapCartesianFaceToDim(face)] * dn_r[dare::MapCartesianFaceToDim(face)];
+            c_ex += -coef_faces(face, 0);
+        }
+
+        EXPECT_NEAR(J.GetValue(CNB::WEST, 0), coef_faces(CNB::WEST, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::WEST, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::EAST, 0), coef_faces(CNB::EAST, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::EAST, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::SOUTH, 0), coef_faces(CNB::SOUTH, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::SOUTH, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::NORTH, 0), coef_faces(CNB::NORTH, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::NORTH, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::CENTER, 0), c_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(c_ex));
+    }
+}
+
+TEST_F(ProjectionMethodCartesian3DTest, ContinuityJacobianIncompressible) {
+    struct PDict {
+        using density = Field;
+        using viscosity = double;
+        using porosity = Field;
+        using explicit_force = dare::None;
+        using implicit_force = Field;
+    };
+    struct NDict {
+        using tvd = dare::UPWIND;
+        using time_scheme_convective = dare::EULER_BACKWARD;
+    };
+    using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
+    using CNB = dare::CartesianNeighbor;
+
+    auto g_s = grid->GetRepresentation(opt_s);
+    double mu = 0.;
+    const double tol_eps = 1e3;
+    Field rho("rho", g_s, 2);
+    Field epsilon("epsilon", g_s, 2);
+    Field beta("beta", g_s, 1);
+    dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
+    rd.SetPreFactor(1e-4);
+
+    dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
+    static_assert(!pm.IsCompressible(), "This is for the incompressible approach!");
+
+    dare::ConstantTimeStep dt(1.);
+    dare::test::BStrat bstrat;
+    pm.Initialize(grid, &dt, bstrat);
+    pm.SetDensity(&rho);
+    pm.SetViscosity(mu);
+    pm.SetPorosity(&epsilon);
+    pm.AddImplicitForce(&beta);
+    for (std::size_t d{0}; d < Dim; d++) {
+        for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
+            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+        }
+    }
+    for (std::size_t i{0}; i < rho.GetDataVector().GetSize(); i++) {
+        rho.GetDataVector().At(i) = rd.Generate();
+        rho.GetDataVector(1).At(i) = rd.Generate();
+        epsilon.GetDataVector().At(i) = rd.Generate();
+        epsilon.GetDataVector(1).At(i) = rd.Generate();
+        beta.GetDataVector().At(i) = rd.Generate();
+    }
+
+    dare::Vector<Dim, const GridVector*> velocities;
+    for (std::size_t d{0}; d < Dim; d++) {
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+    }
+
+    dare::Vector<Dim, SC> dA = g_s.GetFaceArea();
+    dare::Vector<Dim, SC> dn_r = 1. / g_s.GetDistances();
+
+    for (LO n_loc = 0; n_loc < g_s.GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_s.MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_s.MapInternalToLocal(ind_loc);
+        auto J = free_pm_continuity_Jacobian_Cartesian(&pm, n_loc, ind, pm.GetDensity(), pm.GetPorosity());
+        static_assert(std::is_same_v<decltype(J), dare::CenterMatrixStencil<GridType, SC, 1>>,
+                      "Should be a center matrix stencil");
+
+        Index ind_w(ind), ind_e(ind), ind_s(ind), ind_n(ind), ind_b(ind), ind_t(ind);
+        ind_w.i() -= 1;
+        ind_e.i() += 1;
+        ind_s.j() -= 1;
+        ind_n.j() += 1;
+        ind_b.k() -= 1;
+        ind_t.k() += 1;
+        FVStencil coef_faces;
+        SC eps_w = 0.5 * (epsilon.GetDataVector().At(ind_w, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_e = 0.5 * (epsilon.GetDataVector().At(ind_e, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_s = 0.5 * (epsilon.GetDataVector().At(ind_s, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_n = 0.5 * (epsilon.GetDataVector().At(ind_n, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_b = 0.5 * (epsilon.GetDataVector().At(ind_b, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC eps_t = 0.5 * (epsilon.GetDataVector().At(ind_t, 0) + epsilon.GetDataVector().At(ind, 0));
+        SC rho_w = 0.5 * (rho.GetDataVector().At(ind_w, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_e = 0.5 * (rho.GetDataVector().At(ind_e, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_s = 0.5 * (rho.GetDataVector().At(ind_s, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_n = 0.5 * (rho.GetDataVector().At(ind_n, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_b = 0.5 * (rho.GetDataVector().At(ind_b, 0) + rho.GetDataVector().At(ind, 0));
+        SC rho_t = 0.5 * (rho.GetDataVector().At(ind_t, 0) + rho.GetDataVector().At(ind, 0));
+        SC beta_w = 0.5 * (beta.GetDataVector().At(ind_w, 0) + beta.GetDataVector().At(ind, 0));
+        SC beta_e = 0.5 * (beta.GetDataVector().At(ind_e, 0) + beta.GetDataVector().At(ind, 0));
+        SC beta_s = 0.5 * (beta.GetDataVector().At(ind_s, 0) + beta.GetDataVector().At(ind, 0));
+        SC beta_n = 0.5 * (beta.GetDataVector().At(ind_n, 0) + beta.GetDataVector().At(ind, 0));
+        SC beta_b = 0.5 * (beta.GetDataVector().At(ind_b, 0) + beta.GetDataVector().At(ind, 0));
+        SC beta_t = 0.5 * (beta.GetDataVector().At(ind_t, 0) + beta.GetDataVector().At(ind, 0));
+
+        coef_faces(CNB::WEST, 0) = -dt * eps_w / (rho_w - beta_w * dt / eps_w);
+        coef_faces(CNB::EAST, 0) = -dt * eps_e / (rho_e - beta_e * dt / eps_e);
+        coef_faces(CNB::SOUTH, 0) = -dt * eps_s / (rho_s - beta_s * dt / eps_s);
+        coef_faces(CNB::NORTH, 0) = -dt * eps_n / (rho_n - beta_n * dt / eps_n);
+        coef_faces(CNB::BOTTOM, 0) = -dt * eps_b / (rho_b - beta_b * dt / eps_b);
+        coef_faces(CNB::TOP, 0) = -dt * eps_t / (rho_t - beta_t * dt / eps_t);
+
+        SC c_ex{0.};
+        for (auto face : g_s.GetFaces()) {
+            coef_faces(face, 0) *= dA[dare::MapCartesianFaceToDim(face)] * dn_r[dare::MapCartesianFaceToDim(face)];
+            c_ex += -coef_faces(face, 0);
+        }
+
+        EXPECT_NEAR(J.GetValue(CNB::WEST, 0), coef_faces(CNB::WEST, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::WEST, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::EAST, 0), coef_faces(CNB::EAST, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::EAST, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::SOUTH, 0), coef_faces(CNB::SOUTH, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::SOUTH, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::NORTH, 0), coef_faces(CNB::NORTH, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::NORTH, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::BOTTOM, 0), coef_faces(CNB::BOTTOM, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::BOTTOM, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::TOP, 0), coef_faces(CNB::TOP, 0),
+                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(coef_faces(CNB::TOP, 0)));
+        EXPECT_NEAR(J.GetValue(CNB::CENTER, 0), c_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(c_ex));
+    }
+}

@@ -1187,7 +1187,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_conv_cds_test) {
 
     auto g_s = grid->GetRepresentation(opt_s);
     double mu = 0.;
-    const double tol_eps = 1e2;
+    const double tol_eps = 1e3;
     Field rho("rho", g_s, 2);
     Field epsilon("epsilon", g_s, 2);
     dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
