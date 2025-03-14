@@ -627,6 +627,77 @@ void free_pm_build_continuity(PM* pm, int iteration) {
     }
 }
 
+template <typename PM>
+    requires(std::is_same_v<typename PM::GridType, dare::Cartesian<PM::dimension>>)
+void free_pm_update_velocity(PM* pm, int iteration) {
+    using GridType = typename PM::GridType;
+    using LO = typename PM::LO;
+    using SC = typename PM::SC;
+    using Index = typename PM::Index;
+    using GridVector = dare::GridVector<GridType, SC, 1>;
+    using GridRepresentation = typename GridType::Representation;
+    using ImplicitForceType = std::remove_cv_t<std::remove_pointer_t<typename PM::ImplicitForceVariableType>>;
+    using CNB = dare::CartesianNeighbor;
+    // using TVD = dare::TVD<typename PM::TVDScheme>;
+
+    auto GetBeta = [=](const GridRepresentation& grep, Index ind, CNB face) -> SC {
+        SC beta{0.};
+        if constexpr (dare::is_field_v<ImplicitForceType>) {
+            for (const auto& f : pm->GetContinuity()->GetCustomMember()->beta_im)
+                beta += dare::InterpolateToFace(grep, ind, face, f->GetDataVector())[0];
+        } else if constexpr (!dare::is_none_v<ImplicitForceType>) {
+            static_assert(dare::always_false<ImplicitForceType>, "Cannot deal with provided type");
+        }
+        return beta;
+    };
+
+    const GridVector* dp = &pm->GetContinuity()->GetdP()->GetDataVector();
+    const SC dt = pm->GetTimeStepSize();
+    const GridRepresentation* grep_p = &pm->GetContinuity()->GetField()->GetGridRepresentation();
+    for (std::size_t d{0}; d < pm->GetDimension(); d++) {
+        GridVector* v = &pm->GetMomentum(d)->GetField()->GetDataVector();
+        const GridRepresentation* grep = &v->GetGridRepresentation();
+        SC dn_r = 1. / grep->GetDistances()[d];
+        for (LO n_loc{0}; n_loc < grep->GetNumberLocalCellsInternal(); n_loc++) {
+            Index ind = grep->MapOrdinalToIndexLocalInternal(n_loc);
+            ind = grep->MapInternalToLocal(ind);
+            if constexpr(PM::compressible) {
+                // Do a good check for
+                // - How beneficial is the use of a TVD based interpolation of the involved parameters?
+                // - How beneficial is the use of the density of the previous iteration vs the iteration from
+                //   the old timestep?
+                // TVD tvd(grep, ind);  // Is it beneficial to interpolate here with a TVD scheme?
+                SC v_prev = v->At(ind, 0);
+                Index ind_lo(ind);
+                ind_lo[d] -= 1;
+                SC epsilon{0.5 * (pm->GetPorosity(ind_lo, 0) + pm->GetPorosity(ind, 0))};
+                SC rho{0.5 * (pm->GetDensity(ind_lo, 0) + pm->GetDensity(ind, 0))};
+                SC rho_prev{0.5 * (pm->GetDensityPreviousIteration(ind_lo, 0)
+                                    + pm->GetDensityPreviousIteration(ind, 0))};
+                SC beta{GetBeta(grep, ind, dare::ToFace(d * 2)) * (beta == 0)};
+                SC dP_hi{dp->At(ind, 0)};
+                SC dP_lo{dp->At(ind_lo, 0)};
+                SC dP_dx = (dP_hi - dP_lo) * dn_r;
+                SC v_new = epsilon * rho_prev / (epsilon * rho + beta * dt) * (v_prev - dt / rho_prev * dP_dx);
+                v->At(ind, 0) = v_new;
+            } else {
+                SC v_prev = v->At(ind, 0);
+                Index ind_lo(ind);
+                ind_lo[d] -= 1;
+                SC epsilon{0.5 * (pm->GetPorosity(ind_lo, 0) + pm->GetPorosity(ind, 0))};
+                SC rho{0.5 * (pm->GetDensity(ind_lo, 0) + pm->GetDensity(ind, 0))};
+                SC beta{GetBeta(*grep_p, ind, dare::ToFace(d * 2)) * (iteration == 0)};
+                SC dP_hi{dp->At(ind, 0)};
+                SC dP_lo{dp->At(ind_lo, 0)};
+                SC dP_dx = (dP_hi - dP_lo) * dn_r;
+                SC v_new = 1./ (1. + beta * dt / (epsilon * rho)) * (v_prev - dt / rho * dP_dx);
+                v->At(ind, 0) = v_new;
+            }
+        }
+        pm->GetMomentum(d)->UpdateBoundaries();
+    }
+}
+
 }  // namespace dare
 
 #endif  // ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_CARTESIAN_H_

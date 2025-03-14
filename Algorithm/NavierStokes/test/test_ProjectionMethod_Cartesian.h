@@ -58,6 +58,9 @@ dare::Vector<Dim, defaults::ScalarType> GetSizeTestPMCartesian() {
 struct BStrat {
     template <typename T>
     void Apply(T* t) {}
+
+    template <typename T>
+    void operator()(T* t) {}
 };
 
 }  // namespace dare::test

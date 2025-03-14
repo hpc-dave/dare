@@ -101,11 +101,11 @@ enum class CartesianNeighbor : char {
  * This is mainly meant for array access of faces!
  */
 [[nodiscard]] inline CartesianNeighbor ToFace(char n) {
-#ifndef DARE_NDEBUG
-    if (n == 0) {
-        std::cerr << "In " << __func__ << ": 0 is not a face!\n";
-    }
-#endif
+// #ifndef DARE_NDEBUG
+//     if (n == 0) {
+//         std::cerr << "In " << __func__ << ": 0 is not a face!\n";
+//     }
+// #endif
     return static_cast<CartesianNeighbor>(n + 1);
 }
 

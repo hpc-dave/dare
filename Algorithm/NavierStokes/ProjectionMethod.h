@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <bitset>
 #include <utility>
+#include <set>
 
 #include "PM_Information.h"
 #include "PM_details.h"
@@ -39,6 +40,7 @@
 #include "Data/Field.h"
 #include "Equations/FluxLimiter.h"
 #include "Utilities/Errors.h"
+#include "Utilities/Observer.h"
 #include "Equations/TimeDiscretizationSchemes.h"
 #include "Utilities/InitializationTracker.h"
 #include "Equations/GenericEquation.h"
@@ -94,15 +96,27 @@ public:
         beta_ex_init = 0b0010000,
         density_derivative_init = 0b0100000
     };
+
+    /*!
+     * @brief an enum class for potential observers
+     */
+    enum class StateChange {
+        VelocityUpdated,
+        PressureUpdated
+    };
+
     // general types based on the grid
     using GridType = Grid;
     using BoundaryStrategyType = BoundaryStrategy;
+    using SelfType = ProjectionMethod<Grid, BoundaryStrategy, PropertyInfo, NumericalInfo>;
     using SC = typename GridType::ScalarType;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using Index = typename GridType::Index;
     using IndexGlobal = typename GridType::IndexGlobal;
-    using FieldType = Field<GridType, SC, 1>;
+    using FieldType = dare::Field<GridType, SC, 1>;
+    using GridVectorType = dare::GridVector<GridType, SC, 1>;
+    using ObserverType = dare::Observer<SelfType, StateChange>;
 
     // properties determined from the PropertyInfo type
     using PropertyTypeInfo = detail::PMAssembledPropertyInfoWithDefaults<
@@ -247,12 +261,20 @@ public:
         int iteration = 0;
         ComputeDefect();
         for (; iteration < max_iterations; iteration++) {
+            if constexpr (IsCompressible())
+                *rho_prev = rho->GetGridVector(0);
+
             BuildContinuity(iteration);
             auto [success, iter] = SolveContinuity(iteration);
-            UpdatePressure(iteration);
+
+            UpdatePressure();
+            Notify(StateChange::PressureUpdated);
+
             UpdateVelocity(iteration);
+            Notify(StateChange::VelocityUpdated);
+
             ComputeDefect();
-            if (ContinuityConvergence(iteration))
+            if (ContinuityConvergence())
                 break;
         }
 
@@ -279,6 +301,12 @@ public:
     void SetDensity(DensityVariableType d) {
         rho = d;
         status |= rho_init;
+        if constexpr(compressible) {
+            static_assert(dare::is_field_v<std::remove_cv_t<std::remove_pointer_t<DensityVariableType>>>,
+            "In the compressible case, the density needs to be a field!");
+            rho_prev = std::make_unique<GridVectorType>("rho_prev", rho->GetGridRepresentation());
+            *rho_prev = rho->GetDataVector();
+        }
     }
     void SetViscosity(ViscosityVariableType v) {
         mu = v;
@@ -306,12 +334,59 @@ public:
         return rho;
     }
 
+    const GridVectorType* GetDensityPreviousIteration() const {
+        if constexpr(!IsCompressible) {
+            static_assert(dare::always_false<decltype(this)>, "In the incompressible case this should not be accessed");
+        }
+#ifndef DARE_NDEBUG
+        if (!rho_prev) {
+            this->ex_man->Terminate(__func__, "The array for the previous iteration was not allocated!");
+        }
+#endif
+        return rho_prev.get();
+    }
+
+    SC GetDensity(Index ind, std::size_t time_level = 0) const {
+        using DType = std::remove_cv_t<std::remove_pointer_t<DensityVariableType>>;
+        if constexpr (dare::is_field_v<DType>) {
+            return rho->GetDataVector(time_level).At(ind, 0);
+        } else if constexpr(std::is_arithmetic_v<DType>) {
+            return rho;
+        } else {
+            static_assert(dare::always_false<DType>, "Cannot handle this type");
+        }
+    }
+
     ViscosityVariableType GetViscosity() const {
         return rho;
     }
 
+    SC GetViscosity(Index ind, std::size_t time_level = 0) const {
+        using VType = std::remove_cv_t<std::remove_pointer_t<ViscosityVariableType>>;
+        if constexpr (dare::is_field_v<VType>) {
+            return mu->GetDataVector(time_level).At(ind, 0);
+        } else if constexpr (std::is_arithmetic_v<VType>) {
+            return mu;
+        } else {
+            static_assert(dare::always_false<VType>, "Cannot handle this type");
+        }
+    }
+
     PorosityVariableType GetPorosity() const {
         return epsilon;
+    }
+
+    SC GetPorosity(Index ind, std::size_t time_level = 0) const {
+        using PType = std::remove_cv_t<std::remove_pointer_t<PorosityVariableType>>;
+        if constexpr (dare::is_field_v<PType>) {
+            return epsilon->GetDataVector(time_level).At(ind, 0);
+        } else if constexpr (std::is_arithmetic_v<PType>) {
+            return epsilon;
+        } else if constexpr (dare::is_none_v<PType>) {
+            return 1.;
+        } else {
+            static_assert(dare::always_false<PType>, "Cannot handle this type");
+        }
     }
 
     void AddImplicitForce(ImplicitForceVariableType f) {
@@ -348,10 +423,10 @@ public:
         return (status == status_finalized) && this->IsInitialized();
     }
 
-    void SetTimeStepSize(SC _dt) {
-        // This should be a callback
-        dt = _dt;
-    }
+    // void SetTimeStepSize(SC _dt) {
+    //     // This should be a callback
+    //     dt = _dt;
+    // }
 
     SC GetTimeStepSize() const {
         return dt;
@@ -359,6 +434,22 @@ public:
 
     dare::ExecutionManager* GetExecutionManager() const {
         return ex_man;
+    }
+
+    bool Attach(ObserverType* o) {
+        auto [pos, success] = observers.emplace(o);
+        return success;
+    }
+
+    bool Detach(ObserverType* o) {
+        return (observers.erase(o) > 0U);
+    }
+
+    void Notify(StateChange property) {
+        for (auto iter = observers.begin(); iter != observers.end();) {
+            auto const pos = iter++;
+            (*pos)->Update(*this, property);
+        }
     }
 
 private:
@@ -380,8 +471,8 @@ private:
         free_pm_solve_continuity(this, iteration);
     }
 
-    void UpdatePressure(int iteration) {
-        free_pm_update_pressure(this, iteration);
+    void UpdatePressure() {
+        free_pm_update_pressure(this);
     }
 
     void UpdateVelocity(int iteration) {
@@ -392,8 +483,8 @@ private:
         free_pm_compute_defect(this);
     }
 
-    bool ContinuityConvergence(int iteration) {
-        return free_pm_continuity_convergence(this, iteration);
+    bool ContinuityConvergence() {
+        return free_pm_continuity_convergence(this);
     }
 
     dare::ExecutionManager* ex_man;
@@ -401,6 +492,7 @@ private:
     ViscosityVariableType mu;
     PorosityVariableType epsilon;
     DensityDerivativeMemberType density_derivative;
+    std::unique_ptr<GridVectorType> rho_prev;
 
     std::unique_ptr<ContinuityType> continuity;
     std::array<std::unique_ptr<MomentumType>, dimension> momentum;
@@ -410,6 +502,7 @@ private:
     char status;
     char status_finalized;
     UniqueObserverHandle pimpl_dt_obs;
+    std::set<ObserverType*> observers;
 };
 
 }  // namespace dare

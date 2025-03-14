@@ -714,7 +714,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectCompressible) {
     };
 
     struct PDict {
-        using density = double;
+        using density = Field;
         using viscosity = double;
         using porosity = Field;
         using explicit_force = dare::None;
@@ -729,6 +729,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectCompressible) {
     auto g_s = grid->GetRepresentation(opt_s);
     double mu = 0.;
     double rho = 3.14;
+    Field rho_f = Field("rho", g_s, 2);
     Field epsilon = Field("epsilon", g_s, 2);
     const double tol_eps = 1e2;
     dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
@@ -740,7 +741,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectCompressible) {
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
     pm.Initialize(grid, &dt, bstrat);
-    pm.SetDensity(rho);
+    pm.SetDensity(&rho_f);
     pm.SetPorosity(&epsilon);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -753,6 +754,8 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectCompressible) {
     for (std::size_t i{0}; i < epsilon.GetDataVector().GetSize(); i++) {
         epsilon.GetDataVector(0).At(i) = rd.Generate();
         epsilon.GetDataVector(1).At(i) = rd.Generate();
+        rho_f.GetDataVector(0).At(i) = rho;
+        rho_f.GetDataVector(1).At(i) = rho;
     }
 
     dare::Vector<Dim, const GridVector*> velocities;
@@ -885,7 +888,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityDefectCompressible) {
     };
 
     struct PDict {
-        using density = double;
+        using density = Field;
         using viscosity = double;
         using porosity = Field;
         using explicit_force = dare::None;
@@ -900,6 +903,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityDefectCompressible) {
     auto g_s = grid->GetRepresentation(opt_s);
     double mu = 0.;
     double rho = 3.14;
+    Field rho_f = Field("rho", g_s, 2);
     Field epsilon = Field("epsilon", g_s, 2);
     const double tol_eps = 1e2;
     dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
@@ -911,7 +915,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityDefectCompressible) {
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
     pm.Initialize(grid, &dt, bstrat);
-    pm.SetDensity(rho);
+    pm.SetDensity(&rho_f);
     pm.SetPorosity(&epsilon);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -924,6 +928,8 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityDefectCompressible) {
     for (std::size_t i{0}; i < epsilon.GetDataVector().GetSize(); i++) {
         epsilon.GetDataVector(0).At(i) = rd.Generate();
         epsilon.GetDataVector(1).At(i) = rd.Generate();
+        rho_f.GetDataVector(0).At(i) = rho;
+        rho_f.GetDataVector(1).At(i) = rho;
     }
 
     dare::Vector<Dim, const GridVector*> velocities;
@@ -1056,7 +1062,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityDefectCompressible) {
     };
 
     struct PDict {
-        using density = double;
+        using density = Field;
         using viscosity = double;
         using porosity = Field;
         using explicit_force = dare::None;
@@ -1071,6 +1077,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityDefectCompressible) {
     auto g_s = grid->GetRepresentation(opt_s);
     double mu = 0.;
     double rho = 3.14;
+    Field rho_f = Field("rho", g_s, 2);
     Field epsilon = Field("epsilon", g_s, 2);
     const double tol_eps = 1e4;
     dare::PseudoRandomTGenerator<SC> rd(-1000, 1000);
@@ -1082,7 +1089,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityDefectCompressible) {
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
     pm.Initialize(grid, &dt, bstrat);
-    pm.SetDensity(rho);
+    pm.SetDensity(&rho_f);
     pm.SetPorosity(&epsilon);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -1095,6 +1102,8 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityDefectCompressible) {
     for (std::size_t i{0}; i < epsilon.GetDataVector().GetSize(); i++) {
         epsilon.GetDataVector(0).At(i) = rd.Generate();
         epsilon.GetDataVector(1).At(i) = rd.Generate();
+        rho_f.GetDataVector(0).At(i) = rho;
+        rho_f.GetDataVector(1).At(i) = rho;
     }
 
     dare::Vector<Dim, const GridVector*> velocities;

@@ -131,13 +131,13 @@ std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
 }
 
 template <typename PM>
-void free_pm_update_pressure(PM* pm, int iteration) {
+void free_pm_update_pressure(PM* pm) {
     if constexpr (uses_newton_iterations_v<typename PM::ContinuityIterationType>) {
         *(pm->GetPressure()) += *(pm->GetContinuity()->GetdP());
     } else {
         static_assert(dare::always_false<PM>, "Updating the pressure is not implemented for anything except Newton iterations");  // NOLINT
     }
-    pm->GetPressure()->ExchangeHaloCells();
+    pm->GetContinuity()->UpdatePressureBoundaries();
 }
 
 template <typename PM>
@@ -146,7 +146,7 @@ void free_pm_update_velocity(PM* pm, int iteration) {
 }
 
 template <typename PM>
-bool free_pm_continuity_convergence(PM* pm, int iteration) {
+bool free_pm_continuity_convergence(PM* pm) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method and grid");  // NOLINT
     return false;
 }
