@@ -130,7 +130,8 @@ protected:
     void SetUp() override {
         resolution = TestGrid::Index(10, 12, 13);
         grid.SetSize(resolution);
-        test_vector = GridVector("InitializationTest", grid.GetRepresentation());
+        GridVector tmp("InitializationTest", grid.GetRepresentation());
+        test_vector = tmp;
     }
 
     typename TestGrid::Index resolution;

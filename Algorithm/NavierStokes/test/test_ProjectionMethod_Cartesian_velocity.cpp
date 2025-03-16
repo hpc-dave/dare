@@ -82,12 +82,15 @@ TEST_F(ProjectionMethodCartesian1DTest, VelocityUpdate_Incompressible_NoForce) {
         Index ind_lo{ind};
         ind_lo[0] -= 1;
         SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
         SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
                     - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = u_ex - dt / rho_face * dP * dn_r[0];
-        EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
-                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
     }
 }
 
@@ -158,8 +161,31 @@ TEST_F(ProjectionMethodCartesian1DTest, VelocityUpdate_Incompressible) {
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = 1./(1.+ beta_face * dt/(rho_face * eps_face)) * (u_ex - dt / rho_face * dP * dn_r[0]);
-        EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
-                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
+    }
+
+    GridVector u_0{pm.GetMomentum(0)->GetField()->GetDataVector()};
+    free_pm_update_velocity(&pm, 1);
+
+    for (LO n_loc = 0; n_loc < g_x.GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x.MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x.MapInternalToLocal(ind_loc);
+
+        Index ind_lo{ind};
+        ind_lo[0] -= 1;
+        SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
+        SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
+                - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
+        SC u_ex{u_0.At(ind, 0)};
+        u_ex = u_ex - dt / rho_face * dP * dn_r[0];
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
     }
 }
 
@@ -221,12 +247,15 @@ TEST_F(ProjectionMethodCartesian2DTest, VelocityUpdate_Incompressible_NoForce) {
         Index ind_lo{ind};
         ind_lo[0] -= 1;
         SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
         SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = u_ex - dt / rho_face * dP * dn_r[0];
-        EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
-                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
     }
 
     auto g_y = pm.GetMomentum(1)->GetField()->GetGridRepresentation();
@@ -238,12 +267,15 @@ TEST_F(ProjectionMethodCartesian2DTest, VelocityUpdate_Incompressible_NoForce) {
         Index ind_lo{ind};
         ind_lo[1] -= 1;
         SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
         SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(1)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = u_ex - dt / rho_face * dP * dn_r[1];
-        EXPECT_NEAR(pm.GetMomentum(1)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
-                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(1)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
     }
 }
 
@@ -314,8 +346,10 @@ TEST_F(ProjectionMethodCartesian2DTest, VelocityUpdate_Incompressible) {
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = 1. / (1. + beta_face * dt / (rho_face * eps_face)) * (u_ex - dt / rho_face * dP * dn_r[0]);
-        EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
-                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
     }
 
     auto g_y = pm.GetMomentum(1)->GetField()->GetGridRepresentation();
@@ -333,8 +367,50 @@ TEST_F(ProjectionMethodCartesian2DTest, VelocityUpdate_Incompressible) {
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = 1. / (1. + beta_face * dt / (rho_face * eps_face)) * (u_ex - dt / rho_face * dP * dn_r[1]);
-        EXPECT_NEAR(pm.GetMomentum(1)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
-                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(1)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
+    }
+
+    GridVector u_0{pm.GetMomentum(0)->GetField()->GetDataVector()};
+    GridVector v_0{pm.GetMomentum(1)->GetField()->GetDataVector()};
+    free_pm_update_velocity(&pm, 1);
+
+    for (LO n_loc = 0; n_loc < g_x.GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x.MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x.MapInternalToLocal(ind_loc);
+
+        Index ind_lo{ind};
+        ind_lo[0] -= 1;
+        SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
+        SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
+                - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
+        SC u_ex{u_0.At(ind, 0)};
+        u_ex = u_ex - dt / rho_face * dP * dn_r[0];
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
+    }
+
+    for (LO n_loc = 0; n_loc < g_y.GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y.MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y.MapInternalToLocal(ind_loc);
+
+        Index ind_lo{ind};
+        ind_lo[1] -= 1;
+        SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
+        SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
+                - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
+        SC u_ex{v_0.At(ind, 0)};
+        u_ex = u_ex - dt / rho_face * dP * dn_r[1];
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(1)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
     }
 }
 
@@ -396,12 +472,16 @@ TEST_F(ProjectionMethodCartesian3DTest, VelocityUpdate_Incompressible_NoForce) {
         Index ind_lo{ind};
         ind_lo[0] -= 1;
         SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
         SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = u_ex - dt / rho_face * dP * dn_r[0];
-        EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
-                    tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
     }
 
     auto g_y = pm.GetMomentum(1)->GetField()->GetGridRepresentation();
@@ -413,11 +493,12 @@ TEST_F(ProjectionMethodCartesian3DTest, VelocityUpdate_Incompressible_NoForce) {
         Index ind_lo{ind};
         ind_lo[1] -= 1;
         SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
         SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(1)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = u_ex - dt / rho_face * dP * dn_r[1];
-        if (std::abs(rho_face) > 1e-15) {
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
             EXPECT_NEAR(pm.GetMomentum(1)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
                         tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
         }
@@ -432,11 +513,12 @@ TEST_F(ProjectionMethodCartesian3DTest, VelocityUpdate_Incompressible_NoForce) {
         Index ind_lo{ind};
         ind_lo[2] -= 1;
         SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
         SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(2)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = u_ex - dt / rho_face * dP * dn_r[2];
-        if (std::abs(rho_face) > 1e-15) {
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
             EXPECT_NEAR(pm.GetMomentum(2)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
                         tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
         }
@@ -510,7 +592,7 @@ TEST_F(ProjectionMethodCartesian3DTest, VelocityUpdate_Incompressible) {
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = 1. / (1. + beta_face * dt / (rho_face * eps_face)) * (u_ex - dt / rho_face * dP * dn_r[0]);
-        if (std::abs(rho_face) > 1e-15) {
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
             EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
                         tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
         }
@@ -531,7 +613,7 @@ TEST_F(ProjectionMethodCartesian3DTest, VelocityUpdate_Incompressible) {
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = 1. / (1. + beta_face * dt / (rho_face * eps_face)) * (u_ex - dt / rho_face * dP * dn_r[1]);
-        if (std::abs(rho_face) > 1e-15) {
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
             EXPECT_NEAR(pm.GetMomentum(1)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
                         tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
         }
@@ -552,7 +634,66 @@ TEST_F(ProjectionMethodCartesian3DTest, VelocityUpdate_Incompressible) {
                 - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
         SC u_ex{pm.GetMomentum(0)->GetField()->GetDataVector(1).At(ind, 0)};
         u_ex = 1. / (1. + beta_face * dt / (rho_face * eps_face)) * (u_ex - dt / rho_face * dP * dn_r[2]);
-        if (std::abs(rho_face) > 1e-15) {
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(2)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
+    }
+
+    GridVector u_0{pm.GetMomentum(0)->GetField()->GetDataVector()};
+    GridVector v_0{pm.GetMomentum(1)->GetField()->GetDataVector()};
+    GridVector w_0{pm.GetMomentum(2)->GetField()->GetDataVector()};
+    free_pm_update_velocity(&pm, 1);
+
+    for (LO n_loc = 0; n_loc < g_x.GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_x.MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_x.MapInternalToLocal(ind_loc);
+
+        Index ind_lo{ind};
+        ind_lo[0] -= 1;
+        SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
+        SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
+                - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
+        SC u_ex{u_0.At(ind, 0)};
+        u_ex = u_ex - dt / rho_face * dP * dn_r[0];
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(0)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
+    }
+
+    for (LO n_loc = 0; n_loc < g_y.GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_y.MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_y.MapInternalToLocal(ind_loc);
+
+        Index ind_lo{ind};
+        ind_lo[1] -= 1;
+        SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
+        SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
+                - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
+        SC u_ex{v_0.At(ind, 0)};
+        u_ex = u_ex - dt / rho_face * dP * dn_r[1];
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
+            EXPECT_NEAR(pm.GetMomentum(1)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
+                        tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
+        }
+    }
+
+    for (LO n_loc = 0; n_loc < g_z.GetNumberLocalCellsInternal(); n_loc++) {
+        Index ind_loc = g_z.MapOrdinalToIndexLocalInternal(n_loc);
+        Index ind = g_z.MapInternalToLocal(ind_loc);
+
+        Index ind_lo{ind};
+        ind_lo[2] -= 1;
+        SC rho_face = 0.5 * (rho.GetDataVector().At(ind, 0) + rho.GetDataVector().At(ind_lo, 0));
+        SC eps_face = 0.5 * (epsilon.GetDataVector().At(ind, 0) + epsilon.GetDataVector().At(ind_lo, 0));
+        SC dP = pm.GetContinuity()->GetdP()->GetDataVector().At(ind, 0)
+                - pm.GetContinuity()->GetdP()->GetDataVector().At(ind_lo, 0);
+        SC u_ex{w_0.At(ind, 0)};
+        u_ex = u_ex - dt / rho_face * dP * dn_r[2];
+        if (std::abs(rho_face) > 1e-15 && std::abs(eps_face) > 1e-15) {
             EXPECT_NEAR(pm.GetMomentum(2)->GetField()->GetDataVector(0).At(ind, 0), u_ex,
                         tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(u_ex));
         }

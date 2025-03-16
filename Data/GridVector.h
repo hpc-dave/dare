@@ -63,6 +63,16 @@ public:
     GridVector();
 
     /*!
+     * @brief copy constructor
+     */
+    GridVector(const GridVector& other);
+
+    /*!
+     * @brief copy assignment constructor
+     */
+    GridVector<Grid, T, N>& operator=(const GridVector& other);
+
+    /*!
      * @brief initialization constructor
      * @param identifier string to identify the instance
      * @param grid representation of grid
@@ -315,6 +325,7 @@ protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);
 
 private:
+
     std::string ident_string;        //!< identification string
     std::string component_names[N];  //!< names of the components, by default '0', '1', ...
     GridRepresentation grid;         //!< representation and reference to grid

@@ -87,7 +87,7 @@ public:
      * In code:
      * int main(int argc, char** argv){
      *
-     * FoxBerry::ScopeGuard scope(argc, argv);
+     * dare::ScopeGuard scope(argc, argv);
      * {
      *   if(scope.HasArgument("-T")){
      *    // will execute, since "-T" exists in the list or arguments

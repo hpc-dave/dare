@@ -31,6 +31,12 @@ GridVector<Grid, T, N>::GridVector() : GridVector("not_specified", 0, GridRepres
 }
 
 template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>::GridVector(const GridVector<Grid, T, N>& other)
+    : GridVector(other.ident_string, other.grid.GetNumberLocalCells(), other.grid) {
+    Kokkos::deep_copy(data, other.data);
+}
+
+template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>::GridVector(std::string identifier, GridRepresentation _grid)
     : GridVector(identifier, _grid.GetNumberLocalCells(), _grid) {
 }
@@ -44,6 +50,13 @@ GridVector<Grid, T, N>::GridVector(std::string identifier, LO num_cells, GridRep
 
 template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>::~GridVector() {}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator=(const GridVector<Grid, T, N>& other) {
+    if (&other != this)
+        other.GetDeepCopy(this);
+    return *this;
+}
 
 template <typename Grid, typename T, std::size_t N>
 void GridVector<Grid, T, N>::Initialize(std::string identifier, GridRepresentation _grid) {
