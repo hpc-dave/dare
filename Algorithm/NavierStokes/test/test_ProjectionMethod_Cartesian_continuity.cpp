@@ -50,7 +50,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectIncompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -118,7 +118,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectIncompressible_no_porosi
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(rho);
     pm.SetViscosity(mu);
     for (std::size_t d{0}; d < Dim; d++) {
@@ -178,7 +178,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityDefectIncompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -246,7 +246,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityDefectIncompressible_no_porosi
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(rho);
     pm.SetViscosity(mu);
     for (std::size_t d{0}; d < Dim; d++) {
@@ -306,7 +306,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityDefectIncompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -374,7 +374,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityDefectIncompressible_no_porosi
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(rho);
     pm.SetViscosity(mu);
     for (std::size_t d{0}; d < Dim; d++) {
@@ -434,7 +434,7 @@ TEST_F(ProjectionMethodCartesian1DTest, Continuity_compute_defect_incompressible
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -505,7 +505,7 @@ TEST_F(ProjectionMethodCartesian2DTest, Continuity_compute_defect_incompressible
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -576,7 +576,7 @@ TEST_F(ProjectionMethodCartesian3DTest, Continuity_compute_defect_incompressible
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -654,7 +654,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectCompressible_no_porosity
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -740,7 +740,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectCompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(&rho_f);
     pm.SetPorosity(&epsilon);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
@@ -828,7 +828,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityDefectCompressible_no_porosity
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -914,7 +914,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityDefectCompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho_f);
     pm.SetPorosity(&epsilon);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
@@ -1002,7 +1002,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityDefectCompressible_no_porosity
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -1088,7 +1088,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityDefectCompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho_f);
     pm.SetPorosity(&epsilon);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
@@ -1176,7 +1176,7 @@ TEST_F(ProjectionMethodCartesian1DTest, Continuity_compute_defect_compressible) 
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -1273,7 +1273,7 @@ TEST_F(ProjectionMethodCartesian2DTest, Continuity_compute_defect_compressible) 
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -1370,7 +1370,7 @@ TEST_F(ProjectionMethodCartesian3DTest, Continuity_compute_defect_compressible) 
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -1463,7 +1463,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityJacobianIncompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -1553,7 +1553,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityJacobianIncompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -1657,7 +1657,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityJacobianIncompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -1783,7 +1783,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityJacobianCompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -1885,7 +1885,7 @@ TEST_F(ProjectionMethodCartesian2DTest, ContinuityJacobianCompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);
@@ -2001,7 +2001,7 @@ TEST_F(ProjectionMethodCartesian3DTest, ContinuityJacobianCompressible) {
 
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetDensityDerivative(density_derivative_functor{dd_val});
     pm.SetViscosity(mu);

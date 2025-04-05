@@ -29,7 +29,7 @@ TEST_F(ProjectionMethodCartesian1DTest, Initialization) {
     dare::test::BStrat bstrat;
     dare::ConstantTimeStep dt(1.);
     EXPECT_FALSE(pm.IsInitialized());
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     EXPECT_TRUE(pm.IsInitialized());
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -42,7 +42,7 @@ TEST_F(ProjectionMethodCartesian2DTest, Initialization) {
     dare::test::BStrat bstrat;
     dare::ConstantTimeStep dt(1.);
     EXPECT_FALSE(pm.IsInitialized());
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     EXPECT_TRUE(pm.IsInitialized());
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -55,7 +55,7 @@ TEST_F(ProjectionMethodCartesian3DTest, Initialization) {
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
     EXPECT_FALSE(pm.IsInitialized());
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     EXPECT_TRUE(pm.IsInitialized());
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -77,7 +77,7 @@ TEST_F(ProjectionMethodCartesian1DTest, FinalizeWithForce) {
     Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.AddImplicitForce(&beta_im);
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -104,7 +104,7 @@ TEST_F(ProjectionMethodCartesian2DTest, FinalizeWithForce) {
     Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.AddImplicitForce(&beta_im);
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -131,7 +131,7 @@ TEST_F(ProjectionMethodCartesian3DTest, FinalizeWithForce) {
     Field beta_ex("beta_ex", grid->GetRepresentation(opt_s), 1);
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.AddImplicitForce(&beta_im);
     EXPECT_FALSE(pm.CheckStatus());
     for (std::size_t d{0}; d < Dim; d++) {
@@ -162,7 +162,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_ddt_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -221,7 +221,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_ddt_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -304,7 +304,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_ddt_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDefault> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
     pm.SetPorosity(&epsilon);
@@ -419,7 +419,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_upwind_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
@@ -515,7 +515,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_conv_upwind_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     pm.SetDensity(&rho);
@@ -720,7 +720,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_conv_upwind_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
@@ -1095,7 +1095,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_cds_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     pm.SetDensity(&rho);
     pm.SetViscosity(mu);
@@ -1195,7 +1195,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_conv_cds_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     pm.SetDensity(&rho);
@@ -1422,7 +1422,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_stress_standard_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     pm.SetDensity(rho);
     pm.SetViscosity(&mu);
@@ -1490,7 +1490,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_stress_dijkhuizen_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     pm.SetDensity(rho);
     pm.SetViscosity(&mu);
@@ -1559,7 +1559,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_stress_standard_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     pm.SetDensity(rho);
@@ -1721,7 +1721,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_stress_Dijkhuizen_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     pm.SetDensity(rho);
@@ -1876,7 +1876,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_stress_standard_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
@@ -2166,7 +2166,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_stress_Dijkhuizen_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
@@ -2436,7 +2436,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_pressure_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     pm.SetDensity(rho);
     pm.SetViscosity(mu);
@@ -2498,7 +2498,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_pressure_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     pm.SetDensity(rho);
@@ -2578,7 +2578,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_pressure_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
@@ -2676,7 +2676,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_explicit_force_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     Field beta_ex("beta_ex", *g_x, 1);
     pm.SetDensity(rho);
@@ -2730,7 +2730,7 @@ TEST_F(ProjectionMethodCartesian2DTest, BuildMomentum_explicit_force_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     Field beta_x("beta_x", *g_x, 1);
@@ -2802,7 +2802,7 @@ TEST_F(ProjectionMethodCartesian3DTest, BuildMomentum_explicit_force_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     auto g_y = &pm.GetMomentum(1)->GetField()->GetGridRepresentation();
     auto g_z = &pm.GetMomentum(2)->GetField()->GetGridRepresentation();
@@ -2893,7 +2893,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_normalization_test) {
     dare::ProjectionMethod<GridType, BStrat, PDict, NDict> pm;
     dare::ConstantTimeStep dt(1.);
     dare::test::BStrat bstrat;
-    pm.Initialize(grid, &dt, bstrat);
+    pm.Initialize(grid, &dt, bstrat, bstrat);
     auto g_x = &pm.GetMomentum(0)->GetField()->GetGridRepresentation();
     Field beta_x("beta_x", *g_x, 1);
     pm.SetDensity(rho);

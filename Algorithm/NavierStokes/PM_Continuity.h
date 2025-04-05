@@ -63,6 +63,8 @@ public:
     FieldType* GetdP();
     const FieldType& GetdP() const;
 
+    void UpdatePressureBoundaries();
+
 private:
     FieldType defect;
     FieldType dP;

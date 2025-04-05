@@ -43,28 +43,49 @@ void free_compile_time_check(PM*) {
 }
 
 template <typename PM, std::size_t Dim, typename... Args>
-void free_pm_initialize(PM* pm, dare::Cartesian<Dim>* grid, Args&&... bc_args) {
+void free_pm_initialize(PM* pm, dare::Cartesian<Dim>* grid, typename PM::BoundaryStrategyType bc_cont, Args... bc_mom) {
     static_assert(PM::dimension == Dim, "The projection method and grid do not have the same dimension!");  // NOLINT
     static_assert(PM::dimension < 4, "Not equipped for higher dimensions");
+    static_assert(sizeof...(bc_mom) == Dim, "Inconsistent boundary conditions for the momentum provided");
     static const std::size_t num_tsteps_momentum = PM::num_tsteps_momentum;
+    auto tuple_bcmom = std::forward_as_tuple(bc_mom...);
     std::string m_names[] = {"u", "v", "w"};
     typename PM::GridType::Options opt;
     for (auto& o : opt)
         o = 0.;
 
-    for (std::size_t d{0}; d < Dim; d++) {
-        auto opt_loc = opt;
-        opt_loc[d] = 1;
-        pm->InitializeMomentum(d,
-                               m_names[d],
-                               grid->GetRepresentation(opt_loc),
-                               num_tsteps_momentum,
-                               bc_args...);
-    }
     pm->InitializeContinuity("pressure",
                              grid->GetRepresentation(opt),
                              2,
-                             bc_args...);
+                             bc_cont);
+
+    if constexpr(Dim > 0) {
+        auto opt_loc = opt;
+        opt_loc[0] = 1;
+        pm->InitializeMomentum(0,
+                               m_names[0],
+                               grid->GetRepresentation(opt_loc),
+                               num_tsteps_momentum,
+                               std::get<0>(tuple_bcmom));
+    }
+    if constexpr (Dim > 1) {
+        auto opt_loc = opt;
+        opt_loc[1] = 1;
+        pm->InitializeMomentum(1,
+                               m_names[1],
+                               grid->GetRepresentation(opt_loc),
+                               num_tsteps_momentum,
+                               std::get<1>(tuple_bcmom));
+    }
+    if constexpr (Dim > 2) {
+        auto opt_loc = opt;
+        opt_loc[2] = 1;
+        pm->InitializeMomentum(2,
+                               m_names[2],
+                               grid->GetRepresentation(opt_loc),
+                               num_tsteps_momentum,
+                               std::get<2>(tuple_bcmom));
+    }
 }
 
 template <typename PM, dare::NaturalNumber Direction, std::integral LO>
@@ -373,7 +394,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         (*mblock) += free_pm_ddt_Cartesian(pm, direction, *g_r, o_loc);
 
         // advection
-        (*mblock) += free_pm_convection_Cartesian(pm, *g_r, o_loc, epsilon, rho, velocities);
+        (*mblock) += free_pm_convection_Cartesian(pm, direction, *g_r, o_loc, epsilon, rho, velocities);
 
         // pressure force
         (*mblock) += free_pm_pressure_force_Cartesian(pm, direction, ind, epsilon);
@@ -388,10 +409,10 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         free_pm_momentum_initialguess(pm, mblock->template Get<CNB::CENTER>(0, 0), mblock);
 
         // Boundary conditions
-        free_pm_apply_boundary_conditions(pm, *pm->GetMomentum(direction), mblock);
+        free_pm_momentum_apply_boundary_conditions(pm, *pm->GetMomentum(direction), mblock);
 
         // normalize
-        free_pm_apply_normalizer(pm, direction, pm->GetMomentum(direction)->GetCustomMember()->normalizer, mblock);
+        free_pm_apply_normalizer(pm, pm->GetMomentum(direction)->GetCustomMember()->normalizer, mblock);
     };
 
     pm->GetMomentum(dir)->Build(BuildStrategy);
@@ -598,14 +619,14 @@ void free_pm_build_continuity(PM* pm, int iteration) {
 
     if (iteration == 0) {
         auto BuildStrategy = [=](auto mblock) {
-            const typename GridType::Representation* g_r{mblock->GetRepresentation()};
+            // const typename GridType::Representation* g_r{mblock->GetRepresentation()};
             LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
             IndexLocal ind{mblock->GetIndex()};
 
             const DensityType rho{pm->GetDensity()};
             const PorosityType epsilon{pm->GetPorosity()};
 
-            (*mblock) = free_pm_continuity_Jacobian_Cartesian(pm, ind, rho, epsilon);
+            (*mblock) = free_pm_continuity_Jacobian_Cartesian(pm, o_loc, ind, rho, epsilon);
             mblock->GetRhs(0) = -1. * pm->GetContinuity()->GetDefect()->GetDataVector().At(ind, 0);
 
             // Apply Boundary conditions
@@ -614,8 +635,8 @@ void free_pm_build_continuity(PM* pm, int iteration) {
         pm->GetContinuity()->Build(BuildStrategy);
     } else {
         auto BuildStrategy = [=](auto mblock) {
-            const typename GridType::Representation* g_r{mblock->GetRepresentation()};
-            LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
+            // const typename GridType::Representation* g_r{mblock->GetRepresentation()};
+            // LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
             IndexLocal ind{mblock->GetIndex()};
 
             mblock->GetRhs(0) = -1. * pm->GetContinuity()->GetDefect()->GetDataVector().At(ind, 0);
@@ -672,9 +693,9 @@ void free_pm_update_velocity(PM* pm, int iteration) {
                 ind_lo[d] -= 1;
                 SC epsilon{0.5 * (pm->GetPorosity(ind_lo, 0) + pm->GetPorosity(ind, 0))};
                 SC rho{0.5 * (pm->GetDensity(ind_lo, 0) + pm->GetDensity(ind, 0))};
-                SC rho_prev{0.5 * (pm->GetDensityPreviousIteration(ind_lo, 0)
-                                    + pm->GetDensityPreviousIteration(ind, 0))};
-                SC beta{GetBeta(grep, ind, dare::ToFace(d * 2)) * (beta == 0)};
+                SC rho_prev{0.5 * (pm->GetDensityPreviousIteration()->At(ind_lo, 0)
+                                    + pm->GetDensityPreviousIteration()->At(ind, 0))};
+                SC beta{GetBeta(*grep_p, ind, dare::ToFace(d * 2)) * (iteration == 0)};
                 SC dP_hi{dp->At(ind, 0)};
                 SC dP_lo{dp->At(ind_lo, 0)};
                 SC dP_dx = (dP_hi - dP_lo) * dn_r;

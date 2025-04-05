@@ -64,4 +64,9 @@ const PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetdP()
     return dP;
 }
 
+template <typename Grid, typename BS, typename CM>
+void PMContinuity<Grid, BS, CM>::UpdatePressureBoundaries() {
+    this->UpdateBoundaries();
+}
+
 }  // namespace dare

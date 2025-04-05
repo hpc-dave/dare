@@ -72,10 +72,10 @@ void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
     Teuchos::Ptr<VecType> ptr_B = B.ptr();
     Teuchos::Ptr<MatrixType> ptr_A = A.ptr();
 #pragma omp parallel for
-    for (LO node = 0; node < num_cells; node++) {
+    for (std::size_t node = 0; node < num_cells; node++) {
         if (node < l_stencil.size()) {
             LO local_internal = l_stencil[node];
-            MatrixBlock<Grid, LO, SC, N> matrix_block(grid, local_internal);
+            MatrixBlock<Grid, LO, SC, N> matrix_block(&grid, local_internal);
             dare::Vector<N, std::size_t> size_hint;
             for (std::size_t n{0}; n < N; n++)
                 size_hint[n] = ptr_A->getNumEntriesInLocalRow(matrix_block.GetRow(n));
@@ -87,14 +87,14 @@ void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
             // call functor
             functor(&matrix_block);
             for (std::size_t n{0}; n < N; n++) {
-                ptr_B->replaceLocalValue(matrix_block.GetLocalRow(n),
+                ptr_B->replaceLocalValue(matrix_block.GetRow(n),
                                          matrix_block.GetRhs(n));
             }
         } else {
             // initialize matrix block
             const LO local_internal = g_stencil[node - l_stencil.size()];
             const GO global_internal = grid.MapLocalToGlobalInternal(local_internal);
-            MatrixBlock<Grid, GO, SC, N> matrix_block(grid, global_internal);
+            MatrixBlock<Grid, GO, SC, N> matrix_block(&grid, global_internal);
             dare::Vector<N, std::size_t> size_hint;
             for (std::size_t n{0}; n < N; n++)
                 size_hint[n] = ptr_A->getNumEntriesInGlobalRow(matrix_block.GetRow(n));
@@ -105,7 +105,7 @@ void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
             // call functor
             functor(&matrix_block);
             for (std::size_t n{0}; n < N; n++) {
-                ptr_B->replaceGlobalValue(matrix_block.GetLocalRow(n),
+                ptr_B->replaceGlobalValue(matrix_block.GetRow(n),
                                           matrix_block.GetRhs(n));
             }
         }

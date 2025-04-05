@@ -115,10 +115,10 @@ T GridVector<Grid, T, N>::operator()(Args&&... args) const {
 template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator+=(const GridVector<Grid, T, N>& other) {
     if (this->GetSize() != other.GetSize()) {
-        grid.GetExecutionmanager->Terminate(__func__, "Incompatible size of grid vectors");
+        grid.GetExecutionManager()->Terminate(__func__, "Incompatible size of grid vectors");
     }
 #pragma omp parallel for
-    for (LO o = 0; o < this->GetSize(); o++) {
+    for (std::size_t o = 0; o < this->GetSize(); o++) {
         this->At(o) += other.At(o);
     }
     return *this;

@@ -25,6 +25,7 @@
 #ifndef ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_FREEFUNC_H_
 #define ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_FREEFUNC_H_
 #include <utility>
+#include <algorithm>
 
 #include "Utilities/Errors.h"
 
@@ -98,7 +99,7 @@ std::pair<bool, int> free_pm_solve_momentum(PM* pm, Direction dir) {
     // Reverse normalization
     free_pm_revert_normalizer(pm,
                               pm->GetMomentum(dir)->GetCustomMember()->normalizer,
-                              pm->GetMomentum()->GetField()->GetDataVector());
+                              &pm->GetMomentum(dir)->GetField()->GetDataVector());
 
     // update halo cells
     pm->GetMomentum(dir)->GetField()->ExchangeHaloCells();
@@ -117,13 +118,13 @@ std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
     using ContMSystem = typename ContType::MatrixSystemType;
     std::pair<bool, int> ret = std::make_pair(false, static_cast<int>(-1));
     if constexpr (uses_newton_iterations_v<IterType>) {
-        auto UpdateStrategy = [=](const ContMSystem& m, ContType* c) {
+        auto UpdateStrategy = [=](const auto& c, const ContMSystem& m) {
             m.CopyTo(&pm->GetContinuity()->GetdP()->GetDataVector());
         };
         ret = pm->GetContinuity()->Solve(UpdateStrategy);
         free_pm_revert_normalizer(pm,
                                   pm->GetContinuity()->GetCustomMember()->normalizer,
-                                  pm->GetContinuity()->GetdP()->GetDataVector());
+                                  &pm->GetContinuity()->GetdP()->GetDataVector());
     } else {
         static_assert(dare::always_false<IterType>, "Updating the pressure is not implemented for anything except Newton iterations");  // NOLINT
     }
@@ -133,7 +134,7 @@ std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
 template <typename PM>
 void free_pm_update_pressure(PM* pm) {
     if constexpr (uses_newton_iterations_v<typename PM::ContinuityIterationType>) {
-        *(pm->GetPressure()) += *(pm->GetContinuity()->GetdP());
+        pm->GetPressure()->GetDataVector() += pm->GetContinuity()->GetdP()->GetDataVector();
     } else {
         static_assert(dare::always_false<PM>, "Updating the pressure is not implemented for anything except Newton iterations");  // NOLINT
     }
@@ -146,14 +147,20 @@ void free_pm_update_velocity(PM* pm, int iteration) {
 }
 
 template <typename PM>
-bool free_pm_continuity_convergence(PM* pm) {
+void free_pm_compute_defect(PM* pm) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method and grid");  // NOLINT
-    return false;
 }
 
 template <typename PM>
-void free_pm_compute_defect(PM* pm) {
-    static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method and grid");  // NOLINT
+typename PM::SC free_pm_determine_max_continuity_defect(PM* pm) {
+    const auto* grep = &pm->GetContinuity()->GetField()->GetGridRepresentation();
+    const auto* defect = &pm->GetContinuity()->GetDefect()->GetDataVector();
+    typename PM::SC max_defect{0.};
+    // TODO(@Dave): OMP reduction missing
+    for (std::size_t n_loc{0}; n_loc < grep->GetNumberLocalCellsInternal(); n_loc++) {
+        std::max(max_defect, std::abs(defect->At(n_loc)));
+    }
+    return max_defect;
 }
 
 }  // namespace dare

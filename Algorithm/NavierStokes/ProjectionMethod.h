@@ -176,11 +176,12 @@ public:
     using ContinuityType = PMContinuity<GridType, BoundaryStrategyType, ContinuityMembers>;
 
     ProjectionMethod()
-        : ex_man(nullptr),
-          dt(0.),
-          max_iterations(100),
-          status(0),
-          status_finalized(rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init | density_derivative_init) {
+        : ex_man{nullptr},
+          dt{0.},
+          continuity_tolerance{1e-14},
+          max_iterations{100},
+          status{0},
+          status_finalized{rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init | density_derivative_init} {
         if constexpr (dare::is_none_v<PorosityVariableType>)
             status |= epsilon_init;
         if constexpr (dare::is_none_v<ImplicitForceVariableType>)
@@ -195,14 +196,14 @@ public:
     }
 
     template<TimeStepper T, typename... Args>
-    void Initialize(GridType* grid, T* tstep, Args&&... bc_args) {
+    void Initialize(GridType* grid, T* tstep, BoundaryStrategyType bc_continuity, Args... bc_momentum) {
         ex_man = grid->GetExecutionManager();
         auto dt_obs_func = [&](const T& stepper, typename T::StateChange tag) {
             this->dt = stepper.GetTimeStepSize();
         };
         pimpl_dt_obs = dare::make_observer_handle<T>(dt_obs_func);
         dt = tstep->GetTimeStepSize();
-        free_pm_initialize(this, grid, bc_args...);
+        free_pm_initialize(this, grid, bc_continuity, bc_momentum...);
         if constexpr(std::is_arithmetic_v<MomentumNormalizerType>) {
             for (auto& e : momentum)
                 e->GetCustomMember()->normalizer = 1;
@@ -213,9 +214,9 @@ public:
         this->dare::InitializationTracker::Initialize();
     }
 
-    template<TimeStepper T, typename... Args>
-    void Initialize(std::unique_ptr<GridType>& grid, T* tstep, Args&&... bc_args) {   // NOLINT
-        Initialize(grid.get(), tstep, bc_args...);
+    template <TimeStepper T, typename... Args>
+    void Initialize(std::unique_ptr<GridType>& grid, T* tstep, BoundaryStrategyType bc_continuity, Args... bc_momentum) {  // NOLINT
+        Initialize(grid.get(), tstep, bc_continuity, bc_momentum...);
     }
 
     // for access in the free functions
@@ -240,18 +241,24 @@ public:
         // put it in a scope to limit variable lifetime
         {
             BuildMomentum(dare::ZERO);
-            auto [success, iter] = SolveMomentum(0);
+            auto [success, iter] = SolveMomentum(dare::ZERO);
+            ERROR << "this is a placeholder - ignore for now: " << iter << " "
+                << (success? "success": "fail") << ERROR_CLOSE;
         }
         // add some output here
         if constexpr (dimension > 1) {
             BuildMomentum(dare::ONE);
-            auto [success, iter] = SolveMomentum(1);
+            auto [success, iter] = SolveMomentum(dare::ONE);
             // add some output here
+            ERROR << "this is a placeholder - ignore for now: " << iter << " "
+                << (success ? "success" : "fail") << ERROR_CLOSE;
         }
         if constexpr (dimension > 2) {
             BuildMomentum(dare::TWO);
-            auto [success, iter] = SolveMomentum(2);
+            auto [success, iter] = SolveMomentum(dare::TWO);
             // add some output here
+            ERROR << "this is a placeholder - ignore for now: " << iter << " "
+                << (success ? "success" : "fail") << ERROR_CLOSE;
         }
 
         // enforce continuity
@@ -261,11 +268,16 @@ public:
         int iteration = 0;
         ComputeDefect();
         for (; iteration < max_iterations; iteration++) {
-            if constexpr (IsCompressible())
+            if constexpr (compressible)
                 *rho_prev = rho->GetGridVector(0);
 
             BuildContinuity(iteration);
             auto [success, iter] = SolveContinuity(iteration);
+
+            if (!success) {
+                ex_man->Print(dare::Verbosity::Low) << "Continuity system failed to converge after "
+                                             << iter << " matrix-solver iterations";
+            }
 
             UpdatePressure();
             Notify(StateChange::PressureUpdated);
@@ -274,6 +286,8 @@ public:
             Notify(StateChange::VelocityUpdated);
 
             ComputeDefect();
+
+            // print update to terminal
             if (ContinuityConvergence())
                 break;
         }
@@ -335,7 +349,7 @@ public:
     }
 
     const GridVectorType* GetDensityPreviousIteration() const {
-        if constexpr(!IsCompressible) {
+        if constexpr(!compressible) {
             static_assert(dare::always_false<decltype(this)>, "In the incompressible case this should not be accessed");
         }
 #ifndef DARE_NDEBUG
@@ -423,11 +437,6 @@ public:
         return (status == status_finalized) && this->IsInitialized();
     }
 
-    // void SetTimeStepSize(SC _dt) {
-    //     // This should be a callback
-    //     dt = _dt;
-    // }
-
     SC GetTimeStepSize() const {
         return dt;
     }
@@ -446,6 +455,12 @@ public:
     }
 
     void Notify(StateChange property) {
+        if constexpr (compressible) {
+            if (property == StateChange::PressureUpdated && (observers.size() == 0)) {
+                ERROR << "Notifying others of pressure update, however no observers were attached!"
+                << " In the compressible case the means that the density is not adapted!" << ERROR_CLOSE;
+            }
+        }
         for (auto iter = observers.begin(); iter != observers.end();) {
             auto const pos = iter++;
             (*pos)->Update(*this, property);
@@ -467,8 +482,8 @@ private:
         free_pm_build_continuity(this, iteration);
     }
 
-    void SolveContinuity(int iteration) {
-        free_pm_solve_continuity(this, iteration);
+    std::pair<bool, int> SolveContinuity(int iteration) {
+        return free_pm_solve_continuity(this, iteration);
     }
 
     void UpdatePressure() {
@@ -483,8 +498,16 @@ private:
         free_pm_compute_defect(this);
     }
 
+    SC DetermineMaxContinuityDefect() {
+        return free_pm_determine_max_continuity_defect(this);
+    }
+
     bool ContinuityConvergence() {
-        return free_pm_continuity_convergence(this);
+        if constexpr (uses_newton_iterations_v<ContinuityIterationType>) {
+            return max_continuity_defect < continuity_tolerance;
+        } else {
+            static_assert(dare::always_false<decltype(this)>, "At the moment, only newton iterations are allowed for the continuity");  // NOLINT
+        }
     }
 
     dare::ExecutionManager* ex_man;
@@ -498,6 +521,8 @@ private:
     std::array<std::unique_ptr<MomentumType>, dimension> momentum;
 
     SC dt;  // for now this is temporary, work with observer here!
+    SC continuity_tolerance;
+    SC max_continuity_defect;
     int max_iterations;
     char status;
     char status_finalized;

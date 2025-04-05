@@ -42,14 +42,14 @@ namespace dare {
 struct UpdateFieldCopy {
     template<typename EQ, typename MS>
     void operator()(EQ& eq, const MS& ms) const {   // NOLINT
-        ms.CopyTo(eq.GetField()->GetDataVector());
+        ms.CopyTo(&eq.GetField()->GetDataVector());
     }
 };
 
 struct UpdateFieldAddInto {
     template <typename EQ, typename MS>
     void operator()(EQ& eq, const MS& ms) const {  // NOLINT
-        ms.AddTo(eq.GetField()->GetDataVector());
+        ms.AddTo(&eq.GetField()->GetDataVector());
     }
 };
 
