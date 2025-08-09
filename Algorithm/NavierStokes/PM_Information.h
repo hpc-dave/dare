@@ -96,9 +96,6 @@ struct PMImplicitForceInfo : PMTypeInfo<Type, PMProperties::ImplicitForce> {};
 template <typename Type>
 struct PMExplicitForceInfo : PMTypeInfo<Type, PMProperties::ExplicitForce> {};
 
-// template <bool Flag>
-// struct PMCompressibleInfo : PMFlaggedInfo<Flag, PMProperties::Compressible> {};
-
 template <typename Type>
 struct PMDensityDerivativeInfo : PMTypeInfo<Type, PMProperties::DensityDerivative> {};
 

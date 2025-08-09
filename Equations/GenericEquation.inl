@@ -25,14 +25,15 @@
 namespace dare {
 
 template <typename Grid, typename BS, typename CM>
+template <typename BC>
 GenericEquation<Grid, BS, CM>::GenericEquation(const std::string& name,
                                                GridRepresentation grid,
                                                std::size_t num_tsteps,
-                                               BS bc_strat)
+                                               BC bc_strat)
     : grep(std::move(grid)),
       exec_man(nullptr),
       field(name, grid, num_tsteps),
-      boundary_strategy(std::move(bc_strat)) {
+      boundary_strategy(bc_strat) {
     exec_man = grep.GetExecutionManager();
     if (!exec_man) {
         ERROR << "Execution Manager is nullptr!" << ERROR_CLOSE;

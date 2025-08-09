@@ -25,11 +25,12 @@
 namespace dare {
 
 template <typename Grid, typename BS, typename CM>
+template<typename BC>
 PMContinuity<Grid, BS, CM>::PMContinuity(const std::string& name,
                                          GridRepresentation grid,
                                          std::size_t num_tsteps,
-                                         BS bc_strat)
-    : dare::GenericEquation<Grid, BS, CM>(name, std::move(grid), num_tsteps, std::move(bc_strat)),
+                                         BC bc_strat)
+    : dare::GenericEquation<Grid, BS, CM>(name, std::move(grid), num_tsteps, bc_strat),
       defect("defect", grid, 1),
       dP("dP", grid, 1) {
 }

@@ -46,10 +46,11 @@ public:
 
     using SelfType = PMContinuity<Grid, BoundaryStrategy, CustomMember>;
 
+    template<typename BC>
     PMContinuity(const std::string& name,
                  GridRepresentation grid,
                  std::size_t num_tsteps,
-                 BoundaryStrategy bc_strat);
+                 BC bc_strat);
 
     explicit PMContinuity(const SelfType&) = delete;
     SelfType& operator=(const SelfType&) = delete;

@@ -297,7 +297,6 @@ public:
         MatrixStencil::operator=(source);
         return *this;
     }
-
 };
 
 

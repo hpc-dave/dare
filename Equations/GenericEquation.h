@@ -71,10 +71,11 @@ public:
     using SolverNumericalPropertiesType = typename MatrixSolverType::NumericalPropertiesType;
     using SelfType = GenericEquation<Grid, BoundaryStrategy, CustomMember>;
 
+    template<typename BC>
     GenericEquation(const std::string& name,
                     GridRepresentation grid,
                     std::size_t num_tsteps,
-                    BoundaryStrategy bc_strat);
+                    BC bc_strat);
 
     explicit GenericEquation(const SelfType&) = delete;
     SelfType& operator=(const SelfType&) = delete;

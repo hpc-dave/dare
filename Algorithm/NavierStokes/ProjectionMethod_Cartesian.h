@@ -42,8 +42,8 @@ void free_compile_time_check(PM*) {
                   "Cartesian grid right now only uses newton iterations for enforcing continuity");
 }
 
-template <typename PM, std::size_t Dim, typename... Args>
-void free_pm_initialize(PM* pm, dare::Cartesian<Dim>* grid, typename PM::BoundaryStrategyType bc_cont, Args... bc_mom) {
+template <typename PM, std::size_t Dim, typename BCcont, typename... Args>
+void free_pm_initialize(PM* pm, dare::Cartesian<Dim>* grid, BCcont bc_cont, Args... bc_mom) {
     static_assert(PM::dimension == Dim, "The projection method and grid do not have the same dimension!");  // NOLINT
     static_assert(PM::dimension < 4, "Not equipped for higher dimensions");
     static_assert(sizeof...(bc_mom) == Dim, "Inconsistent boundary conditions for the momentum provided");

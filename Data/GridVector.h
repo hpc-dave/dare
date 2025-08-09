@@ -325,7 +325,6 @@ protected:
     GridVector(std::string identifier, LO num_cells, GridRepresentation grid);
 
 private:
-
     std::string ident_string;        //!< identification string
     std::string component_names[N];  //!< names of the components, by default '0', '1', ...
     GridRepresentation grid;         //!< representation and reference to grid

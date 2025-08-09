@@ -48,6 +48,125 @@
 
 namespace dare {
 
+// template<typename Grid, typename SC, std::size_t N>
+// struct PMDefaultBoundaryStrategy {
+//     using GridType = Grid;
+//     using LO = typename GridType::LocalOrdinalType;
+//     using GO = typename GridType::GlobalOrdinalType;
+//     using FieldType = dare::Field<GridType, SC, N>;
+//     using MBTypeLO = dare::MatrixBlock<GridType, LO, SC, N>;
+//     using MBTypeGO = dare::MatrixBlock<GridType, GO, SC, N>;
+
+//     PMDefaultBoundaryStrategy(std::function<void(FieldType*)> f_boundary,
+//                               std::function<void(MBTypeGO*)> f_bc)
+//         : func_boundary_update(std::move(f_boundary)),
+//           func_apply_bc(std::move(f_bc)) {}
+
+//     PMDefaultBoundaryStrategy() : PMDefaultBoundaryStrategy(nullptr, nullptr) {}
+
+//     void Apply(MBTypeLO*) {}
+//     void Apply(MBTypeGO* mb) { func_apply_bc(mb); }
+//     void operator()(MBTypeLO*) {}
+//     void operator()(MBTypeGO* mb) { func_apply_bc(mb); }
+//     void operator()(FieldType* f) { func_boundary_update(f); }
+
+//     std::function<void(FieldType*)> func_boundary_update;
+//     std::function<void(MBTypeGO*)> func_apply_bc;
+// };
+
+/*!
+ * @brief a default boundary strategy utilizing type erasure for variability
+ */
+template<typename Grid, typename SC>
+class PMDefaultBoundaryType {
+public:
+    using GridType = Grid;
+    using LO = typename GridType::LocalOrdinalType;
+    using GO = typename GridType::GlobalOrdinalType;
+    using FieldType = dare::Field<GridType, SC, 1>;
+    using MBTypeLO = dare::MatrixBlock<GridType, LO, SC, 1>;
+    using MBTypeGO = dare::MatrixBlock<GridType, GO, SC, 1>;
+
+    template<typename T>
+    explicit PMDefaultBoundaryType(const T& bc)
+        : pimpl(std::make_unique<Model<T>>(bc)) {}
+
+    ~PMDefaultBoundaryType() = default;
+
+    PMDefaultBoundaryType(const PMDefaultBoundaryType& other)
+        : pimpl(other.pimpl->clone()) {}
+
+    PMDefaultBoundaryType& operator=(PMDefaultBoundaryType other) {
+        std::swap(pimpl, other.pimpl);
+        return *this;
+    }
+
+    PMDefaultBoundaryType(PMDefaultBoundaryType&& other) = default;
+
+    PMDefaultBoundaryType& operator=(PMDefaultBoundaryType&& other) = default;
+
+    void Apply(MBTypeLO* mb) const { pimpl->Apply(mb); }
+    void Apply(MBTypeGO* mb) const { pimpl->Apply(mb); }
+    void Apply(FieldType* f) const { pimpl->Apply(f); }
+
+    /*!
+     * @brief apply the boundary condition to the local matrix block or field
+     */
+    void operator()(MBTypeLO* mb) const {
+        pimpl->Apply(mb);
+    }
+
+    /*!
+     * @brief apply the boundary condition to the global matrix block or field
+     */
+    void operator()(MBTypeGO* mb) const {
+        pimpl->Apply(mb);
+    }
+
+    /*!
+     * @brief adapt the field according to the boundary conditions
+     */
+    void operator()(FieldType* f) const {
+        pimpl->Apply(f);
+    }
+
+private:
+    class Concept {
+    public:
+        virtual ~Concept() = default;
+        virtual void Apply(MBTypeLO*) const = 0;
+        virtual void Apply(MBTypeGO*) const = 0;
+        virtual void Apply(FieldType*) const = 0;
+        virtual std::unique_ptr<Concept> clone() const = 0;
+    };
+
+    template<typename TBoundaryCondition>
+    class Model : public Concept {
+    public:
+        explicit Model(const TBoundaryCondition& bc) : boundary_condition(bc) {}
+
+        void Apply(MBTypeLO* mb) const override {
+            boundary_condition.Apply(mb);
+        }
+        void Apply(MBTypeGO* mb) const override {
+            boundary_condition.Apply(mb);
+        }
+        void Apply(FieldType* f) const override {
+            boundary_condition.Apply(f);
+        }
+
+        std::unique_ptr<Concept> clone() const override {
+            return std::make_unique<Model<TBoundaryCondition>>(*this);
+        }
+
+    private:
+        TBoundaryCondition boundary_condition;
+    };
+
+    std::unique_ptr<Concept> pimpl;
+};
+
+
 template <typename Grid>
 struct PMPropertyInfoDefault {
     using FieldType = dare::Field<Grid, typename Grid::ScalarType, 1>;
@@ -85,7 +204,7 @@ struct PMNumericalInfoDefault {
  *
  *
  */
-template <typename Grid, typename BoundaryStrategy, typename PropertyInfo, typename NumericalInfo>
+template <typename Grid, typename BoundaryInfo, typename PropertyInfo, typename NumericalInfo>
 class ProjectionMethod : public dare::InitializationTracker {
 public:
     enum {
@@ -107,8 +226,8 @@ public:
 
     // general types based on the grid
     using GridType = Grid;
-    using BoundaryStrategyType = BoundaryStrategy;
-    using SelfType = ProjectionMethod<Grid, BoundaryStrategy, PropertyInfo, NumericalInfo>;
+    // using BoundaryStrategyType = BoundaryStrategy;
+    using SelfType = ProjectionMethod<Grid, BoundaryInfo, PropertyInfo, NumericalInfo>;
     using SC = typename GridType::ScalarType;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
@@ -117,6 +236,9 @@ public:
     using FieldType = dare::Field<GridType, SC, 1>;
     using GridVectorType = dare::GridVector<GridType, SC, 1>;
     using ObserverType = dare::Observer<SelfType, StateChange>;
+
+    // boundary information for the different equations
+    using BoundaryInfoType = BoundaryInfo;
 
     // properties determined from the PropertyInfo type
     using PropertyTypeInfo = detail::PMAssembledPropertyInfoWithDefaults<
@@ -127,7 +249,6 @@ public:
     using PorosityInfo = typename PropertyTypeInfo::porosity;
     using ImplicitForceInfo = typename PropertyTypeInfo::implicit_force;
     using ExplicitForceInfo = typename PropertyTypeInfo::explicit_force;
-    // using CompressibilityInfo = typename PropertyTypeInfo::compressible;
     using DensityDerivativeInfo = typename PropertyTypeInfo::density_derivative;
     using DensityVariableType = detail::determine_density_variable_type_t<DensityInfo>;
     using ViscosityVariableType = detail::determine_viscosity_variable_type_t<ViscosityInfo>;
@@ -140,6 +261,10 @@ public:
     // consider removing this boolean and check simply for equation of state
     static const bool compressible = !dare::is_none_v<DensityDerivativeMemberType>;
     static const std::size_t dimension = GridType::Dimension;
+
+    // boundary conditions (for now only the boundary info type, adapt at later point to be more flexible)
+    using BoundaryStrategyContinuity = BoundaryInfoType;
+    using BoundaryStrategyMomentum = BoundaryInfoType;
 
     // algorithm and discretization properties
     using NumericalTypeInfo = detail::PMAssembledNumericalInfoWithDefaults<
@@ -172,8 +297,8 @@ public:
         SC defect_max;
         ContinuityNormalizerType normalizer;
     };
-    using MomentumType = dare::GenericEquation<GridType, BoundaryStrategyType, MomentumMembers>;
-    using ContinuityType = PMContinuity<GridType, BoundaryStrategyType, ContinuityMembers>;
+    using MomentumType = dare::GenericEquation<GridType, BoundaryStrategyMomentum, MomentumMembers>;
+    using ContinuityType = PMContinuity<GridType, BoundaryStrategyContinuity, ContinuityMembers>;
 
     ProjectionMethod()
         : ex_man{nullptr},
@@ -195,8 +320,8 @@ public:
         free_compile_time_check(this);
     }
 
-    template<TimeStepper T, typename... Args>
-    void Initialize(GridType* grid, T* tstep, BoundaryStrategyType bc_continuity, Args... bc_momentum) {
+    template<TimeStepper T, typename BCContinuity, typename... Args>
+    void Initialize(GridType* grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum) {
         ex_man = grid->GetExecutionManager();
         auto dt_obs_func = [&](const T& stepper, typename T::StateChange tag) {
             this->dt = stepper.GetTimeStepSize();
@@ -214,8 +339,8 @@ public:
         this->dare::InitializationTracker::Initialize();
     }
 
-    template <TimeStepper T, typename... Args>
-    void Initialize(std::unique_ptr<GridType>& grid, T* tstep, BoundaryStrategyType bc_continuity, Args... bc_momentum) {  // NOLINT
+    template <TimeStepper T, typename BCContinuity, typename... Args>
+    void Initialize(std::unique_ptr<GridType>& grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum) {  // NOLINT
         Initialize(grid.get(), tstep, bc_continuity, bc_momentum...);
     }
 
