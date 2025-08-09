@@ -290,26 +290,26 @@ public:
         for (std::size_t n{0}; n < N; n++) {
             if (N > 1)
                 os << "[" << n << "] ";
-            if (m.IsSet<CartesianNeighbor::WEST>(n))
-                os << "\tW: " << m.Get(n, CartesianNeighbor::WEST);
+            if (m.IsSet<CartesianNeighbor::WEST>(n, n))
+                os << "\tW: " << m.Get(n, n, CartesianNeighbor::WEST);
 
-            if (Dim > 1 && m.IsSet<CartesianNeighbor::SOUTH>(n))
-                os << "\tS: " << m.Get(n, CartesianNeighbor::SOUTH);
+            if (Dim > 1 && m.IsSet<CartesianNeighbor::SOUTH>(n, n))
+                os << "\tS: " << m.Get(n, n, CartesianNeighbor::SOUTH);
 
-            if (Dim > 2 && m.IsSet<CartesianNeighbor::BOTTOM>(n))
-                os << "\tB: " << m.Get(n, CartesianNeighbor::BOTTOM);
+            if (Dim > 2 && m.IsSet<CartesianNeighbor::BOTTOM>(n, n))
+                os << "\tB: " << m.Get(n, n, CartesianNeighbor::BOTTOM);
 
-            if (m.IsSet<CartesianNeighbor::CENTER>(n))
-                os << "\tC: " << m.Get(n, CartesianNeighbor::CENTER);
+            if (m.IsSet<CartesianNeighbor::CENTER>(n, n))
+                os << "\tC: " << m.Get(n, n, CartesianNeighbor::CENTER);
 
-            if (Dim > 1 && m.IsSet<CartesianNeighbor::NORTH>(n))
-                os << "\tN: " << m.Get(n, CartesianNeighbor::NORTH);
+            if (Dim > 1 && m.IsSet<CartesianNeighbor::NORTH>(n, n))
+                os << "\tN: " << m.Get(n, n, CartesianNeighbor::NORTH);
 
-            if (Dim > 2 && m.IsSet<CartesianNeighbor::TOP>(n))
-                os << "\tT: " << m.Get(n, CartesianNeighbor::TOP);
+            if (Dim > 2 && m.IsSet<CartesianNeighbor::TOP>(n, n))
+                os << "\tT: " << m.Get(n, n, CartesianNeighbor::TOP);
 
-            if (m.IsSet<CartesianNeighbor::EAST>(n))
-                os << "\tE: " << m.Get(n, CartesianNeighbor::EAST);
+            if (m.IsSet<CartesianNeighbor::EAST>(n, n))
+                os << "\tE: " << m.Get(n, n, CartesianNeighbor::EAST);
 
             os << "\tRHS: " << m.GetRhs(n) << '\n';
         }

@@ -111,6 +111,9 @@ public:
     void SetSolverNumericalProperties(const SolverNumericalPropertiesType& prop);
     const SolverNumericalPropertiesType& GetSolverNumericalProperties() const;
 
+    MatrixSystemType* GetMatrixSystem();
+    const MatrixSystemType& GetMatrixSystem() const;
+
     void AddPreStepStrategy(std::function<void(SelfType*)> f);
     void SetPreStepStrategy(std::function<void(SelfType*)> f);
     void ClearPreStepStrategy();

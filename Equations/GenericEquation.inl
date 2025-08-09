@@ -144,6 +144,18 @@ GenericEquation<Grid, BS, CM>::GetSolverNumericalProperties() const {
 }
 
 template <typename Grid, typename BS, typename CM>
+GenericEquation<Grid, BS, CM>::MatrixSystemType*
+GenericEquation<Grid, BS, CM>::GetMatrixSystem() {
+    return &matrix_system;
+}
+
+template <typename Grid, typename BS, typename CM>
+const GenericEquation<Grid, BS, CM>::MatrixSystemType&
+GenericEquation<Grid, BS, CM>::GetMatrixSystem() const {
+    return matrix_system;
+}
+
+template <typename Grid, typename BS, typename CM>
 void GenericEquation<Grid, BS, CM>::AddPreStepStrategy(std::function<void(SelfType*)> f) {
     pre_step_strategy.insert(std::move(f));
 }
