@@ -523,7 +523,7 @@ TEST_F(ProjectionMethodCartesian2DTest, Continuity_compute_defect_incompressible
 
     dare::Vector<Dim, const GridVector*> velocities;
     for (std::size_t d{0}; d < Dim; d++) {
-        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(0);
     }
 
     dare::Vector<Dim, SC> dA = g_s.GetFaceArea();
@@ -582,7 +582,7 @@ TEST_F(ProjectionMethodCartesian3DTest, Continuity_compute_defect_incompressible
     pm.SetPorosity(&epsilon);
     for (std::size_t d{0}; d < Dim; d++) {
         for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
-            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+            pm.GetMomentum(d)->GetField()->GetDataVector(0).At(i) = rd.Generate();
         }
     }
     for (std::size_t i{0}; i < rho.GetDataVector().GetSize(); i++) {
@@ -660,7 +660,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectCompressible_no_porosity
     pm.SetViscosity(mu);
     for (std::size_t d{0}; d < Dim; d++) {
         for (std::size_t i{0}; i < pm.GetMomentum(d)->GetField()->GetDataVector().GetSize(); i++) {
-            pm.GetMomentum(d)->GetField()->GetDataVector(1).At(i) = rd.Generate();
+            pm.GetMomentum(d)->GetField()->GetDataVector(0).At(i) = rd.Generate();
         }
     }
 
@@ -671,7 +671,7 @@ TEST_F(ProjectionMethodCartesian1DTest, ContinuityDefectCompressible_no_porosity
 
     dare::Vector<Dim, const GridVector*> velocities;
     for (std::size_t d{0}; d < Dim; d++) {
-        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(1);
+        velocities[d] = &pm.GetMomentum(d)->GetField()->GetDataVector(0);
     }
 
     dare::Vector<Dim, SC> dA = g_s.GetFaceArea();

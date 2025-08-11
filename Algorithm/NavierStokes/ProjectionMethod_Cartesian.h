@@ -416,6 +416,9 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     };
 
     pm->GetMomentum(dir)->Build(BuildStrategy);
+
+    pm->GetMomentum(dir)->GetMatrixSystem()->PrintMatrix();
+    pm->GetMomentum(dir)->GetMatrixSystem()->PrintB();
 }
 
 template <typename PM>
@@ -576,7 +579,7 @@ void free_pm_compute_defect(PM* pm) {
     DefectType* defect = &pm->GetContinuity()->GetDefect()->GetDataVector();
     dare::Vector<PM::dimension, const GridVectorType*> velocities;
     for (std::size_t d{0}; d < PM::dimension; d++) {
-        velocities[d] = &pm->GetMomentum(d)->GetField()->GetDataVector(1);
+        velocities[d] = &pm->GetMomentum(d)->GetField()->GetDataVector(0);
     }
 
 #pragma omp parallel for
@@ -646,6 +649,8 @@ void free_pm_build_continuity(PM* pm, int iteration) {
         };
         pm->GetContinuity()->UpdateRhs(BuildStrategy);
     }
+    pm->GetContinuity()->GetMatrixSystem()->PrintMatrix();
+    pm->GetContinuity()->GetMatrixSystem()->PrintB();
 }
 
 template <typename PM>
