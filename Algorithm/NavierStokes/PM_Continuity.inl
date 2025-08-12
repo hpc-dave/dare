@@ -66,8 +66,14 @@ const PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetdP()
 }
 
 template <typename Grid, typename BS, typename CM>
+void PMContinuity<Grid, BS, CM>::UpdatedPBoundaries() {
+    (*this->GetBoundaryStrategy())(&dP);
+    dP.ExchangeHaloCells();
+}
+
+template <typename Grid, typename BS, typename CM>
 void PMContinuity<Grid, BS, CM>::UpdatePressureBoundaries() {
-    this->UpdateBoundaries();
+    this->GetField()->ExchangeHaloCells();
 }
 
 }  // namespace dare

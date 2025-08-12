@@ -416,9 +416,6 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     };
 
     pm->GetMomentum(dir)->Build(BuildStrategy);
-
-    pm->GetMomentum(dir)->GetMatrixSystem()->PrintMatrix();
-    pm->GetMomentum(dir)->GetMatrixSystem()->PrintB();
 }
 
 template <typename PM>
@@ -649,8 +646,6 @@ void free_pm_build_continuity(PM* pm, int iteration) {
         };
         pm->GetContinuity()->UpdateRhs(BuildStrategy);
     }
-    pm->GetContinuity()->GetMatrixSystem()->PrintMatrix();
-    pm->GetContinuity()->GetMatrixSystem()->PrintB();
 }
 
 template <typename PM>

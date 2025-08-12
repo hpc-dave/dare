@@ -126,8 +126,9 @@ std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
                                   pm->GetContinuity()->GetCustomMember()->normalizer,
                                   &pm->GetContinuity()->GetdP()->GetDataVector());
     } else {
-        static_assert(dare::always_false<IterType>, "Updating the pressure is not implemented for anything except Newton iterations");  // NOLINT
+        static_assert(dare::always_false<IterType>, "Solving continuity is not implemented for anything except Newton iterations");  // NOLINT
     }
+    pm->GetContinuity()->UpdatedPBoundaries();
     return ret;
 }
 
@@ -157,8 +158,8 @@ typename PM::SC free_pm_determine_max_continuity_defect(PM* pm) {
     const auto* defect = &pm->GetContinuity()->GetDefect()->GetDataVector();
     typename PM::SC max_defect{0.};
     // TODO(@Dave): OMP reduction missing
-    for (std::size_t n_loc{0}; n_loc < grep->GetNumberLocalCellsInternal(); n_loc++) {
-        std::max(max_defect, std::abs(defect->At(n_loc)));
+    for (std::size_t n_loc{0}; n_loc < static_cast<std::size_t>(grep->GetNumberLocalCellsInternal()); n_loc++) {
+        max_defect = std::max(max_defect, std::abs(defect->At(n_loc)));
     }
     return max_defect;
 }

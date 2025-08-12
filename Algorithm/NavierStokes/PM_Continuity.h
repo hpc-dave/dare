@@ -64,6 +64,8 @@ public:
     FieldType* GetdP();
     const FieldType& GetdP() const;
 
+    void UpdatedPBoundaries();
+
     void UpdatePressureBoundaries();
 
 private:

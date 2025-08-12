@@ -628,6 +628,7 @@ private:
     }
 
     bool ContinuityConvergence() {
+        max_continuity_defect = DetermineMaxContinuityDefect();
         if constexpr (uses_newton_iterations_v<ContinuityIterationType>) {
             return max_continuity_defect < continuity_tolerance;
         } else {
