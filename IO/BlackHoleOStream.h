@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef MPI_OBLACKHOLESTREAM_H_
-#define MPI_OBLACKHOLESTREAM_H_
+#ifndef IO_BLACKHOLEOSTREAM_H_
+#define IO_BLACKHOLEOSTREAM_H_
 
 #include <iostream>
 #include <string>
@@ -66,4 +66,4 @@ public:
 
 }  // namespace dare
 
-#endif  // MPI_OBLACKHOLESTREAM_H_
+#endif  // IO_BLACKHOLEOSTREAM_H_

@@ -45,34 +45,9 @@
 #include "Utilities/InitializationTracker.h"
 #include "Equations/GenericEquation.h"
 #include "ProjectionMethod_freefunc.h"
+#include "IO/TerminalOutput.h"
 
 namespace dare {
-
-// template<typename Grid, typename SC, std::size_t N>
-// struct PMDefaultBoundaryStrategy {
-//     using GridType = Grid;
-//     using LO = typename GridType::LocalOrdinalType;
-//     using GO = typename GridType::GlobalOrdinalType;
-//     using FieldType = dare::Field<GridType, SC, N>;
-//     using MBTypeLO = dare::MatrixBlock<GridType, LO, SC, N>;
-//     using MBTypeGO = dare::MatrixBlock<GridType, GO, SC, N>;
-
-//     PMDefaultBoundaryStrategy(std::function<void(FieldType*)> f_boundary,
-//                               std::function<void(MBTypeGO*)> f_bc)
-//         : func_boundary_update(std::move(f_boundary)),
-//           func_apply_bc(std::move(f_bc)) {}
-
-//     PMDefaultBoundaryStrategy() : PMDefaultBoundaryStrategy(nullptr, nullptr) {}
-
-//     void Apply(MBTypeLO*) {}
-//     void Apply(MBTypeGO* mb) { func_apply_bc(mb); }
-//     void operator()(MBTypeLO*) {}
-//     void operator()(MBTypeGO* mb) { func_apply_bc(mb); }
-//     void operator()(FieldType* f) { func_boundary_update(f); }
-
-//     std::function<void(FieldType*)> func_boundary_update;
-//     std::function<void(MBTypeGO*)> func_apply_bc;
-// };
 
 /*!
  * @brief a default boundary strategy utilizing type erasure for variability
@@ -438,8 +413,8 @@ public:
             auto [success, iter] = SolveContinuity(iteration);
 
             if (!success) {
-                ex_man->Print(dare::Verbosity::Low) << "Continuity system failed to converge after "
-                                             << iter << " matrix-solver iterations";
+                dare::Print(dare::Verbosity::Low) << "Continuity system failed to converge after "
+                                                  << iter << " matrix-solver iterations";
             }
 
             UpdatePressure();

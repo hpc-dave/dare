@@ -75,7 +75,7 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
         vtkNew<GridType> vtkDataSet;
         bool success = Options::AllocateGrid(*grep, vtkDataSet);
         if (!success) {
-            exec_man->Print(dare::Verbosity::Low)
+            dare::Print(dare::Verbosity::Low)
                 << "Error during grid allocation, cannot write " << grep->GetName() << " to file!" << std::endl;
             continue;
         }

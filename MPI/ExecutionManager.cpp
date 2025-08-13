@@ -30,8 +30,8 @@
 
 namespace dare {
 
-ExecutionManager::ExecutionManager(MPI_Comm _communicator, Verbosity _output_level)
-    : communicator(_communicator), rank_root(0), output_level(_output_level) {
+ExecutionManager::ExecutionManager(MPI_Comm _communicator)
+    : communicator(_communicator), rank_root(0) {
     MPI_Comm_rank(communicator, &rank);
     MPI_Comm_size(communicator, &num_proc);
 
@@ -41,24 +41,6 @@ ExecutionManager::ExecutionManager(MPI_Comm _communicator, Verbosity _output_lev
 }
 
 ExecutionManager::~ExecutionManager() {}
-
-std::ostream& ExecutionManager::operator()(Verbosity level) {
-    return Print(level);
-}
-
-std::ostream& ExecutionManager::Print(Verbosity level) {
-    if (level > output_level || !is_root)
-        return black_hole_osteam;
-    else
-        return std::cout;
-}
-
-std::ostream& ExecutionManager::PrintAll(Verbosity level) {
-    if (level > output_level)
-        return black_hole_osteam;
-    else
-        return std::cout;
-}
 
 int ExecutionManager::GetNumberThreadsLocal() {
     return omp_get_num_threads();

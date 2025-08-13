@@ -6,6 +6,7 @@ set(DaRe_HEADER_FILES
     "VTKTypes.h"
     "VTKWriter.h"
     "VTKWriter.inl"
+    "TerminalOutput.h"
 )
 
 set(DaRe_SOURCE_FILES

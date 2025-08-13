@@ -41,6 +41,7 @@
 #include "MPI/ExecutionManager.h"
 #include "VTKOptions.h"
 #include "Utilities/Vector.h"
+#include "IO/TerminalOutput.h"
 
 namespace dare {
 

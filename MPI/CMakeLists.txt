@@ -1,5 +1,4 @@
 set(DaRe_HEADER_FILES
-    "OBlackHoleStream.h"
     "MPITypeConverter.h"
     "ExecutionManager.h"
     "ExecutionManager.inl"

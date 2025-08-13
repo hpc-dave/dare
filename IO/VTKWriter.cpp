@@ -40,11 +40,11 @@ std::string VTKGetParallelOutputFileName(dare::ExecutionManager* exman,
     os << grid_name
        << '_' << std::to_string(step)
        << "." << ext;
-    exman->Print(dare::Verbosity::Medium) << "Writing to file "
-                                               << output_path << grid_name
-                                               << '_' << std::to_string(step)
-                                               << "." << ext
-                                               << std::endl;
+    dare::Print(dare::Verbosity::Medium) << "Writing to file "
+                                         << output_path << grid_name
+                                         << '_' << std::to_string(step)
+                                         << "." << ext
+                                         << std::endl;
     return os.str();
 }
 

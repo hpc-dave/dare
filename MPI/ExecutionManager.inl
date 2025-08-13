@@ -40,10 +40,6 @@ int ExecutionManager::GetNumberProcesses() const {
     return num_proc;
 }
 
-void ExecutionManager::SetVerbosity(Verbosity level) {
-    output_level = level;
-}
-
 MPI_Comm ExecutionManager::GetCommunicator() const {
     return communicator;
 }

@@ -31,6 +31,7 @@
 
 #include "MPI/ExecutionManager.h"
 #include "Utilities/Vector.h"
+#include "IO/TerminalOutput.h"
 
 namespace dare {
 
@@ -320,7 +321,7 @@ void CartesianDistribution_Cubical(int num_proc,
     }
     if (failed) {
         if (print_warning)
-            std::cout << "Cubical Cartesian distribution failed, switching to MPI_Dims_create instead!" << std::endl;
+            Print(dare::Verbosity::Medium) << "Cubical Cartesian distribution failed, switching to MPI_Dims_create instead!" << std::endl;
         details::CartesianDistribution_MPI_Dims_create(num_proc, resolution_global, vec_res_local, vec_offsets);
     }
 }
@@ -366,11 +367,11 @@ void CartesianDistribution_Cubical(ExecutionManager* exec_man,
             int status_res_all = MPI_Waitall(requests_res.size(), requests_res.data(), status_res.data());
             int status_off_all = MPI_Waitall(requests_off.size(), requests_off.data(), status_off.data());
             if (status_res_all != MPI_SUCCESS) {
-                exec_man->Print(dare::Verbosity::Low)
+                dare::Print(dare::Verbosity::Low)
                     << "An error occured during the sending of resolutions: " << status_res_all << std::endl;
             }
             if (status_off_all != MPI_SUCCESS) {
-                exec_man->Print(dare::Verbosity::Low)
+                dare::Print(dare::Verbosity::Low)
                     << "An error occured during the sending of offsets: " << status_off_all << std::endl;
             }
         }
