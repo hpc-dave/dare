@@ -300,6 +300,9 @@ public:
     using MomentumType = dare::GenericEquation<GridType, BoundaryStrategyMomentum, MomentumMembers>;
     using ContinuityType = PMContinuity<GridType, BoundaryStrategyContinuity, ContinuityMembers>;
 
+    /*!
+     * @brief default constructor
+     */
     ProjectionMethod()
         : ex_man{nullptr},
           dt{0.},
@@ -320,13 +323,23 @@ public:
         free_compile_time_check(this);
     }
 
+    /*!
+     * @brief allocates memory and instantiates the separate equations
+     * @tparam ...Args input arguments for the momentum equation
+     * @tparam BCContinuity boundary condition input type for the continuity
+     * @tparam T a time step object
+     * @param grid pointer to the grid
+     * @param tstep pointer to the time stepper
+     * @param bc_continuity boundary arguments for continuity
+     * @param ...bc_momentum boundary arguments for the momentum
+     */
     template<TimeStepper T, typename BCContinuity, typename... Args>
     void Initialize(GridType* grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum) {
         ex_man = grid->GetExecutionManager();
         auto dt_obs_func = [&](const T& stepper, typename T::StateChange tag) {
             this->dt = stepper.GetTimeStepSize();
         };
-        pimpl_dt_obs = dare::make_observer_handle<T>(dt_obs_func);
+        pimpl_dt_obs = dare::make_observer_handle(tstep, dt_obs_func);
         dt = tstep->GetTimeStepSize();
         free_pm_initialize(this, grid, bc_continuity, bc_momentum...);
         if constexpr(std::is_arithmetic_v<MomentumNormalizerType>) {
@@ -339,22 +352,47 @@ public:
         this->dare::InitializationTracker::Initialize();
     }
 
+    /*!
+     * @brief overload for the case the the grid is provided as unique pointer
+     * @tparam ...Args input arguments for the momentum equation
+     * @tparam BCContinuity boundary condition input type for the continuity
+     * @tparam T a time step object
+     * @param grid pointer to the grid
+     * @param tstep pointer to the time stepper
+     * @param bc_continuity boundary arguments for continuity
+     * @param ...bc_momentum boundary arguments for the momentum
+     */
     template <TimeStepper T, typename BCContinuity, typename... Args>
     void Initialize(std::unique_ptr<GridType>& grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum) {  // NOLINT
         Initialize(grid.get(), tstep, bc_continuity, bc_momentum...);
     }
 
-    // for access in the free functions
+    /*!
+     * @brief initializing a dediacted momentum equation
+     * @tparam ...Args input arguments for the momentum equations
+     * @param dim the dimension for which the momentum should be initialized
+     * @param ...args actual arguments for the momentum
+     * @warning only for access in free functions!
+     */
     template <typename... Args>
     void InitializeMomentum(std::size_t dim, Args&&... args) {
         momentum[dim] = std::make_unique<MomentumType>(args...);
     }
 
+    /*!
+     * @brief initializes the continuity
+     * @tparam ...Args arguments for the continuity
+     * @param ...args arguments for the continuity
+     * @warning only for access in free functions!
+     */
     template <typename... Args>
     void InitializeContinuity(Args&&... args) {
         continuity = std::make_unique<ContinuityType>(args...);
     }
 
+    /*!
+     * @brief advance the flow field by a 2 step projection, based on Chorin's projection method
+     */
     void SolveFlowField() {
         // here we could add switch between different approaches, but
         // for now there is only one

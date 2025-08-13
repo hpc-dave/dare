@@ -101,7 +101,13 @@ template <typename Subject, typename StateTag>
 class ObserverHandleModel : public detail::ObserverHandleConcept {
 public:
     using ObserverType = Observer<Subject, StateTag>;
-    explicit ObserverHandleModel(ObserverType observer) : obs(std::move(observer)) {}
+    explicit ObserverHandleModel(ObserverType&& observer) : obs(std::move(observer)) {}
+
+    /*!
+     * @brief a dedicated function for attaching the observer to the observable object
+     * @return address of the observer
+     */
+    ObserverType* GetObserver() { return &obs; }
 
 private:
     ObserverType obs;  //!< actual instance of the observer
@@ -112,14 +118,20 @@ private:
  * @tparam Lambda Update function type
  * @tparam T the observable type
  * @param on_update actual update function
+ *
+ * First an observer is instantiated, which then is wrapped in an observer model.
+ * The address of the observer is attached to the observable object and finally
+ * the model returned as basic concept (or handle)
  */
 template<Observable T, typename Lambda>
-UniqueObserverHandle make_observer_handle(Lambda on_update) {
+UniqueObserverHandle make_observer_handle(T* observable, Lambda on_update) {
     using ObserverType = T::ObserverType;
     using TObsModel = dare::ObserverHandleModel<T, typename T::StateChange>;
 
     ObserverType obs(on_update);
-    return std::make_unique<TObsModel>(std::move(obs));
+    auto obs_model = std::make_unique<TObsModel>(std::move(obs));
+    observable->Attach(obs_model->GetObserver());
+    return obs_model;
 }
 
 }  // namespace dare
