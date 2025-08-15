@@ -30,30 +30,85 @@
 #include "Algorithm/AlgorithmTraits.h"
 #include "Utilities/Observer.h"
 namespace dare {
+
+/*! \class AdaptiveTimeStep
+ * @tparam T type of the time values
+ *
+ * This class controls timestepping and allows adaption of the timestep
+ */
 template<typename T = dare::defaults::ScalarType>
 class AdaptiveTimeStep {
 public:
     enum class StateChange {
-        Update
+        AdvanceTimeStep,
+        UpdateTimeStepSize
     };
-    using ValueType = T;
-    using ObserverType = dare::Observer<AdaptiveTimeStep<T>, StateChange>;
+    using ValueType = T;    //!< type used for keeping track of the time
+    using CounterType = TimeStepCounter;    //!< integer value for the current time step number
+    using ObserverType = dare::Observer<AdaptiveTimeStep<T>, StateChange>;  //!< the type of the observer
 
-    explicit AdaptiveTimeStep(ValueType _dt) : dt(dt) {}
+    /*!
+     * @brief main constructor
+     * @param _dt time step size
+     * @param current_time the time at the specified time step
+     * @param counter_begin the time step to start with
+     */
+    explicit AdaptiveTimeStep(ValueType _dt, ValueType current_time = 0., CounterType counter_begin)
+        : dt{_dt}, time{current_time}, counter{counter_begin} {}
 
+    /*!
+     * @brief returns the time step size
+     */
     ValueType GetTimeStepSize() const {
         return dt;
     }
 
+    /*!
+     * @brief returns the current simulation time
+     */
+    ValueType GetTime() const {
+        return time;
+    }
+
+    /*!
+     * @brief returns the number of conducted timesteps
+     */
+    TimeStepCounter GetTimeStepCounter() const {
+        return counter;
+    }
+
+    /*!
+     * @brief advances to the next timestep and notfies all observers
+     */
+    void AdvanceTimeStep() {
+        time += dt;
+        ++counter;
+        Notify(StateChange::AdvancetimeStep);
+    }
+
+    /*!
+     * @brief attaches an observer
+     * @param o pointer to the observer
+     * @return true if successful
+     */
     bool Attach(ObserverType* o) {
         auto [pos, success] = observers.emplace(o);
         return success;
     }
 
+    /*!
+     * @brief detaches an observer
+     * @param o pointer to the observer to detach
+     * @return true if the observer was found and detached
+     */
     bool Detach(ObserverType* o) {
         return (observers.erase(o) > 0U);
     }
 
+    /*!
+     * @brief notifies all observers of a state change
+     * @param property the state that has changed
+     */
     void Notify(StateChange property) {
         for (auto iter = observers.begin(); iter != observers.end();) {
             auto const pos = iter++;
@@ -61,16 +116,25 @@ public:
         }
     }
 
+    /*!
+     * @brief adapts the timestep size and notifies the attached observers
+     * @param _dt value to adapt the timestep to
+     */
     void AdaptTimeStepSize(ValueType _dt) {
         dt = _dt;
         Notify(StateChange::Update);
     }
 
+    /*!
+     * @brief a conversion function which allows using the observer as if it were of ValueType
+     */
     operator ValueType() { return dt; }
 
 private:
-    ValueType dt;
-    std::set<ObserverType*> observers;
+    ValueType dt;                       //!< the time step size
+    ValueType time;                     //!< current simulation time
+    CounterType counter;                //!< time step counter
+    std::set<ObserverType*> observers;  //!< attached observers
 };
 }  // namespace dare
 

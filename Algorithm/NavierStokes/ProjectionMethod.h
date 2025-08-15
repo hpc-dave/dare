@@ -46,6 +46,7 @@
 #include "Equations/GenericEquation.h"
 #include "ProjectionMethod_freefunc.h"
 #include "IO/TerminalOutput.h"
+#include "PMTerminalOutputDefault.h"
 
 namespace dare {
 
@@ -80,8 +81,19 @@ public:
 
     PMDefaultBoundaryType& operator=(PMDefaultBoundaryType&& other) = default;
 
+    /*!
+     * @brief apply the boundary condition to the local matrix block or field
+     */
     void Apply(MBTypeLO* mb) const { pimpl->Apply(mb); }
+
+    /*!
+     * @brief apply the boundary condition to the global matrix block or field
+     */
     void Apply(MBTypeGO* mb) const { pimpl->Apply(mb); }
+
+    /*!
+     * @brief adapt the field according to the boundary conditions
+     */
     void Apply(FieldType* f) const { pimpl->Apply(f); }
 
     /*!
@@ -106,15 +118,28 @@ public:
     }
 
 private:
+
+    /*!
+     * @brief abstract virtual class for the concept of the type erasure defining the type signature
+     */
     class Concept {
     public:
         virtual ~Concept() = default;
         virtual void Apply(MBTypeLO*) const = 0;
         virtual void Apply(MBTypeGO*) const = 0;
         virtual void Apply(FieldType*) const = 0;
+
+        /*!
+         * @brief prototype signature clone
+         * @return unique base pointer of copied object
+         */
         virtual std::unique_ptr<Concept> clone() const = 0;
     };
 
+    /*!
+     * @brief wrapper for the type erasure containing the original object
+     * @tparam TBoundaryCondition type of the wrapped object
+     */
     template<typename TBoundaryCondition>
     class Model : public Concept {
     public:
@@ -130,17 +155,20 @@ private:
             boundary_condition.Apply(f);
         }
 
+        /*!
+         * @brief prototype clone instantiation
+         * @return unique pointer of the copied object
+         */
         std::unique_ptr<Concept> clone() const override {
             return std::make_unique<Model<TBoundaryCondition>>(*this);
         }
 
     private:
-        TBoundaryCondition boundary_condition;
+        TBoundaryCondition boundary_condition;  //!< original object
     };
 
-    std::unique_ptr<Concept> pimpl;
+    std::unique_ptr<Concept> pimpl;     //!< implementation of the concept
 };
-
 
 template <typename Grid>
 struct PMPropertyInfoDefault {
@@ -211,6 +239,7 @@ public:
     using FieldType = dare::Field<GridType, SC, 1>;
     using GridVectorType = dare::GridVector<GridType, SC, 1>;
     using ObserverType = dare::Observer<SelfType, StateChange>;
+    using TerminalOutput = dare::PMTerminalOutputDefault;
 
     // boundary information for the different equations
     using BoundaryInfoType = BoundaryInfo;
@@ -281,10 +310,13 @@ public:
     ProjectionMethod()
         : ex_man{nullptr},
           dt{0.},
+          time{0.},
+          tstep{0},
           continuity_tolerance{1e-14},
           max_iterations{100},
           status{0},
-          status_finalized{rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init | density_derivative_init} {
+          status_finalized{rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init | density_derivative_init},
+          terminal_output(dimension) {
         if constexpr (dare::is_none_v<PorosityVariableType>)
             status |= epsilon_init;
         if constexpr (dare::is_none_v<ImplicitForceVariableType>)
@@ -312,35 +344,45 @@ public:
     void Initialize(GridType* grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum) {
         ex_man = grid->GetExecutionManager();
         auto dt_obs_func = [&](const T& stepper, typename T::StateChange tag) {
-            this->dt = stepper.GetTimeStepSize();
+            using State = typename T::StateChange;
+            switch (tag) {
+                case State::AdvanceTimeStep:
+                    this->time = stepper.GetTime();
+                    this->tstep = stepper.GetTimeStepCounter();
+                    break;
+                case State::UpdateTimeStepSize:
+                    this->dt = stepper.GetTimeStepSize();
+                    break;
+                }
         };
         pimpl_dt_obs = dare::make_observer_handle(tstep, dt_obs_func);
         dt = tstep->GetTimeStepSize();
+        time = tstep->GetTime();
         free_pm_initialize(this, grid, bc_continuity, bc_momentum...);
         if constexpr(std::is_arithmetic_v<MomentumNormalizerType>) {
             for (auto& e : momentum)
                 e->GetCustomMember()->normalizer = 1;
+                }
+                if constexpr (std::is_arithmetic_v<MomentumNormalizerType>) {
+                    continuity->GetCustomMember()->normalizer = 1;
+                }
+                this->dare::InitializationTracker::Initialize();
         }
-        if constexpr (std::is_arithmetic_v<MomentumNormalizerType>) {
-            continuity->GetCustomMember()->normalizer = 1;
-        }
-        this->dare::InitializationTracker::Initialize();
-    }
 
-    /*!
-     * @brief overload for the case the the grid is provided as unique pointer
-     * @tparam ...Args input arguments for the momentum equation
-     * @tparam BCContinuity boundary condition input type for the continuity
-     * @tparam T a time step object
-     * @param grid pointer to the grid
-     * @param tstep pointer to the time stepper
-     * @param bc_continuity boundary arguments for continuity
-     * @param ...bc_momentum boundary arguments for the momentum
-     */
-    template <TimeStepper T, typename BCContinuity, typename... Args>
-    void Initialize(std::unique_ptr<GridType>& grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum) {  // NOLINT
-        Initialize(grid.get(), tstep, bc_continuity, bc_momentum...);
-    }
+        /*!
+         * @brief overload for the case the the grid is provided as unique pointer
+         * @tparam ...Args input arguments for the momentum equation
+         * @tparam BCContinuity boundary condition input type for the continuity
+         * @tparam T a time step object
+         * @param grid pointer to the grid
+         * @param tstep pointer to the time stepper
+         * @param bc_continuity boundary arguments for continuity
+         * @param ...bc_momentum boundary arguments for the momentum
+         */
+        template <TimeStepper T, typename BCContinuity, typename... Args>
+        void Initialize(std::unique_ptr<GridType> & grid, T * tstep, BCContinuity bc_continuity, Args... bc_momentum) {  // NOLINT
+            Initialize(grid.get(), tstep, bc_continuity, bc_momentum...);
+        }
 
     /*!
      * @brief initializing a dediacted momentum equation
@@ -374,29 +416,34 @@ public:
         if (!CheckStatus()) {
             ex_man->Terminate(__func__, "Projection method was not fully finalized!");
         }
+
+        terminal_output.PrintHeader(*this);
         // build momentum and solve subsequently
         // a bit more verbose, but easier to debug
         // put it in a scope to limit variable lifetime
         {
             BuildMomentum(dare::ZERO);
             auto [success, iter] = SolveMomentum(dare::ZERO);
-            ERROR << "this is a placeholder - ignore for now: " << iter << " "
-                << (success? "success": "fail") << ERROR_CLOSE;
+            terminal_output.PrintMomentum(0, iter, success, this);
+            // ERROR << "this is a placeholder - ignore for now: " << iter << " "
+            //       << (success ? "success" : "fail") << ERROR_CLOSE;
         }
         // add some output here
         if constexpr (dimension > 1) {
             BuildMomentum(dare::ONE);
             auto [success, iter] = SolveMomentum(dare::ONE);
             // add some output here
-            ERROR << "this is a placeholder - ignore for now: " << iter << " "
-                << (success ? "success" : "fail") << ERROR_CLOSE;
+            terminal_output.PrintMomentum(1, iter, success, *this);
+            // ERROR << "this is a placeholder - ignore for now: " << iter << " "
+            //     << (success ? "success" : "fail") << ERROR_CLOSE;
         }
         if constexpr (dimension > 2) {
             BuildMomentum(dare::TWO);
             auto [success, iter] = SolveMomentum(dare::TWO);
+            terminal_output.PrintMomentum(2, iter, success, *this);
             // add some output here
-            ERROR << "this is a placeholder - ignore for now: " << iter << " "
-                << (success ? "success" : "fail") << ERROR_CLOSE;
+            // ERROR << "this is a placeholder - ignore for now: " << iter << " "
+            //     << (success ? "success" : "fail") << ERROR_CLOSE;
         }
 
         // enforce continuity
@@ -405,6 +452,7 @@ public:
         // the very first iteration
         int iteration = 0;
         ComputeDefect();
+        terminal_output.PrintInitialDefect(*this);
         for (; iteration < max_iterations; iteration++) {
             if constexpr (compressible)
                 *rho_prev = rho->GetGridVector(0);
@@ -426,16 +474,18 @@ public:
             ComputeDefect();
 
             // print update to terminal
-            if (ContinuityConvergence())
+            terminal_output.PrintContinuity(iteration, iter, success, *this);
+            if (ContinuityConvergence() || !success)
                 break;
         }
 
         // check if iterations == max_iterations
         if (iteration == (max_iterations - 1)) {
-            // add warning for unconverged solution
+            Print(dare::Verbosity::Low) << "The continuity could not be conserved within "
+                << std::to_string(max_iterations) << " iterations!" << std::endl;
         }
 
-        ERROR << "Implementation not finished" << ERROR_CLOSE;
+        // ERROR << "Implementation not finished" << ERROR_CLOSE;
     }
 
     constexpr bool IsCompressible() const { return compressible; }
@@ -579,6 +629,22 @@ public:
         return dt;
     }
 
+    SC GetTime() const {
+        return time;
+    }
+
+    SC GetTimeStepCounter() const {
+        return tstep;
+    }
+
+    int GetMaxLoopIterations() const {
+        return max_iterations;
+    }
+
+    SC GetMaxContinuityDefect() const {
+        return max_continuity_defect;
+    }
+
     dare::ExecutionManager* GetExecutionManager() const {
         return ex_man;
     }
@@ -634,6 +700,7 @@ private:
 
     void ComputeDefect() {
         free_pm_compute_defect(this);
+        max_continuity_defect = DetermineMaxContinuityDefect();
     }
 
     SC DetermineMaxContinuityDefect() {
@@ -641,7 +708,6 @@ private:
     }
 
     bool ContinuityConvergence() {
-        max_continuity_defect = DetermineMaxContinuityDefect();
         if constexpr (uses_newton_iterations_v<ContinuityIterationType>) {
             return max_continuity_defect < continuity_tolerance;
         } else {
@@ -660,6 +726,8 @@ private:
     std::array<std::unique_ptr<MomentumType>, dimension> momentum;
 
     SC dt;  // for now this is temporary, work with observer here!
+    SC time;
+    TimeStepCounter tstep;
     SC continuity_tolerance;
     SC max_continuity_defect;
     int max_iterations;
@@ -667,6 +735,7 @@ private:
     char status_finalized;
     UniqueObserverHandle pimpl_dt_obs;
     std::set<ObserverType*> observers;
+    TerminalOutput terminal_output;
 };
 
 }  // namespace dare

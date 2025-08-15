@@ -65,14 +65,21 @@ struct uses_fixed_point_iterations : std::bool_constant<FixedPointIterations<T>>
 template <typename T>
 constexpr bool uses_fixed_point_iterations_v = uses_fixed_point_iterations<T>::value;
 
+using TimeStepCounter = uint64_t;
+
 template <typename T>
 concept TimeStepper =
     dare::Observable<T> &&
     std::convertible_to<T, typename T::ValueType> &&
     requires {
         typename T::ValueType;
+        typename T::StateChange;
+        T::StateChange::AdvanceTimeStep;
+        T::StateChange::UpdateTimeStepSize;
     } && requires(const T t) {
         { t.GetTimeStepSize() } -> std::same_as<typename T::ValueType>;
+        { t.GetTime() } -> std::same_as<typename T::ValueType>;
+        { t.GetTimeStepCounter() } -> std::same_as<TimeStepCounter>;
     };  // NOLINT
 
 template <typename T>
@@ -80,7 +87,6 @@ concept AdaptiveTimeStepper = TimeStepper<T> &&
     requires(T t, T::ValueType dt) {
         t.AdaptTimeStepSize(dt);
     };  // NOLINT
-
 }  // namespace dare
 
 #endif  // ALGORITHM_ALGORITHMTRAITS_H_
