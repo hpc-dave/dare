@@ -232,9 +232,11 @@ else()
     target_compile_definitions(exec
         PUBLIC -DDARE_NDEBUG
     )
-    target_compile_definitions(unit_test
-        PUBLIC -DDARE_NDEBUG
-    )
+    if($(USE_GTEST))
+        target_compile_definitions(unit_test
+            PUBLIC -DDARE_NDEBUG
+        )
+    endif()
 endif()
 
 
