@@ -104,25 +104,25 @@ void ExecutionManager::Allsum(const T* data, T* recv, int count) {
 template <typename T>
 T ExecutionManager::Allmax(const T data) {
     T buf{static_cast<T>(0)};
-    MPI_Allmax(&data, &buf, 1);
+    Allmax(&data, &buf, 1);
     return buf;
 }
 
 template <typename T>
 void ExecutionManager::Allmax(const T* data, T* recv, int count) {
-    MPI_Allreduce(data, recv, count, GetMPIType<T>(), MPI_MAX);
+    Allreduce(data, recv, count, MPI_MAX);
 }
 
 template <typename T>
 T ExecutionManager::Allmin(T data) {
     T buf{static_cast<T>(0)};
-    MPI_Allmmin(&data, &buf, 1);
+    Allmin(&data, &buf, 1);
     return buf;
 }
 
 template <typename T>
 void ExecutionManager::Allmin(const T* data, T* recv, int count) {
-    MPI_Allreduce(data, recv, count, GetMPIType<T>(), MPI_MIN);
+    Allreduce(data, recv, count, GetMPIType<T>(), MPI_MIN);
 }
 
 inline bool ExecutionManager::AllLogicAnd(const bool data) {
