@@ -321,7 +321,8 @@ void CartesianDistribution_Cubical(int num_proc,
     }
     if (failed) {
         if (print_warning)
-            Print(dare::Verbosity::Medium) << "Cubical Cartesian distribution failed, switching to MPI_Dims_create instead!" << std::endl;
+            Print(dare::Verbosity::Medium)
+            << "Cubical Cartesian distribution failed, switching to MPI_Dims_create instead!" << std::endl;
         details::CartesianDistribution_MPI_Dims_create(num_proc, resolution_global, vec_res_local, vec_offsets);
     }
 }
