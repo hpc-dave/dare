@@ -118,7 +118,6 @@ public:
     }
 
 private:
-
     /*!
      * @brief abstract virtual class for the concept of the type erasure defining the type signature
      */
@@ -359,15 +358,19 @@ public:
         dt = tstep->GetTimeStepSize();
         time = tstep->GetTime();
         free_pm_initialize(this, grid, bc_continuity, bc_momentum...);
-        if constexpr(std::is_arithmetic_v<MomentumNormalizerType>) {
+
+        // Provide default solver settings
+        free_pm_solver_settings_default(this);
+
+        if constexpr (std::is_arithmetic_v<MomentumNormalizerType>) {
             for (auto& e : momentum)
                 e->GetCustomMember()->normalizer = 1;
-                }
-                if constexpr (std::is_arithmetic_v<MomentumNormalizerType>) {
-                    continuity->GetCustomMember()->normalizer = 1;
-                }
-                this->dare::InitializationTracker::Initialize();
         }
+        if constexpr (std::is_arithmetic_v<MomentumNormalizerType>) {
+            continuity->GetCustomMember()->normalizer = 1;
+        }
+        this->dare::InitializationTracker::Initialize();
+    }
 
         /*!
          * @brief overload for the case the the grid is provided as unique pointer
@@ -479,8 +482,8 @@ public:
                 break;
         }
 
-        // check if iterations == max_iterations
-        if (iteration == (max_iterations - 1)) {
+        // check if iterations == max_iteration
+        if (iteration == max_iterations) {
             Print(dare::Verbosity::Low) << "The continuity could not be conserved within "
                 << std::to_string(max_iterations) << " iterations!" << std::endl;
         }
@@ -560,7 +563,7 @@ public:
     }
 
     ViscosityVariableType GetViscosity() const {
-        return rho;
+        return mu;
     }
 
     SC GetViscosity(Index ind, std::size_t time_level = 0) const {
@@ -637,6 +640,14 @@ public:
         return tstep;
     }
 
+    void SetMaxLoopIterations(int max_loops) {
+        if (max_loops < 0) {
+            ERROR << "maximum continuity iterations may not be negative!" << ERROR_CLOSE;
+            return;
+        }
+        max_iterations = max_loops;
+    }
+
     int GetMaxLoopIterations() const {
         return max_iterations;
     }
@@ -669,6 +680,12 @@ public:
             auto const pos = iter++;
             (*pos)->Update(*this, property);
         }
+    }
+
+    void CopyToOld() {
+        for (std::size_t i{0}; i < dimension; i++)
+            GetMomentum(i)->GetField()->CopyDataVectorsToOldTimeStep();
+        GetContinuity()->GetField()->CopyDataVectorsToOldTimeStep();
     }
 
 private:

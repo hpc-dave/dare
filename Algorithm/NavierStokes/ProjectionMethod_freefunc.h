@@ -41,6 +41,35 @@ void free_pm_initialize(PM* pm, Grid* grid, Args&&... args) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the initialization using the specified types of the projection method and grid");   // NOLINT
 }
 
+template <typename PM>
+void free_pm_solver_settings_default(PM* pm) {
+    using SProp = typename PM::ContinuityType::MatrixSolverType::NumericalPropertiesType;
+    using TrilinosS = typename dare::TrilinosSolver<typename PM::SC>;
+    if constexpr (std::is_same_v<SProp, typename TrilinosS::NumericalPropertiesType>) {
+        SProp sprop_c;
+        sprop_c.solver_package = dare::SolverPackage::Belos;
+        sprop_c.solver_type = "BICGSTAB";
+        sprop_c.solver_properties = dare::detail::GetDefaultSolverPropertiesTrilinos(sprop_c.solver_type);
+        sprop_c.solver_properties->set("Convergence Tolerance", 1e-20);
+        sprop_c.precond_package = dare::PreCondPackage::MueLu;
+        sprop_c.precond_type = "AMG";
+        sprop_c.precond_properties = dare::detail::GetDefaultPreconditionerPropertiesTrilinos(sprop_c.precond_type);
+        pm->GetContinuity()->SetSolverNumericalProperties(sprop_c);
+        SProp sprop_mom;
+        sprop_mom.solver_package = dare::SolverPackage::Belos;
+        sprop_mom.solver_type = "BICGSTAB";
+        sprop_mom.solver_properties = dare::detail::GetDefaultSolverPropertiesTrilinos(sprop_mom.solver_type);
+        sprop_mom.solver_properties->set("Convergence Tolerance", 1e-16);
+        sprop_mom.precond_package = dare::PreCondPackage::Ifpack2;
+        sprop_mom.precond_type = "ILUT";
+        sprop_mom.precond_properties = dare::detail::GetDefaultPreconditionerPropertiesTrilinos(sprop_mom.precond_type);
+        for (std::size_t d{0}; d < pm->GetDimension(); d++)
+            pm->GetMomentum(d)->SetSolverNumericalProperties(sprop_mom);
+    } else {
+        ERROR << "no default solver settings provided by the projection method" << ERROR_CLOSE;
+    }
+}
+
 template <typename PM, dare::NaturalNumber Direction>
 void free_pm_build_momentum(PM* pm, Direction) {
     static_assert(dare::always_false<PM>, "Could not find the specialization for the specified types of the projection method");  // NOLINT
@@ -159,8 +188,11 @@ typename PM::SC free_pm_determine_max_continuity_defect(PM* pm) {
     typename PM::SC max_defect{0.};
     // TODO(@Dave): OMP reduction missing
     for (std::size_t n_loc{0}; n_loc < static_cast<std::size_t>(grep->GetNumberLocalCellsInternal()); n_loc++) {
-        max_defect = std::max(max_defect, std::abs(defect->At(n_loc)));
+        typename PM::LO n = grep->MapInternalToLocal(n_loc);
+        typename PM::SC defect_loc = std::abs(defect->At(n));
+        max_defect = std::max(max_defect, defect_loc);
     }
+    max_defect = pm->GetExecutionManager()->Allmax(max_defect);
     return max_defect;
 }
 
