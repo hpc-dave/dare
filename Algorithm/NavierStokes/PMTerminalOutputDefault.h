@@ -72,7 +72,7 @@ void PMTerminalOutputDefault::PrintInitialDefect(const PM& pm) {
 
 template <typename PM>
 void PMTerminalOutputDefault::PrintContinuity(int loop, int iter, bool success, const PM& pm) {
-    PrintContinuity(loop, iter, success, pm.GetMaxContinuityDefect(), iter == pm.GetMaxLoopIterations() - 1);
+    PrintContinuity(loop, iter, success, pm.GetMaxContinuityDefect(), loop == pm.GetMaxLoopIterations() - 1);
 }
 
 }  // namespace dare
