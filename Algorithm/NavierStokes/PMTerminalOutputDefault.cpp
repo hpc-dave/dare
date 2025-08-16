@@ -75,9 +75,10 @@ void PMTerminalOutputDefault::PrintInitialDefectInternal(double defect) {
 
 void PMTerminalOutputDefault::PrintContinuity(int loop, int iter, bool success, double defect, bool is_last) {
     Print(dare::Verbosity::Low)
-        << std::to_string(loop) << " -> "
-        << (is_last? "MAX" : std::to_string(iter))
-        << " it - defect: " << defect << (success? "" : "FAILURE") <<  '\n' << std::flush;
+        << (is_last ? "MAX" : std::to_string(loop)) << " -> "
+        << std::to_string(iter)
+        << " it - defect: " << defect << (success ? "" : "FAILURE") << '\n'
+        << std::flush;
 }
 
 }  // namespace dare
