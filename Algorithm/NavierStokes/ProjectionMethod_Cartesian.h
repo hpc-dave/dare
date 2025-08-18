@@ -413,7 +413,6 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
 
         // normalize
         free_pm_apply_normalizer(pm, pm->GetMomentum(direction)->GetCustomMember()->normalizer, mblock);
-
     };
 
     pm->GetMomentum(dir)->Build(BuildStrategy);

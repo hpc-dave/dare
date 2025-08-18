@@ -428,8 +428,6 @@ public:
             BuildMomentum(dare::ZERO);
             auto [success, iter] = SolveMomentum(dare::ZERO);
             terminal_output.PrintMomentum(0, iter, success, this);
-            // ERROR << "this is a placeholder - ignore for now: " << iter << " "
-            //       << (success ? "success" : "fail") << ERROR_CLOSE;
         }
         // add some output here
         if constexpr (dimension > 1) {
@@ -437,16 +435,11 @@ public:
             auto [success, iter] = SolveMomentum(dare::ONE);
             // add some output here
             terminal_output.PrintMomentum(1, iter, success, *this);
-            // ERROR << "this is a placeholder - ignore for now: " << iter << " "
-            //     << (success ? "success" : "fail") << ERROR_CLOSE;
         }
         if constexpr (dimension > 2) {
             BuildMomentum(dare::TWO);
             auto [success, iter] = SolveMomentum(dare::TWO);
             terminal_output.PrintMomentum(2, iter, success, *this);
-            // add some output here
-            // ERROR << "this is a placeholder - ignore for now: " << iter << " "
-            //     << (success ? "success" : "fail") << ERROR_CLOSE;
         }
 
         // enforce continuity
@@ -487,8 +480,6 @@ public:
             Print(dare::Verbosity::Low) << "The continuity could not be conserved within "
                 << std::to_string(max_iterations) << " iterations!" << std::endl;
         }
-
-        // ERROR << "Implementation not finished" << ERROR_CLOSE;
     }
 
     constexpr bool IsCompressible() const { return compressible; }
