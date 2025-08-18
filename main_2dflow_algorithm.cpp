@@ -59,8 +59,8 @@ struct PDict {
 
 struct SDict {
     using tvd = dare::MINMOD;
-    // using viscous_stress = dare::PMDijkhuizenStressTensor;
-    // using time_scheme_convective = dare::EULER_BACKWARD;
+    using viscous_stress = dare::PMDijkhuizenStressTensor;
+    using time_scheme_convective = dare::EULER_BACKWARD;
 };
 
 using BoundaryStrategy = dare::PMDefaultBoundaryType<Grid, SC>;
@@ -311,6 +311,7 @@ public:
                         o->Get(0, 0, face) = 0.;
                     o->Get(0, 0, CNB::CENTER) = 1.;
                     o->GetRhs(0) = ux_in;
+                    o->GetInitialGuess(0) = ux_in;
                 } else if (ind_g.i() + 1 == extent.i()) {
                     // EAST
                     // Neumann
@@ -366,16 +367,16 @@ int main(int argc, char* argv[]) {
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
         SC L{8}, H{0.2};
-        GO ny{30};
+        GO ny{40};
         SC Re = 10;
         GO nx = static_cast<GO>(L / H * ny);
         LO num_ghost = 2;
-        int num_tsteps = 10000;
+        int num_tsteps = 1000;
         SC rho = 1000.;
         SC mu = 1e-3;
         SC uin = Re * mu / (rho * H);
-        SC Co = 0.025;
-        int freq_write = 1000;
+        SC Co = 0.25;
+        int freq_write = 100;
         dare::ConstantTimeStep<SC> dt{Co * H / ny / uin};
         SC sim_time = num_tsteps * dt;
         LO i_beg = static_cast<LO>(nx * 2 / 3 + num_ghost);
@@ -441,7 +442,8 @@ int main(int argc, char* argv[]) {
             pm.CopyToOld();
             dt.AdvanceTimeStep();
             pm.SolveFlowField();
-            SC dp = pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_beg, 0) - pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_end, 0);
+            SC dp = pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_beg, 0)
+                - pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_end, 0);
             SC err = std::abs((dp / dx - dp_ana) / dp_ana);
             Print(dare::Verbosity::Low) << "Pressure drop: " << dp / dx << " -> Error: " << err << std::endl;
             if (dt.GetTimeStepCounter() % freq_write == 0) {
