@@ -25,28 +25,31 @@
 #ifndef ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_H_
 #define ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_H_
 
-#include <concepts>
-#include <array>
-#include <memory>
 #include <algorithm>
+#include <array>
 #include <bitset>
-#include <utility>
+#include <concepts>
+#include <memory>
 #include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "PM_Information.h"
-#include "PM_details.h"
-#include "PM_Continuity.h"
 #include "Algorithm/AlgorithmTraits.h"
 #include "Data/Field.h"
 #include "Equations/FluxLimiter.h"
-#include "Utilities/Errors.h"
-#include "Utilities/Observer.h"
-#include "Equations/TimeDiscretizationSchemes.h"
-#include "Utilities/InitializationTracker.h"
 #include "Equations/GenericEquation.h"
-#include "ProjectionMethod_freefunc.h"
+#include "Equations/TimeDiscretizationSchemes.h"
 #include "IO/TerminalOutput.h"
 #include "PMTerminalOutputDefault.h"
+#include "PM_Continuity.h"
+#include "PM_Information.h"
+#include "PM_details.h"
+#include "ProjectionMethod_freefunc.h"
+#include "Utilities/Errors.h"
+#include "Utilities/InitializationTracker.h"
+#include "Utilities/Observer.h"
+#include "Utilities/Timer.h"
 
 namespace dare {
 
@@ -421,6 +424,7 @@ public:
         }
 
         terminal_output.PrintHeader(*this);
+        StartProfiling("FlowStep");
         // build momentum and solve subsequently
         // a bit more verbose, but easier to debug
         // put it in a scope to limit variable lifetime
@@ -446,6 +450,7 @@ public:
         // first iteration we add the implicit force term
         // or in the case of no additional term this is just
         // the very first iteration
+        StartProfiling("Enforce_Continuity");
         int iteration = 0;
         ComputeDefect();
         terminal_output.PrintInitialDefect(*this);
@@ -474,12 +479,16 @@ public:
             if (ContinuityConvergence() || !success)
                 break;
         }
+        StopProfiling("Enforce_Continuity");
+        StopProfiling("FlowStep");
 
         // check if iterations == max_iteration
         if (iteration == max_iterations) {
             Print(dare::Verbosity::Low) << "The continuity could not be conserved within "
                 << std::to_string(max_iterations) << " iterations!" << std::endl;
+            iteration--;
         }
+        PrintProfiling(iteration);
     }
 
     constexpr bool IsCompressible() const { return compressible; }
@@ -679,23 +688,41 @@ public:
         GetContinuity()->GetField()->CopyDataVectorsToOldTimeStep();
     }
 
+    void SetTimer(Timer t) {
+        timer = std::make_unique<Timer>(std::move(t));
+    }
+
 private:
     template <dare::NaturalNumber Direction>
     void BuildMomentum(Direction dir) {
+        std::string id = std::string {"Build_Momentum_"} + std::to_string(dir);
+        StartProfiling(id);
         free_pm_build_momentum(this, dir);
+        StopProfiling(id);
     }
 
     template <dare::NaturalNumber Direction>
     std::pair<bool, int> SolveMomentum(Direction dir) {
-        return free_pm_solve_momentum(this, dir);
+        std::string id = std::string {"Solve_Momentum_"} + std::to_string(dir);
+        StartProfiling(id);
+        auto ret = free_pm_solve_momentum(this, dir);
+        StopProfiling(id);
+        return ret;
     }
 
     void BuildContinuity(int iteration) {
+        std::string id = std::string {"Build_Continuity_"} + std::to_string(iteration);
+        StartProfiling(id);
         free_pm_build_continuity(this, iteration);
+        StopProfiling(id);
     }
 
     std::pair<bool, int> SolveContinuity(int iteration) {
-        return free_pm_solve_continuity(this, iteration);
+        std::string id = std::string {"Solve_Continuity_"} + std::to_string(iteration);
+        StartProfiling(id);
+        auto ret = free_pm_solve_continuity(this, iteration);
+        StopProfiling(id);
+        return ret;
     }
 
     void UpdatePressure() {
@@ -723,6 +750,108 @@ private:
         }
     }
 
+    void StartProfiling(std::string id) {
+        if (timer)
+            timer->Tic(id);
+    }
+
+    Timer::ValueType StopProfiling(std::string id) {
+        if (timer)
+            return timer->Toc(id);
+        return 0.;
+    }
+
+    void PrintProfiling(int c_loops) const {
+        if (!timer)
+            return;
+
+        char mom_id[] = { 'X', 'Y', 'Z' };
+
+        const int prec{3};  //!< precision of the output
+        Timer::ValueType t_flowstep = timer->GetElapsedTime("FlowStep");
+        std::array<Timer::ValueType, dimension> t_build_mom, t_solve_mom;
+        for (std::size_t d{0}; d < dimension; d++) {
+            std::string id = std::string {"Build_Momentum_"} + std::to_string(d);
+            t_build_mom[d] = timer->GetElapsedTime(id);
+            id = std::string {"Solve_Momentum_"} + std::to_string(d);
+            t_solve_mom[d] = timer->GetElapsedTime(id);
+        }
+        Timer::ValueType t_enforce_continuity = timer->GetElapsedTime("Enforce_Continuity");
+        std::vector<Timer::ValueType> t_build_cont(c_loops+1);
+        std::vector<Timer::ValueType> t_solve_cont(c_loops+1);
+
+        for (int l{0}; l <= c_loops; l++) {
+            std::string id = std::string {"Build_Continuity_"} + std::to_string(l);
+            t_build_cont[l] = timer->GetElapsedTime(id);
+            id = std::string("Solve_Continuity_") + std::to_string(l);
+            t_solve_cont[l] = timer->GetElapsedTime(id);
+        }
+        Timer::ValueType t_build{0.}, t_solve{0.};
+        Timer::ValueType t_build_cont_tot{0.}, t_solve_cont_tot{0.};
+        for (std::size_t d{0}; d < dimension; d++) {
+            t_build += t_build_mom[d];
+            t_solve += t_solve_mom[d];
+        }
+        for (int l{0}; l <= c_loops; l++) {
+            t_build += t_build_cont[l];
+            t_solve += t_solve_cont[l];
+            t_solve_cont_tot += t_solve_cont[l];
+            t_build_cont_tot += t_build_cont[l];
+        }
+        Print(dare::Verbosity::Low)
+            << "Time estimates\n"
+            << "--------------\n"
+            << "ID                -> elapsed in s (% of step)\n";
+        // Print assembly times
+        Print(dare::Verbosity::Low)
+            << "Assembly Time     -> "
+            << std::setprecision(prec) << t_build
+            << " (" << std::setprecision(prec) << t_build / t_flowstep * 100 << " %)\n";
+        for (std::size_t d{0}; d < dimension; d++)
+            Print(dare::Verbosity::Medium)
+                << "   Momentum " << mom_id[d] << "     -> "
+                << std::setprecision(prec) << t_build_mom[d]
+                << " (" << std::setprecision(prec) << t_build_mom[d] / t_flowstep * 100 << " %)\n";
+        Print(dare::Verbosity::Medium)
+            << "   Continuity     -> " << std::setprecision(prec) << t_build_cont_tot
+            << " (" << std::setprecision(prec) << t_build_cont_tot / t_flowstep * 100 << " %)\n";
+        if (c_loops > 1) {
+            for (int l{0}; l <= c_loops; l++)
+                Print(dare::Verbosity::High)
+                    << "      it " << std::to_string(l) << "       -> "
+                    << std::setprecision(prec) << t_build_cont[l] << " ("
+                    << std::setprecision(prec) << t_build_cont[l] / t_flowstep * 100 << " %)\n";
+        }
+        // Print solving times
+        Print(dare::Verbosity::Low)
+            << "Solving Time      -> "
+            << std::setprecision(prec) << t_solve
+            << "(" << std::setprecision(prec) << t_solve / t_flowstep * 100 << " %)\n";
+        for (std::size_t d{0}; d < dimension; d++)
+            Print(dare::Verbosity::Medium)
+                << "   Momentum " << mom_id[d] << "     -> "
+                << std::setprecision(prec) << t_solve_mom[d]
+                << " (" << std::setprecision(prec) << t_solve_mom[d] / t_flowstep * 100 << " %)\n";
+        Print(dare::Verbosity::Medium)
+            << "   Continuity     -> " << std::setprecision(prec) << t_solve_cont_tot
+            << " (" << std::setprecision(prec) << t_solve_cont_tot / t_flowstep * 100 << " %)\n";
+        if (c_loops > 1) {
+            for (int l{0}; l <= c_loops; l++)
+                Print(dare::Verbosity::High)
+                    << "      it " << std::to_string(l) << "       -> "
+                    << std::setprecision(prec) << t_solve_cont[l] << " ("
+                    << std::setprecision(prec) << t_solve_cont[l] / t_flowstep * 100 << " %)\n";
+        }
+        Print(dare::Verbosity::Low)
+            << "Momentum Total    -> " << std::setprecision(prec) << t_flowstep - t_enforce_continuity << " ("
+            << std::setprecision(prec) << (1.-t_enforce_continuity / t_flowstep) * 100 << " %)\n";
+        Print(dare::Verbosity::Low)
+            << "Continuity Total  -> " << std::setprecision(prec) << t_enforce_continuity << " ("
+            << std::setprecision(prec) << t_enforce_continuity / t_flowstep * 100 << " %)\n";
+        Print(dare::Verbosity::Low)
+            << "Total Time        -> " << std::setprecision(prec) << t_flowstep << " s" << std::endl;
+    }
+
     dare::ExecutionManager* ex_man;
     DensityVariableType rho;
     ViscosityVariableType mu;
@@ -744,6 +873,7 @@ private:
     UniqueObserverHandle pimpl_dt_obs;
     std::set<ObserverType*> observers;
     TerminalOutput terminal_output;
+    std::unique_ptr<Timer> timer;
 };
 
 }  // namespace dare
