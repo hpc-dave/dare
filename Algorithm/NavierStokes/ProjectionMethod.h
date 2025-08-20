@@ -491,18 +491,43 @@ public:
         PrintProfiling(iteration);
     }
 
+    /*!
+     * @brief convenient constexpr access to compressibility
+     * @return true if compressible
+     */
     constexpr bool IsCompressible() const { return compressible; }
+
+    /*!
+     * @brief convenient constexpr access to the dimension of the system
+     */
     constexpr std::size_t GetDimension() const { return dimension; }
 
+    /*!
+     * @brief provides momentum equation
+     * @param dim direction of the momentum
+     * @return reference to the unique_ptr holding the momentum
+     */
     std::unique_ptr<MomentumType>& GetMomentum(std::size_t dim) { return momentum[dim]; }
     const std::unique_ptr<MomentumType>& GetMomentum(std::size_t dim) const { return momentum[dim]; }
 
+    /*!
+     * @brief provides continuity equation
+     * @return reference to the unique_ptr holding the continuity
+     */
     std::unique_ptr<ContinuityType>& GetContinuity() { return continuity; }
     const ContinuityType& GetContinuity() const { return *continuity; }
 
+    /*!
+     * @brief convenient access to the pressure field
+     */
     FieldType* GetPressure() { return continuity->GetPressure(); }
     const FieldType& GetPressure() const { return continuity->GetPressure(); }
 
+    /*!
+     * @brief setter for the density
+     * @param d density variable
+     * Internally, the status is updated to track the density
+     */
     void SetDensity(DensityVariableType d) {
         rho = d;
         status |= rho_init;
@@ -513,32 +538,66 @@ public:
             *rho_prev = rho->GetDataVector();
         }
     }
+
+    /*!
+     * @brief setter for the viscosity
+     * @param v viscosity variable
+     * Internally, the status is updated to track the viscosity
+     */
     void SetViscosity(ViscosityVariableType v) {
         mu = v;
         status |= mu_init;
     }
+
+    /*!
+     * @brief setter for the porosity
+     * @param p porosity variable
+     * Internally, the status is updated to track the porosity
+     */
     void SetPorosity(PorosityVariableType p) {
         epsilon = p;
         status |= epsilon_init;
     }
 
+    /*!
+     * @brief setter for the density derivative
+     * @param dd density derivative variable
+     * Internally, the status is updated to track the density derivative
+     */
     void SetDensityDerivative(DensityDerivativeMemberType dd) {
         density_derivative = std::move(dd);
         status |= density_derivative_init;
     }
 
+    /*!
+     * @brief provides access to the underlying density derivative
+     */
     const DensityDerivativeMemberType& GetDensityDerivative() const {
         return density_derivative;
     }
 
+    /*!
+     * @brief provides the density derivative at a certain index
+     * @param ind local index
+     * @return value at the cell center
+     */
     SC GetDensityDerivative(Index ind) const {
         return density_derivative(ind);
     }
 
+    /*!
+     * @brief provides the underlying density variable
+     */
     DensityVariableType GetDensity() const {
         return rho;
     }
 
+    /*!
+     * @brief provides the field with porosity at the previous iteration
+     * @return pointer to the field
+     * This function can only be used in the compressible case and won't compile
+     * for incompressible flow!
+     */
     const GridVectorType* GetDensityPreviousIteration() const {
         if constexpr(!compressible) {
             static_assert(dare::always_false<decltype(this)>, "In the incompressible case this should not be accessed");
@@ -551,6 +610,12 @@ public:
         return rho_prev.get();
     }
 
+    /*!
+     * @brief returns the density at a certain index
+     * @param ind local index at which to provide the density
+     * @param time_level time step at which to access
+     * @return value at the cell center
+     */
     SC GetDensity(Index ind, std::size_t time_level = 0) const {
         using DType = std::remove_cv_t<std::remove_pointer_t<DensityVariableType>>;
         if constexpr (dare::is_field_v<DType>) {
@@ -562,10 +627,19 @@ public:
         }
     }
 
+    /*!
+     * @brief provides the underlying viscosity variable
+     */
     ViscosityVariableType GetViscosity() const {
         return mu;
     }
 
+    /*!
+     * @brief returns the viscosity at a certain index
+     * @param ind local index at which to provide the viscosity
+     * @param time_level time step at which to access
+     * @return value at the cell center
+     */
     SC GetViscosity(Index ind, std::size_t time_level = 0) const {
         using VType = std::remove_cv_t<std::remove_pointer_t<ViscosityVariableType>>;
         if constexpr (dare::is_field_v<VType>) {
@@ -577,10 +651,19 @@ public:
         }
     }
 
+    /*!
+     * @brief provides the underlying porosity variable
+     */
     PorosityVariableType GetPorosity() const {
         return epsilon;
     }
 
+    /*!
+     * @brief returns the porosity at a certain index
+     * @param ind local index at which to provide the porosity
+     * @param time_level time step at which to access
+     * @return value at the cell center
+     */
     SC GetPorosity(Index ind, std::size_t time_level = 0) const {
         using PType = std::remove_cv_t<std::remove_pointer_t<PorosityVariableType>>;
         if constexpr (dare::is_field_v<PType>) {
@@ -594,6 +677,12 @@ public:
         }
     }
 
+    /*!
+     * @brief Adds an imiplicit force to the flow
+     * @param f implicit force variable type
+     * The implicit force is applied to the continuity equation and thus has to be
+     * provided for the scalar grid
+     */
     void AddImplicitForce(ImplicitForceVariableType f) {
         // add to continuity
         if (!IsInitialized()) {
@@ -605,6 +694,13 @@ public:
         status |= beta_im_init;
     }
 
+    /*!
+     * @brief Adds an explicit force to the flow
+     * @param f explicit force variable type
+     * @param dim staggered grid direction at which the explicit force is applied
+     * The explict force is applied to the momentum equation and thus has to be
+     * supplied in the staggered configuration
+     */
     void AddExplicitForce(ExplicitForceVariableType f, std::size_t dim) {
         // add to continuity
         if (!IsInitialized()) {
@@ -624,22 +720,41 @@ public:
         }
     }
 
+    /*!
+     * @brief Checks if the object is ready for flow step computation
+     * @return true if prepared
+     */
     bool CheckStatus() const {
         return (status == status_finalized) && this->IsInitialized();
     }
 
+    /*!
+     * @brief current time step size
+     * @return 
+     */
     SC GetTimeStepSize() const {
         return dt;
     }
 
+    /*!
+     * @brief returns the current simulation time
+     */
     SC GetTime() const {
         return time;
     }
 
-    SC GetTimeStepCounter() const {
+    /*!
+     * @brief returns the current time step number
+     * @return time step number
+     */
+    TimeStepCounter GetTimeStepCounter() const {
         return tstep;
     }
 
+    /*!
+     * @brief Sets the maximum number of loop iterations
+     * @param max_loops max loops
+     */
     void SetMaxLoopIterations(int max_loops) {
         if (max_loops < 0) {
             ERROR << "maximum continuity iterations may not be negative!" << ERROR_CLOSE;
@@ -648,27 +763,52 @@ public:
         max_iterations = max_loops;
     }
 
+    /*!
+     * @brief maximum number of continuity loops
+     */
     int GetMaxLoopIterations() const {
         return max_iterations;
     }
 
+    /*!
+     * @brief provides the last determined maximum continuity defect
+     * @return max continuity defect
+     */
     SC GetMaxContinuityDefect() const {
         return max_continuity_defect;
     }
 
+    /*!
+     * @brief provides reference to execution manager
+     * @return address of execution manager
+     */
     dare::ExecutionManager* GetExecutionManager() const {
         return ex_man;
     }
 
+    /*!
+     * @brief attached an observer
+     * @param o address of the observer
+     * @return true, if the observer could be attached
+     */
     bool Attach(ObserverType* o) {
         auto [pos, success] = observers.emplace(o);
         return success;
     }
 
+    /*!
+     * @brief detaches a previous attached observer
+     * @param o address of the observer
+     * @return true, if observer was found and deattached
+     */
     bool Detach(ObserverType* o) {
         return (observers.erase(o) > 0U);
     }
 
+    /*!
+     * @brief notifies the attached observers of a state change
+     * @param property state change
+     */
     void Notify(StateChange property) {
         if constexpr (compressible) {
             if (property == StateChange::PressureUpdated && (observers.size() == 0)) {
@@ -682,17 +822,29 @@ public:
         }
     }
 
+    /*!
+     * @brief Convenient overload for copying all internal fields to the old timestep
+     */
     void CopyToOld() {
         for (std::size_t i{0}; i < dimension; i++)
             GetMomentum(i)->GetField()->CopyDataVectorsToOldTimeStep();
         GetContinuity()->GetField()->CopyDataVectorsToOldTimeStep();
     }
 
+    /*!
+     * @brief provides a timer and starts profiling
+     * @param t instance of the timer
+     */
     void SetTimer(Timer t) {
         timer = std::make_unique<Timer>(std::move(t));
     }
 
 private:
+    /*!
+     * @brief builds the matrix system for the momentum equation in specific direction
+     * @tparam Direction Natural number type
+     * @param dir direction of the momentum equation
+     */
     template <dare::NaturalNumber Direction>
     void BuildMomentum(Direction dir) {
         std::string id = std::string {"Build_Momentum_"} + std::to_string(dir);
@@ -701,6 +853,12 @@ private:
         StopProfiling(id);
     }
 
+    /*!
+     * @brief solves a specific momentum equation
+     * @tparam Direction Natural number type
+     * @param dir direction of the momentum equation
+     * @return pair of <bool, int>, indicating convergence success and number of solver loops
+     */
     template <dare::NaturalNumber Direction>
     std::pair<bool, int> SolveMomentum(Direction dir) {
         std::string id = std::string {"Solve_Momentum_"} + std::to_string(dir);
@@ -710,6 +868,10 @@ private:
         return ret;
     }
 
+    /*!
+     * @brief builds the continuity matrix system
+     * @param iteration continuity loop iteration
+     */
     void BuildContinuity(int iteration) {
         std::string id = std::string {"Build_Continuity_"} + std::to_string(iteration);
         StartProfiling(id);
@@ -717,6 +879,11 @@ private:
         StopProfiling(id);
     }
 
+    /*!
+     * @brief calls the solver
+     * @param iteration continuity loop iteration
+     * @return pair of <bool, int>, indicating convergence success and number of solver loops
+     */
     std::pair<bool, int> SolveContinuity(int iteration) {
         std::string id = std::string {"Solve_Continuity_"} + std::to_string(iteration);
         StartProfiling(id);
@@ -725,23 +892,48 @@ private:
         return ret;
     }
 
+    /*!
+     * @brief updates the pressure with the dP field
+     */
     void UpdatePressure() {
         free_pm_update_pressure(this);
     }
 
+    /*!
+     * @brief updates the velocity with the dP field
+     * @param iteration continuity loop iteration
+     * \note implementation is provided as an overload of the
+     * function free_pm_update_velocity
+     */
     void UpdateVelocity(int iteration) {
         free_pm_update_velocity(this, iteration);
     }
 
+    /*!
+     * @brief computes the defect according to the method specific function
+     * Also determines the maximum defect
+     */
     void ComputeDefect() {
         free_pm_compute_defect(this);
         max_continuity_defect = DetermineMaxContinuityDefect();
     }
 
+    /*!
+     * @brief determines maximum defect on the defect field
+     * @return maximum defect
+     * \note implementation can be customized depending
+     * on the template parameters of the class by providing
+     * a dedicated overload of the underlying function
+     * free_pm_determine_max_continuity_defect
+     */
     SC DetermineMaxContinuityDefect() {
         return free_pm_determine_max_continuity_defect(this);
     }
 
+    /*!
+     * @brief checks if continuity has been achieved within tolerance
+     * @return true, if converged
+     */
     bool ContinuityConvergence() {
         if constexpr (uses_newton_iterations_v<ContinuityIterationType>) {
             return max_continuity_defect < continuity_tolerance;
@@ -750,17 +942,32 @@ private:
         }
     }
 
+    /*!
+     * @brief starts profiling, if timer was allocated
+     * @param id profile step id
+     */
     void StartProfiling(std::string id) {
         if (timer)
             timer->Tic(id);
     }
 
+    /*!
+     * @brief stops profiling, if timer was allocated
+     * @param id profile step id
+     * @return elapsed time
+     */
     Timer::ValueType StopProfiling(std::string id) {
         if (timer)
             return timer->Toc(id);
         return 0.;
     }
 
+    /*!
+     * @brief pretty printing of the profiling data
+     * @param c_loops numer of loops for continuity
+     * 
+     * \note if no timer was allocated, this function returns without doing anything
+     */
     void PrintProfiling(int c_loops) const {
         if (!timer)
             return;
@@ -852,28 +1059,28 @@ private:
             << "Total Time        -> " << std::setprecision(prec) << t_flowstep << " s" << std::endl;
     }
 
-    dare::ExecutionManager* ex_man;
-    DensityVariableType rho;
-    ViscosityVariableType mu;
-    PorosityVariableType epsilon;
-    DensityDerivativeMemberType density_derivative;
-    std::unique_ptr<GridVectorType> rho_prev;
+    dare::ExecutionManager* ex_man;                  //!< reference to execution manager
+    DensityVariableType rho;                         //!< mass density
+    ViscosityVariableType mu;                        //!< dynamic viscosity
+    PorosityVariableType epsilon;                    //!< porosity
+    DensityDerivativeMemberType density_derivative;  //!< density derivative (compressible)
+    std::unique_ptr<GridVectorType> rho_prev;        //!< density at previous iteration (compressible)
 
-    std::unique_ptr<ContinuityType> continuity;
-    std::array<std::unique_ptr<MomentumType>, dimension> momentum;
+    std::unique_ptr<ContinuityType> continuity;      //!< instance of the continuity equation
+    std::array<std::unique_ptr<MomentumType>, dimension> momentum;  //!< momentum equations
 
-    SC dt;  // for now this is temporary, work with observer here!
-    SC time;
-    TimeStepCounter tstep;
-    SC continuity_tolerance;
-    SC max_continuity_defect;
-    int max_iterations;
-    char status;
-    char status_finalized;
-    UniqueObserverHandle pimpl_dt_obs;
-    std::set<ObserverType*> observers;
-    TerminalOutput terminal_output;
-    std::unique_ptr<Timer> timer;
+    SC dt;                      //!< current time step size
+    SC time;                    //!< current simulation time
+    TimeStepCounter tstep;      //!< current time step
+    SC continuity_tolerance;    //!< convergence tolerance for the continuity loop
+    SC max_continuity_defect;   //!< last determined maximum continuity defect
+    int max_iterations;         //!< maximum iterations for the continuity loop
+    char status;                //!< bitflag for checking the object status
+    char status_finalized;      //!< expected status of object when computing a flow step
+    UniqueObserverHandle pimpl_dt_obs;  //!< observer handle for updating time and timesteps
+    std::set<ObserverType*> observers;  //!< attached observers
+    TerminalOutput terminal_output;     //!< prints data to the terminal (should probably be a logger)
+    std::unique_ptr<Timer> timer;       //!< timing instance for profiling the execution
 };
 
 }  // namespace dare
