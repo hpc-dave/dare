@@ -201,10 +201,13 @@ public:
     const CRefType& continuity;  //!< reference to the continuity equation
 };
 
-template <int staggered>
+template <int staggered, int order = 1>
 struct BCMom {
 public:
     SC ux_in;
+    SC alpha{1. + static_cast<SC>(order == 2)};
+    SC beta{static_cast<SC>(order == 2) / 3.};
+    SC gamma{2. + static_cast<SC>(order == 2) * 2. / 3.};
     explicit BCMom(SC uin = 0) : ux_in{uin} {}
 
     template <typename T>
@@ -251,7 +254,9 @@ public:
                 IndexLocal ind_orig{o->GetGridRepresentation().MapInternalToLocal(indl_low)};
                 IndexLocal ind{ind_orig};
                 IndexLocal ind_nb{ind};
+                IndexLocal ind_far{ind};
                 ind_nb.j() -= 1;
+                ind_far.j() += 1;
                 ind.j() += static_cast<LO>(staggered == 1);
                 for (LO i{0}; i < extent_l.i(); i++) {
                     ind.i() = ind_orig.i() + i;
@@ -259,6 +264,8 @@ public:
                     // o->GetDataVector(0).At(ind_nb, 0) = 0.;
                     if constexpr (staggered == 0) {
                         o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
+                        // o->GetDataVector(0).At(ind_nb, 0) += beta * o->GetDataVector(0).At(ind_far, 0);
+                        // o->GetDataVector(0).At(ind_nb, 0) += gamma * 0.;
                     } else {
                         o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
                     }
@@ -295,14 +302,15 @@ public:
                 if (ind_g.j() == 0) {
                     // SOUTH - Wall
                     SC bc_wall{0.};
-                    o->Get(0, 0, CNB::CENTER) -= o->Get(0, 0, CNB::SOUTH);
-                    o->GetRhs(0) -= 2. * bc_wall * o->Get(0, 0, CNB::SOUTH);
+                    o->Get(0, 0, CNB::CENTER) -= alpha * o->Get(0, 0, CNB::SOUTH);
+                    o->Get(0, 0, CNB::NORTH) += beta * o->Get(0, 0, CNB::SOUTH);
+                    o->GetRhs(0) -= gamma * bc_wall * o->Get(0, 0, CNB::SOUTH);
                 } else if (ind_g.j() + 1 == extent.j()) {
                     // NORTH
-                    // SOUTH - Wall
                     SC bc_wall{0.};
-                    o->Get(0, 0, CNB::CENTER) -= o->Get(0, 0, CNB::NORTH);
-                    o->GetRhs(0) -= 2. * bc_wall * o->Get(0, 0, CNB::NORTH);
+                    o->Get(0, 0, CNB::CENTER) -= alpha * o->Get(0, 0, CNB::NORTH);
+                    o->Get(0, 0, CNB::SOUTH) += beta * o->Get(0, 0, CNB::NORTH);
+                    o->GetRhs(0) -= gamma * bc_wall * o->Get(0, 0, CNB::NORTH);
                 }
                 if (ind_g.i() == 0) {
                     // WEST
@@ -326,8 +334,9 @@ public:
                     // WEST
                     // Dirichlet
                     SC bc_0 = 0.;
-                    o->Get(0, 0, CNB::CENTER) -= o->Get(0, 0, CNB::WEST);
-                    o->GetRhs(0) -= 2. * bc_0 * o->Get(0, 0, CNB::WEST);
+                    o->Get(0, 0, CNB::CENTER) -= alpha * o->Get(0, 0, CNB::WEST);
+                    o->Get(0, 0, CNB::EAST) += beta * o->Get(0, 0, CNB::WEST);
+                    o->GetRhs(0) -= gamma * bc_0 * o->Get(0, 0, CNB::WEST);
                 } else if (ind_g.i() + 1 == extent.i()) {
                     // EAST
                     // Neumann
@@ -367,8 +376,8 @@ int main(int argc, char* argv[]) {
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
         SC L{8}, H{0.2};
-        GO ny{40};
-        SC Re = 10;
+        GO ny{30};
+        SC Re = 20;
         GO nx = static_cast<GO>(L / H * ny);
         LO num_ghost = 2;
         int num_tsteps = 1000;
@@ -404,7 +413,7 @@ int main(int argc, char* argv[]) {
         auto grid_x = grid.GetRepresentation(staggered_x);
         auto grid_y = grid.GetRepresentation(staggered_y);
 
-        pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0>{uin}, BCMom<1>{});
+        pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 2>{uin}, BCMom<1, 2>{});
 
         pm.SetMaxLoopIterations(1);
         pm.SetDensity(rho);
@@ -438,12 +447,13 @@ int main(int argc, char* argv[]) {
         IndexLocal ind_beg(i_beg, j_mid);
         IndexLocal ind_end(i_end, j_mid);
         SC dx = grid_s.GetCoordinatesCenter(ind_end).x() - grid_s.GetCoordinatesCenter(ind_beg).x();
+        // pm.SetTimer(dare::Timer{});
+        dare::SetVerbosity(dare::Verbosity::Low);
         while (dt.GetTime() < sim_time) {
             pm.CopyToOld();
             dt.AdvanceTimeStep();
             pm.SolveFlowField();
-            SC dp = pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_beg, 0)
-                - pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_end, 0);
+            SC dp = pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_beg, 0) - pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_end, 0);
             SC err = std::abs((dp / dx - dp_ana) / dp_ana);
             Print(dare::Verbosity::Low) << "Pressure drop: " << dp / dx << " -> Error: " << err << std::endl;
             if (dt.GetTimeStepCounter() % freq_write == 0) {
