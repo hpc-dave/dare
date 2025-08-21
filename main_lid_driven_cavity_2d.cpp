@@ -26,7 +26,9 @@
 #include <iostream>
 #include <type_traits>
 
+#include "Algorithm/ConstantTimeStep.h"
 #include "Algorithm/NavierStokes/ProjectionMethod.h"
+#include "Algorithm/NavierStokes/ProjectionMethod_Cartesian.h"
 #include "AnalyticalSolutions/Diffusion.h"
 #include "Data/DefaultTypes.h"
 #include "Data/Field.h"
@@ -37,9 +39,6 @@
 #include "MatrixSystem/Trilinos.h"
 #include "MatrixSystem/TrilinosSolver.h"
 #include "ScopeGuard/ScopeGuard.h"
-#include "Algorithm/NavierStokes/ProjectionMethod.h"
-#include "Algorithm/NavierStokes/ProjectionMethod_Cartesian.h"
-#include "Algorithm/ConstantTimeStep.h"
 
 using SC = dare::defaults::ScalarType;
 using GO = dare::defaults::GlobalOrdinalType;
@@ -77,9 +76,9 @@ public:
      * @tparam T type of the input argument (local or global MatrixBlock or Field)
      * @param o the object for which the boundary condition is applied
      */
-    template<typename T>
+    template <typename T>
     void Apply(T* o) const {
-        if constexpr(dare::FieldType<T>) {
+        if constexpr (dare::FieldType<T>) {
             // ghost cell values
             IndexLocal extent_l = o->GetGridRepresentation().GetLocalResolutionInternal();
             IndexGlobal extent_g = o->GetGridRepresentation().GetGlobalResolutionInternal();
@@ -96,7 +95,7 @@ public:
                 ind_nb.i() -= 1;
                 for (LO j{0}; j < extent_l.j(); j++) {
                     ind.j() = ind_orig.j() + j;
-                    ind_nb.j() = ind_orig.j()+ j;
+                    ind_nb.j() = ind_orig.j() + j;
                     o->GetDataVector(0).At(ind_nb, 0) = o->GetDataVector(0).At(ind, 0);
                 }
             }
@@ -138,7 +137,7 @@ public:
                     o->GetDataVector(0).At(ind_nb, 0) = o->GetDataVector(0).At(ind, 0);
                 }
             }
-        } else if constexpr(o->IsGlobal()) {
+        } else if constexpr (o->IsGlobal()) {
             auto g_r = o->GetRepresentation();
             LO loc_o = o->GetLocalOrdinal();
             IndexGlobal extent = g_r->GetGlobalResolutionInternal();
@@ -175,7 +174,7 @@ public:
     const CRefType& continuity;  //!< reference to the continuity equation
 };
 
-template<int staggered, int order = 1>
+template <int staggered, int order = 1>
 struct BCMom {
 public:
     SC ux_top;
@@ -184,9 +183,9 @@ public:
     SC gamma{2. + static_cast<SC>(order == 2) * 2. / 3.};
     explicit BCMom(SC u_top = 0) : ux_top{u_top} {}
 
-    template<typename T>
+    template <typename T>
     void Apply(T* o) const {
-        if constexpr(dare::FieldType<T>) {
+        if constexpr (dare::FieldType<T>) {
             // ghost cell values
             IndexLocal extent_l = o->GetGridRepresentation().GetLocalResolutionInternal();
             IndexGlobal extent_g = o->GetGridRepresentation().GetGlobalResolutionInternal();
@@ -253,7 +252,7 @@ public:
                     }
                 }
             }
-        } else if constexpr(o->IsGlobal()) {
+        } else if constexpr (o->IsGlobal()) {
             auto g_r = o->GetRepresentation();
             LO loc_o = o->GetLocalOrdinal();
             IndexGlobal extent = g_r->GetGlobalResolutionInternal();
@@ -342,11 +341,11 @@ int main(int argc, char* argv[]) {
         GO nx{128}, ny{128};
         SC Re = 20;
         LO num_ghost = 2;
-        int num_tsteps = 5000;
+        int num_tsteps = 2000;
         SC rho = 1000.;
         SC mu = 1e-3;
-        SC utop = Re*mu/(rho*H);
-        SC Co = 0.25;
+        SC utop = Re * mu / (rho * H);
+        SC Co = 0.5;
         int freq_write = 100;
         dare::ConstantTimeStep<SC> dt{Co * L / nx / utop};
         SC sim_time = num_tsteps * dt;
@@ -371,7 +370,7 @@ int main(int argc, char* argv[]) {
         auto grid_y = grid.GetRepresentation(staggered_y);
 
         IndexLocal p_fix{nx / 2 + num_ghost, ny / 2 + num_ghost};
-        pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 1>{utop}, BCMom<1, 1>{});
+        pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 2>{utop}, BCMom<1, 2>{});
 
         pm.SetMaxLoopIterations(1);
         pm.SetDensity(rho);
@@ -387,7 +386,7 @@ int main(int argc, char* argv[]) {
         });
         pm.Attach(&o_pm);
         auto cprop = pm.GetContinuity()->GetSolverNumericalProperties();
-        cprop.solver_properties->set("Convergence Tolerance", 1e-14);
+        cprop.solver_properties->set("Convergence Tolerance", dt / rho / L * nx * 1e-10);
         pm.GetContinuity()->SetSolverNumericalProperties(cprop);
         auto printer = [&]() {
             GridVector vec_u("u", grid_s);
@@ -429,4 +428,4 @@ int main(int argc, char* argv[]) {
         }
     }
     return 0;
-}   // NOLINT
+}  // NOLINT
