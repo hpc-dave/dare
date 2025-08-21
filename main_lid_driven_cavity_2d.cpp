@@ -339,7 +339,7 @@ int main(int argc, char* argv[]) {
     {
         SC L{1}, H{1.};
         GO nx{128}, ny{128};
-        SC Re = 20;
+        SC Re = 100;
         LO num_ghost = 2;
         int num_tsteps = 2000;
         SC rho = 1000.;
