@@ -125,10 +125,27 @@ GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator+=(const GridVector<Grid
 }
 
 template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator+=(const T& value) {
+#pragma omp parallel for
+    for (std::size_t o = 0; o < this->GetSize(); o++) {
+        this->At(o) += value;
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N> GridVector<Grid, T, N>::operator+(const GridVector<Grid, T, N>& other) const {
     GridVector<Grid, T, N> v;
     this->GetDeepCopy(&v);
     v += other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator+(const T& value) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v += value;
     return v;
 }
 
@@ -145,11 +162,21 @@ GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator-=(const GridVector<Grid
 }
 
 template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator-=(const T& value) {
+    return *this += -value;
+}
+
+template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N> GridVector<Grid, T, N>::operator-(const GridVector<Grid, T, N>& other) const {
     GridVector<Grid, T, N> v;
     this->GetDeepCopy(&v);
     v -= other;
     return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator-(const T& value) const {
+    return *this + (-value);
 }
 
 template <typename Grid, typename T, std::size_t N>
@@ -165,10 +192,27 @@ GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator*=(const GridVector<Grid
 }
 
 template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator*=(const T& value) {
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) *= value;
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N> GridVector<Grid, T, N>::operator*(const GridVector<Grid, T, N>& other) const {
     GridVector<Grid, T, N> v;
     this->GetDeepCopy(&v);
     v *= other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator*(const T& value) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v *= value;
     return v;
 }
 
@@ -185,10 +229,23 @@ GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator/=(const GridVector<Grid
 }
 
 template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator/=(const T& value) {
+    return *this *= (1 / value);
+}
+
+template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N> GridVector<Grid, T, N>::operator/(const GridVector<Grid, T, N>& other) const {
     GridVector<Grid, T, N> v;
     this->GetDeepCopy(&v);
     v /= other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator/(const T& value) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v /= value;
     return v;
 }
 

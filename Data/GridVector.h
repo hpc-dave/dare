@@ -179,10 +179,22 @@ public:
     GridVector<Grid, T, N>& operator+=(const GridVector<Grid, T, N>& other);
 
     /*!
+     * @brief += operator
+     * @param value value to be added to
+     */
+    GridVector<Grid, T, N>& operator+=(const T& value);
+
+    /*!
      * @brief addition operator
      * @param other field to be added to
      */
     GridVector<Grid, T, N> operator+(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief addition operator
+     * @param value value to be added to the field
+     */
+    GridVector<Grid, T, N> operator+(const T& value) const;
 
     /*!
      * @brief -= operator
@@ -191,10 +203,22 @@ public:
     GridVector<Grid, T, N>& operator-=(const GridVector<Grid, T, N>& other);
 
     /*!
+     * @brief -= operator
+     * @param value value to be subtracted from the field
+     */
+    GridVector<Grid, T, N>& operator-=(const T& other);
+
+    /*!
      * @brief subtraction operator
      * @param other field to be subtracted from
      */
     GridVector<Grid, T, N> operator-(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief subtraction operator
+     * @param value value to be subtracted from the field
+     */
+    GridVector<Grid, T, N> operator-(const T& value) const;
 
     /*!
      * @brief *= operator
@@ -203,10 +227,22 @@ public:
     GridVector<Grid, T, N>& operator*=(const GridVector<Grid, T, N>& other);
 
     /*!
+     * @brief *= operator
+     * @param value value to be mulitplied with the field
+     */
+    GridVector<Grid, T, N>& operator*=(const T& value);
+
+    /*!
      * @brief multiplication operator
      * @param other field to be multiplied with
      */
     GridVector<Grid, T, N> operator*(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief multiplication operator
+     * @param value value to be multiplied with the field
+     */
+    GridVector<Grid, T, N> operator*(const T& value) const;
 
     /*!
      * @brief /= operator
@@ -215,10 +251,22 @@ public:
     GridVector<Grid, T, N>& operator/=(const GridVector<Grid, T, N>& other);
 
     /*!
+     * @brief /= operator
+     * @param value value to divided the field by
+     */
+    GridVector<Grid, T, N>& operator/=(const T& value);
+
+    /*!
      * @brief division operator
      * @param other field to be divided by
      */
     GridVector<Grid, T, N> operator/(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief division operator
+     * @param value value to divide the field by
+     */
+    GridVector<Grid, T, N> operator/(const T& other) const;
 
     /*!
      * @brief returns vector with all components
