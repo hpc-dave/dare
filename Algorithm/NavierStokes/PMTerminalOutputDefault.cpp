@@ -77,7 +77,7 @@ void PMTerminalOutputDefault::PrintContinuity(int loop, int iter, bool success, 
     Print(dare::Verbosity::Low)
         << (is_last ? "MAX" : std::to_string(loop)) << " -> "
         << std::to_string(iter)
-        << " it - defect: " << defect << (success ? "" : "FAILURE") << '\n'
+        << " it - defect: " << defect << (success ? "" : " FAILURE") << '\n'
         << std::flush;
 }
 

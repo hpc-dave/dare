@@ -629,6 +629,8 @@ void free_pm_build_continuity(PM* pm, int iteration) {
             (*mblock) = free_pm_continuity_Jacobian_Cartesian(pm, o_loc, ind, rho, epsilon);
             mblock->GetRhs(0) = -1. * pm->GetContinuity()->GetDefect()->GetDataVector().At(ind, 0);
 
+            mblock->SetInitialGuess(0, 0.);
+
             // Apply Boundary conditions
             pm->GetContinuity()->GetBoundaryStrategy()->Apply(mblock);
         };
@@ -640,6 +642,8 @@ void free_pm_build_continuity(PM* pm, int iteration) {
             IndexLocal ind{mblock->GetIndex()};
 
             mblock->GetRhs(0) = -1. * pm->GetContinuity()->GetDefect()->GetDataVector().At(ind, 0);
+
+            mblock->SetInitialGuess(0, 0.);
 
             // Apply Boundary conditions
             pm->GetContinuity()->GetBoundaryStrategy()->Apply(mblock);

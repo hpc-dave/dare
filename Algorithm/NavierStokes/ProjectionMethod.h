@@ -463,7 +463,7 @@ public:
 
             if (!success) {
                 dare::Print(dare::Verbosity::Low) << "Continuity system failed to converge after "
-                                                  << iter << " matrix-solver iterations";
+                                                  << iter << " matrix-solver iterations" << std::endl;
             }
 
             UpdatePressure();
