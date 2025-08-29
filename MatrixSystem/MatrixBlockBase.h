@@ -82,7 +82,6 @@ public:
      */
     MatrixBlockBase<O, SC, N>& operator=(const MatrixBlockBase<O, SC, N>& other);
 
-
     /*!
      * @brief destructor
      */

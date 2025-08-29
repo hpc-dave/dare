@@ -54,6 +54,10 @@ void free_pm_solver_settings_default(PM* pm) {
         sprop_c.precond_package = dare::PreCondPackage::MueLu;
         sprop_c.precond_type = "AMG";
         sprop_c.precond_properties = dare::detail::GetDefaultPreconditionerPropertiesTrilinos(sprop_c.precond_type);
+        // if (pm->GetDimension() == 2)
+        //     sprop_c.precond_properties->set("problem: type", "Poisson-2D");
+        // if (pm->GetDimension() == 3)
+        //     sprop_c.precond_properties->set("problem: type", "Poisson-3D");
         pm->GetContinuity()->SetSolverNumericalProperties(sprop_c);
         SProp sprop_mom;
         sprop_mom.solver_package = dare::SolverPackage::Belos;
@@ -122,7 +126,7 @@ std::pair<bool, int> free_pm_solve_momentum(PM* pm, Direction dir) {
     if constexpr (uses_fixed_point_iterations_v<IterType>) {
         ret = pm->GetMomentum(dir)->Solve(dare::UpdateFieldCopy{});
     } else {
-        static_assert(dare::always_false<IterType>, "Solving the momentum equations is not implemented for the specified algorithm type");  // NOLINT
+        ret = pm->GetMomentum(dir)->Solve(dare::UpdateFieldAddInto{});
     }
 
     // Reverse normalization

@@ -28,12 +28,12 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
-#include <concepts>
 #include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
+#include <concepts>     // NOLINT  - include order bug here for cpplint
 
 #include "Algorithm/AlgorithmTraits.h"
 #include "Data/Field.h"
@@ -50,6 +50,7 @@
 #include "Utilities/InitializationTracker.h"
 #include "Utilities/Observer.h"
 #include "Utilities/Timer.h"
+#include "Utilities/ParameterList.h"
 
 namespace dare {
 
@@ -226,6 +227,7 @@ public:
      */
     enum class StateChange {
         VelocityUpdated,
+        SolvedContinuity,
         PressureUpdated
     };
 
@@ -242,6 +244,7 @@ public:
     using GridVectorType = dare::GridVector<GridType, SC, 1>;
     using ObserverType = dare::Observer<SelfType, StateChange>;
     using TerminalOutput = dare::PMTerminalOutputDefault;
+    using PList = dare::ParameterList;
 
     // boundary information for the different equations
     using BoundaryInfoType = BoundaryInfo;
@@ -309,28 +312,15 @@ public:
     /*!
      * @brief default constructor
      */
-    ProjectionMethod()
-        : ex_man{nullptr},
-          dt{0.},
-          time{0.},
-          tstep{0},
-          continuity_tolerance{1e-14},
-          max_iterations{100},
-          status{0},
-          status_finalized{rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init | density_derivative_init},
-          terminal_output(dimension) {
-        if constexpr (dare::is_none_v<PorosityVariableType>)
-            status |= epsilon_init;
-        if constexpr (dare::is_none_v<ImplicitForceVariableType>)
-            status |= beta_im_init;
-        if constexpr (dare::is_none_v<ExplicitForceVariableType>)
-            status |= beta_ex_init;
-        if constexpr(dare::is_none_v<DensityDerivativeMemberType>)
-            status |= density_derivative_init;
+    ProjectionMethod();
 
-        // method specific check for consistent compile time information
-        free_compile_time_check(this);
-    }
+    virtual ~ProjectionMethod();
+
+    explicit ProjectionMethod(const SelfType&) = delete;
+    SelfType& operator=(const SelfType&) = delete;
+
+    explicit ProjectionMethod(SelfType&&) = delete;
+    SelfType& operator=(SelfType&&) = delete;
 
     /*!
      * @brief allocates memory and instantiates the separate equations
@@ -342,53 +332,21 @@ public:
      * @param bc_continuity boundary arguments for continuity
      * @param ...bc_momentum boundary arguments for the momentum
      */
-    template<TimeStepper T, typename BCContinuity, typename... Args>
-    void Initialize(GridType* grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum) {
-        ex_man = grid->GetExecutionManager();
-        auto dt_obs_func = [&](const T& stepper, typename T::StateChange tag) {
-            using State = typename T::StateChange;
-            switch (tag) {
-                case State::AdvanceTimeStep:
-                    this->time = stepper.GetTime();
-                    this->tstep = stepper.GetTimeStepCounter();
-                    break;
-                case State::UpdateTimeStepSize:
-                    this->dt = stepper.GetTimeStepSize();
-                    break;
-                }
-        };
-        pimpl_dt_obs = dare::make_observer_handle(tstep, dt_obs_func);
-        dt = tstep->GetTimeStepSize();
-        time = tstep->GetTime();
-        free_pm_initialize(this, grid, bc_continuity, bc_momentum...);
+    template <TimeStepper T, typename BCContinuity, typename... Args>
+    void Initialize(GridType* grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum);
 
-        // Provide default solver settings
-        free_pm_solver_settings_default(this);
-
-        if constexpr (std::is_arithmetic_v<MomentumNormalizerType>) {
-            for (auto& e : momentum)
-                e->GetCustomMember()->normalizer = 1;
-        }
-        if constexpr (std::is_arithmetic_v<MomentumNormalizerType>) {
-            continuity->GetCustomMember()->normalizer = 1;
-        }
-        this->dare::InitializationTracker::Initialize();
-    }
-
-        /*!
-         * @brief overload for the case the the grid is provided as unique pointer
-         * @tparam ...Args input arguments for the momentum equation
-         * @tparam BCContinuity boundary condition input type for the continuity
-         * @tparam T a time step object
-         * @param grid pointer to the grid
-         * @param tstep pointer to the time stepper
-         * @param bc_continuity boundary arguments for continuity
-         * @param ...bc_momentum boundary arguments for the momentum
-         */
-        template <TimeStepper T, typename BCContinuity, typename... Args>
-        void Initialize(std::unique_ptr<GridType> & grid, T * tstep, BCContinuity bc_continuity, Args... bc_momentum) {  // NOLINT
-            Initialize(grid.get(), tstep, bc_continuity, bc_momentum...);
-        }
+    /*!
+     * @brief overload for the case the the grid is provided as unique pointer
+     * @tparam ...Args input arguments for the momentum equation
+     * @tparam BCContinuity boundary condition input type for the continuity
+     * @tparam T a time step object
+     * @param grid pointer to the grid
+     * @param tstep pointer to the time stepper
+     * @param bc_continuity boundary arguments for continuity
+     * @param ...bc_momentum boundary arguments for the momentum
+     */
+    template <TimeStepper T, typename BCContinuity, typename... Args>
+    void Initialize(std::unique_ptr<GridType>& grid, T* tstep, BCContinuity bc_continuity, Args... bc_momentum);    // NOLINT
 
     /*!
      * @brief initializing a dediacted momentum equation
@@ -398,9 +356,7 @@ public:
      * @warning only for access in free functions!
      */
     template <typename... Args>
-    void InitializeMomentum(std::size_t dim, Args&&... args) {
-        momentum[dim] = std::make_unique<MomentumType>(args...);
-    }
+    void InitializeMomentum(std::size_t dim, Args&&... args);
 
     /*!
      * @brief initializes the continuity
@@ -409,93 +365,48 @@ public:
      * @warning only for access in free functions!
      */
     template <typename... Args>
-    void InitializeContinuity(Args&&... args) {
-        continuity = std::make_unique<ContinuityType>(args...);
-    }
+    void InitializeContinuity(Args&&... args);
 
     /*!
      * @brief advance the flow field by a 2 step projection, based on Chorin's projection method
      */
-    void SolveFlowField() {
-        // here we could add switch between different approaches, but
-        // for now there is only one
-        if (!CheckStatus()) {
-            ex_man->Terminate(__func__, "Projection method was not fully finalized!");
-        }
-
-        terminal_output.PrintHeader(*this);
-        StartProfiling("FlowStep");
-        // build momentum and solve subsequently
-        // a bit more verbose, but easier to debug
-        // put it in a scope to limit variable lifetime
-        {
-            BuildMomentum(dare::ZERO);
-            auto [success, iter] = SolveMomentum(dare::ZERO);
-            terminal_output.PrintMomentum(0, iter, success, this);
-        }
-        // add some output here
-        if constexpr (dimension > 1) {
-            BuildMomentum(dare::ONE);
-            auto [success, iter] = SolveMomentum(dare::ONE);
-            // add some output here
-            terminal_output.PrintMomentum(1, iter, success, *this);
-        }
-        if constexpr (dimension > 2) {
-            BuildMomentum(dare::TWO);
-            auto [success, iter] = SolveMomentum(dare::TWO);
-            terminal_output.PrintMomentum(2, iter, success, *this);
-        }
-
-        // enforce continuity
-        // first iteration we add the implicit force term
-        // or in the case of no additional term this is just
-        // the very first iteration
-        StartProfiling("Enforce_Continuity");
-        int iteration = 0;
-        ComputeDefect();
-        terminal_output.PrintInitialDefect(*this);
-        for (; iteration < max_iterations; iteration++) {
-            if constexpr (compressible)
-                *rho_prev = rho->GetGridVector(0);
-
-            BuildContinuity(iteration);
-            auto [success, iter] = SolveContinuity(iteration);
-
-            if (!success) {
-                dare::Print(dare::Verbosity::Low) << "Continuity system failed to converge after "
-                                                  << iter << " matrix-solver iterations" << std::endl;
-            }
-
-            UpdatePressure();
-            Notify(StateChange::PressureUpdated);
-
-            UpdateVelocity(iteration);
-            Notify(StateChange::VelocityUpdated);
-
-            ComputeDefect();
-
-            // print update to terminal
-            terminal_output.PrintContinuity(iteration, iter, success, *this);
-            if (ContinuityConvergence() || !success)
-                break;
-        }
-        StopProfiling("Enforce_Continuity");
-        StopProfiling("FlowStep");
-
-        // check if iterations == max_iteration
-        if (iteration == max_iterations) {
-            Print(dare::Verbosity::Low) << "The continuity could not be conserved within "
-                << std::to_string(max_iterations) << " iterations!" << std::endl;
-            iteration--;
-        }
-        PrintProfiling(iteration);
-    }
+    void SolveFlowField();
 
     /*!
      * @brief convenient constexpr access to compressibility
      * @return true if compressible
      */
     constexpr bool IsCompressible() const { return compressible; }
+
+    /*!
+     * @brief setter for the density
+     * @param d density variable
+     * Internally, the status is updated to track the density.
+     * In the case of a compressible fluid, the field with
+     * density at the previous continuity iteration will be allocated
+     */
+    void SetDensity(DensityVariableType d);
+
+    /*!
+     * @brief setter for the viscosity
+     * @param v viscosity variable
+     * Internally, the status is updated to track the viscosity
+     */
+    void SetViscosity(ViscosityVariableType v);
+
+    /*!
+     * @brief setter for the porosity
+     * @param p porosity variable
+     * Internally, the status is updated to track the porosity
+     */
+    void SetPorosity(PorosityVariableType p);
+
+    /*!
+     * @brief setter for the density derivative
+     * @param dd density derivative variable
+     * Internally, the status is updated to track the density derivative
+     */
+    void SetDensityDerivative(DensityDerivativeMemberType dd);
 
     /*!
      * @brief convenient constexpr access to the dimension of the system
@@ -522,52 +433,6 @@ public:
      */
     FieldType* GetPressure() { return continuity->GetPressure(); }
     const FieldType& GetPressure() const { return continuity->GetPressure(); }
-
-    /*!
-     * @brief setter for the density
-     * @param d density variable
-     * Internally, the status is updated to track the density
-     */
-    void SetDensity(DensityVariableType d) {
-        rho = d;
-        status |= rho_init;
-        if constexpr(compressible) {
-            static_assert(dare::is_field_v<std::remove_cv_t<std::remove_pointer_t<DensityVariableType>>>,
-            "In the compressible case, the density needs to be a field!");
-            rho_prev = std::make_unique<GridVectorType>("rho_prev", rho->GetGridRepresentation());
-            *rho_prev = rho->GetDataVector();
-        }
-    }
-
-    /*!
-     * @brief setter for the viscosity
-     * @param v viscosity variable
-     * Internally, the status is updated to track the viscosity
-     */
-    void SetViscosity(ViscosityVariableType v) {
-        mu = v;
-        status |= mu_init;
-    }
-
-    /*!
-     * @brief setter for the porosity
-     * @param p porosity variable
-     * Internally, the status is updated to track the porosity
-     */
-    void SetPorosity(PorosityVariableType p) {
-        epsilon = p;
-        status |= epsilon_init;
-    }
-
-    /*!
-     * @brief setter for the density derivative
-     * @param dd density derivative variable
-     * Internally, the status is updated to track the density derivative
-     */
-    void SetDensityDerivative(DensityDerivativeMemberType dd) {
-        density_derivative = std::move(dd);
-        status |= density_derivative_init;
-    }
 
     /*!
      * @brief provides access to the underlying density derivative
@@ -598,17 +463,7 @@ public:
      * This function can only be used in the compressible case and won't compile
      * for incompressible flow!
      */
-    const GridVectorType* GetDensityPreviousIteration() const {
-        if constexpr(!compressible) {
-            static_assert(dare::always_false<decltype(this)>, "In the incompressible case this should not be accessed");
-        }
-#ifndef DARE_NDEBUG
-        if (!rho_prev) {
-            this->ex_man->Terminate(__func__, "The array for the previous iteration was not allocated!");
-        }
-#endif
-        return rho_prev.get();
-    }
+    const GridVectorType* GetDensityPreviousIteration() const;
 
     /*!
      * @brief returns the density at a certain index
@@ -616,16 +471,7 @@ public:
      * @param time_level time step at which to access
      * @return value at the cell center
      */
-    SC GetDensity(Index ind, std::size_t time_level = 0) const {
-        using DType = std::remove_cv_t<std::remove_pointer_t<DensityVariableType>>;
-        if constexpr (dare::is_field_v<DType>) {
-            return rho->GetDataVector(time_level).At(ind, 0);
-        } else if constexpr(std::is_arithmetic_v<DType>) {
-            return rho;
-        } else {
-            static_assert(dare::always_false<DType>, "Cannot handle this type");
-        }
-    }
+    SC GetDensity(Index ind, std::size_t time_level = 0) const;
 
     /*!
      * @brief provides the underlying viscosity variable
@@ -640,16 +486,7 @@ public:
      * @param time_level time step at which to access
      * @return value at the cell center
      */
-    SC GetViscosity(Index ind, std::size_t time_level = 0) const {
-        using VType = std::remove_cv_t<std::remove_pointer_t<ViscosityVariableType>>;
-        if constexpr (dare::is_field_v<VType>) {
-            return mu->GetDataVector(time_level).At(ind, 0);
-        } else if constexpr (std::is_arithmetic_v<VType>) {
-            return mu;
-        } else {
-            static_assert(dare::always_false<VType>, "Cannot handle this type");
-        }
-    }
+    SC GetViscosity(Index ind, std::size_t time_level = 0) const;
 
     /*!
      * @brief provides the underlying porosity variable
@@ -664,18 +501,7 @@ public:
      * @param time_level time step at which to access
      * @return value at the cell center
      */
-    SC GetPorosity(Index ind, std::size_t time_level = 0) const {
-        using PType = std::remove_cv_t<std::remove_pointer_t<PorosityVariableType>>;
-        if constexpr (dare::is_field_v<PType>) {
-            return epsilon->GetDataVector(time_level).At(ind, 0);
-        } else if constexpr (std::is_arithmetic_v<PType>) {
-            return epsilon;
-        } else if constexpr (dare::is_none_v<PType>) {
-            return 1.;
-        } else {
-            static_assert(dare::always_false<PType>, "Cannot handle this type");
-        }
-    }
+    SC GetPorosity(Index ind, std::size_t time_level = 0) const;
 
     /*!
      * @brief Adds an imiplicit force to the flow
@@ -683,42 +509,16 @@ public:
      * The implicit force is applied to the continuity equation and thus has to be
      * provided for the scalar grid
      */
-    void AddImplicitForce(ImplicitForceVariableType f) {
-        // add to continuity
-        if (!IsInitialized()) {
-            ex_man->Terminate(__func__, "Cannot add force terms prior to initialization");
-        }
-        if constexpr (!dare::is_none_v<ImplicitForceVariableType>) {
-            continuity->GetCustomMember()->beta_im.emplace(f);
-        }
-        status |= beta_im_init;
-    }
+    void AddImplicitForce(ImplicitForceVariableType f);
 
     /*!
-     * @brief Adds an explicit force to the flow
-     * @param f explicit force variable type
-     * @param dim staggered grid direction at which the explicit force is applied
-     * The explict force is applied to the momentum equation and thus has to be
-     * supplied in the staggered configuration
-     */
-    void AddExplicitForce(ExplicitForceVariableType f, std::size_t dim) {
-        // add to continuity
-        if (!IsInitialized()) {
-            ex_man->Terminate(__func__, "Cannot add force terms prior to initialization");
-        }
-        if constexpr (!dare::is_none_v<ExplicitForceVariableType>) {
-            if (dim >= dimension) {
-                ex_man->Terminate(__func__, "Invalid dimension choses for the force");
-            }
-            momentum[dim]->GetCustomMember()->beta_ex.emplace(f);
-
-            // check if all explicit force members were set
-            char all_init{beta_ex_init};
-            for (auto& m : momentum)
-                all_init &= !m->GetCustomMember()->beta_ex.empty()? beta_ex_init : 0;
-            status |= (beta_ex_init & all_init);
-        }
-    }
+    * @brief Adds an explicit force to the flow
+    * @param f explicit force variable type
+    * @param dim staggered grid direction at which the explicit force is applied
+    * The explict force is applied to the momentum equation and thus has to be
+    * supplied in the staggered configuration
+    */
+    void AddExplicitForce(ExplicitForceVariableType f, std::size_t dim);
 
     /*!
      * @brief Checks if the object is ready for flow step computation
@@ -791,45 +591,25 @@ public:
      * @param o address of the observer
      * @return true, if the observer could be attached
      */
-    bool Attach(ObserverType* o) {
-        auto [pos, success] = observers.emplace(o);
-        return success;
-    }
+    bool Attach(ObserverType* o);
 
     /*!
      * @brief detaches a previous attached observer
      * @param o address of the observer
      * @return true, if observer was found and deattached
      */
-    bool Detach(ObserverType* o) {
-        return (observers.erase(o) > 0U);
-    }
+    bool Detach(ObserverType* o);
 
     /*!
      * @brief notifies the attached observers of a state change
      * @param property state change
      */
-    void Notify(StateChange property) {
-        if constexpr (compressible) {
-            if (property == StateChange::PressureUpdated && (observers.size() == 0)) {
-                ERROR << "Notifying others of pressure update, however no observers were attached!"
-                << " In the compressible case the means that the density is not adapted!" << ERROR_CLOSE;
-            }
-        }
-        for (auto iter = observers.begin(); iter != observers.end();) {
-            auto const pos = iter++;
-            (*pos)->Update(*this, property);
-        }
-    }
+    void Notify(StateChange property);
 
     /*!
      * @brief Convenient overload for copying all internal fields to the old timestep
      */
-    void CopyToOld() {
-        for (std::size_t i{0}; i < dimension; i++)
-            GetMomentum(i)->GetField()->CopyDataVectorsToOldTimeStep();
-        GetContinuity()->GetField()->CopyDataVectorsToOldTimeStep();
-    }
+    void CopyToOld();
 
     /*!
      * @brief provides a timer and starts profiling
@@ -846,12 +626,7 @@ private:
      * @param dir direction of the momentum equation
      */
     template <dare::NaturalNumber Direction>
-    void BuildMomentum(Direction dir) {
-        std::string id = std::string {"Build_Momentum_"} + std::to_string(dir);
-        StartProfiling(id);
-        free_pm_build_momentum(this, dir);
-        StopProfiling(id);
-    }
+    void BuildMomentum(Direction dir);
 
     /*!
      * @brief solves a specific momentum equation
@@ -860,37 +635,20 @@ private:
      * @return pair of <bool, int>, indicating convergence success and number of solver loops
      */
     template <dare::NaturalNumber Direction>
-    std::pair<bool, int> SolveMomentum(Direction dir) {
-        std::string id = std::string {"Solve_Momentum_"} + std::to_string(dir);
-        StartProfiling(id);
-        auto ret = free_pm_solve_momentum(this, dir);
-        StopProfiling(id);
-        return ret;
-    }
+    std::pair<bool, int> SolveMomentum(Direction dir);
 
     /*!
      * @brief builds the continuity matrix system
      * @param iteration continuity loop iteration
      */
-    void BuildContinuity(int iteration) {
-        std::string id = std::string {"Build_Continuity_"} + std::to_string(iteration);
-        StartProfiling(id);
-        free_pm_build_continuity(this, iteration);
-        StopProfiling(id);
-    }
+    void BuildContinuity(int iteration);
 
     /*!
      * @brief calls the solver
      * @param iteration continuity loop iteration
      * @return pair of <bool, int>, indicating convergence success and number of solver loops
      */
-    std::pair<bool, int> SolveContinuity(int iteration) {
-        std::string id = std::string {"Solve_Continuity_"} + std::to_string(iteration);
-        StartProfiling(id);
-        auto ret = free_pm_solve_continuity(this, iteration);
-        StopProfiling(id);
-        return ret;
-    }
+    std::pair<bool, int> SolveContinuity(int iteration);
 
     /*!
      * @brief updates the pressure with the dP field
@@ -946,21 +704,14 @@ private:
      * @brief starts profiling, if timer was allocated
      * @param id profile step id
      */
-    void StartProfiling(std::string id) {
-        if (timer)
-            timer->Tic(id);
-    }
+    void StartProfiling(std::string id);
 
     /*!
      * @brief stops profiling, if timer was allocated
      * @param id profile step id
      * @return elapsed time
      */
-    Timer::ValueType StopProfiling(std::string id) {
-        if (timer)
-            return timer->Toc(id);
-        return 0.;
-    }
+    Timer::ValueType StopProfiling(std::string id);
 
     /*!
      * @brief pretty printing of the profiling data
@@ -968,96 +719,7 @@ private:
      * 
      * \note if no timer was allocated, this function returns without doing anything
      */
-    void PrintProfiling(int c_loops) const {
-        if (!timer)
-            return;
-
-        char mom_id[] = { 'X', 'Y', 'Z' };
-
-        const int prec{3};  //!< precision of the output
-        Timer::ValueType t_flowstep = timer->GetElapsedTime("FlowStep");
-        std::array<Timer::ValueType, dimension> t_build_mom, t_solve_mom;
-        for (std::size_t d{0}; d < dimension; d++) {
-            std::string id = std::string {"Build_Momentum_"} + std::to_string(d);
-            t_build_mom[d] = timer->GetElapsedTime(id);
-            id = std::string {"Solve_Momentum_"} + std::to_string(d);
-            t_solve_mom[d] = timer->GetElapsedTime(id);
-        }
-        Timer::ValueType t_enforce_continuity = timer->GetElapsedTime("Enforce_Continuity");
-        std::vector<Timer::ValueType> t_build_cont(c_loops+1);
-        std::vector<Timer::ValueType> t_solve_cont(c_loops+1);
-
-        for (int l{0}; l <= c_loops; l++) {
-            std::string id = std::string {"Build_Continuity_"} + std::to_string(l);
-            t_build_cont[l] = timer->GetElapsedTime(id);
-            id = std::string("Solve_Continuity_") + std::to_string(l);
-            t_solve_cont[l] = timer->GetElapsedTime(id);
-        }
-        Timer::ValueType t_build{0.}, t_solve{0.};
-        Timer::ValueType t_build_cont_tot{0.}, t_solve_cont_tot{0.};
-        for (std::size_t d{0}; d < dimension; d++) {
-            t_build += t_build_mom[d];
-            t_solve += t_solve_mom[d];
-        }
-        for (int l{0}; l <= c_loops; l++) {
-            t_build += t_build_cont[l];
-            t_solve += t_solve_cont[l];
-            t_solve_cont_tot += t_solve_cont[l];
-            t_build_cont_tot += t_build_cont[l];
-        }
-        Print(dare::Verbosity::Low)
-            << "Time estimates\n"
-            << "--------------\n"
-            << "ID                -> elapsed in s (% of step)\n";
-        // Print assembly times
-        Print(dare::Verbosity::Low)
-            << "Assembly Time     -> "
-            << std::setprecision(prec) << t_build
-            << " (" << std::setprecision(prec) << t_build / t_flowstep * 100 << " %)\n";
-        for (std::size_t d{0}; d < dimension; d++)
-            Print(dare::Verbosity::Medium)
-                << "   Momentum " << mom_id[d] << "     -> "
-                << std::setprecision(prec) << t_build_mom[d]
-                << " (" << std::setprecision(prec) << t_build_mom[d] / t_flowstep * 100 << " %)\n";
-        Print(dare::Verbosity::Medium)
-            << "   Continuity     -> " << std::setprecision(prec) << t_build_cont_tot
-            << " (" << std::setprecision(prec) << t_build_cont_tot / t_flowstep * 100 << " %)\n";
-        if (c_loops > 1) {
-            for (int l{0}; l <= c_loops; l++)
-                Print(dare::Verbosity::High)
-                    << "      it " << std::to_string(l) << "       -> "
-                    << std::setprecision(prec) << t_build_cont[l] << " ("
-                    << std::setprecision(prec) << t_build_cont[l] / t_flowstep * 100 << " %)\n";
-        }
-        // Print solving times
-        Print(dare::Verbosity::Low)
-            << "Solving Time      -> "
-            << std::setprecision(prec) << t_solve
-            << "(" << std::setprecision(prec) << t_solve / t_flowstep * 100 << " %)\n";
-        for (std::size_t d{0}; d < dimension; d++)
-            Print(dare::Verbosity::Medium)
-                << "   Momentum " << mom_id[d] << "     -> "
-                << std::setprecision(prec) << t_solve_mom[d]
-                << " (" << std::setprecision(prec) << t_solve_mom[d] / t_flowstep * 100 << " %)\n";
-        Print(dare::Verbosity::Medium)
-            << "   Continuity     -> " << std::setprecision(prec) << t_solve_cont_tot
-            << " (" << std::setprecision(prec) << t_solve_cont_tot / t_flowstep * 100 << " %)\n";
-        if (c_loops > 1) {
-            for (int l{0}; l <= c_loops; l++)
-                Print(dare::Verbosity::High)
-                    << "      it " << std::to_string(l) << "       -> "
-                    << std::setprecision(prec) << t_solve_cont[l] << " ("
-                    << std::setprecision(prec) << t_solve_cont[l] / t_flowstep * 100 << " %)\n";
-        }
-        Print(dare::Verbosity::Low)
-            << "Momentum Total    -> " << std::setprecision(prec) << t_flowstep - t_enforce_continuity << " ("
-            << std::setprecision(prec) << (1.-t_enforce_continuity / t_flowstep) * 100 << " %)\n";
-        Print(dare::Verbosity::Low)
-            << "Continuity Total  -> " << std::setprecision(prec) << t_enforce_continuity << " ("
-            << std::setprecision(prec) << t_enforce_continuity / t_flowstep * 100 << " %)\n";
-        Print(dare::Verbosity::Low)
-            << "Total Time        -> " << std::setprecision(prec) << t_flowstep << " s" << std::endl;
-    }
+    void PrintProfiling(int c_loops) const;
 
     dare::ExecutionManager* ex_man;                  //!< reference to execution manager
     DensityVariableType rho;                         //!< mass density
@@ -1080,9 +742,12 @@ private:
     UniqueObserverHandle pimpl_dt_obs;  //!< observer handle for updating time and timesteps
     std::set<ObserverType*> observers;  //!< attached observers
     TerminalOutput terminal_output;     //!< prints data to the terminal (should probably be a logger)
-    std::unique_ptr<Timer> timer;       //!< timing instance for profiling the execution
+    PList params;                  //!< list with run time parameters
+    std::unique_ptr<Timer> timer;  //!< timing instance for profiling the execution
 };
 
 }  // namespace dare
+
+#include "ProjectionMethod.inl"
 
 #endif  // ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_H_

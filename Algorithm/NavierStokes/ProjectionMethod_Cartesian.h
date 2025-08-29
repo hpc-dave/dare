@@ -372,6 +372,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     using GridVectorType = dare::GridVector<GridType, SC, 1>;
     using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
     using CNB = dare::CartesianNeighbor;
+    using IterType = typename PM::ContinuityIterationType;
 
     dare::Vector<PM::dimension, const GridVectorType*> velocities;
     for (std::size_t d{0}; d < PM::dimension; d++) {
@@ -410,6 +411,27 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
 
         // Boundary conditions
         free_pm_momentum_apply_boundary_conditions(pm, *pm->GetMomentum(direction), mblock);
+
+        if constexpr (uses_newton_iterations_v<IterType>) {
+            SC defect = -mblock->GetRhs(0);
+            for (auto face : g_r->GetFaces()) {
+                const std::size_t dim{MapCartesianFaceToDim(face)};
+                IndexLocal ind_f{ind};
+                ind_f[dim] += ToNormal(face);
+                const SC v_loc{velocities[direction]->At(ind_f, 0)};
+                if constexpr (mblock->IsGlobal()) {
+                    if (!mblock->IsSet(0, 0, face)) {
+                        continue;
+                    }
+                }
+                const SC alpha{mblock->Get(0, 0, face)};
+                defect += v_loc * alpha;
+            }
+            const SC v_c{velocities[direction]->At(ind, 0)};
+            const SC alpha_c{mblock->Get(0, 0, CNB::CENTER)};
+            defect += v_c * alpha_c;
+            mblock->GetRhs(0) = -defect;
+        }
 
         // normalize
         free_pm_apply_normalizer(pm, pm->GetMomentum(direction)->GetCustomMember()->normalizer, mblock);
