@@ -213,6 +213,13 @@ public:
     bool IsSet(std::size_t nr, std::size_t nc) const;
 
     /*!
+     * @brief Inquiry, if a value was set
+     * @tparam CNB neighbor ID
+     * @param n component ID
+     */
+    bool IsSet(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) const;
+
+    /*!
      * @brief moves intermediate values to final ordinal & coefficient array
      */
     void Finalize();

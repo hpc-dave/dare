@@ -146,6 +146,52 @@ bool MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IsSet(std::size_t nr, std::siz
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
+bool MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IsSet(std::size_t nr, std::size_t nc, CartesianNeighbor cnb) const {
+    if constexpr (N == 1) {
+        if (nc == N)
+            nc = 0;
+    } else {
+#ifndef NDEBUG
+        if (nc >= N) {
+            ERROR << "The provided nc is out of bounds, expect segfault!" << ERROR_CLOSE;
+        }
+#endif
+    }
+    switch (cnb) {
+        case CartesianNeighbor::CENTER:
+            return GetNeighborBitSet()[nr][nc] & static_cast<char>(CartesianNeighborBitSet::CENTER);
+            break;
+        case CartesianNeighbor::WEST:
+            return GetNeighborBitSet()[nr][nc] & static_cast<char>(CartesianNeighborBitSet::WEST);
+            break;
+        case CartesianNeighbor::EAST:
+            return GetNeighborBitSet()[nr][nc] & static_cast<char>(CartesianNeighborBitSet::EAST);
+            break;
+        case CartesianNeighbor::SOUTH:
+            if constexpr (Dim > 1)
+                return GetNeighborBitSet()[nr][nc] & static_cast<char>(CartesianNeighborBitSet::SOUTH);
+            break;
+        case CartesianNeighbor::NORTH:
+            if constexpr (Dim > 1)
+                return GetNeighborBitSet()[nr][nc] & static_cast<char>(CartesianNeighborBitSet::NORTH);
+            break;
+        case CartesianNeighbor::BOTTOM:
+            if constexpr (Dim > 2)
+                return GetNeighborBitSet()[nr][nc] & static_cast<char>(CartesianNeighborBitSet::BOTTOM);
+            break;
+        case CartesianNeighbor::TOP:
+            if constexpr (Dim > 2)
+                return GetNeighborBitSet()[nr][nc] & static_cast<char>(CartesianNeighborBitSet::TOP);
+            break;
+        default:
+            {}
+    }
+
+    ERROR << "The specified cartesian neighbor (" << std::to_string(ToNum(cnb)) << ") is out of range!";
+    return false;
+}
+
+template <std::size_t Dim, typename O, typename SC, std::size_t N>
 void MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Finalize() {
     using CN = CartesianNeighbor;
     const bool map_periodic{true};
