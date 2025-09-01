@@ -24,6 +24,7 @@
 
 #include <concepts>
 #include <iostream>
+#include <limits>
 #include <type_traits>
 
 #include "Algorithm/ConstantTimeStep.h"
@@ -61,7 +62,6 @@ struct SDict {
     using tvd = dare::MINMOD;
     using viscous_stress = dare::PMDijkhuizenStressTensor;
     using time_scheme_convective = dare::EULER_BACKWARD;
-    using momentum_iterations = dare::Newton;
 };
 
 using BoundaryStrategy = dare::PMDefaultBoundaryType<Grid, SC>;
@@ -89,7 +89,7 @@ public:
             IndexGlobal indg_low = o->GetGridRepresentation().MapLocalToGlobal(indl_low);
             IndexGlobal indg_up = o->GetGridRepresentation().MapLocalToGlobal(extent_l);
             if (indg_low.i() == 0) {
-                // WEST - Wall
+                // WEST - Inlet
                 IndexLocal ind_orig{o->GetGridRepresentation().MapInternalToLocal(indl_low)};
                 IndexLocal ind{ind_orig};
                 IndexLocal ind_nb{ind};
@@ -97,20 +97,27 @@ public:
                 for (LO j{0}; j < extent_l.j(); j++) {
                     ind.j() = ind_orig.j() + j;
                     ind_nb.j() = ind_orig.j() + j;
-                    o->GetDataVector(0).At(ind_nb, 0) = o->GetDataVector(0).At(ind, 0);
+                    SC dp_c{o->GetDataVector(0).At(ind, 0)};
+                    o->GetDataVector(0).At(ind_nb, 0) = dp_c;
                 }
             }
             if (indg_up.i() == extent_g.i()) {
-                // EAST - Wall
+                // EAST - Outlet
                 IndexLocal ind_orig{o->GetGridRepresentation().MapInternalToLocal(extent_l)};
                 ind_orig.j() = o->GetGridRepresentation().GetNumberGhostCells();
                 IndexLocal ind{ind_orig};
-                IndexLocal ind_nb{ind};
+                IndexLocal ind_e{ind};
                 ind.i() -= 1;
                 for (LO j{0}; j < extent_l.j(); j++) {
                     ind.j() = ind_orig.j() + j;
-                    ind_nb.j() = ind_orig.j() + j;
-                    o->GetDataVector(0).At(ind_nb, 0) = o->GetDataVector(0).At(ind, 0);
+                    ind_e.j() = ind_orig.j() + j;
+                    SC dp_c = o->GetDataVector(0).At(ind, 0);
+                    SC p_c = continuity->GetPressure()->GetDataVector().At(ind, 0);
+                    SC p_e = continuity->GetPressure()->GetDataVector().At(ind_e, 0);
+                    p_c += dp_c;
+                    SC p_e_new = 2. * p_bc - p_c;
+                    SC dp_e = p_e_new - p_e;
+                    o->GetDataVector(0).At(ind_e, 0) = dp_e;
                 }
             }
             if (indg_low.j() == 0) {
@@ -156,8 +163,28 @@ public:
                 // WEST - Inlet
                 o->Get(0, 0, CNB::CENTER) += o->Get(0, 0, CNB::WEST);
             } else if (ind_g.i() + 1 == extent.i()) {
-                // EAST - Wall
-                o->Get(0, 0, CNB::CENTER) += o->Get(0, 0, CNB::EAST);
+                // EAST - Outlet
+                // prescribed pressure
+
+                SC bc_1 = p_bc;
+                IndexLocal ind_c = g_r->MapInternalToLocal(ind_l);
+
+                // for (CNB face : g_r->GetFaces())
+                //     o->Get(0, 0, face) = 0.;
+
+                // o->Get(0, 0, CNB::CENTER) = 1.;
+                // o->GetRhs(0) = bc_1 - continuity->GetPressure()->GetDataVector().At(ind_c, 0);
+
+                IndexLocal ind_w{ind_c};
+                ind_w.i() -= 1;
+                SC p_c = continuity->GetPressure()->GetDataVector().At(ind_c, 0);
+                SC p_w = continuity->GetPressure()->GetDataVector().At(ind_w, 0);
+                SC delta_p = p_c - p_w;
+                SC dp_e = (bc_1 + 0.5 * delta_p) - (p_c + delta_p);
+                SC alpha_e = o->Get(0, 0, CNB::EAST);
+                o->Get(0, 0, CNB::EAST) = 0.;
+                o->Get(0, 0, CNB::CENTER) -= alpha_e;
+                o->GetRhs(0) -= alpha_e * dp_e;
             }
 
             // Removal of coefficients
@@ -178,11 +205,11 @@ public:
 template <int staggered, int order = 1>
 struct BCMom {
 public:
-    SC ux_top;
+    SC ux_in;
     SC alpha{1. + static_cast<SC>(order == 2)};
     SC beta{static_cast<SC>(order == 2) / 3.};
     SC gamma{2. + static_cast<SC>(order == 2) * 2. / 3.};
-    explicit BCMom(SC u_top = 0) : ux_top{u_top} {}
+    explicit BCMom(SC uin = 0) : ux_in{uin} {}
 
     template <typename T>
     void Apply(T* o) const {
@@ -196,29 +223,31 @@ public:
             IndexGlobal indg_low = o->GetGridRepresentation().MapLocalToGlobal(indl_low);
             IndexGlobal indg_up = o->GetGridRepresentation().MapLocalToGlobal(extent_l);
             if (indg_low.i() == 0) {
-                // WEST - Wall
+                // WEST - Inlet
                 IndexLocal ind_orig{o->GetGridRepresentation().MapInternalToLocal(indl_low)};
                 IndexLocal ind{ind_orig};
                 IndexLocal ind_nb{ind};
-                ind.i() += static_cast<LO>(staggered == 0);
                 ind_nb.i() -= 1;
                 for (LO j{0}; j < extent_l.j(); j++) {
                     ind.j() = ind_orig.j() + j;
                     ind_nb.j() = ind_orig.j() + j;
-                    o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
+                    if constexpr (staggered == 0)
+                        o->GetDataVector(0).At(ind_nb, 0) = ux_in;
+                    else
+                        o->GetDataVector(0).At(ind_nb, 0) = 0.;
                 }
             }
             if (indg_up.i() == extent_g.i()) {
-                // EAST - Wall
+                // EAST - Outlet
                 IndexLocal ind_orig{o->GetGridRepresentation().MapInternalToLocal(extent_l)};
                 ind_orig.j() = o->GetGridRepresentation().GetNumberGhostCells();
                 IndexLocal ind{ind_orig};
                 IndexLocal ind_nb{ind};
-                ind.i() -= (1 + static_cast<LO>(staggered == 0));
+                ind.i() -= 1;
                 for (LO j{0}; j < extent_l.j(); j++) {
                     ind.j() = ind_orig.j() + j;
                     ind_nb.j() = ind_orig.j() + j;
-                    o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
+                    o->GetDataVector(0).At(ind_nb, 0) = o->GetDataVector(0).At(ind, 0);
                 }
             }
             if (indg_low.j() == 0) {
@@ -228,11 +257,19 @@ public:
                 IndexLocal ind_nb{ind};
                 IndexLocal ind_far{ind};
                 ind_nb.j() -= 1;
+                ind_far.j() += 1;
                 ind.j() += static_cast<LO>(staggered == 1);
                 for (LO i{0}; i < extent_l.i(); i++) {
                     ind.i() = ind_orig.i() + i;
                     ind_nb.i() = ind_orig.i() + i;
-                    o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
+                    // o->GetDataVector(0).At(ind_nb, 0) = 0.;
+                    if constexpr (staggered == 0) {
+                        o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
+                        // o->GetDataVector(0).At(ind_nb, 0) += beta * o->GetDataVector(0).At(ind_far, 0);
+                        // o->GetDataVector(0).At(ind_nb, 0) += gamma * 0.;
+                    } else {
+                        o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
+                    }
                 }
             }
             if (indg_up.j() == extent_g.j()) {
@@ -246,11 +283,13 @@ public:
                 for (LO i{0}; i < extent_l.i(); i++) {
                     ind.i() = ind_orig.i() + i;
                     ind_nb.i() = ind_orig.i() + i;
+                    // o->GetDataVector(0).At(ind_nb, 0) = 0.;
                     if constexpr (staggered == 0) {
-                        o->GetDataVector(0).At(ind_nb, 0) = 2. * ux_top - o->GetDataVector(0).At(ind, 0);
+                        o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
                     } else {
                         o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
                     }
+                    // o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
                 }
             }
         } else if constexpr (o->IsGlobal()) {
@@ -268,42 +307,41 @@ public:
                     o->Get(0, 0, CNB::NORTH) += beta * o->Get(0, 0, CNB::SOUTH);
                     o->GetRhs(0) -= gamma * bc_wall * o->Get(0, 0, CNB::SOUTH);
                 } else if (ind_g.j() + 1 == extent.j()) {
-                    // NORTH - Wall
-                    SC bc_wall{ux_top};
+                    // NORTH
+                    SC bc_wall{0.};
                     o->Get(0, 0, CNB::CENTER) -= alpha * o->Get(0, 0, CNB::NORTH);
                     o->Get(0, 0, CNB::SOUTH) += beta * o->Get(0, 0, CNB::NORTH);
                     o->GetRhs(0) -= gamma * bc_wall * o->Get(0, 0, CNB::NORTH);
                 }
                 if (ind_g.i() == 0) {
-                    // WEST - Wall
+                    // WEST
                     // Dirichlet
                     for (CNB face : g_r->GetFaces())
                         o->Get(0, 0, face) = 0.;
                     o->Get(0, 0, CNB::CENTER) = 1.;
-                    o->GetRhs(0) = 0.;
+                    o->GetRhs(0) = ux_in;
+                    o->GetInitialGuess(0) = ux_in;
                 } else if (ind_g.i() + 1 == extent.i()) {
                     // EAST
-                    // Dirichlet
-                    for (CNB face : g_r->GetFaces())
-                        o->Get(0, 0, face) = 0.;
+                    // Neumann
+                    o->Get(0, 0, CNB::WEST) = -1.;
                     o->Get(0, 0, CNB::CENTER) = 1.;
-                    o->GetRhs(0) = 0.;
+                    o->Get(0, 0, CNB::SOUTH) = 0.;
+                    o->Get(0, 0, CNB::NORTH) = 0.;
+                    o->GetRhs(0) = 0;
                 }
             } else if constexpr (staggered == 1) {
                 if (ind_g.i() == 0) {
-                    // WEST - Wall
+                    // WEST
                     // Dirichlet
                     SC bc_0 = 0.;
                     o->Get(0, 0, CNB::CENTER) -= alpha * o->Get(0, 0, CNB::WEST);
                     o->Get(0, 0, CNB::EAST) += beta * o->Get(0, 0, CNB::WEST);
                     o->GetRhs(0) -= gamma * bc_0 * o->Get(0, 0, CNB::WEST);
                 } else if (ind_g.i() + 1 == extent.i()) {
-                    // EAST - Wall
-                    // Dirichlet
-                    SC bc_0 = 0.;
-                    o->Get(0, 0, CNB::CENTER) -= alpha * o->Get(0, 0, CNB::EAST);
-                    o->Get(0, 0, CNB::WEST) += beta * o->Get(0, 0, CNB::EAST);
-                    o->GetRhs(0) -= gamma * bc_0 * o->Get(0, 0, CNB::EAST);
+                    // EAST
+                    // Neumann
+                    o->Get(0, 0, CNB::CENTER) += o->Get(0, 0, CNB::EAST);
                 }
                 if (ind_g.j() == 0) {
                     // SOUTH - Wall
@@ -335,101 +373,135 @@ public:
     }
 };
 
-int main(int argc, char* argv[]) {
-    dare::ScopeGuard scope_guard(&argc, &argv);
-    {
-        SC L{1}, H{1.};
-        GO nx{128}, ny{128};
-        SC Re = 100;
-        LO num_ghost = 2;
-        int num_tsteps = 2000;
-        SC rho = 1.;
-        SC utop = 1;
-        SC mu = rho * utop * L / Re;
-        SC Co = 0.5;
-        int freq_write = 100;
-        dare::ConstantTimeStep<SC> dt{Co * L / nx / utop};
-        SC sim_time = num_tsteps * dt;
+SC duct2d(SC Re, SC mu, SC rho, SC H, GO ny) {
+    SC L{20 * H};
+    GO nx = static_cast<GO>(L / H * ny);
+    LO num_ghost = 2;
+    int num_tsteps = 1000;
+    SC uin = Re * mu / (rho * H);
+    SC Co = 0.25;
+    int freq_write = 100;
+    dare::ConstantTimeStep<SC> dt{Co * H / ny / uin};
+    SC sim_time = num_tsteps * dt;
+    GO i_beg = static_cast<GO>(nx * 2 / 3 + num_ghost);
+    GO i_end = static_cast<GO>(nx - ny + num_ghost);
+    GO j_mid = ny / 2 + num_ghost;
 
-        IndexGlobal resolution_global(nx, ny);
-        VecSC size_global(L, H);
+    SC dp_ana = 12 * mu * uin / (H * H);
 
-        dare::ExecutionManager exman;
-        dare::FileSystemManager fman(&exman, "LidDrivenCavity2D");
-        fman.CheckWithUser(false);
+    IndexGlobal resolution_global(nx, ny);
+    VecSC size_global(L, H);
 
-        Grid grid("Cartesian_2D",
-                  &exman,
-                  resolution_global,
-                  size_global,
-                  num_ghost);
-        ProjectionMethod pm;
+    dare::ExecutionManager exman;
+    dare::FileSystemManager fman(&exman, "Verification_Duct2D");
+    fman.CheckWithUser(false);
 
-        IndexLocal scalar(0, 0), staggered_x(1, 0), staggered_y(0, 1);
-        auto grid_s = grid.GetRepresentation(scalar);
-        auto grid_x = grid.GetRepresentation(staggered_x);
-        auto grid_y = grid.GetRepresentation(staggered_y);
+    Grid grid("Cartesian_2D",
+              &exman,
+              resolution_global,
+              size_global,
+              num_ghost);
+    ProjectionMethod pm;
 
-        IndexLocal p_fix{nx / 2 + num_ghost, ny / 2 + num_ghost};
-        pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 1>{utop}, BCMom<1, 1>{});
+    IndexLocal scalar(0, 0), staggered_x(1, 0), staggered_y(0, 1);
+    auto grid_s = grid.GetRepresentation(scalar);
+    auto grid_x = grid.GetRepresentation(staggered_x);
+    auto grid_y = grid.GetRepresentation(staggered_y);
 
-        pm.SetMaxLoopIterations(1);
-        pm.SetDensity(rho);
-        pm.SetViscosity(mu);
-        using ObsType = typename ProjectionMethod::ObserverType;
-        using State = typename ProjectionMethod::StateChange;
+    pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 2>{uin}, BCMom<1, 2>{});
 
-        ObsType o_pm([&](const ProjectionMethod& pm_inst, State state) {
-            if (state == State::SolvedContinuity) {
-                SC pref = pm.GetContinuity()->GetdP()->GetDataVector().At(p_fix, 0);
-                pm.GetContinuity()->GetdP()->GetDataVector() -= pref;
-                // SC pref = pm.GetPressure()->GetDataVector().At(p_fix, 0);
-                // pm.GetPressure()->GetDataVector() -= pref;
-            }
-        });
-        pm.Attach(&o_pm);
-        auto cprop = pm.GetContinuity()->GetSolverNumericalProperties();
-        // cprop.solver_type = "CG";
-        cprop.solver_properties->set("Convergence Tolerance", dt / rho / L * nx * 1e-10);
-        pm.GetContinuity()->SetSolverNumericalProperties(cprop);
-        auto printer = [&]() {
-            GridVector vec_u("u", grid_s);
-            GridVector vec_v("v", grid_s);
-            GridVector* u_staggered = &pm.GetMomentum(0)->GetField()->GetDataVector();
-            GridVector* v_staggered = &pm.GetMomentum(1)->GetField()->GetDataVector();
-            for (LO n{0}; n < grid_x.GetNumberLocalCellsInternal(); n++) {
-                IndexLocal ind = grid_x.MapOrdinalToIndexLocalInternal(n);
-                ind = grid_x.MapInternalToLocal(ind);
-                IndexLocal ind_nb{ind};
-                ind_nb.i() += 1;
-                vec_u.At(ind, 0) = 0.5 * (u_staggered->At(ind_nb, 0) + u_staggered->At(ind, 0));
-            }
-            for (LO n{0}; n < grid_y.GetNumberLocalCellsInternal(); n++) {
-                IndexLocal ind = grid_y.MapOrdinalToIndexLocalInternal(n);
-                ind = grid_y.MapInternalToLocal(ind);
-                IndexLocal ind_nb{ind};
-                ind_nb.j() += 1;
-                vec_v.At(ind, 0) = 0.5 * (v_staggered->At(ind_nb, 0) + v_staggered->At(ind, 0));
-            }
-            Writer writer(&exman, dt.GetTime(), dt.GetTimeStepCounter());
-            writer.Write(fman,
-                         &pm.GetContinuity()->GetField()->GetDataVector(),
-                         &vec_u,
-                         &vec_v,
-                         &pm.GetMomentum(0)->GetField()->GetDataVector(),
-                         &pm.GetMomentum(1)->GetField()->GetDataVector());
-        };
-        printer();
-        // pm.SetTimer(dare::Timer{});
-        dare::SetVerbosity(dare::Verbosity::Low);
-        while (dt.GetTime() < sim_time) {
-            pm.CopyToOld();
-            dt.AdvanceTimeStep();
-            pm.SolveFlowField();
-            if (dt.GetTimeStepCounter() % freq_write == 0) {
-                printer();
-            }
+    pm.SetMaxLoopIterations(1);
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    auto printer = [&]() {
+        GridVector vec_u("u", grid_s);
+        GridVector vec_v("v", grid_s);
+        GridVector* u_staggered = &pm.GetMomentum(0)->GetField()->GetDataVector();
+        GridVector* v_staggered = &pm.GetMomentum(1)->GetField()->GetDataVector();
+        for (LO n{0}; n < grid_x.GetNumberLocalCellsInternal(); n++) {
+            IndexLocal ind = grid_x.MapOrdinalToIndexLocalInternal(n);
+            ind = grid_x.MapInternalToLocal(ind);
+            IndexLocal ind_nb{ind};
+            ind_nb.i() += 1;
+            vec_u.At(ind, 0) = 0.5 * (u_staggered->At(ind_nb, 0) + u_staggered->At(ind, 0));
+        }
+        for (LO n{0}; n < grid_y.GetNumberLocalCellsInternal(); n++) {
+            IndexLocal ind = grid_y.MapOrdinalToIndexLocalInternal(n);
+            ind = grid_y.MapInternalToLocal(ind);
+            IndexLocal ind_nb{ind};
+            ind_nb.j() += 1;
+            vec_v.At(ind, 0) = 0.5 * (v_staggered->At(ind_nb, 0) + v_staggered->At(ind, 0));
+        }
+        Writer writer(&exman, dt.GetTime(), dt.GetTimeStepCounter());
+        writer.Write(fman,
+                     &pm.GetContinuity()->GetField()->GetDataVector(),
+                     &vec_u,
+                     &vec_v);
+    };
+    printer();
+    IndexGlobal ind_beg(i_beg, j_mid);
+    IndexGlobal ind_end(i_end, j_mid);
+    SC dx = grid_s.GetDistances().x() * (i_end - i_beg);
+    bool p_beg_local = grid_s.IsLocalInternal(ind_beg);
+    bool p_end_local = grid_s.IsLocalInternal(ind_end);
+    dare::SetVerbosity(dare::Verbosity::Low);
+    SC dp_dx{std::numeric_limits<SC>::lowest()};
+    while (dt.GetTime() < sim_time) {
+        pm.CopyToOld();
+        dt.AdvanceTimeStep();
+        pm.SolveFlowField();
+        SC p_beg{std::numeric_limits<SC>::lowest()};
+        SC p_end{std::numeric_limits<SC>::lowest()};
+        if (p_beg_local)
+            p_beg = pm.GetContinuity()->GetPressure()->GetDataVector().At(grid_s.MapGlobalToLocal(ind_beg), 0);
+        if (p_end_local)
+            p_end = pm.GetContinuity()->GetPressure()->GetDataVector().At(grid_s.MapGlobalToLocal(ind_end), 0);
+        p_beg = exman.Allmax(p_beg);
+        p_end = exman.Allmax(p_end);
+        dp_dx = (p_beg - p_end) / dx;
+        SC err = std::abs((dp_dx - dp_ana) / dp_ana);
+        Print(dare::Verbosity::Low) << "Pressure drop: " << dp_dx << " -> Error: " << err << std::endl;
+        if (dt.GetTimeStepCounter() % freq_write == 0) {
+            printer();
         }
     }
-    return 0;
-}  // NOLINT
+    return dp_dx;
+}
+
+int main(int argc, char* argv[]) {
+    bool all_second_order{true};
+    dare::ScopeGuard scope_guard(&argc, &argv);
+    {
+        SC H{0.2};
+        std::array ny = {10, 20, 30};
+        SC Re = 20;
+        SC rho = 1000.;
+        SC mu = 1e-3;
+        std::vector<SC> dp_dx;
+        for (auto n : ny)
+            dp_dx.push_back(duct2d(Re, mu, rho, H, n));
+        SC uin = Re * mu / (rho * H);
+        SC dp_dx_ana = 12 * mu * uin / (H * H);
+
+        std::vector<SC> err;
+        for (auto dp : dp_dx)
+            err.push_back(dp / dp_dx_ana - 1.);
+
+        for (auto& n : ny)
+            n = std::log(n);
+        for (auto& e : err)
+            e = std::log(e);
+
+        std::vector<SC> m;
+        for (std::size_t i{0}; i < ny.size() - 1; i++)
+            m.push_back((err[i + 1] - err[i]) / (ny[i + 1] - ny[i]));
+        SC order{10.};
+        for (auto m_e : m)
+            order = std::min(order, std::abs(m_e));
+
+        all_second_order = order > 1.95;
+        Print(dare::Verbosity::Low) << "Found following order of convergence: " << order << std::endl;
+    }  // NOLINT
+
+    return all_second_order ? 0 : -1;
+}
