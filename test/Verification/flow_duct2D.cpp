@@ -480,6 +480,7 @@ int main(int argc, char* argv[]) {
         std::vector<SC> dp_dx;
         for (auto n : ny)
             dp_dx.push_back(duct2d(Re, mu, rho, H, n));
+
         SC uin = Re * mu / (rho * H);
         SC dp_dx_ana = 12 * mu * uin / (H * H);
 
@@ -487,14 +488,15 @@ int main(int argc, char* argv[]) {
         for (auto dp : dp_dx)
             err.push_back(dp / dp_dx_ana - 1.);
 
+        std::vector<SC> G;
         for (auto& n : ny)
-            n = std::log(n);
+            G.push_back(std::log(static_cast<SC>(n)));
         for (auto& e : err)
             e = std::log(e);
 
         std::vector<SC> m;
-        for (std::size_t i{0}; i < ny.size() - 1; i++)
-            m.push_back((err[i + 1] - err[i]) / (ny[i + 1] - ny[i]));
+        for (std::size_t i{0}; i < G.size() - 1; i++)
+            m.push_back((err[i + 1] - err[i]) / (G[i + 1] - G[i]));
         SC order{10.};
         for (auto m_e : m)
             order = std::min(order, std::abs(m_e));
