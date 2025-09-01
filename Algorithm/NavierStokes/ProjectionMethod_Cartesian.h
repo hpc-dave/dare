@@ -372,7 +372,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     using GridVectorType = dare::GridVector<GridType, SC, 1>;
     using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
     using CNB = dare::CartesianNeighbor;
-    using IterType = typename PM::ContinuityIterationType;
+    using IterType = typename PM::MomentumIterationType;
 
     dare::Vector<PM::dimension, const GridVectorType*> velocities;
     for (std::size_t d{0}; d < PM::dimension; d++) {
