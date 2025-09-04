@@ -56,7 +56,7 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
     MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
     is_root = my_rank == 0;
 
-    dare::detail::SetRootForPrint(is_root);
+    dare::detail::PrintSingleton::SetRootForPrint(is_root);
 
     if (HasArgument("-T", &option)) {
         int specified_threads = omp_get_max_threads();
@@ -138,7 +138,9 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
             if (AmIRoot())
                 std::cerr << "Provided root process id exceeds number of process IDs!" << std::endl;
         }
+        dare::detail::PrintSingleton::SetRootForPrint(is_root);
     }
+
 
     MPI_Barrier(MPI_COMM_WORLD);
 

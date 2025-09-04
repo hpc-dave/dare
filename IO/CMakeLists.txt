@@ -14,6 +14,7 @@ set(DaRe_SOURCE_FILES
     "FileSystemManager.cpp"
     "VTKPXMLStructuredGridWriter.cpp"
     "VTKWriter.cpp"
+    "TerminalOutput.cpp"
 )
 
 target_sources(dare
