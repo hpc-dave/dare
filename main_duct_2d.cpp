@@ -415,7 +415,6 @@ int main(int argc, char* argv[]) {
 
         pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 2>{uin}, BCMom<1, 2>{});
 
-        pm.SetMaxLoopIterations(1);
         pm.SetDensity(rho);
         pm.SetViscosity(mu);
         auto printer = [&]() {
@@ -453,7 +452,8 @@ int main(int argc, char* argv[]) {
             pm.CopyToOld();
             dt.AdvanceTimeStep();
             pm.SolveFlowField();
-            SC dp = pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_beg, 0) - pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_end, 0);
+            SC dp = pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_beg, 0)
+                    - pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_end, 0);
             SC err = std::abs((dp / dx - dp_ana) / dp_ana);
             Print(dare::Verbosity::Low) << "Pressure drop: " << dp / dx << " -> Error: " << err << std::endl;
             if (dt.GetTimeStepCounter() % freq_write == 0) {

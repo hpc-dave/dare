@@ -173,6 +173,10 @@ private:
     std::unique_ptr<Concept> pimpl;     //!< implementation of the concept
 };
 
+namespace detail {
+ParameterList GetDefaultParameterListPM();
+}  // namespace detail
+
 template <typename Grid>
 struct PMPropertyInfoDefault {
     using FieldType = dare::Field<Grid, typename Grid::ScalarType, 1>;
@@ -551,23 +555,23 @@ public:
         return tstep;
     }
 
-    /*!
-     * @brief Sets the maximum number of loop iterations
-     * @param max_loops max loops
-     */
-    void SetMaxLoopIterations(int max_loops) {
-        if (max_loops < 0) {
-            ERROR << "maximum continuity iterations may not be negative!" << ERROR_CLOSE;
-            return;
-        }
-        max_iterations = max_loops;
-    }
+    // /*!
+    //  * @brief Sets the maximum number of loop iterations
+    //  * @param max_loops max loops
+    //  */
+    // void SetMaxLoopIterations(int max_loops) {
+    //     if (max_loops < 0) {
+    //         ERROR << "maximum continuity iterations may not be negative!" << ERROR_CLOSE;
+    //         return;
+    //     }
+    //     max_iterations = max_loops;
+    // }
 
     /*!
      * @brief maximum number of continuity loops
      */
     int GetMaxLoopIterations() const {
-        return max_iterations;
+        return params.get<int>("continuity: Newton iterations max");
     }
 
     /*!
@@ -618,6 +622,12 @@ public:
     void SetTimer(Timer t) {
         timer = std::make_unique<Timer>(std::move(t));
     }
+
+    /*!
+     * @brief provides access to the internal parameter list
+     */
+    PList* GetParameterList() { return &params; }
+    const PList& GetParameterList() const { return params; }
 
 private:
     /*!
@@ -736,7 +746,7 @@ private:
     TimeStepCounter tstep;      //!< current time step
     SC continuity_tolerance;    //!< convergence tolerance for the continuity loop
     SC max_continuity_defect;   //!< last determined maximum continuity defect
-    int max_iterations;         //!< maximum iterations for the continuity loop
+    // int max_iterations;         //!< maximum iterations for the continuity loop
     char status;                //!< bitflag for checking the object status
     char status_finalized;      //!< expected status of object when computing a flow step
     UniqueObserverHandle pimpl_dt_obs;  //!< observer handle for updating time and timesteps

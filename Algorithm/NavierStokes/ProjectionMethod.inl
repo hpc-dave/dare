@@ -31,10 +31,10 @@ ProjectionMethod<G, BInf, PInf, NInf>::ProjectionMethod()
       time{0.},
       tstep{0},
       continuity_tolerance{1e-14},
-      max_iterations{100},
       status{0},
       status_finalized{rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init | density_derivative_init},
-      terminal_output(dimension) {
+      terminal_output(dimension),
+      params(detail::GetDefaultParameterListPM()) {
     if constexpr (dare::is_none_v<PorosityVariableType>)
         status |= epsilon_init;
     if constexpr (dare::is_none_v<ImplicitForceVariableType>)
@@ -205,6 +205,7 @@ void ProjectionMethod<G, BInf, PInf, NInf>::SolveFlowField() {
     // the very first iteration
     StartProfiling("Enforce_Continuity");
     int iteration = 0;
+    int max_iterations = params.get<int>("continuity: Newton iterations max");
     ComputeDefect();
     terminal_output.PrintInitialDefect(*this);
     for (; iteration < max_iterations; iteration++) {
@@ -343,7 +344,21 @@ void ProjectionMethod<G, BInf, PInf, NInf>::BuildMomentum(Direction dir) {
 template <typename G, typename BInf, typename PInf, typename NInf>
 template <dare::NaturalNumber Direction>
 std::pair<bool, int> ProjectionMethod<G, BInf, PInf, NInf>::SolveMomentum(Direction dir) {
+    using SProp = typename MomentumType::SolverNumericalPropertiesType;
     std::string id = std::string("Solve_Momentum_") + std::to_string(dir);
+    std::string sprop = "momentum[" + std::to_string(dir) + "]: solver properties";
+
+    if (!params.isParameter(sprop) || params.isType<dare::None>(sprop)) {
+        Print(dare::Verbosity::High) << "Did not find following key in the properties: " << sprop;
+        sprop = "momentum: solver properties";
+        Print(dare::Verbosity::High) << " Testing for " << sprop << " instead" << std::endl;
+    }
+    if (!params.isParameter(sprop) || params.isType<dare::None>(sprop))
+        ex_man->Terminate(__func__,
+            "Did not find the solver properties for the momentum in direction " + std::to_string(dir)
+            + ". Possible missing key: 'momentum: solver properties'");
+    GetMomentum(dir)->SetSolverNumericalProperties(params.template get<SProp>(sprop));
+
     StartProfiling(id);
     auto ret = free_pm_solve_momentum(this, dir);
     StopProfiling(id);
@@ -361,7 +376,14 @@ void ProjectionMethod<G, BInf, PInf, NInf>::BuildContinuity(int iteration) {
 
 template <typename G, typename BInf, typename PInf, typename NInf>
 std::pair<bool, int> ProjectionMethod<G, BInf, PInf, NInf>::SolveContinuity(int iteration) {
+    using SProp = typename ContinuityType::SolverNumericalPropertiesType;
     std::string id = std::string("Solve_Continuity_") + std::to_string(iteration);
+    std::string sprop = "continuity: solver properties";
+    if (!params.isParameter(sprop) || params.isType<dare::None>(sprop))
+        ex_man->Terminate(__func__,
+            "Did not find the solver properties for the continuity with the key 'continuity: solver properties'.");
+    GetContinuity()->SetSolverNumericalProperties(params.template get<SProp>(sprop));
+
     StartProfiling(id);
     auto ret = free_pm_solve_continuity(this, iteration);
     StopProfiling(id);

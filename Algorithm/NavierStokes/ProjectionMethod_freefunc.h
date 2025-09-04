@@ -58,7 +58,8 @@ void free_pm_solver_settings_default(PM* pm) {
         //     sprop_c.precond_properties->set("problem: type", "Poisson-2D");
         // if (pm->GetDimension() == 3)
         //     sprop_c.precond_properties->set("problem: type", "Poisson-3D");
-        pm->GetContinuity()->SetSolverNumericalProperties(sprop_c);
+        // pm->GetContinuity()->SetSolverNumericalProperties(sprop_c);
+        pm->GetParameterList()->set("continuity: solver properties", sprop_c);
         SProp sprop_mom;
         sprop_mom.solver_package = dare::SolverPackage::Belos;
         sprop_mom.solver_type = "BICGSTAB";
@@ -67,8 +68,7 @@ void free_pm_solver_settings_default(PM* pm) {
         sprop_mom.precond_package = dare::PreCondPackage::Ifpack2;
         sprop_mom.precond_type = "ILUT";
         sprop_mom.precond_properties = dare::detail::GetDefaultPreconditionerPropertiesTrilinos(sprop_mom.precond_type);
-        for (std::size_t d{0}; d < pm->GetDimension(); d++)
-            pm->GetMomentum(d)->SetSolverNumericalProperties(sprop_mom);
+        pm->GetParameterList()->set("momentum: solver properties", sprop_mom);
     } else {
         ERROR << "no default solver settings provided by the projection method" << ERROR_CLOSE;
     }
