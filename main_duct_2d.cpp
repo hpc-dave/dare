@@ -24,6 +24,7 @@
 
 #include <concepts>
 #include <iostream>
+#include <limits>
 #include <type_traits>
 
 #include "Algorithm/ConstantTimeStep.h"
@@ -372,94 +373,139 @@ public:
     }
 };
 
-int main(int argc, char* argv[]) {
-    dare::ScopeGuard scope_guard(&argc, &argv);
-    {
-        SC L{8}, H{0.2};
-        GO ny{30};
-        SC Re = 20;
-        GO nx = static_cast<GO>(L / H * ny);
-        LO num_ghost = 2;
-        int num_tsteps = 1000;
-        SC rho = 1000.;
-        SC mu = 1e-3;
-        SC uin = Re * mu / (rho * H);
-        SC Co = 0.25;
-        int freq_write = 100;
-        dare::ConstantTimeStep<SC> dt{Co * H / ny / uin};
-        SC sim_time = num_tsteps * dt;
-        LO i_beg = static_cast<LO>(nx * 2 / 3 + num_ghost);
-        LO i_end = static_cast<LO>(nx - ny + num_ghost);
-        LO j_mid = ny / 2 + num_ghost;
+SC duct2d(SC Re, SC mu, SC rho, SC H, GO ny) {
+    SC L{20 * H};
+    GO nx = static_cast<GO>(L / H * ny);
+    LO num_ghost = 2;
+    int num_tsteps = 1000;
+    SC uin = Re * mu / (rho * H);
+    SC Co = 0.25;
+    int freq_write = 100;
+    dare::ConstantTimeStep<SC> dt{Co * H / ny / uin};
+    SC sim_time = num_tsteps * dt;
+    GO i_beg = static_cast<GO>(nx * 2 / 3 + num_ghost);
+    GO i_end = static_cast<GO>(nx - ny + num_ghost);
+    GO j_mid = ny / 2 + num_ghost;
 
-        SC dp_ana = 12 * mu * uin / (H * H);
+    SC dp_ana = 12 * mu * uin / (H * H);
 
-        IndexGlobal resolution_global(nx, ny);
-        VecSC size_global(L, H);
+    IndexGlobal resolution_global(nx, ny);
+    VecSC size_global(L, H);
 
-        dare::ExecutionManager exman;
-        dare::FileSystemManager fman(&exman, "Duct2D");
-        fman.CheckWithUser(false);
+    dare::ExecutionManager exman;
+    dare::FileSystemManager fman(&exman, "Verification_Duct2D");
+    fman.CheckWithUser(false);
 
-        Grid grid("Cartesian_2D",
-                  &exman,
-                  resolution_global,
-                  size_global,
-                  num_ghost);
-        ProjectionMethod pm;
+    Grid grid("Cartesian_2D",
+              &exman,
+              resolution_global,
+              size_global,
+              num_ghost);
+    ProjectionMethod pm;
 
-        IndexLocal scalar(0, 0), staggered_x(1, 0), staggered_y(0, 1);
-        auto grid_s = grid.GetRepresentation(scalar);
-        auto grid_x = grid.GetRepresentation(staggered_x);
-        auto grid_y = grid.GetRepresentation(staggered_y);
+    IndexLocal scalar(0, 0), staggered_x(1, 0), staggered_y(0, 1);
+    auto grid_s = grid.GetRepresentation(scalar);
+    auto grid_x = grid.GetRepresentation(staggered_x);
+    auto grid_y = grid.GetRepresentation(staggered_y);
 
-        pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 2>{uin}, BCMom<1, 2>{});
+    pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 2>{uin}, BCMom<1, 2>{});
 
-        pm.SetDensity(rho);
-        pm.SetViscosity(mu);
-        auto printer = [&]() {
-            GridVector vec_u("u", grid_s);
-            GridVector vec_v("v", grid_s);
-            GridVector* u_staggered = &pm.GetMomentum(0)->GetField()->GetDataVector();
-            GridVector* v_staggered = &pm.GetMomentum(1)->GetField()->GetDataVector();
-            for (LO n{0}; n < grid_x.GetNumberLocalCellsInternal(); n++) {
-                IndexLocal ind = grid_x.MapOrdinalToIndexLocalInternal(n);
-                ind = grid_x.MapInternalToLocal(ind);
-                IndexLocal ind_nb{ind};
-                ind_nb.i() += 1;
-                vec_u.At(ind, 0) = 0.5 * (u_staggered->At(ind_nb, 0) + u_staggered->At(ind, 0));
-            }
-            for (LO n{0}; n < grid_y.GetNumberLocalCellsInternal(); n++) {
-                IndexLocal ind = grid_y.MapOrdinalToIndexLocalInternal(n);
-                ind = grid_y.MapInternalToLocal(ind);
-                IndexLocal ind_nb{ind};
-                ind_nb.j() += 1;
-                vec_v.At(ind, 0) = 0.5 * (v_staggered->At(ind_nb, 0) + v_staggered->At(ind, 0));
-            }
-            Writer writer(&exman, dt.GetTime(), dt.GetTimeStepCounter());
-            writer.Write(fman,
-                         &pm.GetContinuity()->GetField()->GetDataVector(),
-                         &vec_u,
-                         &vec_v);
-        };
-        printer();
-        IndexLocal ind_beg(i_beg, j_mid);
-        IndexLocal ind_end(i_end, j_mid);
-        SC dx = grid_s.GetCoordinatesCenter(ind_end).x() - grid_s.GetCoordinatesCenter(ind_beg).x();
-        // pm.SetTimer(dare::Timer{});
-        dare::SetVerbosity(dare::Verbosity::Low);
-        while (dt.GetTime() < sim_time) {
-            pm.CopyToOld();
-            dt.AdvanceTimeStep();
-            pm.SolveFlowField();
-            SC dp = pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_beg, 0)
-                    - pm.GetContinuity()->GetPressure()->GetDataVector().At(ind_end, 0);
-            SC err = std::abs((dp / dx - dp_ana) / dp_ana);
-            Print(dare::Verbosity::Low) << "Pressure drop: " << dp / dx << " -> Error: " << err << std::endl;
-            if (dt.GetTimeStepCounter() % freq_write == 0) {
-                printer();
-            }
+    pm.SetDensity(rho);
+    pm.SetViscosity(mu);
+    pm.GetMomentum(0)->GetField()->SetValues(0.);
+    pm.GetMomentum(1)->GetField()->SetValues(0.);
+    auto printer = [&]() {
+        GridVector vec_u("u", grid_s);
+        GridVector vec_v("v", grid_s);
+        GridVector* u_staggered = &pm.GetMomentum(0)->GetField()->GetDataVector();
+        GridVector* v_staggered = &pm.GetMomentum(1)->GetField()->GetDataVector();
+        for (LO n{0}; n < grid_x.GetNumberLocalCellsInternal(); n++) {
+            IndexLocal ind = grid_x.MapOrdinalToIndexLocalInternal(n);
+            ind = grid_x.MapInternalToLocal(ind);
+            IndexLocal ind_nb{ind};
+            ind_nb.i() += 1;
+            vec_u.At(ind, 0) = 0.5 * (u_staggered->At(ind_nb, 0) + u_staggered->At(ind, 0));
+        }
+        for (LO n{0}; n < grid_y.GetNumberLocalCellsInternal(); n++) {
+            IndexLocal ind = grid_y.MapOrdinalToIndexLocalInternal(n);
+            ind = grid_y.MapInternalToLocal(ind);
+            IndexLocal ind_nb{ind};
+            ind_nb.j() += 1;
+            vec_v.At(ind, 0) = 0.5 * (v_staggered->At(ind_nb, 0) + v_staggered->At(ind, 0));
+        }
+        Writer writer(&exman, dt.GetTime(), dt.GetTimeStepCounter());
+        writer.Write(fman,
+                     &pm.GetContinuity()->GetField()->GetDataVector(),
+                     &vec_u,
+                     &vec_v);
+    };
+    printer();
+    IndexGlobal ind_beg(i_beg, j_mid);
+    IndexGlobal ind_end(i_end, j_mid);
+    SC dx = grid_s.GetDistances().x() * (i_end - i_beg);
+    bool p_beg_local = grid_s.IsLocalInternal(ind_beg);
+    bool p_end_local = grid_s.IsLocalInternal(ind_end);
+    dare::SetVerbosity(dare::Verbosity::Low);
+    SC dp_dx{std::numeric_limits<SC>::lowest()};
+    while (dt.GetTime() < sim_time) {
+        pm.CopyToOld();
+        dt.AdvanceTimeStep();
+        pm.SolveFlowField();
+        SC p_beg{std::numeric_limits<SC>::lowest()};
+        SC p_end{std::numeric_limits<SC>::lowest()};
+        if (p_beg_local)
+            p_beg = pm.GetContinuity()->GetPressure()->GetDataVector().At(grid_s.MapGlobalToLocal(ind_beg), 0);
+        if (p_end_local)
+            p_end = pm.GetContinuity()->GetPressure()->GetDataVector().At(grid_s.MapGlobalToLocal(ind_end), 0);
+        p_beg = exman.Allmax(p_beg);
+        p_end = exman.Allmax(p_end);
+        dp_dx = (p_beg - p_end)/dx;
+        SC err = std::abs((dp_dx - dp_ana) / dp_ana);
+        Print(dare::Verbosity::Low) << "Pressure drop: " << dp_dx << " -> Error: " << err << std::endl;
+        if (dt.GetTimeStepCounter() % freq_write == 0) {
+            printer();
         }
     }
-    return 0;
-}  // NOLINT
+    return dp_dx;
+}
+
+int main(int argc, char* argv[]) {
+    bool all_second_order{true};
+    dare::SetVerbosity(dare::Verbosity::High);
+    dare::ScopeGuard scope_guard(&argc, &argv);
+    {
+        SC H{0.2};
+        std::array ny = {10, 20, 30};
+        SC Re = 20;
+        SC rho = 1000.;
+        SC mu = 1e-3;
+        std::vector<SC> dp_dx;
+        for (auto n : ny)
+            dp_dx.push_back(duct2d(Re, mu, rho, H, n));
+
+        SC uin = Re * mu / (rho * H);
+        SC dp_dx_ana = 12 * mu * uin / (H * H);
+
+        std::vector<SC> err;
+        for (auto dp : dp_dx)
+            err.push_back(dp / dp_dx_ana - 1.);
+
+        std::vector<SC> G;
+        for (auto& n : ny)
+            G.push_back(std::log(static_cast<SC>(n)));
+        for (auto& e : err)
+            e = std::log(e);
+
+        std::vector<SC> m;
+        for (std::size_t i{0}; i < G.size() - 1; i++)
+            m.push_back((err[i + 1] - err[i]) / (G[i + 1] - G[i]));
+        SC order{10.};
+        for (auto m_e : m)
+            order = std::min(order, std::abs(m_e));
+
+        all_second_order = order > 1.95;
+        Print(dare::Verbosity::Low) << "Found following order of convergence: " << order << std::endl;
+    }  // NOLINT
+
+    return all_second_order ? 0 : -1;
+}
