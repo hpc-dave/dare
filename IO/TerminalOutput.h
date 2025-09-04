@@ -38,9 +38,14 @@ enum class Verbosity : uint8_t {
 namespace detail {
 static Verbosity verbosity_level{Verbosity::Low};
 static BlackHoleOStream black_hole_ostream;
-static bool is_root_for_print{true};
-inline void SetRootForPrint(bool v) { is_root_for_print = v; }
-inline bool IsRootForPrint() { return is_root_for_print; }
+
+class PrintSingleton {
+public:
+    static void SetRootForPrint(bool v) { is_root_for_print = v; }
+    static bool IsRoot() { return is_root_for_print; }
+private:
+    static bool is_root_for_print;
+};
 }  // namespace detail
 
 inline void SetVerbosity(Verbosity level) {
@@ -57,7 +62,7 @@ inline void SetVerbosity(Verbosity level) {
  * \note must not be called before allocating ScopeGuard
  */
 inline std::ostream& Print(Verbosity level) {
-    if (level > detail::verbosity_level || !detail::IsRootForPrint())
+    if (level > detail::verbosity_level || !detail::PrintSingleton::IsRoot())
         return detail::black_hole_ostream;
     else
         return std::cout;
