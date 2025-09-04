@@ -318,7 +318,8 @@ public:
             if (m.IsSet<CartesianNeighbor::EAST>(n, n))
                 os << "\tE: " << m.Get(n, n, CartesianNeighbor::EAST);
 
-            os << "\tRHS: " << m.GetRhs(n) << '\n';
+            os << "\tRHS: " << m.GetRhs(n)
+               << "\tx: " << m.GetInitialGuess(n) << '\n';
         }
         return os;
     }

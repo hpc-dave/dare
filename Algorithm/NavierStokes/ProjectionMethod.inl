@@ -184,7 +184,11 @@ void ProjectionMethod<G, BInf, PInf, NInf>::SolveFlowField() {
     {
         BuildMomentum(dare::ZERO);
         auto [success, iter] = SolveMomentum(dare::ZERO);
+        // GetMomentum(0)->GetMatrixSystem()->PrintMatrix();
+        // GetMomentum(0)->GetMatrixSystem()->PrintB();
+        // GetMomentum(0)->GetMatrixSystem()->PrintX();
         terminal_output.PrintMomentum(0, iter, success, this);
+        ex_man->Terminate(__func__, "blub");
     }
     // add some output here
     if constexpr (dimension > 1) {

@@ -34,7 +34,7 @@ MatrixBlockBase<O, SC, N>::MatrixBlockBase()
 
 template <typename O, typename SC, std::size_t N>
 MatrixBlockBase<O, SC, N>::MatrixBlockBase(const O& _node, const dare::Vector<N, std::size_t>& size_hint)
-    : node(_node) {
+    : rhs(0.), node(_node) {
     ProvideSizeHint(size_hint);
 }
 

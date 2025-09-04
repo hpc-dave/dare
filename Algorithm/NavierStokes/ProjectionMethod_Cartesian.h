@@ -228,15 +228,20 @@ free_pm_viscious_stress_Cartesian(
                 }
                 ind_low = ind_up = ind;
             }
+
             ind_low.i() -= 1;
             // dv/dx
             tau_ex(CNB::SOUTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[0];  // check sign
+
+            std::cout << ind << "\tsouth up: " << v[1]->At(ind_up, 0) << " low: " << v[1]->At(ind_low, 0) << std::endl;
             // dw/dx
             if constexpr (dim > 2)
                 tau_ex(CNB::BOTTOM, 0) += (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[0];  // check sign
             ind_low.j() += 1;
             ind_up.j() += 1;
             tau_ex(CNB::NORTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[0];  // check sign
+
+            std::cout << ind << "\tnorth up: " << ind_up << ' ' << v[1]->At(ind_up, 0) << " low: " << ind_low << ' ' << v[1]->At(ind_low, 0) << std::endl;
             if constexpr (dim > 2) {
                 ind_low.j() -= 1;
                 ind_up.j() -= 1;
@@ -281,7 +286,8 @@ free_pm_viscious_stress_Cartesian(
                 ind_up.k() += 1;
                 tau_ex(CNB::TOP, 0) += (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[1];
             }
-        } if constexpr(dir == 2) {
+        }
+        if constexpr(dir == 2) {
             // z-direction
             if constexpr (dare::PMDefaultStressTreatment<Treatment>) {
                 // dw/dx
@@ -391,6 +397,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         // FVStencil rho_f = dare::InterpolateToFaceStencil(*g_r, ind, rho);
         FVStencil mu_f = dare::InterpolateToFaceStencil(*g_r, ind, mu);
         FVStencil epsilon_f = dare::InterpolateToFaceStencil(*g_r, ind, epsilon);
+
         // accumulation
         (*mblock) += free_pm_ddt_Cartesian(pm, direction, *g_r, o_loc);
 
