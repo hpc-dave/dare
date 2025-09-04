@@ -233,7 +233,6 @@ free_pm_viscious_stress_Cartesian(
             // dv/dx
             tau_ex(CNB::SOUTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[0];  // check sign
 
-            std::cout << ind << "\tsouth up: " << v[1]->At(ind_up, 0) << " low: " << v[1]->At(ind_low, 0) << std::endl;
             // dw/dx
             if constexpr (dim > 2)
                 tau_ex(CNB::BOTTOM, 0) += (v[2]->At(ind_up, 0) - v[2]->At(ind_low, 0)) * dn_r[0];  // check sign
@@ -241,7 +240,6 @@ free_pm_viscious_stress_Cartesian(
             ind_up.j() += 1;
             tau_ex(CNB::NORTH, 0) += (v[1]->At(ind_up, 0) - v[1]->At(ind_low, 0)) * dn_r[0];  // check sign
 
-            std::cout << ind << "\tnorth up: " << ind_up << ' ' << v[1]->At(ind_up, 0) << " low: " << ind_low << ' ' << v[1]->At(ind_low, 0) << std::endl;
             if constexpr (dim > 2) {
                 ind_low.j() -= 1;
                 ind_up.j() -= 1;
@@ -388,7 +386,7 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     auto BuildStrategy = [=](auto mblock) {
         const typename GridType::Representation* g_r{mblock->GetRepresentation()};
         LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
-        IndexLocal ind{mblock->GetIndex()};
+        IndexLocal ind{mblock->GetIndexLocal()};
 
         const DensityType rho{pm->GetDensity()};
         const ViscosityType mu{pm->GetViscosity()};
@@ -650,7 +648,7 @@ void free_pm_build_continuity(PM* pm, int iteration) {
         auto BuildStrategy = [=](auto mblock) {
             // const typename GridType::Representation* g_r{mblock->GetRepresentation()};
             LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
-            IndexLocal ind{mblock->GetIndex()};
+            IndexLocal ind{mblock->GetIndexLocal()};
 
             const DensityType rho{pm->GetDensity()};
             const PorosityType epsilon{pm->GetPorosity()};
@@ -668,7 +666,7 @@ void free_pm_build_continuity(PM* pm, int iteration) {
         auto BuildStrategy = [=](auto mblock) {
             // const typename GridType::Representation* g_r{mblock->GetRepresentation()};
             // LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells
-            IndexLocal ind{mblock->GetIndex()};
+            IndexLocal ind{mblock->GetIndexLocal()};
 
             mblock->GetRhs(0) = -1. * pm->GetContinuity()->GetDefect()->GetDataVector().At(ind, 0);
 

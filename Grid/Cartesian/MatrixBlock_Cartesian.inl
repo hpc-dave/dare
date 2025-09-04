@@ -556,9 +556,49 @@ MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetIndex() const {
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IndexLocal
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetIndexLocal() const {
+    if constexpr (IsGlobal()) {
+        return g_rep->MapGlobalToLocal(ind_full);
+    } else {
+        return ind_full;
+    }
+}
+
+template <std::size_t Dim, typename O, typename SC, std::size_t N>
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IndexGlobal
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetIndexGlobal() const {
+    if constexpr (IsGlobal()) {
+        return ind_full;
+    } else {
+        return g_rep->MapLocalToGlobal(ind_full);
+    }
+}
+
+template <std::size_t Dim, typename O, typename SC, std::size_t N>
 typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::Index
 MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetIndexInternal() const {
     return ind_internal;
+}
+
+template <std::size_t Dim, typename O, typename SC, std::size_t N>
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IndexLocal
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetIndexInternalLocal() const {
+    if constexpr (IsGlobal()) {
+        return ind_internal;
+    } else {
+        return g_rep->MapLocalToGlobal(ind_internal);
+    }
+}
+
+template <std::size_t Dim, typename O, typename SC, std::size_t N>
+typename MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::IndexGlobal
+MatrixBlock<dare::Cartesian<Dim>, O, SC, N>::GetIndexInternalGlobal() const {
+    if constexpr (IsGlobal()) {
+        return ind_internal;
+    } else {
+        return g_rep->MapLocalToGlobal(ind_internal);
+    }
 }
 
 template <std::size_t Dim, typename O, typename SC, std::size_t N>

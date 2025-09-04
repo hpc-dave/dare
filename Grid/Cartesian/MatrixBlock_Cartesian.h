@@ -66,6 +66,8 @@ public:
     using LO = LocalOrdinalType;
     using SelfType = MatrixBlock<GridType, O, SC, N>;
     using Index = typename GridType::template GetIndexType<O>::type;
+    using IndexLocal = typename GridType::template GetIndexType<LO>::type;
+    using IndexGlobal = typename GridType::template GetIndexType<GO>::type;
     using ScalarArray = dare::Vector<STENCIL_SIZE, SC>;
 
     /*!
@@ -141,13 +143,37 @@ public:
 
     /*!
      * @brief return indices
+     * \warning this index has is local/global based on the
+     * defined ordinal type!
      */
     Index GetIndex() const;
 
     /*!
-     * @brief return indices
+     * @brief return indices on the local grid
+     */
+    IndexLocal GetIndexLocal() const;
+
+    /*!
+     * @brief return indices on the global grid
+     */
+    IndexGlobal GetIndexGlobal() const;
+
+    /*!
+     * @brief return indices without ghost/halo cells
+     * \warning this index has is local/global based on the
+     * defined ordinal type!
      */
     Index GetIndexInternal() const;
+
+    /*!
+     * @brief return local indices without ghost/halo cells
+     */
+    IndexLocal GetIndexInternalLocal() const;
+
+    /*!
+     * @brief return global indices without ghost/halo cells
+     */
+    IndexGlobal GetIndexInternalGlobal() const;
 
     /*!
      * @brief returns representation
