@@ -132,11 +132,13 @@ public:
      * @brief calls the solver with prior set properties and solves the equation
      * @tparam Lambda update strategy that defines, how values are transferred from the matrix system to the field
      * @param UpdateStrategy the update strategy
+     * @param build_preconditioner if true, the preconditioner is build prior to solving
      * @return a pair with a boolean and integer, indicating convergence and the number of iterations to reach it
      */
     template <typename Lambda>
     std::pair<bool, int> Solve(Lambda UpdateStrategy =
-                                   UpdateFieldCopy{});
+                                   UpdateFieldCopy{},
+                                bool build_preconditioner = true);
 
     /*!
      * @brief updates the boundaries of the underlying field and exchanges halo cell information

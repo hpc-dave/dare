@@ -70,6 +70,7 @@ void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
                         Lambda functor) {
     const std::size_t num_cells = grid.GetNumberLocalCellsInternal();
     Teuchos::Ptr<VecType> ptr_B = B.ptr();
+    Teuchos::Ptr<VecType> ptr_x = x.ptr();
     Teuchos::Ptr<MatrixType> ptr_A = A.ptr();
 #pragma omp parallel for
     for (std::size_t node = 0; node < num_cells; node++) {
@@ -89,6 +90,8 @@ void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
             for (std::size_t n{0}; n < N; n++) {
                 ptr_B->replaceLocalValue(matrix_block.GetRow(n),
                                          matrix_block.GetRhs(n));
+                ptr_x->replaceLocalValue(matrix_block.GetRow(n),
+                                         matrix_block.GetInitialGuess(n));
             }
         } else {
             // initialize matrix block
@@ -107,6 +110,8 @@ void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
             for (std::size_t n{0}; n < N; n++) {
                 ptr_B->replaceGlobalValue(matrix_block.GetRow(n),
                                           matrix_block.GetRhs(n));
+                ptr_x->replaceGlobalValue(matrix_block.GetRow(n),
+                                          matrix_block.GetInitialGuess(n));
             }
         }
     }

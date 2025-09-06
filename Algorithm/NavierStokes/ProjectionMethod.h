@@ -226,6 +226,13 @@ public:
         density_derivative_init = 0b0100000
     };
 
+    enum {
+        A_mom_0_build = 0b0000001,
+        A_mom_1_build = 0b0000010,
+        A_mom_2_build = 0b0000100,
+        A_p_build = 0b0001000
+    };
+
     /*!
      * @brief an enum class for potential observers
      */
@@ -533,6 +540,14 @@ public:
     }
 
     /*!
+     * @brief checks if a certain matrix system has been built
+     * @param build_id id of the matrix system to check
+     */
+    bool CheckBuildStatus(char build_id) const {
+        return status_build & build_id;
+    }
+
+    /*!
      * @brief current time step size
      * @return 
      */
@@ -554,18 +569,6 @@ public:
     TimeStepCounter GetTimeStepCounter() const {
         return tstep;
     }
-
-    // /*!
-    //  * @brief Sets the maximum number of loop iterations
-    //  * @param max_loops max loops
-    //  */
-    // void SetMaxLoopIterations(int max_loops) {
-    //     if (max_loops < 0) {
-    //         ERROR << "maximum continuity iterations may not be negative!" << ERROR_CLOSE;
-    //         return;
-    //     }
-    //     max_iterations = max_loops;
-    // }
 
     /*!
      * @brief maximum number of continuity loops
@@ -749,6 +752,7 @@ private:
     // int max_iterations;         //!< maximum iterations for the continuity loop
     char status;                //!< bitflag for checking the object status
     char status_finalized;      //!< expected status of object when computing a flow step
+    char status_build;          //!< bitflag for checking the build status of the matrix systems
     UniqueObserverHandle pimpl_dt_obs;  //!< observer handle for updating time and timesteps
     std::set<ObserverType*> observers;  //!< attached observers
     TerminalOutput terminal_output;     //!< prints data to the terminal (should probably be a logger)

@@ -25,6 +25,7 @@
 #ifndef ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_CARTESIAN_H_
 #define ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_CARTESIAN_H_
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <concepts>
 #include <string>
 #include <type_traits>
@@ -378,6 +379,26 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
     using CNB = dare::CartesianNeighbor;
     using IterType = typename PM::MomentumIterationType;
 
+    std::string build_descr = "momentum[" + std::to_string(dir) + "]: Jacobian";
+    std::string build_option;
+    if (!pm->GetParameterList()->template isType<std::string>(build_descr)) {
+        build_descr = "momentum: Jacobian";
+        build_option = pm->GetParameterList()->get(build_descr, build_option);
+    }
+    if (!pm->GetParameterList()->template isType<std::string>(build_descr)) {
+        pm->GetExecutionManager()->Terminate(__func__, "Missing option for building momentum equation: " + build_descr);
+    }
+    build_option = pm->GetParameterList()->get(build_descr, build_option);
+    bool rebuild_matrix = !boost::iequals(build_option, "constant");
+    char build_id = 0;
+    switch (dir) {
+        case 0: build_id = PM::A_mom_0_build; break;
+        case 1: build_id = PM::A_mom_1_build; break;
+        case 2: build_id = PM::A_mom_2_build; break;
+        default: pm->GetExecutionManager()->Terminate(__func__, "Inconsistent dimension");
+    }
+    rebuild_matrix |= !pm->CheckBuildStatus(build_id);
+
     dare::Vector<PM::dimension, const GridVectorType*> velocities;
     for (std::size_t d{0}; d < PM::dimension; d++) {
         velocities[d] = &pm->GetMomentum(d)->GetField()->GetDataVector(1);
@@ -442,7 +463,10 @@ void free_pm_build_momentum(PM* pm, Direction direction) {
         free_pm_apply_normalizer(pm, pm->GetMomentum(direction)->GetCustomMember()->normalizer, mblock);
     };
 
-    pm->GetMomentum(dir)->Build(BuildStrategy);
+    if (rebuild_matrix)
+        pm->GetMomentum(dir)->Build(BuildStrategy);
+    else
+        pm->GetMomentum(dir)->UpdateRhs(BuildStrategy);
 }
 
 template <typename PM>
@@ -639,12 +663,22 @@ void free_pm_build_continuity(PM* pm, int iteration) {
     using IndexLocal = typename GridType::Index;
     using GridVectorType = dare::GridVector<GridType, SC, 1>;
 
+    std::string build_descr = "continuity: Jacobian";
+    std::string build_option;
+    if (!pm->GetParameterList()->template isType<std::string>(build_descr)) {
+        pm->GetExecutionManager()->Terminate(__func__,
+            "Missing option for building continuity equation: " + build_descr);
+    }
+    build_option = pm->GetParameterList()->get(build_descr, build_option);
+    bool rebuild_matrix = !boost::iequals(build_option, "constant");
+    rebuild_matrix |= !pm->CheckBuildStatus(PM::A_p_build);
+
     dare::Vector<PM::dimension, const GridVectorType*> velocities;
     for (std::size_t d{0}; d < PM::dimension; d++) {
         velocities[d] = &pm->GetMomentum(d)->GetField()->GetDataVector(1);
     }
 
-    if (iteration == 0) {
+    if (iteration == 0 && rebuild_matrix) {
         auto BuildStrategy = [=](auto mblock) {
             // const typename GridType::Representation* g_r{mblock->GetRepresentation()};
             LO o_loc{mblock->GetLocalOrdinal()};  // this refers to the internal one without ghost/halo cells

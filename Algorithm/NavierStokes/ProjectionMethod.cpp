@@ -45,12 +45,12 @@ ParameterList GetDefaultParameterListPM() {
     l.set("momentum[1]: solver properties", dare::None{}, "solver properties for the momentum equation y-direction");
     l.set("momentum[2]: solver properties", dare::None{}, "solver properties for the momentum equation z-direction");
     l.set("momentum: Jacobian", "mutable", "An optimization option for avoiding recomputation of the Jacobian");
-    l.set("momentum[0]: Jacobian", "mutable",
-            "An optimization option for avoiding recomputation of the Jacobian in x-direction");
-    l.set("momentum[1]: Jacobian", "mutable",
-            "An optimization option for avoiding recomputation of the Jacobian in y-direction");
-    l.set("momentum[2]: Jacobian", "mutable",
-            "An optimization option for avoiding recomputation of the Jacobian in z-direction");
+    l.set("momentum[0]: Jacobian", dare::None{},
+          "An optimization option for avoiding recomputation of the Jacobian in x-direction");
+    l.set("momentum[1]: Jacobian", dare::None{},
+          "An optimization option for avoiding recomputation of the Jacobian in y-direction");
+    l.set("momentum[2]: Jacobian", dare::None{},
+          "An optimization option for avoiding recomputation of the Jacobian in z-direction");
 
     return l;
 }

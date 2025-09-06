@@ -26,6 +26,9 @@
 #define ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_FREEFUNC_H_
 #include <utility>
 #include <algorithm>
+#include <string>
+
+#include <boost/algorithm/string/predicate.hpp>
 
 #include "Utilities/Errors.h"
 
@@ -122,11 +125,24 @@ void free_pm_momentum_apply_boundary_conditions(PM* pm,
 template <typename PM, dare::NaturalNumber Direction>
 std::pair<bool, int> free_pm_solve_momentum(PM* pm, Direction dir) {
     using IterType = typename PM::MomentumIterationType;
+    std::string build_descr = "momentum[" + std::to_string(dir) + "]: Jacobian";
+    std::string build_option;
+    if (!pm->GetParameterList()->template isType<std::string>(build_descr)) {
+        build_descr = "momentum: Jacobian";
+        build_option = pm->GetParameterList()->get(build_descr, build_option);
+    }
+    if (!pm->GetParameterList()->template isType<std::string>(build_descr)) {
+        pm->GetExecutionManager()->Terminate(__func__,
+                "Missing option for solving momentum equation: " + build_descr);
+    }
+    build_option = pm->GetParameterList()->get(build_descr, build_option);
+    bool rebuild_prec = !boost::iequals(build_option, "constant");
+
     std::pair<bool, int> ret = std::make_pair(false, static_cast<int>(-1));
     if constexpr (uses_fixed_point_iterations_v<IterType>) {
-        ret = pm->GetMomentum(dir)->Solve(dare::UpdateFieldCopy{});
+        ret = pm->GetMomentum(dir)->Solve(dare::UpdateFieldCopy{}, rebuild_prec);
     } else {
-        ret = pm->GetMomentum(dir)->Solve(dare::UpdateFieldAddInto{});
+        ret = pm->GetMomentum(dir)->Solve(dare::UpdateFieldAddInto{}, rebuild_prec);
     }
 
     // Reverse normalization
@@ -149,12 +165,22 @@ std::pair<bool, int> free_pm_solve_continuity(PM* pm, int iteration) {
     using IterType = typename PM::ContinuityIterationType;
     using ContType = typename PM::ContinuityType;
     using ContMSystem = typename ContType::MatrixSystemType;
+
+    std::string build_descr = "continuity: Jacobian";
+    std::string build_option;
+    if (!pm->GetParameterList()->template isType<std::string>(build_descr)) {
+        pm->GetExecutionManager()->Terminate(__func__,
+            "Missing option for building continuity equation: " + build_descr);
+    }
+    build_option = pm->GetParameterList()->get(build_descr, build_option);
+    bool rebuild_prec = !boost::iequals(build_option, "constant");
+
     std::pair<bool, int> ret = std::make_pair(false, static_cast<int>(-1));
     if constexpr (uses_newton_iterations_v<IterType>) {
         auto UpdateStrategy = [=](const auto& c, const ContMSystem& m) {
             m.CopyTo(&pm->GetContinuity()->GetdP()->GetDataVector());
         };
-        ret = pm->GetContinuity()->Solve(UpdateStrategy);
+        ret = pm->GetContinuity()->Solve(UpdateStrategy, rebuild_prec);
         free_pm_revert_normalizer(pm,
                                   pm->GetContinuity()->GetCustomMember()->normalizer,
                                   &pm->GetContinuity()->GetdP()->GetDataVector());

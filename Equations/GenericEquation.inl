@@ -61,10 +61,11 @@ void GenericEquation<Grid, BS, CM>::UpdateRhs(BuildStrategy build_lambda) {
 }
 
 template <typename Grid, typename BS, typename CM>
-template<typename UpdateStrategy>
-std::pair<bool, int> GenericEquation<Grid, BS, CM>::Solve(UpdateStrategy strat_update) {
+template <typename UpdateStrategy>
+std::pair<bool, int> GenericEquation<Grid, BS, CM>::Solve(UpdateStrategy strat_update, bool build_prec) {
     MatrixSolverType solver;
-    matrix_system.GetM() = solver.BuildPreconditioner(solver_prop, matrix_system.GetA());
+    if (build_prec || matrix_system.GetM().is_null())
+        matrix_system.GetM() = solver.BuildPreconditioner(solver_prop, matrix_system.GetA());
 
     auto ret = solver.Solve(solver_prop,
                             matrix_system.GetM(),

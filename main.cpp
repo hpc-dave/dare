@@ -145,7 +145,7 @@ public:
                     o->GetDataVector(0).At(ind_nb, 0) = o->GetDataVector(0).At(ind, 0);
                 }
             }
-        } else if constexpr (o->IsGlobal()) {
+        } else {
             auto g_r = o->GetRepresentation();
             LO loc_o = o->GetLocalOrdinal();
             IndexGlobal extent = g_r->GetGlobalResolutionInternal();
@@ -292,7 +292,7 @@ public:
                     // o->GetDataVector(0).At(ind_nb, 0) = -o->GetDataVector(0).At(ind, 0);
                 }
             }
-        } else if constexpr (o->IsGlobal()) {
+        } else {
             auto g_r = o->GetRepresentation();
             LO loc_o = o->GetLocalOrdinal();
             IndexGlobal extent = g_r->GetGlobalResolutionInternal();
@@ -374,10 +374,10 @@ public:
 };
 
 SC duct2d(SC Re, SC mu, SC rho, SC H, GO ny) {
-    SC L{20 * H};
+    SC L{20*H};
     GO nx = static_cast<GO>(L / H * ny);
     LO num_ghost = 2;
-    int num_tsteps = 1000;
+    int num_tsteps = 500;
     SC uin = Re * mu / (rho * H);
     SC Co = 0.25;
     int freq_write = 100;
@@ -410,8 +410,13 @@ SC duct2d(SC Re, SC mu, SC rho, SC H, GO ny) {
 
     pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 2>{uin}, BCMom<1, 2>{});
 
+    pm.GetParameterList()->set("momentum: Jacobian", "constant");
+    pm.GetParameterList()->set("continuity: Jacobian", "constant");
+
     pm.SetDensity(rho);
     pm.SetViscosity(mu);
+    pm.GetMomentum(0)->GetField()->SetValues(0.);
+    pm.GetMomentum(1)->GetField()->SetValues(0.);
     auto printer = [&]() {
         GridVector vec_u("u", grid_s);
         GridVector vec_v("v", grid_s);
@@ -445,6 +450,7 @@ SC duct2d(SC Re, SC mu, SC rho, SC H, GO ny) {
     bool p_end_local = grid_s.IsLocalInternal(ind_end);
     dare::SetVerbosity(dare::Verbosity::Low);
     SC dp_dx{std::numeric_limits<SC>::lowest()};
+    // pm.SetTimer(dare::Timer{});
     while (dt.GetTime() < sim_time) {
         pm.CopyToOld();
         dt.AdvanceTimeStep();
@@ -469,6 +475,7 @@ SC duct2d(SC Re, SC mu, SC rho, SC H, GO ny) {
 
 int main(int argc, char* argv[]) {
     bool all_second_order{true};
+    dare::SetVerbosity(dare::Verbosity::High);
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
         SC H{0.2};
@@ -485,7 +492,7 @@ int main(int argc, char* argv[]) {
 
         std::vector<SC> err;
         for (auto dp : dp_dx)
-            err.push_back(dp / dp_dx_ana - 1.);
+            err.push_back(std::abs(dp / dp_dx_ana - 1.));
 
         std::vector<SC> G;
         for (auto& n : ny)

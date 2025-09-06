@@ -33,6 +33,7 @@ ProjectionMethod<G, BInf, PInf, NInf>::ProjectionMethod()
       continuity_tolerance{1e-14},
       status{0},
       status_finalized{rho_init | mu_init | epsilon_init | beta_im_init | beta_ex_init | density_derivative_init},
+      status_build{0},
       terminal_output(dimension),
       params(detail::GetDefaultParameterListPM()) {
     if constexpr (dare::is_none_v<PorosityVariableType>)
@@ -183,18 +184,21 @@ void ProjectionMethod<G, BInf, PInf, NInf>::SolveFlowField() {
     // put it in a scope to limit variable lifetime
     {
         BuildMomentum(dare::ZERO);
+        status_build |= A_mom_0_build;
         auto [success, iter] = SolveMomentum(dare::ZERO);
         terminal_output.PrintMomentum(0, iter, success, this);
     }
     // add some output here
     if constexpr (dimension > 1) {
         BuildMomentum(dare::ONE);
+        status_build |= A_mom_1_build;
         auto [success, iter] = SolveMomentum(dare::ONE);
         // add some output here
         terminal_output.PrintMomentum(1, iter, success, *this);
     }
     if constexpr (dimension > 2) {
         BuildMomentum(dare::TWO);
+        status_build |= A_mom_2_build;
         auto [success, iter] = SolveMomentum(dare::TWO);
         terminal_output.PrintMomentum(2, iter, success, *this);
     }
@@ -213,6 +217,7 @@ void ProjectionMethod<G, BInf, PInf, NInf>::SolveFlowField() {
             *rho_prev = rho->GetGridVector(0);
 
         BuildContinuity(iteration);
+        status_build |= A_p_build;
         auto [success, iter] = SolveContinuity(iteration);
         Notify(StateChange::SolvedContinuity);
 
