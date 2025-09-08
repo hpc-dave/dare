@@ -13,7 +13,7 @@ on:
 jobs:
 
   GoogleTest:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
 
@@ -63,7 +63,7 @@ jobs:
 
   publish-test-results:
     # For details checkout https://github.com/marketplace/actions/publish-test-results
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
     name: Publish Tests Results
