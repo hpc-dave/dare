@@ -26,7 +26,8 @@ jobs:
     steps:
     - name: https://github.com/actions/checkout/issues/1720
       run: |
-        chmod -R u+rwX .
+        apt install -y acl
+        setfacl -R -d -m u:ACTIONS_USER:rwx /home/ACTIONS_USER
 
     - uses: actions/checkout@v5
 
