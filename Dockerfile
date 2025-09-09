@@ -29,7 +29,7 @@ RUN apt-get -y upgrade
 RUN apt-get install -y apt-utils
 RUN apt-get -y update
 RUN apt-get -y upgrade
-RUN apt-get install -y build-essential git cmake wget software-properties-common libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz mesa-common-dev mesa-utils freeglut3-dev ninja-build
+RUN apt-get install -y build-essential git cmake wget software-properties-common libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev libgtest-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz mesa-common-dev mesa-utils freeglut3-dev ninja-build
 RUN pip install --break-system-packages cpplint virtualenv cppcheck-junit cpplint-junit doxygen-junit
 RUN virtualenv mynotebookenv
 RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel
@@ -43,14 +43,11 @@ WORKDIR /home/user
 # RUN chmod +x llvm.sh
 # RUN ./llvm.sh 18
 RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
-RUN clang-18 --version
-RUN apt-get install -y libomp-18-dev
-
-# clone and install google test
-RUN git clone https://github.com/google/googletest.git
-WORKDIR ./googletest/build
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release
-RUN make install -j 4
+ENV CLANG=clang-20
+ENV CLANGXX=clang++-20
+RUN $CLANG --version
+RUN $CLANGXX --version
+RUN apt-get install -y libomp-20-dev
 
 WORKDIR /home/user
 
@@ -58,7 +55,7 @@ WORKDIR /home/user
 RUN git clone https://github.com/trilinos/Trilinos.git TrilinosGit
 WORKDIR ./TrilinosGit
 RUN git pull
-# RUN git checkout trilinos-release-15-0-0
+RUN git checkout trilinos-release-16-1-0
 WORKDIR ./build_gcc
 RUN cmake ..\
     -GNinja \
@@ -95,8 +92,8 @@ RUN ninja install -j 6
 
 # building trilinos with clang
 WORKDIR /home/user/TrilinosGit/build_clang
-ENV OMPI_CC=clang-18
-ENV OMPI_CXX=clang++-18
+ENV OMPI_CC=$CLANG
+ENV OMPI_CXX=$CLANGXX
 RUN cmake ..\
     -GNinja \
     -DCMAKE_CXX_COMPILER=mpic++ \

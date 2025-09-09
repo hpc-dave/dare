@@ -15,8 +15,8 @@ jobs:
   Doxygen:
     runs-on: ubunut-latest
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
+
 
     steps:
     - uses: actions/checkout@v5
@@ -44,10 +44,9 @@ jobs:
 
 
   cpplint:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     steps:
     - name: Run CPPLINT
@@ -77,10 +76,10 @@ jobs:
         path: ./CPPLINT*
 
   cppcheck:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
+
 
     steps:
     - name: Run CPPCHECK
@@ -107,10 +106,10 @@ jobs:
 
   publish-test-results:
     # For details checkout https://github.com/marketplace/actions/publish-test-results
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
+
     name: Publish Tests Results
     needs: [Doxygen, cppcheck, cpplint]
     permissions:

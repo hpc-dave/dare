@@ -14,10 +14,9 @@ on:
 jobs:
 
   VerificationAdvection1D:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     strategy:
       matrix:
@@ -51,13 +50,12 @@ jobs:
       timeout-minutes: 2
       run: |
           cd build_adv1D
-          mpirun -n 1 --allow-run-as-root exec -t 1
+          mpirun -n 1 exec -t 1
 
   VerificationDiffusion1D:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     strategy:
       matrix:
@@ -91,10 +89,9 @@ jobs:
           exec -t 1
 
   VerificationAdvection2D:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     strategy:
       matrix:
@@ -102,7 +99,7 @@ jobs:
 # I cannot reproduce it locally, maybe we can fix that later
 #        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
-        procs: [1, 2]   # [1, 2, 3, 4] ubuntu-latest doesn't allow more than 2 procs for some reason
+        procs: [1, 2, 3, 4]
       fail-fast: false
 
     steps:
@@ -130,13 +127,12 @@ jobs:
       timeout-minutes: 2
       run: |
           cd build_adv2D
-          mpirun -n ${{matrix.procs}} --allow-run-as-root exec -t 1
+          mpirun -n ${{matrix.procs}} exec -t 1
 
   VerificationDiffusion2D:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     strategy:
       matrix:
@@ -144,7 +140,7 @@ jobs:
 # I cannot reproduce it locally, maybe we can fix that later
 #        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
-        procs: [1, 2]   # [1, 2, 3, 4] ubuntu-latest doesn't allow more than 2 procs for some reason
+        procs: [1, 2, 3, 4]
       fail-fast: false
 
     steps:
@@ -172,13 +168,12 @@ jobs:
       timeout-minutes: 2
       run: |
           cd build_diff2D
-          mpirun -n ${{matrix.procs}} --allow-run-as-root exec -t 1
+          mpirun -n ${{matrix.procs}} exec -t 1
 
   VerificationAdvection2D_clang:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     steps:
     - uses: actions/checkout@v5
@@ -206,13 +201,12 @@ jobs:
       run: |
           cd build_adv2D
           echo "This test is only executed with one processor, because the issue in parallel is locally not reproducible"
-          mpirun -n 1 --allow-run-as-root exec -t 1
+          mpirun -n 1 exec -t 1
 
   VerificationDiffusion2D_clang:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     steps:
     - uses: actions/checkout@v5
@@ -240,13 +234,12 @@ jobs:
       run: |
           cd build_diff2D
           echo "This test is only executed with one processor, because the issue in parallel is locally not reproducible"
-          mpirun -n 1 --allow-run-as-root exec -t 1
+          mpirun -n 1 exec -t 1
 
   LidDrivenCavity2D:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     strategy:
       matrix:
@@ -282,13 +275,12 @@ jobs:
       run: |
           cd build_ldc2D
           echo "This test is only executed with one processor, because the issue in parallel is locally not reproducible"
-          mpirun -n 1 --allow-run-as-root exec -t 1
+          mpirun -n 1 exec -t 1
 
   Duct2D:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     strategy:
       matrix:
@@ -296,7 +288,7 @@ jobs:
 # I cannot reproduce it locally, maybe we can fix that later
 #        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
-        procs: [1, 2]   # [1, 2, 3, 4] ubuntu-latest doesn't allow more than 2 procs for some reason
+        procs: [1, 2, 3, 4]
       fail-fast: false
 
     steps:
@@ -323,4 +315,4 @@ jobs:
       timeout-minutes: 30
       run: |
           cd build_duct
-          mpirun -n ${{matrix.procs}} --allow-run-as-root exec -t 1
+          mpirun -n ${{matrix.procs}} exec -t 1

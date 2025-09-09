@@ -14,15 +14,14 @@ on:
 jobs:
 
   GoogleTest:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
-      options: --user root
+      image: davevader/dare_test:3.3
 
     strategy:
       matrix:
-        procs: [1, 2]   # [1, 2, 3, 4] ubuntu-latest doesn't allow more than 2 procs for some reason
-        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+        procs: [1, 2, 3, 4]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: $CLANG, cxx: $CLANGXX, trilinos: trilinos_clang}]
       fail-fast: false
 
     steps:
@@ -48,7 +47,7 @@ jobs:
     - name: Run Test
       run: |
           cd build_test
-          mpirun -n ${{matrix.procs}} --allow-run-as-root ./unit_test --gtest_output="xml:${pwd}Report_${{matrix.compiler.cc}}_P${{matrix.procs}}.xml" -t 1
+          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_${{matrix.compiler.cc}}_P${{matrix.procs}}.xml" -t 1
 
     - name: Move reports
       if: always()
@@ -65,9 +64,9 @@ jobs:
 
   publish-test-results:
     # For details checkout https://github.com/marketplace/actions/publish-test-results
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.2
+      image: davevader/dare_test:3.3
     name: Publish Tests Results
     needs: GoogleTest
     permissions:
@@ -94,7 +93,7 @@ jobs:
             artifacts/test_reports_2_gcc/*.xml
             artifacts/test_reports_1_clang-18/*.xml
             artifacts/test_reports_2_clang-18/*.xml
-#            artifacts/test_reports_3_gcc/*.xml
-#            artifacts/test_reports_4_gcc/*.xml
-#            artifacts/test_reports_3_clang-18/*.xml
-#            artifacts/test_reports_4_clang-18/*.xml
+            artifacts/test_reports_3_gcc/*.xml
+            artifacts/test_reports_4_gcc/*.xml
+            artifacts/test_reports_3_clang-18/*.xml
+            artifacts/test_reports_4_clang-18/*.xml
