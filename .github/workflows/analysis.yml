@@ -16,9 +16,10 @@ jobs:
     runs-on: ubunut-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v5
 
     - name: generate Doxygen documentation
       run: doxygen Doxyfile
@@ -46,6 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     steps:
     - name: Run CPPLINT
@@ -78,6 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     steps:
     - name: Run CPPCHECK
@@ -107,6 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
     name: Publish Tests Results
     needs: [Doxygen, cppcheck, cpplint]
     permissions:

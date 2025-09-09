@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     strategy:
       matrix:
@@ -26,7 +27,7 @@ jobs:
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
       fail-fast: false
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v5
 
     - name: Configure CMake
       run: |
@@ -56,6 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     strategy:
       matrix:
@@ -63,7 +65,7 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Configure CMake
       run: |
@@ -92,6 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     strategy:
       matrix:
@@ -103,7 +106,7 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Configure CMake
       run: |
@@ -133,6 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     strategy:
       matrix:
@@ -144,7 +148,7 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Configure CMake
       run: |
@@ -174,9 +178,10 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Configure CMake
       run: |
@@ -207,9 +212,10 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: davevader/dare_test:3.2
+      options: --user root
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Configure CMake
       run: |
