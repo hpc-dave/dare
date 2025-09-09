@@ -102,7 +102,7 @@ jobs:
 # I cannot reproduce it locally, maybe we can fix that later
 #        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
-        procs: [1, 2, 3, 4]
+        procs: [1, 2]   # [1, 2, 3, 4] ubuntu-latest doesn't allow more than 2 procs for some reason
       fail-fast: false
 
     steps:
@@ -144,7 +144,7 @@ jobs:
 # I cannot reproduce it locally, maybe we can fix that later
 #        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
-        procs: [1, 2, 3, 4]
+        procs: [1, 2]   # [1, 2, 3, 4] ubuntu-latest doesn't allow more than 2 procs for some reason
       fail-fast: false
 
     steps:
@@ -278,7 +278,7 @@ jobs:
           ninja -j 4
 
     - name: Run Test
-      timeout-minutes: 2
+      timeout-minutes: 20
       run: |
           cd build_ldc2D
           echo "This test is only executed with one processor, because the issue in parallel is locally not reproducible"
@@ -296,7 +296,7 @@ jobs:
 # I cannot reproduce it locally, maybe we can fix that later
 #        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
-        procs: [1, 2, 3, 4]
+        procs: [1, 2]   # [1, 2, 3, 4] ubuntu-latest doesn't allow more than 2 procs for some reason
       fail-fast: false
 
     steps:
@@ -320,7 +320,7 @@ jobs:
           ninja -j 4
 
     - name: Run Test
-      timeout-minutes: 2
+      timeout-minutes: 30
       run: |
           cd build_duct
           mpirun -n ${{matrix.procs}} --allow-run-as-root exec -t 1

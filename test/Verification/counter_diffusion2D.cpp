@@ -36,9 +36,9 @@
 #include "ScopeGuard/ScopeGuard.h"
 
 template <typename GridVector, typename GridRepresentation>
-void ComputeAnalyticalSolution(GridVector* field, typename GridVectorType tau, const GridRepresentation& grep) {
+void ComputeAnalyticalSolution(GridVector* field, typename GridVector::DataType tau, const GridRepresentation& grep) {
     using LO = typename GridRepresentation::LocalOrdinalType;
-    using SC = typename GridVectorType;
+    using SC = typename GridVector::DataType;
     using Index = typename GridRepresentation::Index;
     auto res = grep.GetLocalResolution();
     for (LO i{0}; i < res.i(); i++) {

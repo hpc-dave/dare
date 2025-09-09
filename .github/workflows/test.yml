@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        procs: [1, 2, 3, 4]
+        procs: [1, 2]   # [1, 2, 3, 4] ubuntu-latest doesn't allow more than 2 procs for some reason
         compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
       fail-fast: false
 
@@ -92,9 +92,9 @@ jobs:
           files: |
             artifacts/test_reports_1_gcc/*.xml
             artifacts/test_reports_2_gcc/*.xml
-            artifacts/test_reports_3_gcc/*.xml
-            artifacts/test_reports_4_gcc/*.xml
             artifacts/test_reports_1_clang-18/*.xml
             artifacts/test_reports_2_clang-18/*.xml
-            artifacts/test_reports_3_clang-18/*.xml
-            artifacts/test_reports_4_clang-18/*.xml
+#            artifacts/test_reports_3_gcc/*.xml
+#            artifacts/test_reports_4_gcc/*.xml
+#            artifacts/test_reports_3_clang-18/*.xml
+#            artifacts/test_reports_4_clang-18/*.xml
