@@ -1167,7 +1167,7 @@ TEST_F(ProjectionMethodCartesian1DTest, BuildMomentum_conv_cds_test) {
         EXPECT_NEAR(s.GetValue(CNB::WEST, 0), v_w, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_w));
         EXPECT_NEAR(s.GetValue(CNB::CENTER, 0), v_c, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_c));
         EXPECT_NEAR(s.GetValue(CNB::EAST, 0), v_e, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_e));
-        EXPECT_EQ(s.GetRhs(0), rhs_e);
+        EXPECT_DOUBLE_EQ(s.GetRhs(0), rhs_e);
     }
 }
 
