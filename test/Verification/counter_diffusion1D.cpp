@@ -187,7 +187,7 @@ int main(int argc, char* argv[]) {
             if (ret != Belos::ReturnType::Converged) {
                 exman.Terminate(__func__, "solver did not converge");
             }
-            exman.Print(dare::Verbosity::Low)
+            dare::Print(dare::Verbosity::Low)
                 << "t: " << time << "\tstep: " << timestep << "\tit: " << solver.GetNumIterations() << '\n';
 
             // Verification
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
             }
             err_f = exman.Allsum(err_f) / nx;
             err_b = exman.Allsum(err_b) / nx;
-            exman(dare::Verbosity::Low)
+            dare::Print(dare::Verbosity::Low)
                 << "error (f | b): " << err_f << " | " << err_b << '\n';
 
             field.CopyDataVectorsToOldTimeStep();

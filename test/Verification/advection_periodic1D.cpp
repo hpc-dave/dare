@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
             mass[1] = exman.Allsum(mass[1]);
 
             VecSC2 err = (mass - mass_init) / mass_init;
-            exman.Print(dare::Verbosity::Low)
+            dare::Print(dare::Verbosity::Low)
                 << "t: " << time << "\tstep: " << timestep << "\tit: " << solver.GetNumIterations()
                 << "\tmass-error: " << err << '\n';
 
