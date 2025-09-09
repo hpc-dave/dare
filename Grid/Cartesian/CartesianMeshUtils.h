@@ -248,6 +248,8 @@ template <char ID>
 #ifndef DARE_NDEBUG
     if (face == CartesianNeighbor::CENTER) {
         ERROR << "The input has to be a Cartesian face and may not be CENTER!" << ERROR_CLOSE;
+        face = CartesianNeighbor::WEST;  // to avoid further errors in release mode
+        // yes, I am looking at you, gcc!
     }
 #endif
     return (static_cast<size_t>(face) - static_cast <size_t>(1)) / static_cast<size_t>(2);

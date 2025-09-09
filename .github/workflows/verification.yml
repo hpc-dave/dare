@@ -59,7 +59,7 @@ jobs:
 
     strategy:
       matrix:
-        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: $CLANG, cxx: $CLANGXX, trilinos: trilinos_clang}]
       fail-fast: false
 
     steps:
@@ -187,8 +187,8 @@ jobs:
                    -GNinja \
                    -DUSE_GTEST=OFF \
                    -DDEBUG=OFF \
-                   -DCMAKE_C_COMPILER=clang-18 \
-                   -DCMAKE_CXX_COMPILER=clang++-18 \
+                   -DCMAKE_C_COMPILER=$CLANG \
+                   -DCMAKE_CXX_COMPILER=$CLANGXX \
                    -DCMAKE_PREFIX_PATH=/usr/local/trilinos_clang
 
     - name: Build Test
@@ -220,8 +220,8 @@ jobs:
                    -GNinja \
                    -DUSE_GTEST=OFF \
                    -DDEBUG=OFF \
-                   -DCMAKE_C_COMPILER=clang-18 \
-                   -DCMAKE_CXX_COMPILER=clang++-18 \
+                   -DCMAKE_C_COMPILER=$CLANG \
+                   -DCMAKE_CXX_COMPILER=$CLANGXX \
                    -DCMAKE_PREFIX_PATH=/usr/local/trilinos_clang
 
     - name: Build Test
