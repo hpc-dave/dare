@@ -52,23 +52,23 @@ using IndexLocal = typename Grid::Index;
 using VecSC = typename Grid::VecSC;
 using CNB = typename Grid::NeighborID;
 
-using DataSet = std::vector<std::pair<double, double>>;
+using DataSet = std::vector<std::pair<SC, SC>>;
 std::pair<DataSet, DataSet> GetLidDrivenCavityReference(int Re) {
-    std::vector<double> y, u, x, v;
-    x = std::vector<double>{1, 0.9688, 0.9609, 0.9531, 0.9453, 0.9063, 0.8594, 0.8047, 0.5, 0.2344, 0.2266, 0.1563, 0.0938, 0.0781, 0.0703, 0.0625, 0};  // NOLINT
-    y = std::vector<double>{1, 0.9766, 0.9688, 0.9609, 0.9531, 0.8516, 0.7344, 0.6172, 0.5, 0.4531, 0.2813, 0.1719, 0.1016, 0.0703, 0.0625, 0.0547, 0};  // NOLINT
+    std::vector<SC> y, u, x, v;
+    x = std::vector<SC>{1, 0.9688, 0.9609, 0.9531, 0.9453, 0.9063, 0.8594, 0.8047, 0.5, 0.2344, 0.2266, 0.1563, 0.0938, 0.0781, 0.0703, 0.0625, 0};  // NOLINT
+    y = std::vector<SC>{1, 0.9766, 0.9688, 0.9609, 0.9531, 0.8516, 0.7344, 0.6172, 0.5, 0.4531, 0.2813, 0.1719, 0.1016, 0.0703, 0.0625, 0.0547, 0};  // NOLINT
     switch (Re) {
     case 100:
-        u = std::vector<double>{1, 0.84123, 0.78871, 0.73722, 0.68717, 0.23151, 0.00332, -0.13641, -0.20581, -0.2109, -0.15662, -0.1015, -0.06424, -0.04775, -0.04192, -0.03717, 0};  // NOLINT
-        v = std::vector<double>{0, -0.05906, -0.07391, -0.08864, -0.10313, -0.16914, -0.22445, -0.24533, 0.05454, 0.17527, 0.17507, 0.16077, 0.12317, 0.1089, 0.10091, 0.09233, 0};   // NOLINT
+        u = std::vector<SC>{1, 0.84123, 0.78871, 0.73722, 0.68717, 0.23151, 0.00332, -0.13641, -0.20581, -0.2109, -0.15662, -0.1015, -0.06424, -0.04775, -0.04192, -0.03717, 0};  // NOLINT
+        v = std::vector<SC>{0, -0.05906, -0.07391, -0.08864, -0.10313, -0.16914, -0.22445, -0.24533, 0.05454, 0.17527, 0.17507, 0.16077, 0.12317, 0.1089, 0.10091, 0.09233, 0};   // NOLINT
         break;
     case 400:
-        u = std::vector<double>{1, 0.75837, 0.68439, 0.61756, 0.55892, 0.29093, 0.16256, 0.02135, -0.11477, -0.17119, -0.32726, -0.24299, -0.14612, -0.10338, -0.09266, -0.08186, 0};  // NOLINT
-        v = std::vector<double>{0, -0.12146, -0.15663, -0.19254, -0.22847, -0.22827, -0.44993, -0.38598, 0.05186, 0.30174, 0.30203, 0.28124, 0.22965, 0.2092, 0.19713, 0.1836, 0};     // NOLINT
+        u = std::vector<SC>{1, 0.75837, 0.68439, 0.61756, 0.55892, 0.29093, 0.16256, 0.02135, -0.11477, -0.17119, -0.32726, -0.24299, -0.14612, -0.10338, -0.09266, -0.08186, 0};  // NOLINT
+        v = std::vector<SC>{0, -0.12146, -0.15663, -0.19254, -0.22847, -0.22827, -0.44993, -0.38598, 0.05186, 0.30174, 0.30203, 0.28124, 0.22965, 0.2092, 0.19713, 0.1836, 0};     // NOLINT
         break;
     case 1000:
-        u = std::vector<double>{1, 0.65928, 0.57492, 0.51117, 0.46604, 0.33304, 0.18719, 0.05702, -0.0608, -0.10648, -0.27805, -0.38289, -0.2973, -0.2222, -0.20196, -0.18109, 0};   // NOLINT
-        v = std::vector<double>{0, -0.21388, -0.27669, -0.33714, -0.39188, -0.5155, -0.42665, -0.31966, 0.02526, 0.32235, 0.33075, 0.37095, 0.32627, 0.30353, 0.29012, 0.27485, 0};  // NOLINT
+        u = std::vector<SC>{1, 0.65928, 0.57492, 0.51117, 0.46604, 0.33304, 0.18719, 0.05702, -0.0608, -0.10648, -0.27805, -0.38289, -0.2973, -0.2222, -0.20196, -0.18109, 0};   // NOLINT
+        v = std::vector<SC>{0, -0.21388, -0.27669, -0.33714, -0.39188, -0.5155, -0.42665, -0.31966, 0.02526, 0.32235, 0.33075, 0.37095, 0.32627, 0.30353, 0.29012, 0.27485, 0};  // NOLINT
         break;
     default:
         ERROR << "Cannot find reference data for Re=" << Re << ERROR_CLOSE;
@@ -79,14 +79,41 @@ std::pair<DataSet, DataSet> GetLidDrivenCavityReference(int Re) {
         yu.push_back(std::make_pair(y[i], u[i]));
     }
     for (std::size_t i{0}; i < x.size(); i++) {
-        yu.push_back(std::make_pair(x[i], v[i]));
+        xv.push_back(std::make_pair(x[i], v[i]));
     }
     return {yu, xv};
 }
 
+std::pair<SC, SC> CompareWithReference(dare::ExecutionManager* ex, int Re, const GridVector& u, const GridVector& v) {
+    const SC xmid = 0.5, ymid = 0.5;
+    auto [yu_ref, xv_ref] = GetLidDrivenCavityReference(static_cast<int>(Re));
+    SC u_err = 0, v_err = 0;
+    for (const auto& [y, u_val] : yu_ref) {
+        VecSC point{xmid, y};
+        SC u_field = std::numeric_limits<SC>::lowest();
+        if (u.GetGridRepresentation().IsLocal(point)) {
+            IndexLocal ind = u.GetGridRepresentation().GetCell(point);
+            u_field = u.At(ind, 0);
+        }
+        u_field = ex->Allmax(u_field);
+        u_err = std::max(u_err, std::abs(u_field - u_val));
+    }
+    for (const auto& [x, v_val] : xv_ref) {
+        VecSC point{x, ymid};
+        SC v_field = std::numeric_limits<SC>::lowest();
+        if (v.GetGridRepresentation().IsLocal(point)) {
+            IndexLocal ind = v.GetGridRepresentation().GetCell(point);
+            v_field = v.At(ind, 0);
+        }
+        v_field = ex->Allmax(v_field);
+        v_err = std::max(v_err, std::abs(v_field - v_val));
+    }
+    return {u_err, v_err};
+}
+
 struct PDict {
-    using density = double;
-    using viscosity = double;
+    using density = SC;
+    using viscosity = SC;
 };
 
 struct SDict {
@@ -381,11 +408,11 @@ int main(int argc, char* argv[]) {
         GO nx{128}, ny{128};
         SC Re = 100;
         LO num_ghost = 2;
-        int num_tsteps = 2000;
+        int num_tsteps = 5000;
         SC rho = 1.;
         SC utop = 1;
         SC mu = rho * utop * L / Re;
-        SC Co = 0.5;
+        SC Co = 1.0;
         int freq_write = 100;
         dare::ConstantTimeStep<SC> dt{Co * L / nx / utop};
         SC sim_time = num_tsteps * dt;
@@ -409,29 +436,13 @@ int main(int argc, char* argv[]) {
         auto grid_x = grid.GetRepresentation(staggered_x);
         auto grid_y = grid.GetRepresentation(staggered_y);
 
-        pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 1>{utop}, BCMom<1, 1>{});
+        pm.Initialize(&grid, &dt, BCPressure{pm.GetContinuity()}, BCMom<0, 2>{utop}, BCMom<1, 2>{});
         pm.GetParameterList()->set("momentum: Jacobian", "constant");
         pm.GetParameterList()->set("continuity: Jacobian", "constant");
         pm.SetDensity(rho);
         pm.SetViscosity(mu);
-        using ObsType = typename ProjectionMethod::ObserverType;
-        using State = typename ProjectionMethod::StateChange;
 
-        ObsType o_pm([&](const ProjectionMethod& pm_inst, State state) {
-            switch (state) {
-            case State::SolvedContinuity: {
-                // SC pref = pm.GetContinuity()->GetdP()->GetDataVector().At(p_fix, 0);
-                // pm.GetContinuity()->GetdP()->GetDataVector() -= pref;
-                // SC pref = pm.GetPressure()->GetDataVector().At(p_fix, 0);
-                // pm.GetPressure()->GetDataVector() -= pref;
-            } break;
-            default: {
-            }
-            }
-        });
-        pm.Attach(&o_pm);
         auto cprop = pm.GetContinuity()->GetSolverNumericalProperties();
-        // cprop.solver_type = "CG";
         cprop.solver_properties->set("Convergence Tolerance", dt / rho / L * nx * 1e-10);
         pm.GetContinuity()->SetSolverNumericalProperties(cprop);
         auto printer = [&]() {
@@ -463,12 +474,15 @@ int main(int argc, char* argv[]) {
         };
         printer();
 
-        auto [yu_ref, xv_ref] = GetLidDrivenCavityReference(static_cast<int>(Re));
         dare::SetVerbosity(dare::Verbosity::Low);
         while (dt.GetTime() < sim_time) {
             pm.CopyToOld();
             dt.AdvanceTimeStep();
             pm.SolveFlowField();
+
+            auto [err_u, err_v] = CompareWithReference(&exman, Re,
+                pm.GetMomentum(0)->GetField()->GetDataVector(), pm.GetMomentum(1)->GetField()->GetDataVector());
+            dare::Print(dare::Verbosity::Low) << err_u << " " << err_v << std::endl;
             if (dt.GetTimeStepCounter() % freq_write == 0) {
                 printer();
             }

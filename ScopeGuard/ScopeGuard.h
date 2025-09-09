@@ -116,6 +116,11 @@ public:
      */
     void Terminate(std::string message, int error_code = 1) const;
 
+    /*!
+     * @brief Prints a welcome message to the screen
+     */
+    void PrintWelcomeScreen() const;
+
 private:
     /*!
      * @brief prints help message

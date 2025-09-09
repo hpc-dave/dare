@@ -216,10 +216,22 @@ public:
     bool IsLocal(const IndexGlobal& ind_glob) const;
 
     /*!
+     * @brief tests, if the point belongs to the local subgrid, including halo cells
+     * @param point coordinates of the point
+     */
+    bool IsLocal(VecSC point) const;
+
+    /*!
      * @brief tests, if the ordinal belongs to internal subgrid
      * @param id_glob global internal ordinal
      */
     bool IsLocalInternal(GO id_glob) const;
+
+    /*!
+     * @brief tests, if the point belongs to the local internal subgrid
+     * @param point coordinates of the point
+     */
+    bool IsLocalInternal(VecSC point) const;
 
     /*!
      * @brief tests, if index belongs to internal subgrid
@@ -245,6 +257,12 @@ public:
      * Make sure that the point is on the grid!
      */
     Index GetCell(VecSC point) const;
+
+    /*!
+     * @brief returns global Index of cell containing the point
+     * @param point point in space
+     */
+    IndexGlobal GetCellGlobal(VecSC point) const;
 
     /*!
      * @brief provides resolution of local grid

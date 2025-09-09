@@ -553,12 +553,36 @@ CartesianRepresentation<Dim>::GetCell(typename CartesianRepresentation<Dim>::Vec
     // computation of the cell indices as floating point values
     // the offset size is referring to the origin of the INTERNAL grid
     // and therefore we need to correct for the ghost cell layer
+    Index staggered = GetOptions();
     point -= offset_size;
+    for (std::size_t d{0}; d < Dim; d++) {
+        point += staggered[d] * (this->GetDistances()[d] * 0.5);
+    }
     point += this->GetDistances() * static_cast<SC>(grid->GetNumGhost());
     point /= this->GetDistances();
 
     for (std::size_t d{0}; d < Dim; d++) {
         ind[d] = static_cast<LO>(point[d]);
+    }
+
+    return ind;
+}
+
+template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::IndexGlobal
+CartesianRepresentation<Dim>::GetCellGlobal(typename CartesianRepresentation<Dim>::VecSC point) const {
+    IndexGlobal ind;
+
+    // computation of the cell indices as floating point values
+    Index staggered = GetOptions();
+    for (std::size_t d{0}; d < Dim; d++) {
+        point += staggered[d] * (this->GetDistances()[d] * 0.5);
+    }
+    point /= this->GetDistances();
+    point += static_cast<SC>(grid->GetNumGhost());
+
+    for (std::size_t d{0}; d < Dim; d++) {
+        ind[d] = static_cast<GO>(point[d]);
     }
 
     return ind;
@@ -571,8 +595,20 @@ bool CartesianRepresentation<Dim>::IsLocal(GO id_glob) const {
 }
 
 template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsLocal(VecSC point) const {
+    IndexGlobal ind_glob = GetCellGlobal(point);
+    return IsLocal(ind_glob);
+}
+
+template <std::size_t Dim>
 bool CartesianRepresentation<Dim>::IsLocalInternal(GO id_glob) const {
     IndexGlobal ind_glob = MapOrdinalToIndexGlobalInternal(id_glob);
+    return IsLocalInternal(ind_glob);
+}
+
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsLocalInternal(VecSC point) const {
+    IndexGlobal ind_glob = GetCellGlobal(point);
     return IsLocalInternal(ind_glob);
 }
 

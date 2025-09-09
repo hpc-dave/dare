@@ -199,4 +199,27 @@ void ScopeGuard::PrintHelp() {
     Print(Verbosity::Low) << "    -R    or --root <rank>           Sets root rank to <rank>\n";
     Print(Verbosity::Low) << std::endl;
 }
+
+void ScopeGuard::PrintWelcomeScreen() const {
+    dare::Print(dare::Verbosity::Low) << "Hello, nice that you are here!" << std::endl
+        << std::endl
+        << "  _,-'`''-~`) \n"
+        << "(`~_,=========\\ \n"
+        << " |---,___.-.__,\\ \n"
+        << " |        o     \\ ___  _,,,,_     _.--.\n"
+        << "  \\      `^`    /`_.-'~      `~-;`     \\ \n"
+        << "   \\_      _  .'                 `,     |\n"
+        << "    |`-                           \\'__/\n"
+        << "   /                      ,_       \\  `'-.\n"
+        << "  /    .-''~~--.            `'-,   ;_    /\n"
+        << " |              \\               \\  | `''`\n"
+        << " \\__.--'`'-.   /_               |'\n"
+        << "             `'`  `~~~---..,     |\n"
+        << " jgs                         \\ _.-'`-.\n"
+        << "                             \\       \\ \n"
+        << "                              '.     /\n"
+        << "                                `'~'`\n";
+        // copyright by Joan G. Stark, taken from https://www.asciiart.eu/animals/bears
+}
+
 }  // end namespace dare
