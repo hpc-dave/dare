@@ -33,7 +33,7 @@
 namespace dare {
 
 PMTerminalOutputDefault::PMTerminalOutputDefault(int dim, int acc, int width)
-: dimension{dim}, accuracy{acc}, print_width{width} {
+: dimension{dim} {
 }
 
 PMTerminalOutputDefault::~PMTerminalOutputDefault() {}

@@ -25,11 +25,12 @@
 #ifndef ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_CARTESIAN_H_
 #define ALGORITHM_NAVIERSTOKES_PROJECTIONMETHOD_CARTESIAN_H_
 
-#include <boost/algorithm/string/predicate.hpp>
-#include <concepts>
+
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <concepts> // NOLINT
+#include <boost/algorithm/string/predicate.hpp>
 
 #include "Grid/Cartesian.h"
 #include "ProjectionMethod_freefunc.h"
@@ -39,7 +40,7 @@ namespace dare {
 template <typename PM, std::size_t Dim>
     requires(std::is_same_v<typename PM::GridType, dare::Cartesian<Dim>>)
 void free_compile_time_check(PM*) {
-    static_assert(dare::uses_newton_iterations_v<PM::ContinuityIterationsType>,
+    static_assert(dare::uses_newton_iterations_v<typename PM::ContinuityIterationsType>,
                   "Cartesian grid right now only uses newton iterations for enforcing continuity");
 }
 

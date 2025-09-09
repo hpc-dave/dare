@@ -238,7 +238,6 @@ public:
      */
     enum class StateChange {
         VelocityUpdated,
-        SolvedContinuity,
         PressureUpdated
     };
 

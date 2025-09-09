@@ -183,23 +183,29 @@ void ProjectionMethod<G, BInf, PInf, NInf>::SolveFlowField() {
     // a bit more verbose, but easier to debug
     // put it in a scope to limit variable lifetime
     {
+        GetMomentum(dare::ZERO)->PreStep();
         BuildMomentum(dare::ZERO);
         status_build |= A_mom_0_build;
         auto [success, iter] = SolveMomentum(dare::ZERO);
+        GetMomentum(dare::ZERO)->PostStep();
         terminal_output.PrintMomentum(0, iter, success, this);
     }
     // add some output here
     if constexpr (dimension > 1) {
+        GetMomentum(dare::ONE)->PreStep();
         BuildMomentum(dare::ONE);
         status_build |= A_mom_1_build;
         auto [success, iter] = SolveMomentum(dare::ONE);
+        GetMomentum(dare::ONE)->PostStep();
         // add some output here
         terminal_output.PrintMomentum(1, iter, success, *this);
     }
     if constexpr (dimension > 2) {
+        GetMomentum(dare::TWO)->PreStep();
         BuildMomentum(dare::TWO);
         status_build |= A_mom_2_build;
         auto [success, iter] = SolveMomentum(dare::TWO);
+        GetMomentum(dare::TWO)->PostStep();
         terminal_output.PrintMomentum(2, iter, success, *this);
     }
 
@@ -219,7 +225,6 @@ void ProjectionMethod<G, BInf, PInf, NInf>::SolveFlowField() {
         BuildContinuity(iteration);
         status_build |= A_p_build;
         auto [success, iter] = SolveContinuity(iteration);
-        Notify(StateChange::SolvedContinuity);
 
         if (!success) {
             dare::Print(dare::Verbosity::Low) << "Continuity system failed to converge after "

@@ -59,6 +59,18 @@ struct UpdateFieldAddInto {
     }
 };
 
+enum class EquationStateChange {
+    PreStep,
+    PreBuild,
+    PostBuild,
+    PreBuildRhs,
+    PostBuildRhs,
+    PreSolve,
+    PostSolve,
+    PostStep,
+    UpdateBoundaries
+};
+
 /*!
  * @brief a generic base class which provides a standard interface for implementing equations
  * @tparam Grid type of the utilized grid
@@ -82,6 +94,8 @@ public:
     using MatrixSolverType = dare::TrilinosSolver<SC>;      // could be made a template parameter
     using SolverNumericalPropertiesType = typename MatrixSolverType::NumericalPropertiesType;
     using SelfType = GenericEquation<Grid, BoundaryStrategy, CustomMember>;
+    using StateChange = EquationStateChange;
+    using ObserverType = dare::Observer<SelfType, StateChange>;
 
     /*!
      * @brief only constructor
@@ -221,6 +235,26 @@ public:
      */
     void ClearPostStepStrategy();
 
+    /*!
+     * @brief attached an observer
+     * @param o address of the observer
+     * @return true, if the observer could be attached
+     */
+    bool Attach(ObserverType* o);
+
+    /*!
+     * @brief detaches a previous attached observer
+     * @param o address of the observer
+     * @return true, if observer was found and deattached
+     */
+    bool Detach(ObserverType* o);
+
+    /*!
+     * @brief notifies the attached observers of a state change
+     * @param property state change
+     */
+    void Notify(StateChange property);
+
 private:
     GridRepresentation grep;                                      //!< grid representation
     dare::ExecutionManager* exec_man;                             //!< reference to execution manager
@@ -231,6 +265,7 @@ private:
     std::set<std::function<void(SelfType*)>> post_step_strategy;  //!< set of postsetp strategies
     MatrixSystemType matrix_system;                               //!< the matrix system Ax=b
     SolverNumericalPropertiesType solver_prop;                    //!< dedicated solver properties
+    std::set<ObserverType*> observers;                            //!< attached observers
 };
 
 }  // namespace dare

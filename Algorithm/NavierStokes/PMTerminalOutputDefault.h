@@ -28,6 +28,12 @@
 namespace dare {
 class PMTerminalOutputDefault{
 public:
+    /*!
+     * @brief constructor
+     * @param dim dimension of the problem
+     * @param acc number of digits after the radix
+     * @param width parameter to change output formatting (unused here)
+     */
     explicit PMTerminalOutputDefault(int dim, int acc = 2, int width = 15);
 
     virtual ~PMTerminalOutputDefault();
@@ -49,9 +55,7 @@ public:
     void PrintContinuity(int loop, int iter, bool success, double defect, bool is_last);
 
 private:
-    int dimension;
-    int accuracy;
-    int print_width;
+    int dimension;      //!< dimension of the problem
 };
 
 template <typename PM>
