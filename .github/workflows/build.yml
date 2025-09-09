@@ -24,6 +24,10 @@ jobs:
         fail-fast: false
 
     steps:
+    - name: https://github.com/actions/checkout/issues/1720
+      run: |
+        chmod -R u+rwX .
+
     - uses: actions/checkout@v5
 
     - name: Configure CMake
