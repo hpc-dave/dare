@@ -43,8 +43,8 @@ GenericEquation<Grid, BS, CM>::GenericEquation(const std::string& name,
 
 template <typename Grid, typename BS, typename CM>
 void GenericEquation<Grid, BS, CM>::PreStep() {
-    for (auto it : pre_step_strategy)
-        (*it)(this);
+    for (auto& f : pre_step_strategy)
+        f(this);
 }
 
 template <typename Grid, typename BS, typename CM>
@@ -86,8 +86,8 @@ void GenericEquation<Grid, BS, CM>::UpdateBoundaries() {
 
 template <typename Grid, typename BS, typename CM>
 void GenericEquation<Grid, BS, CM>::PostStep() {
-    for (auto it : post_step_strategy)
-        (*it)(this);
+    for (auto& f : post_step_strategy)
+        f(this);
 }
 
 template <typename Grid, typename BS, typename CM>
