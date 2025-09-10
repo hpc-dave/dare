@@ -556,7 +556,7 @@ CartesianRepresentation<Dim>::GetCell(typename CartesianRepresentation<Dim>::Vec
     Index staggered = GetOptions();
     point -= offset_size;
     for (std::size_t d{0}; d < Dim; d++) {
-        point += staggered[d] * (this->GetDistances()[d] * 0.5);
+        point[d] += staggered[d] * (this->GetDistances()[d] * 0.5);
     }
     point += this->GetDistances() * static_cast<SC>(grid->GetNumGhost());
     point /= this->GetDistances();
