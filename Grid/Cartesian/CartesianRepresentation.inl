@@ -576,7 +576,7 @@ CartesianRepresentation<Dim>::GetCellGlobal(typename CartesianRepresentation<Dim
     // computation of the cell indices as floating point values
     Index staggered = GetOptions();
     for (std::size_t d{0}; d < Dim; d++) {
-        point += staggered[d] * (this->GetDistances()[d] * 0.5);
+        point[d] += staggered[d] * (this->GetDistances()[d] * 0.5);
     }
     point /= this->GetDistances();
     point += static_cast<SC>(grid->GetNumGhost());
