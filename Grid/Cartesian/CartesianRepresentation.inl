@@ -553,11 +553,7 @@ CartesianRepresentation<Dim>::GetCell(typename CartesianRepresentation<Dim>::Vec
     // computation of the cell indices as floating point values
     // the offset size is referring to the origin of the INTERNAL grid
     // and therefore we need to correct for the ghost cell layer
-    Index staggered = GetOptions();
     point -= offset_size;
-    for (std::size_t d{0}; d < Dim; d++) {
-        point[d] += staggered[d] * (this->GetDistances()[d] * 0.5);
-    }
     point += this->GetDistances() * static_cast<SC>(grid->GetNumGhost());
     point /= this->GetDistances();
 
