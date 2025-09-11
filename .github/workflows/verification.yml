@@ -86,7 +86,7 @@ jobs:
       timeout-minutes: 2
       run: |
           cd build_diff1D
-          exec -t 1
+          mpirun -n 1 exec -t 1
 
   VerificationAdvection2D:
     runs-on: self-hosted
