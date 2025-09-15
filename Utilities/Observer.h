@@ -124,6 +124,10 @@ private:
  * the model returned as basic concept (or handle)
  */
 template<Observable T, typename Lambda>
+requires(
+    requires(T const observable, Lambda onUpdate, typename T::StateChange state) {
+    {onUpdate(observable, state)}->std::same_as<void>;
+})
 UniqueObserverHandle make_observer_handle(T* observable, Lambda on_update) {
     using ObserverType = T::ObserverType;
     using TObsModel = dare::ObserverHandleModel<T, typename T::StateChange>;
