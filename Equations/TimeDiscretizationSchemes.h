@@ -97,7 +97,7 @@ struct ADAMS_BASHFORT {
     }
 };
 
-/*! \struct ADAMS-MOULTON
+/*! \struct ADAMS_MOULTON
  * \brief Adams-Moulton scheme
  * 
  * Semi-implicity time discretization

@@ -35,6 +35,12 @@
 
 namespace dare {
 
+/*! \class TVD
+ * @brief specialization for a Cartesian grid
+ * @tparam SC scalar type
+ * @tparam FluxLimiter flux limiter type
+ * @tparam Dim dimension of the Cartesian grid
+ */
 template <std::size_t Dim, typename SC, typename FluxLimiter>
 class TVD<dare::Cartesian<Dim>, SC, FluxLimiter> {
 public:

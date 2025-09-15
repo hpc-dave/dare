@@ -27,6 +27,23 @@
 
 namespace dare {
 
+/*!
+ * @brief a structure for communicating information at compile time
+ * @tparam TagType type of the tag (usually an enum class)
+ * @tparam Flag true or false
+ * @tparam Tag the actual tag, part of TagType
+ *
+ * Consider following example:
+ * enum class MyTag{ foo, bar, baz};
+ * using MyInfo = FlaggedInfo<true, MyTag, MyTag::foo>;
+ * using MyInfo2 = FlaggedInfo<false, MyTag, MyTag::bar>;
+ * if constexpr(MyInfo::flag) {
+ *   DoA();
+ * }
+ * if constexpr(!MyInfo2::flag) {
+ *   DoB();
+ * }
+ */
 template <bool Flag, typename TagType, TagType Tag>
 struct FlaggedInfo {
     static const bool flag = Flag;
@@ -34,6 +51,21 @@ struct FlaggedInfo {
     static const tag_type tag = Tag;
 };
 
+/*! \struct TaggedTypeInfo
+ * @tparam Type the type that should be communicated
+ * @tparam TagType the type of the tag (usually an enum class)
+ * @tparam Tag the tag, part of TagType
+ * @brief a structure for communicating information about types at compile time
+ * 
+ * Consider following example:
+ * enum class MyTag{ foo, bar, baz};
+ * using MyInfo = TaggedTypeInfo<int, MyTag, MyTag::foo>;
+ * using MyInfo2 = TaggedTypeInfo<double, MyTag, MyTag::bar>;
+ * if constexpr(std::is_same_v<typename MyInfo::type, int>) {
+ *  DoA();
+ * }
+ * static_assert(std::is_same_v<typename MyInfo2::type, void>, "invalid type provided");
+ */
 template<typename Type, typename TagType, TagType Tag>
 struct TaggedTypeInfo {
     using type = Type;
@@ -41,11 +73,21 @@ struct TaggedTypeInfo {
     static const tag_type tag = Tag;
 };
 
+/*! \struct TaggedCountedTypeInfo
+ * @tparam Type the type that should be communicated
+ * @tparam TagType the type of the tag (usually an enum class)
+ * @tparam Tag the tag, part of TagType
+ * @tparam NUM_ENTITIES the number of entities of this type
+ * @brief a structure for communicating information about types with a fixed number of entities at compile time
+ */
 template<typename Type, typename TagType, TagType Tag, std::size_t NUM_ENTITIES>
 struct TaggedCountedTypeInfo : TaggedTypeInfo<Type, TagType, Tag> {
     static const std::size_t N = NUM_ENTITIES;
 };
 
+/*!
+ * \brief a concept for flagged information types
+ */
 template <typename T>
 concept FlaggedInfoType =
     requires {
@@ -63,6 +105,9 @@ struct is_flagged_info<T> : std::true_type {};
 template <typename T>
 constexpr bool is_flagged_info_v = is_flagged_info<T>::value;
 
+/*!
+ * \brief a concept for tagged information types
+ */
 template <typename T>
 concept TaggedTypeInfoType =
     requires {
@@ -80,11 +125,13 @@ struct is_tagged_type_info<T> : std::true_type {};
 template <typename T>
 constexpr bool is_tagged_type_info_v = is_tagged_type_info<T>::value;
 
+/*!
+ * \brief a concept for tagged information types with a fixed number of entities
+ */
 template <typename T>
 concept TaggedCountedTypeInfoType =
     TaggedTypeInfoType<T> &&
     std::same_as<std::remove_cv_t<typename T::N>, std::size_t>;
-
 
 template <typename T>
 struct is_tagged_counted_type_info : std::false_type {};

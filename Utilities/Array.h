@@ -29,6 +29,12 @@
 
 namespace dare {
 
+/*!
+ * @brief a custom implementation of a 2D array using the dare::Vector class
+ * @tparam T type of the underlying objects
+ * @tparam M outer size
+ * @tparam N inner size
+ */
 template<std::size_t M, std::size_t N, typename T>
 class Array {
 public:

@@ -30,6 +30,12 @@
 
 namespace dare {
 
+/*!
+ * @brief a pseudo random number generator
+ * @tparam Target the type that should be generated
+ * @tparam Generator A generator type, e.g. std::default_random_engine
+ * @tparam Distribution A distribution type, e.g. std::uniform_int_distribution<int>
+ */
 template<typename Target, typename Generator, typename Distribution>
 class PseudoRandomNumberGenerator {
 public:
@@ -40,7 +46,7 @@ public:
     using ResultType = typename DistributionType::result_type;
 
     /*!
-     * @brief construcor for the Pseudo random numer generator
+     * @brief constructor for the Pseudo random numer generator
      * @tparam Args types for initializing the distribution type
      * @param args arguments for the distribution
      */
@@ -48,18 +54,26 @@ public:
     explicit PseudoRandomNumberGenerator(Args&&... args): factor(1), distribution(args...) {
     }
 
+    /*!
+     * @brief sets a prefactor for scaling the numbers
+     * @param f number for scaling
+     */
     void SetPreFactor(TargetType f) {
         factor = f;
     }
 
+    /*!
+     * @brief generates a random number
+     * @return random number
+     */
     TargetType Generate() {
         return factor * distribution(generator);
     }
 
 private:
-    TargetType factor;
-    GeneratorType generator;
-    DistributionType distribution;
+    TargetType factor;              //!< prefactor for scaling the generated numbers
+    GeneratorType generator;        //!< the generator type, e.g. std::default_random_engine
+    DistributionType distribution;  //!< the distribution type, e.g. std::uniform_int_distribution<int>
 };
 
 

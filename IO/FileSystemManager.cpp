@@ -96,10 +96,10 @@ FileSystemManager::FileSystemManager(dare::ExecutionManager* ex,
 }
 FileSystemManager::~FileSystemManager() {
 }
-FileSystemManager::FileSystemManager(FileSystemManager& other)  // NOLINT
+FileSystemManager::FileSystemManager(const FileSystemManager& other)  // NOLINT
     : settings(other.settings), ex_man(other.ex_man) {
 }
-FileSystemManager& FileSystemManager::operator=(FileSystemManager& other) {  // NOLINT
+FileSystemManager& FileSystemManager::operator=(const FileSystemManager& other) {  // NOLINT
     if (&other == this)
         return *this;
     settings = other.settings;

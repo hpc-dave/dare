@@ -27,7 +27,7 @@
 #include <cstddef>
 namespace dare {
 
-/*\struct _FNVparam
+/*! \struct _FNVparam
  * \brief Helpers for hashing with the Fowler-Noll-Vu (FNV) hash function
  *
  * Background of the FNV-hash function:
@@ -36,14 +36,13 @@ namespace dare {
  *     hash = hash * FNV-prime
  *     hash = hash XOR byte_of_data
  *  end for
- *
  */
 template <int bytes>
 struct _FNVparam {
 };
 
-/*
- * specialization for 32 bit FNV parameters
+/*! \struct _FNVparam<4>
+ * @brief specialization for 32 bit FNV parameters
  */
 template <>
 struct _FNVparam<4> {
@@ -51,8 +50,8 @@ struct _FNVparam<4> {
     static const std::size_t offset{0x811c9dc5};
 };
 
-/*
- * specialization for 64 bit FNV parameters
+/*! \struct _FNVparam<8>
+ * @brief specialization for 64 bit FNV parameters
  */
 template <>
 struct _FNVparam<8> {

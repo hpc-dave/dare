@@ -67,6 +67,9 @@ struct SDict {
 using BoundaryStrategy = dare::PMDefaultBoundaryType<Grid, SC>;
 using ProjectionMethod = dare::ProjectionMethod<Grid, BoundaryStrategy, PDict, SDict>;
 
+/*!
+ * @brief boundary conditions for the continuity equation
+ */
 struct BCPressure {
 public:
     using CRefType = std::unique_ptr<typename ProjectionMethod::ContinuityType>;
@@ -202,6 +205,11 @@ public:
     const CRefType& continuity;  //!< reference to the continuity equation
 };
 
+/*!
+ * @brief boundary conditions for the momentum equation
+ * @tparam staggered indicator which dimension is staggered (0=x, 1=y)
+ * @tparam order order of application (1=first order, 2=second order)
+ */
 template <int staggered, int order = 1>
 struct BCMom {
 public:
@@ -211,6 +219,12 @@ public:
     SC gamma{2. + static_cast<SC>(order == 2) * 2. / 3.};
     explicit BCMom(SC uin = 0) : ux_in{uin} {}
 
+    /*!
+     * @brief core function for applying boundary conditions and ghost cell updates
+     * @tparam T type of incoming object
+     * @param o object to adjust
+     * the object can be a matrix block or a GridVector
+     */
     template <typename T>
     void Apply(T* o) const {
         if constexpr (dare::FieldType<T>) {

@@ -106,7 +106,7 @@ public:
     VectorDecorator() : VectorDecorator<N - 1, Dim, T>() {}
 };
 
-/*! \class VectorDecorator
+/*! \class VectorDecorator<0
  * \brief specialization for integer types and N == 0
  * @tparam Dim number of elements in the data set
  * @tparam T type of integer
@@ -117,7 +117,7 @@ public:
     VectorDecorator() : VectorBase<Dim, T>() {}
 };
 
-/*! \class VectorDecorator
+/*! \class VectorDecorator<1>
  * \brief specialization for integer types and N == 1
  * @tparam Dim number of elements in the data set
  * @tparam T type of integer
@@ -138,7 +138,7 @@ public:
     T i() const { return this->_data[0]; }
 };
 
-/*! \class VectorDecorator
+/*! \class VectorDecorator<2>
  * \brief specialization for integer types and N == 2
  * @tparam Dim number of elements in the data set
  * @tparam T type of integer

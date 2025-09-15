@@ -119,6 +119,10 @@ struct TrilinosNumericalProperties {
 
 }  // namespace detail
 
+/*!
+ * @brief A wapper class for solving linear systems with Trilinos
+ * @tparam SC scalar type
+ */
 template <typename SC>
 class TrilinosSolver {
 public:
@@ -149,6 +153,16 @@ public:
      */
     virtual ~TrilinosSolver() = default;
 
+    /*!
+     * @brief solves the linear system Ax=B
+     * @param solver_pack the type of the package the solver belongs to
+     * @param type the type of the solver as string
+     * @param A matrix A
+     * @param x initial guess and solution vector
+     * @param B right hand side vector
+     * @param param parameter for solving the system
+     * @return identifier if successful and how many iterations were required
+     */
     ReturnType Solve(SolverPackage solver_pack,
                      const std::string& type,
                      Teuchos::RCP<MatrixType> A,
@@ -156,6 +170,17 @@ public:
                      Teuchos::RCP<VectorType> B,
                      Teuchos::RCP<ParameterList> param);
 
+    /*!
+     * @brief solves the linear system Ax=B with preconditioner M
+     * @param solver_pack the type of the package the solver belongs to
+     * @param type the type of the solver as string
+     * @param M preconditioner
+     * @param A matrix A
+     * @param x initial guess and solution vector
+     * @param B right hand side vector
+     * @param param parameter for solving the system
+     * @return identifier if successful and how many iterations were required
+     */
     ReturnType Solve(SolverPackage solver_pack,
                      const std::string& type,
                      Teuchos::RCP<OperatorType> M,
@@ -164,6 +189,15 @@ public:
                      Teuchos::RCP<VectorType> B,
                      Teuchos::RCP<ParameterList> param);
 
+    /*!
+     * @brief overload with multivectors as inputs
+     * @param solver_pack type of solver pack
+     * @param type type of solver in solver pack
+     * @param A matrix A
+     * @param x initial guess and solution vector
+     * @param B right hand side vector
+     * @param param parameter list
+     */
     ReturnType Solve(SolverPackage solver_pack,
                      const std::string& type,
                      Teuchos::RCP<MatrixType> A,
@@ -171,6 +205,16 @@ public:
                      Teuchos::RCP<MultiVectorType> B,
                      Teuchos::RCP<ParameterList> param);
 
+    /*!
+     * @brief overload with multivectors and preconditioner as inputs
+     * @param solver_pack type of solver pack
+     * @param type type of solver in solver pack
+     * @param M preconditioner
+     * @param A matrix
+     * @param x initial guess and solution vector
+     * @param B right hand side vector
+     * @param param parameter list
+     */
     ReturnType Solve(SolverPackage solver_pack,
                      const std::string& type,
                      Teuchos::RCP<OperatorType> M,
@@ -179,12 +223,17 @@ public:
                      Teuchos::RCP<MultiVectorType> B,
                      Teuchos::RCP<ParameterList> param);
 
+    /*!
+     * @brief overload with numerical properties struct
+     */
     ReturnType Solve(NumericalPropertiesType prop,
                      Teuchos::RCP<OperatorType> M,
                      Teuchos::RCP<MatrixType> A,
                      Teuchos::RCP<MultiVectorType> x,
                      Teuchos::RCP<MultiVectorType> B);
-
+    /*!
+     * @brief overload with numerical properties struct
+     */
     ReturnType Solve(NumericalPropertiesType prop,
                      Teuchos::RCP<MatrixType> A,
                      Teuchos::RCP<MultiVectorType> x,
@@ -217,24 +266,53 @@ public:
     int GetNumIterations() const;
 
 private:
+    /*!
+     * @brief creates the solver for the solving step
+     * @param solver_pack solver package
+     * @param type type of solver in the solver package
+     * @param param parameter list
+     * @return solver manager
+     */
     Teuchos::RCP<SolverManager> CreateSolver(SolverPackage solver_pack,
                                              const std::string& type,
                                              Teuchos::RCP<ParameterList> param);
 
+    /*!
+     * @brief creates preconditioner of the IfPack2 package
+     * @param type type of the solver, e.g. "ILUT"
+     * @param param parameter list
+     * @param A matrix A
+     * @return preconditioner operator
+     */
     Teuchos::RCP<OperatorType> CreatePreconditionerIfPack2(const std::string& type,
                                                            Teuchos::RCP<ParameterList> param,
                                                            Teuchos::RCP<const MatrixType> A);
 
+    /*!
+     * @brief creates preconditioner of the MueLu package
+     * @param type type of the preconditioner, right now only "AMG"
+     * @param param parameter list
+     * @param A matrix
+     * @return preconditioner operator
+     */
     Teuchos::RCP<OperatorType> CreatePreconditionerMueLu(const std::string& type,
                                                          Teuchos::RCP<ParameterList> param,
                                                          Teuchos::RCP<MatrixType> A);
 
+    /*!
+     * @brief calls the direct solver of the Amesos package
+     * @param type type of direct solver
+     * @param A matrix A
+     * @param x solution vector x
+     * @param B right hand side vector B
+     * @param param parameter list
+     */
     ReturnType SolveWithAmesos2(const std::string& type,
                                 Teuchos::RCP<MatrixType> A,
                                 Teuchos::RCP<MultiVectorType> x,
                                 Teuchos::RCP<MultiVectorType> B,
                                 Teuchos::RCP<ParameterList> param);
-    int num_iter{-1};
+    int num_iter{-1};   //!< number of iterations during the last solving step
 };
 
 }  // namespace dare
