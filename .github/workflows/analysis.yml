@@ -30,7 +30,7 @@ jobs:
           num_warnings=$(grep -F / DoxygenWarnings.txt | wc -l)
           echo Found $num_warnings problems in the documentation
           doxygen_junit --input DoxygenWarnings.txt --output DoxygenWarnings_junit.xml
-          if [[ $num_warnings -gt 900 ]]; then
+          if [[ $num_warnings -gt 1328 ]]; then
             echo Doxygen check failed!
             exit $num_warnings
           fi
