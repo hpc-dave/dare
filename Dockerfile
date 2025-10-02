@@ -2,12 +2,10 @@
 # This Dockerfile can be used to create an image which can be used as an environment for FoxBerry.
 # The final image features:
 # - OS: debian bookworm
-# - libraries: gcc, cmake, llvm, clang, ninja, boost, eigen3, OpenMPI, sqlite 3, doxygen, python, cpplint, cppcheck, Trilinos
-# - Trilinos: master - compiled with release optimization
-# - default entrypoint: /home/user
+# - libraries: gcc, cmake, clang, ninja, boost, eigen3, OpenMPI, sqlite 3, doxygen, python, cpplint, cppcheck, Trilinos
+# - Trilinos: 16.1.0 - compiled with release optimization
+# - default entrypoint: /home/tester
 #
-# Note, that this image only contains a root-user and therefore certain libraries may complain, e.g. OpenMPI. 
-# To find the workarounds, search for 'execute <name of library> as root'
 # To create the image, call:
 #     docker build -t <name of image>:<version> .
 # Once you're satisfied with the image, give it a tag, e.g.
@@ -21,6 +19,9 @@ ARG USER_NAME=user
 # Set debian as base layer
 FROM debian:12
 
+# Add non-free reposity source for CUDA
+RUN echo 'deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware' >> /etc/apt/sources.list
+
 # update system
 RUN apt-get -y update
 RUN apt-get -y upgrade
@@ -29,25 +30,16 @@ RUN apt-get -y upgrade
 RUN apt-get install -y apt-utils
 RUN apt-get -y update
 RUN apt-get -y upgrade
-RUN apt-get install -y build-essential git cmake wget software-properties-common libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev libgtest-dev doxygen python3 python3-pip python3-opencv cppcheck bc ninja-build rsync python-is-python3 graphviz mesa-common-dev mesa-utils freeglut3-dev ninja-build
-RUN pip install --break-system-packages cpplint virtualenv cppcheck-junit cpplint-junit doxygen-junit
-RUN virtualenv mynotebookenv
-RUN pip install --break-system-packages opencv-python jupyter jupyterlab vtk matplotlib pandas bash_kernel
-RUN python -m bash_kernel.install
+RUN apt-get install -y build-essential git cmake wget software-properties-common libboost-all-dev libopenmpi-dev libeigen3-dev libblas-dev liblapack-dev libsqlite3-dev libgtest-dev bc ninja-build rsync graphviz mesa-common-dev mesa-utils freeglut3-dev
+RUN apt-get install -y clang clang-format clangd clang-tidy nvidia-cuda-dev nvidia-cuda-toolkit libomp-dev
+RUN apt-get install -y doxygen cpplint python3 python3-pip python3-opencv cppcheck python-is-python3
+RUN pip install --break-system-packages cppcheck-junit cpplint-junit doxygen-junit numpy pandas matplotlib vtk compdb clang-tidy
 
 # create a directory for the user
 WORKDIR /home/user
 
-# install clang
-#RUN wget https://apt.llvm.org/llvm.sh
-# RUN chmod +x llvm.sh
-# RUN ./llvm.sh 18
-RUN bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
-ENV CLANG=clang-20
-ENV CLANGXX=clang++-20
-RUN $CLANG --version
-RUN $CLANGXX --version
-RUN apt-get install -y libomp-20-dev
+# Silence git safe.directory warnings
+RUN git config --add --system safe.directory '*'
 
 WORKDIR /home/user
 
@@ -92,8 +84,9 @@ RUN ninja install -j 6
 
 # building trilinos with clang
 WORKDIR /home/user/TrilinosGit/build_clang
-ENV OMPI_CC=$CLANG
-ENV OMPI_CXX=$CLANGXX
+ENV CXX=mpic++
+ENV OMPI_CC=clang
+ENV OMPI_CXX=clang++
 RUN cmake ..\
     -GNinja \
     -DCMAKE_CXX_COMPILER=mpic++ \
