@@ -16,7 +16,7 @@ jobs:
   VerificationAdvection1D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     strategy:
       matrix:
@@ -55,7 +55,7 @@ jobs:
   VerificationDiffusion1D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     strategy:
       matrix:
@@ -91,7 +91,7 @@ jobs:
   VerificationAdvection2D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     strategy:
       matrix:
@@ -132,7 +132,7 @@ jobs:
   VerificationDiffusion2D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     strategy:
       matrix:
@@ -173,7 +173,7 @@ jobs:
   VerificationAdvection2D_clang:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     steps:
     - uses: actions/checkout@v5
@@ -206,7 +206,7 @@ jobs:
   VerificationDiffusion2D_clang:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     steps:
     - uses: actions/checkout@v5
@@ -239,7 +239,7 @@ jobs:
   LidDrivenCavity2D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     strategy:
       matrix:
@@ -280,7 +280,7 @@ jobs:
   Duct2D:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     strategy:
       matrix:

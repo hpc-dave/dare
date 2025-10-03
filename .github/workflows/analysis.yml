@@ -15,7 +15,7 @@ jobs:
   Doxygen:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
 
     steps:
@@ -46,7 +46,7 @@ jobs:
   cpplint:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     steps:
     - name: Run CPPLINT
@@ -78,7 +78,7 @@ jobs:
   cppcheck:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
 
     steps:
@@ -108,7 +108,7 @@ jobs:
     # For details checkout https://github.com/marketplace/actions/publish-test-results
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:3.3
+      image: davevader/dare_test:3.4
 
     name: Publish Tests Results
     needs: [Doxygen, cppcheck, cpplint]

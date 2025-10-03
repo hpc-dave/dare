@@ -15,7 +15,7 @@ jobs:
   build:
     runs-on: self-hosted
     container:
-        image: davevader/dare_test:3.3
+        image: davevader/dare_test:3.4
 
     strategy:
         matrix:
