@@ -20,7 +20,7 @@ jobs:
     strategy:
         matrix:
             build: [Debug, Release]
-            compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: $CLANG, cxx: $CLANGXX, trilinos: trilinos_clang}]
+            compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang, cxx: clang++, trilinos: trilinos_clang}]
         fail-fast: false
 
     steps:
