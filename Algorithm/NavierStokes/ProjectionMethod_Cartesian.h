@@ -561,7 +561,7 @@ free_pm_continuity_Jacobian_Cartesian(
     typename PM::DensityVariableType rho,
     typename PM::PorosityVariableType epsilon) {
     using GridType = typename PM::GridType;
-    using SC = PM::SC;
+    using SC = typename PM::SC;
     using FVStencil = dare::FaceValueStencil<GridType, SC, 1>;
     using CMStencil = dare::CenterMatrixStencil<GridType, SC, 1>;
     using CNB = dare::CartesianNeighbor;

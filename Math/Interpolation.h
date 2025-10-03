@@ -78,7 +78,7 @@ template <typename GridType, typename SC, std::size_t N>
                                                            const typename GridType::Index& ind_target,
                                                            const typename GridType::NeighborID face,
                                                            const GridVector<GridType, SC, N>& field) {
-    static_assert(dare::always_false<>,
+    static_assert(dare::always_false<GridType>,
                   "This function is not implemented in a general fashion, check for specializations!");
     return dare::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
@@ -148,7 +148,7 @@ template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] SC InterpolateToPoint(const typename GridType::VecSC& point,
                       const GridVector<GridType, SC, N>& field,
                       std::size_t n) {
-    static_assert(dare::always_false<>,
+    static_assert(dare::always_false<GridType>,
                   "This function is not implemented in a general fashion, check for specializations!");
     return std::numeric_limits<SC>::signaling_NaN();
 }
@@ -168,7 +168,7 @@ template <typename GridType, typename SC, std::size_t N>
 template <typename GridType, typename SC, std::size_t N>
 [[nodiscard]] dare::Vector<N, SC> InterpolateToPoint(const typename GridType::VecSC& point,
                                                             const GridVector<GridType, SC, N>& field) {
-    static_assert(dare::always_false<>,
+    static_assert(dare::always_false<GridType>,
                   "This function is not implemented in a general fashion, check for specializations!");
     return dare::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
@@ -234,7 +234,7 @@ InterpolateToFaceStencil(const typename GridType::Representation& grid_target,
                          typename GridType::Index ind_target,
                          const dare::GridVector<GridType, T, N>& field,
                          typename GridType::LocalOrdinal distance = 0) {
-    static_assert(dare::always_false<>,
+    static_assert(dare::always_false<GridType>,
                   "This function is not implemented in a general fashion, check for specializations!");
     return dare::FaceValueStencil<GridType, T, N>();
 }

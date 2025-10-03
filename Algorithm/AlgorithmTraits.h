@@ -84,7 +84,7 @@ concept TimeStepper =
 
 template <typename T>
 concept AdaptiveTimeStepper = TimeStepper<T> &&
-    requires(T t, T::ValueType dt) {
+    requires(T t, typename T::ValueType dt) {
         t.AdaptTimeStepSize(dt);
     };  // NOLINT
 }  // namespace dare

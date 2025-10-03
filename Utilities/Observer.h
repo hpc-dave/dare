@@ -129,7 +129,7 @@ requires(
     {onUpdate(observable, state)}->std::same_as<void>;
 })
 UniqueObserverHandle make_observer_handle(T* observable, Lambda on_update) {
-    using ObserverType = T::ObserverType;
+    using ObserverType = typename T::ObserverType;
     using TObsModel = dare::ObserverHandleModel<T, typename T::StateChange>;
 
     ObserverType obs(on_update);

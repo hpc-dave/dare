@@ -83,7 +83,7 @@ auto Divergence<dare::Cartesian<Dim>, TimeDiscretization>::operator()(const Args
     } else {
         // bit of a workaround, since some compilers have issues if there is a 'false'
         // provided directly
-        static_assert(dare::always_false<>, "No implementation provided for this type");
+        static_assert(dare::always_false<dare::Cartesian<Dim>>, "No implementation provided for this type");
     }
 }
 
@@ -249,7 +249,7 @@ template <typename SC, std::size_t N>
 typename Divergence<dare::Cartesian<Dim>, TimeDiscretization>::template TFaceValueStencil<SC, N>
 Divergence<dare::Cartesian<Dim>, TimeDiscretization>::PopulateFaceValueFromField(
     const dare::Field<GridType, SC, N>& f) const {
-    static_assert(dare::always_false<>, "need to include temporal information");
+    static_assert(dare::always_false<dare::Cartesian<Dim>>, "need to include temporal information");
     return PopulateFaceValueFromField(f.GetDataVector(0));
 }
 

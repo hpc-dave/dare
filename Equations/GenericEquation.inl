@@ -122,12 +122,12 @@ const BS& GenericEquation<Grid, BS, CM>::GetBoundaryStrategy() const {
 }
 
 template <typename Grid, typename BS, typename CM>
-GenericEquation<Grid, BS, CM>::FieldType* GenericEquation<Grid, BS, CM>::GetField() {
+typename GenericEquation<Grid, BS, CM>::FieldType* GenericEquation<Grid, BS, CM>::GetField() {
     return &field;
 }
 
 template <typename Grid, typename BS, typename CM>
-const GenericEquation<Grid, BS, CM>::FieldType& GenericEquation<Grid, BS, CM>::GetField() const {
+const typename GenericEquation<Grid, BS, CM>::FieldType& GenericEquation<Grid, BS, CM>::GetField() const {
     return field;
 }
 
@@ -147,19 +147,19 @@ void GenericEquation<Grid, BS, CM>::SetSolverNumericalProperties(const SolverNum
 }
 
 template <typename Grid, typename BS, typename CM>
-const GenericEquation<Grid, BS, CM>::SolverNumericalPropertiesType&
+const typename GenericEquation<Grid, BS, CM>::SolverNumericalPropertiesType&
 GenericEquation<Grid, BS, CM>::GetSolverNumericalProperties() const {
     return solver_prop;
 }
 
 template <typename Grid, typename BS, typename CM>
-GenericEquation<Grid, BS, CM>::MatrixSystemType*
+typename GenericEquation<Grid, BS, CM>::MatrixSystemType*
 GenericEquation<Grid, BS, CM>::GetMatrixSystem() {
     return &matrix_system;
 }
 
 template <typename Grid, typename BS, typename CM>
-const GenericEquation<Grid, BS, CM>::MatrixSystemType&
+const typename GenericEquation<Grid, BS, CM>::MatrixSystemType&
 GenericEquation<Grid, BS, CM>::GetMatrixSystem() const {
     return matrix_system;
 }

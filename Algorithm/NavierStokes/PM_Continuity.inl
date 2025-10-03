@@ -36,32 +36,32 @@ PMContinuity<Grid, BS, CM>::PMContinuity(const std::string& name,
 }
 
 template <typename Grid, typename BS, typename CM>
-PMContinuity<Grid, BS, CM>::FieldType* PMContinuity<Grid, BS, CM>::GetPressure() {
+typename PMContinuity<Grid, BS, CM>::FieldType* PMContinuity<Grid, BS, CM>::GetPressure() {
     return this->GetField();
 }
 
 template <typename Grid, typename BS, typename CM>
-const PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetPressure() const {
+const typename PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetPressure() const {
     return this->GetField();
 }
 
 template <typename Grid, typename BS, typename CM>
-PMContinuity<Grid, BS, CM>::FieldType* PMContinuity<Grid, BS, CM>::GetDefect() {
+typename PMContinuity<Grid, BS, CM>::FieldType* PMContinuity<Grid, BS, CM>::GetDefect() {
     return &defect;
 }
 
 template <typename Grid, typename BS, typename CM>
-const PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetDefect() const {
+const typename PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetDefect() const {
     return defect;
 }
 
 template <typename Grid, typename BS, typename CM>
-PMContinuity<Grid, BS, CM>::FieldType* PMContinuity<Grid, BS, CM>::GetdP() {
+typename PMContinuity<Grid, BS, CM>::FieldType* PMContinuity<Grid, BS, CM>::GetdP() {
     return &dP;
 }
 
 template <typename Grid, typename BS, typename CM>
-const PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetdP() const {
+const typename PMContinuity<Grid, BS, CM>::FieldType& PMContinuity<Grid, BS, CM>::GetdP() const {
     return dP;
 }
 

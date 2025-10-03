@@ -46,7 +46,7 @@ struct pm_get_viscosity<TDict, TDictDefault> {
 };
 
 template <typename TDict, ContainsViscosity TDictDefault>
-using pm_get_viscosity_t = pm_get_viscosity<TDict, TDictDefault>::type;
+using pm_get_viscosity_t = typename pm_get_viscosity<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsDensity TDictDefault>
 struct pm_get_density{
@@ -59,7 +59,7 @@ struct pm_get_density<TDict, TDictDefault> {
 };
 
 template <typename TDict, ContainsDensity TDictDefault>
-using pm_get_density_t = pm_get_density<TDict, TDictDefault>::type;
+using pm_get_density_t = typename pm_get_density<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsPorosity TDictDefault>
 struct pm_get_porosity {
@@ -72,7 +72,7 @@ struct pm_get_porosity<TDict, TDictDefault> {
 };
 
 template <typename TDict, ContainsPorosity TDictDefault>
-using pm_get_porosity_t = pm_get_porosity<TDict, TDictDefault>::type;
+using pm_get_porosity_t = typename pm_get_porosity<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsImplicitForce TDictDefault>
 struct pm_get_implicit_force {
@@ -85,7 +85,7 @@ struct pm_get_implicit_force<TDict, TDictDefault> {
 };
 
 template <typename TDict, ContainsImplicitForce TDictDefault>
-using pm_get_implicit_force_t = pm_get_implicit_force<TDict, TDictDefault>::type;
+using pm_get_implicit_force_t = typename pm_get_implicit_force<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsExplicitForce TDictDefault>
 struct pm_get_explicit_force {
@@ -98,7 +98,7 @@ struct pm_get_explicit_force<TDict, TDictDefault> {
 };
 
 template <typename TDict, ContainsExplicitForce TDictDefault>
-using pm_get_explicit_force_t = pm_get_explicit_force<TDict, TDictDefault>::type;
+using pm_get_explicit_force_t = typename pm_get_explicit_force<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsDensityDerivative TDictDefault>
 struct pm_get_density_derivative {
@@ -111,99 +111,98 @@ struct pm_get_density_derivative<TDict, TDictDefault> {
 };
 
 template <typename TDict, ContainsExplicitForce TDictDefault>
-using pm_get_density_derivative_t = pm_get_density_derivative<TDict, TDictDefault>::type;
+using pm_get_density_derivative_t = typename pm_get_density_derivative<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsTVD TDictDefault>
 struct pm_get_tvd {
-    using type = TDictDefault::tvd;
+    using type = typename TDictDefault::tvd;
 };
 
 template <ContainsTVD TDict, ContainsTVD TDictDefault>
 struct pm_get_tvd<TDict, TDictDefault> {
-    using type = TDict::tvd;
+    using type = typename TDict::tvd;
 };
 
 template <typename TDict, ContainsTVD TDictDefault>
-using pm_get_tvd_t = pm_get_tvd<TDict, TDictDefault>::type;
+using pm_get_tvd_t = typename pm_get_tvd<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsViscousStress TDictDefault>
 struct pm_get_viscous_stress {
-    using type = TDictDefault::viscous_stress;
+    using type = typename TDictDefault::viscous_stress;
 };
 
 template <ContainsViscousStress TDict, ContainsViscousStress TDictDefault>
 struct pm_get_viscous_stress<TDict, TDictDefault> {
-    using type = TDict::viscous_stress;
+    using type = typename TDict::viscous_stress;
 };
 
 template <typename TDict, ContainsViscousStress TDictDefault>
-using pm_get_viscous_stress_t = pm_get_viscous_stress<TDict, TDictDefault>::type;
+using pm_get_viscous_stress_t = typename pm_get_viscous_stress<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsMomentumIterations TDictDefault>
 struct pm_get_momentum_iterations {
-    using type = TDictDefault::momentum_iterations;
+    using type = typename TDictDefault::momentum_iterations;
 };
 
 template <ContainsMomentumIterations TDict, ContainsMomentumIterations TDictDefault>
 struct pm_get_momentum_iterations<TDict, TDictDefault> {
-    using type = TDict::momentum_iterations;
+    using type = typename TDict::momentum_iterations;
 };
 
 template <typename TDict, ContainsMomentumIterations TDictDefault>
-using pm_get_momentum_iterations_t = pm_get_momentum_iterations<TDict, TDictDefault>::type;
+using pm_get_momentum_iterations_t = typename pm_get_momentum_iterations<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsContinuityIterations TDictDefault>
 struct pm_get_continuity_iterations {
-    using type = TDictDefault::continuity_iterations;
+    using type = typename TDictDefault::continuity_iterations;
 };
 
 template <ContainsContinuityIterations TDict, ContainsContinuityIterations TDictDefault>
 struct pm_get_continuity_iterations<TDict, TDictDefault> {
-    using type = TDict::continuity_iterations;
+    using type = typename TDict::continuity_iterations;
 };
 
 template <typename TDict, ContainsMomentumIterations TDictDefault>
-using pm_get_continuity_iterations_t = pm_get_continuity_iterations<TDict, TDictDefault>::type;
+using pm_get_continuity_iterations_t = typename pm_get_continuity_iterations<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsTimeSchemeConvective TDictDefault>
 struct pm_get_time_scheme_convective {
-    using type = TDictDefault::time_scheme_convective;
+    using type = typename TDictDefault::time_scheme_convective;
 };
 
 template <ContainsTimeSchemeConvective TDict, ContainsTimeSchemeConvective TDictDefault>
 struct pm_get_time_scheme_convective<TDict, TDictDefault> {
-    using type = TDict::time_scheme_convective;
+    using type = typename TDict::time_scheme_convective;
 };
 
 template <typename TDict, ContainsMomentumIterations TDictDefault>
-using pm_get_time_scheme_convective_t = pm_get_time_scheme_convective<TDict, TDictDefault>::type;
+using pm_get_time_scheme_convective_t = typename pm_get_time_scheme_convective<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsMomentumNormalizer TDictDefault>
 struct pm_get_normalizer_momentum {
-    using type = TDictDefault::momentum_normalizer;
+    using type = typename TDictDefault::momentum_normalizer;
 };
 
 template <ContainsMomentumNormalizer TDict, ContainsMomentumNormalizer TDictDefault>
 struct pm_get_normalizer_momentum<TDict, TDictDefault> {
-    using type = TDict::momentum_normalizer;
+    using type = typename TDict::momentum_normalizer;
 };
 
 template <typename TDict, ContainsMomentumNormalizer TDictDefault>
-using pm_get_normalizer_momentum_t = pm_get_normalizer_momentum<TDict, TDictDefault>::type;
-
+using pm_get_normalizer_momentum_t = typename pm_get_normalizer_momentum<TDict, TDictDefault>::type;
 
 template <typename TDict, ContainsContinuityNormalizer TDictDefault>
 struct pm_get_normalizer_continuity {
-    using type = TDictDefault::continuity_normalizer;
+    using type = typename TDictDefault::continuity_normalizer;
 };
 
 template <ContainsContinuityNormalizer TDict, ContainsContinuityNormalizer TDictDefault>
 struct pm_get_normalizer_continuity<TDict, TDictDefault> {
-    using type = TDict::continuity_normalizer;
+    using type = typename TDict::continuity_normalizer;
 };
 
 template <typename TDict, ContainsContinuityNormalizer TDictDefault>
-using pm_get_normalizer_continuity_t = pm_get_normalizer_continuity<TDict, TDictDefault>::type;
+using pm_get_normalizer_continuity_t = typename pm_get_normalizer_continuity<TDict, TDictDefault>::type;
 
 template <typename PropertyInfoUser, typename PropertyInfoDefault>
 struct PMAssembledPropertyInfoWithDefaults {
