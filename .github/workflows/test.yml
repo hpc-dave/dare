@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         procs: [1, 2, 3, 4]
-        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: $CLANG, cxx: $CLANGXX, trilinos: trilinos_clang}]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang, cxx: clang++, trilinos: trilinos_clang}]
       fail-fast: false
 
     steps:
