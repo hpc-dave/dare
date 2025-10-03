@@ -408,7 +408,7 @@ int main(int argc, char* argv[]) {
         GO nx{128}, ny{128};
         SC Re = 100;
         LO num_ghost = 2;
-        int num_tsteps = 5000;
+        int num_tsteps = 2000;
         SC rho = 1.;
         SC utop = 1;
         SC mu = rho * utop * L / Re;
