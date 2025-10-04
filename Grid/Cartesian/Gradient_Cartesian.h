@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,14 @@
 #ifndef GRID_CARTESIAN_GRADIENT_CARTESIAN_H_
 #define GRID_CARTESIAN_GRADIENT_CARTESIAN_H_
 
+#include "Utilities/PropertyInformation.h"
 #include "Data/GridVector.h"
 #include "Equations/Operators.h"
 #include "Grid/Cartesian/Interpolation_Cartesian.h"
 #include "Grid/Cartesian/MatrixBlock_Cartesian.h"
 #include "Grid/Cartesian/Stencils_Cartesian.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * @brief gradient operator
@@ -39,11 +40,11 @@ namespace dare::Matrix {
  * The gradient operator works with a stencil belonging to a certain cell
  */
 template <std::size_t Dim>
-class Gradient<dare::Grid::Cartesian<Dim>> {
+class Gradient<dare::Cartesian<Dim>> {
 public:
     static const std::size_t NUM_FACES{Dim * 2};                   //!< number of faces
     static const std::size_t NUM_ENTRIES{NUM_FACES + 1};           //!< stencil size
-    using GridType = dare::Grid::Cartesian<Dim>;                   //!< type of grid
+    using GridType = dare::Cartesian<Dim>;                   //!< type of grid
     using GridRepresentation = typename GridType::Representation;  //!< representation of grid
     using LO = typename GridType::LocalOrdinalType;                //!< convenient aliasing
     using GO = typename GridType::GlobalOrdinalType;               //!< convenient aliasing
@@ -65,8 +66,19 @@ public:
      * By using a matrix block as an argument, we can determine the number of components in a
      * convenient way without too much code smell.
      */
+    template<dare::NaturalNumber N>
+    dare::FaceMatrixStencil<GridType, typename GridType::ScalarType, N::value> operator()(N) const;
+
+    /*!
+     * @brief provide matrix stencil
+     * @tparam O ordinal type used in the MatrixBlock instance
+     * @tparam N number of components
+     * @param mb dummy parameter
+     * By using a matrix block as an argument, we can determine the number of components in a
+     * convenient way without too much code smell.
+     */
     template <typename SC, typename O, std::size_t N>
-    dare::Data::FaceMatrixStencil<GridType, SC, N>
+    dare::FaceMatrixStencil<GridType, SC, N>
     operator()(const MatrixBlock<GridType, O, SC, N>& mb) const;
 
     /*!
@@ -75,8 +87,8 @@ public:
      * @param field instance of field
      */
     template <typename SC, std::size_t N>
-    dare::Data::FaceValueStencil<GridType, SC, N>
-    operator()(const dare::Data::GridVector<GridType, SC, N>& field) const;
+    dare::FaceValueStencil<GridType, SC, N>
+    operator()(const dare::GridVector<GridType, SC, N>& field) const;
 
     /*!
      * @brief provide gradient values from a stencil
@@ -85,8 +97,8 @@ public:
      * \note to users: This is intended to be used for applications like numerical differentiation
      */
     template <typename SC, std::size_t N>
-    dare::Data::FaceValueStencil<GridType, SC, N>
-    operator()(const dare::Data::CenterValueStencil<GridType, SC, N>& s) const;
+    dare::FaceValueStencil<GridType, SC, N>
+    operator()(const dare::CenterValueStencil<GridType, SC, N>& s) const;
 
     /*!
      * @brief provide gradient values for dedicated component from a field
@@ -95,8 +107,8 @@ public:
      * @param n component ID
      */
     template <typename SC, std::size_t N>
-    dare::Data::FaceValueStencil<GridType, SC, 1>
-    operator()(const dare::Data::GridVector<GridType, SC, N>& field, std::size_t n) const;
+    dare::FaceValueStencil<GridType, SC, 1>
+    operator()(const dare::GridVector<GridType, SC, N>& field, std::size_t n) const;
 
     /*!
      * @brief provide gradient values for dedicated component from a stencil
@@ -105,8 +117,8 @@ public:
      * @param n component ID
      */
     template <typename SC, std::size_t N>
-    dare::Data::FaceValueStencil<GridType, SC, 1>
-    operator()(const dare::Data::CenterValueStencil<GridType, SC, N>& s, std::size_t n) const;
+    dare::FaceValueStencil<GridType, SC, 1>
+    operator()(const dare::CenterValueStencil<GridType, SC, N>& s, std::size_t n) const;
 
 private:
     const GridRepresentation* grid;  //!< reference to grid representation
@@ -114,7 +126,7 @@ private:
     LO ordinal_internal;             //!< local internal ordinal
 };
 
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 #include "Gradient_Cartesian.inl"
 

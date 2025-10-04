@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,16 @@
 
 #include <float.h>
 #include <gtest/gtest.h>
+#include <vector>
+
 #include "TestField.h"
 #include "MPI/SingleHaloBuffer.h"
 
 TEST(SingleHaloBufferTest, Initialize) {
     using SC = double;
-    using BufferType = dare::mpi::SingleHaloBuffer<SC>;
+    using BufferType = dare::SingleHaloBuffer<SC>;
     int test_rank{0};
-    dare::mpi::ExecutionManager exman;
+    dare::ExecutionManager exman;
     BufferType buffer;
     buffer.Initialize(&exman, 0);
     ASSERT_EQ(buffer.GetPartnerRank(), test_rank);
@@ -39,9 +41,9 @@ TEST(SingleHaloBufferTest, Initialize) {
 
 TEST(SingleHaloBufferTest, CommunicateAmountHaloCellIDs) {
     using SC = double;
-    using BufferType = dare::mpi::SingleHaloBuffer<SC>;
-    dare::mpi::ExecutionManager exman;
-    using BufferType = dare::mpi::SingleHaloBuffer<SC>;
+    using BufferType = dare::SingleHaloBuffer<SC>;
+    dare::ExecutionManager exman;
+    using BufferType = dare::SingleHaloBuffer<SC>;
     std::vector<BufferType> list_buffers(exman.GetNumberProcesses());
     for (std::size_t n{0}; n < list_buffers.size(); n++)
         list_buffers[n].Initialize(&exman, n);
@@ -60,10 +62,10 @@ TEST(SingleHaloBufferTest, CommunicateAmountHaloCellIDs) {
 
 TEST(SingleHaloBufferTest, ExchangeAndFill) {
     using SC = double;
-    using BufferType = dare::mpi::SingleHaloBuffer<SC>;
+    using BufferType = dare::SingleHaloBuffer<SC>;
     using LO = typename BufferType::LO;
     std::size_t num_halo_IDs = 10;
-    dare::mpi::ExecutionManager exman;
+    dare::ExecutionManager exman;
     dare::test::TestField field;
     // field needs for each process a halo cell region and local data to send
     field.ResizeByGridSize(num_halo_IDs * (exman.GetNumberProcesses() + 1));

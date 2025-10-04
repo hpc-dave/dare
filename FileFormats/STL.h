@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,8 @@ template<typename VT>
 class STLfacet{
 public:
     using ValueType = VT;   //!< value type definition
-    using PointType = dare::utils::Vector<3, ValueType>;    //!< point type defintion (compatible with VectorType)
-    using VectorType = dare::utils::Vector<3, ValueType>;   //!< vector type defintion (compatible with PointType)
+    using PointType = dare::Vector<3, ValueType>;    //!< point type defintion (compatible with VectorType)
+    using VectorType = dare::Vector<3, ValueType>;   //!< vector type defintion (compatible with PointType)
 
     /*
      * \brief constructor with 3 points

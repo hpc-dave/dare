@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,16 +33,18 @@
 #include "Data/Stencil.h"
 #include "Data/Field.h"
 #include "TimeDiscretizationSchemes.h"
+#include "Utilities/PropertyInformation.h"
+#include "Math/Interpolation.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 namespace timeschemes {
 struct IMPLICIT {
     static const std::size_t NUM_TIMESTEPS{1};
 
     template <typename SC>
-    static constexpr dare::utils::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
-        return dare::utils::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(1.), static_cast<SC>(1.));
+    static constexpr dare::Vector<NUM_TIMESTEPS + 1, SC> GetWeights() {
+        return dare::Vector<NUM_TIMESTEPS + 1, SC>(static_cast<SC>(1.), static_cast<SC>(1.));
     }
 };
 }  // namespace timeschemes
@@ -52,13 +54,14 @@ struct IMPLICIT {
  * @tparam Grid type of grid
  * @tparam TimeDiscretization discretization scheme for the time derivative
  */
-template<typename Grid, typename TimeDiscretization = dare::Matrix::timeschemes::IMPLICIT>
+template<typename Grid, typename TimeDiscretization = dare::timeschemes::IMPLICIT>
 class DDT {
 public:
-    using LO = typename Grid::LocalOrdinalType;
-    using SC = typename Grid::ScalarType;
-    using Index = typename Grid::Index;
-    using GridRepresentation = typename Grid::Representation;
+    using GridType = Grid;
+    using LO = typename GridType::LocalOrdinalType;
+    using SC = typename GridType::ScalarType;
+    using Index = typename GridType::Index;
+    using GridRepresentation = typename GridType::Representation;
     static const std::size_t NUM_TIMESTEPS = TimeDiscretization::NUM_TIMESTEPS;
     static const std::size_t NUM_TFIELDS{NUM_TIMESTEPS + 1};
 
@@ -73,16 +76,17 @@ public:
 
 private:
     template <int I, std::size_t NUM_COMPONENTS, typename... Args>
-    void Iterate(dare::utils::Vector<NUM_COMPONENTS, dare::utils::Vector<NUM_TFIELDS, SC>>& v,  // NOLINT
+    void Iterate(dare::Vector<NUM_COMPONENTS, dare::Vector<NUM_TFIELDS, SC>>& v,  // NOLINT
                  const std::tuple<const Args&...>& args);
 
     SC dt;              //!< discrete timestep
     LO ordinal;         //!< internal ordinal
     LO local_ordinal;   //!< local ordinal
     SC volume;          //!< discrete volume
+    const GridRepresentation* grep;  //!< pointer to grid representation
 };
 
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 #include "DDT.inl"
 

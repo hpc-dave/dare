@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,10 +59,10 @@ int main(int argc, char* argv[]) {
     using SC = dare::defaults::ScalarType;
     using GO = dare::defaults::GlobalOrdinalType;
     using LO = dare::defaults::LocalOrdinalType;
-    using Grid = dare::Grid::Cartesian<1>;
-    using GridVector = dare::Data::GridVector<Grid, SC, 2>;
-    using Field = dare::Data::Field<Grid, SC, 2>;
-    using Writer = dare::io::VTKWriter<Grid>;
+    using Grid = dare::Cartesian<1>;
+    using GridVector = dare::GridVector<Grid, SC, 2>;
+    using Field = dare::Field<Grid, SC, 2>;
+    using Writer = dare::VTKWriter<Grid>;
     using IndexGlobal = typename Grid::IndexGlobal;
     using IndexLocal = typename Grid::Index;
     using VecSC = typename Grid::VecSC;
@@ -79,8 +79,8 @@ int main(int argc, char* argv[]) {
         IndexGlobal resolution_global(nx);
         VecSC size_global(L);
 
-        dare::mpi::ExecutionManager exman;
-        dare::io::FileSystemManager fman(&exman, "verification");
+        dare::ExecutionManager exman;
+        dare::FileSystemManager fman(&exman, "verification");
         fman.CheckWithUser(false);
 
         if (exman.GetNumberProcesses() > 1) {
@@ -105,10 +105,10 @@ int main(int argc, char* argv[]) {
         analytical.SetComponentName(1, "backward");
 
         auto build_coef = [&](auto mblock) {
-            using Gradient = dare::Matrix::Gradient<Grid>;
-            using TimeScheme = dare::Matrix::EULER_BACKWARD;
-            using Divergence = dare::Matrix::Divergence<Grid, TimeScheme>;
-            using DDT = dare::Matrix::DDT<Grid>;
+            using Gradient = dare::Gradient<Grid>;
+            using TimeScheme = dare::EULER_BACKWARD;
+            using Divergence = dare::Divergence<Grid, TimeScheme>;
+            using DDT = dare::DDT<Grid>;
 
             auto g_r = mblock->GetRepresentation();
             LO loc_o{mblock->GetLocalOrdinal()};
@@ -127,27 +127,27 @@ int main(int argc, char* argv[]) {
                 // Dirichlet for component 0
                 // std::cout << *mblock;
                 SC bc_0 = 1.;
-                mblock->Get(0, CNB::CENTER) -= mblock->Get(0, CNB::WEST);
-                mblock->GetRhs(0) -= 2. * bc_0 * mblock->Get(0, CNB::WEST);
-                mblock->Remove(0, CNB::WEST);
+                mblock->Get(0, 0, CNB::CENTER) -= mblock->Get(0, 0, CNB::WEST);
+                mblock->GetRhs(0) -= 2. * bc_0 * mblock->Get(0, 0, CNB::WEST);
+                mblock->Remove(0, 0, CNB::WEST);
                 // Neumann for component 1
-                mblock->Get(1, CNB::CENTER) += mblock->Get(1, CNB::WEST);
-                mblock->Remove(1, CNB::WEST);
+                mblock->Get(1, 1, CNB::CENTER) += mblock->Get(1, 1, CNB::WEST);
+                mblock->Remove(1, 1, CNB::WEST);
             } else if (glob_o == (nx - 1)) {
                 // EAST boundary
                 // Dirichlet for component 1
                 SC bc_1 = 1.;
-                mblock->Get(1, CNB::CENTER) -= mblock->Get(1, CNB::EAST);
-                mblock->GetRhs(1) -= 2. * bc_1 * mblock->Get(1, CNB::EAST);
-                mblock->Remove(1, CNB::EAST);
+                mblock->Get(1, 1, CNB::CENTER) -= mblock->Get(1, 1, CNB::EAST);
+                mblock->GetRhs(1) -= 2. * bc_1 * mblock->Get(1, 1, CNB::EAST);
+                mblock->Remove(1, 1, CNB::EAST);
                 // Neumann for component 0
-                mblock->Get(0, CNB::CENTER) += mblock->Get(0, CNB::EAST);
-                mblock->Remove(0, CNB::EAST);
+                mblock->Get(0, 0, CNB::CENTER) += mblock->Get(0, 0, CNB::EAST);
+                mblock->Remove(0, 0, CNB::EAST);
             }
             // std::cout << *mblock;
         };
 
-        dare::Matrix::Trilinos<SC> msystem(&exman);
+        dare::Trilinos<SC> msystem(&exman);
         Teuchos::RCP<Teuchos::ParameterList> p_ilu = Teuchos::rcp(new Teuchos::ParameterList());
         // parameters for ILU
         p_ilu->set("fact: drop tolerance", 1e-9);
@@ -173,12 +173,12 @@ int main(int argc, char* argv[]) {
 
             msystem.Build(grep, field.GetDataVector(), build_coef, false);
 
-            dare::Matrix::TrilinosSolver<SC> solver;
-            msystem.GetM() = solver.BuildPreconditioner(dare::Matrix::PreCondPackage::Ifpack2,
+            dare::TrilinosSolver<SC> solver;
+            msystem.GetM() = solver.BuildPreconditioner(dare::PreCondPackage::Ifpack2,
                                                         "ILUT",
                                                         p_ilu,
                                                         msystem.GetA());
-            auto ret = solver.Solve(dare::Matrix::SolverPackage::Belos,
+            auto ret = solver.Solve(dare::SolverPackage::Belos,
                                     "BICGSTAB",
                                     msystem.GetM(),
                                     msystem.GetA(), msystem.GetX(), msystem.GetB(),
@@ -187,7 +187,7 @@ int main(int argc, char* argv[]) {
             if (ret != Belos::ReturnType::Converged) {
                 exman.Terminate(__func__, "solver did not converge");
             }
-            exman.Print(dare::mpi::Verbosity::Low)
+            dare::Print(dare::Verbosity::Low)
                 << "t: " << time << "\tstep: " << timestep << "\tit: " << solver.GetNumIterations() << '\n';
 
             // Verification
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
             }
             err_f = exman.Allsum(err_f) / nx;
             err_b = exman.Allsum(err_b) / nx;
-            exman(dare::mpi::Verbosity::Low)
+            dare::Print(dare::Verbosity::Low)
                 << "error (f | b): " << err_f << " | " << err_b << '\n';
 
             field.CopyDataVectorsToOldTimeStep();

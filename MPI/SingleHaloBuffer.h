@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 #include "Data/DefaultTypes.h"
 #include "ExecutionManager.h"
 
-namespace dare::mpi {
+namespace dare {
 
 /*! \class SingleHaloBuffer
  * @brief takes care of communication with one processor to exchange halo data
@@ -45,7 +45,7 @@ namespace dare::mpi {
  * grid cell IDs, which it will exchange and subsequently store in the field
  */
 template<typename SC>
-class SingleHaloBuffer : public dare::utils::InitializationTracker{
+class SingleHaloBuffer : public dare::InitializationTracker{
 public:
     using LO = dare::defaults::LocalOrdinalType;
     using GO = dare::defaults::GlobalOrdinalType;
@@ -139,7 +139,7 @@ private:
     std::vector<SC> buffer_recv;            //!< buffer for scalar values that will be received
 };
 
-}  // namespace dare::mpi
+}  // namespace dare
 
 #include "SingleHaloBuffer.inl"
 

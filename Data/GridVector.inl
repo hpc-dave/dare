@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,18 @@
  * SOFTWARE.
  */
 
-namespace dare::Data {
+#include <string>
+
+namespace dare {
 
 template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>::GridVector() : GridVector("not_specified", 0, GridRepresentation()) {
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>::GridVector(const GridVector<Grid, T, N>& other)
+    : GridVector(other.ident_string, other.grid.GetNumberLocalCells(), other.grid) {
+    Kokkos::deep_copy(data, other.data);
 }
 
 template <typename Grid, typename T, std::size_t N>
@@ -42,6 +50,13 @@ GridVector<Grid, T, N>::GridVector(std::string identifier, LO num_cells, GridRep
 
 template <typename Grid, typename T, std::size_t N>
 GridVector<Grid, T, N>::~GridVector() {}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator=(const GridVector<Grid, T, N>& other) {
+    if (&other != this)
+        other.GetDeepCopy(this);
+    return *this;
+}
 
 template <typename Grid, typename T, std::size_t N>
 void GridVector<Grid, T, N>::Initialize(std::string identifier, GridRepresentation _grid) {
@@ -86,13 +101,162 @@ T GridVector<Grid, T, N>::At(LO n, std::size_t c) const {
 }
 
 template <typename Grid, typename T, std::size_t N>
+template<typename... Args>
+T& GridVector<Grid, T, N>::operator()(Args&&... args) {
+    return At(args...);
+}
+
+template <typename Grid, typename T, std::size_t N>
+template <typename... Args>
+T GridVector<Grid, T, N>::operator()(Args&&... args) const {
+    return At(args...);
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator+=(const GridVector<Grid, T, N>& other) {
+    if (this->GetSize() != other.GetSize()) {
+        grid.GetExecutionManager()->Terminate(__func__, "Incompatible size of grid vectors");
+    }
+#pragma omp parallel for
+    for (std::size_t o = 0; o < this->GetSize(); o++) {
+        this->At(o) += other.At(o);
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator+=(const T& value) {
+#pragma omp parallel for
+    for (std::size_t o = 0; o < this->GetSize(); o++) {
+        this->At(o) += value;
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator+(const GridVector<Grid, T, N>& other) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v += other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator+(const T& value) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v += value;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator-=(const GridVector<Grid, T, N>& other) {
+    if (this->GetSize() != other.GetSize()) {
+        grid.GetExecutionmanager->Terminate(__func__, "Incompatible size of grid vectors");
+    }
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) -= other.At(o);
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator-=(const T& value) {
+    return *this += -value;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator-(const GridVector<Grid, T, N>& other) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v -= other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator-(const T& value) const {
+    return *this + (-value);
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator*=(const GridVector<Grid, T, N>& other) {
+    if (this->GetSize() != other.GetSize()) {
+        grid.GetExecutionmanager->Terminate(__func__, "Incompatible size of grid vectors");
+    }
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) *= other.At(o);
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator*=(const T& value) {
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) *= value;
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator*(const GridVector<Grid, T, N>& other) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v *= other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator*(const T& value) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v *= value;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator/=(const GridVector<Grid, T, N>& other) {
+    if (this->GetSize() != other.GetSize()) {
+        grid.GetExecutionmanager->Terminate(__func__, "Incompatible size of grid vectors");
+    }
+#pragma omp parallel for
+    for (LO o = 0; o < this->GetSize(); o++) {
+        this->At(o) /= other.At(o);
+    }
+    return *this;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N>& GridVector<Grid, T, N>::operator/=(const T& value) {
+    return *this *= (1 / value);
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator/(const GridVector<Grid, T, N>& other) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v /= other;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
+GridVector<Grid, T, N> GridVector<Grid, T, N>::operator/(const T& value) const {
+    GridVector<Grid, T, N> v;
+    this->GetDeepCopy(&v);
+    v /= value;
+    return v;
+}
+
+template <typename Grid, typename T, std::size_t N>
 T GridVector<Grid, T, N>::At(const Index& ind, std::size_t c) const {
     return At(grid.MapIndexToOrdinalLocal(ind), c);
 }
 
 template <typename Grid, typename T, std::size_t N>
-dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const LO n) const {
-    dare::utils::Vector<N, T> values;
+dare::Vector<N, T> GridVector<Grid, T, N>::GetValues(const LO n) const {
+    dare::Vector<N, T> values;
     LO n_start{n * static_cast<LO>(N)};
     for (std::size_t c{0}; c < N; c++) {
         values[c] = operator[](n_start + c);
@@ -101,7 +265,7 @@ dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const LO n) const {
 }
 
 template <typename Grid, typename T, std::size_t N>
-dare::utils::Vector<N, T> GridVector<Grid, T, N>::GetValues(const Index& ind) const {
+dare::Vector<N, T> GridVector<Grid, T, N>::GetValues(const Index& ind) const {
     return GetValues(grid.MapIndexToOrdinalLocal(ind));
 }
 
@@ -194,4 +358,4 @@ template <typename Grid, typename T, std::size_t N>
 const std::string& GridVector<Grid, T, N>::GetComponentName(std::size_t n) const {
     return component_names[n];
 }
-}  // namespace dare::Data
+}  // namespace dare

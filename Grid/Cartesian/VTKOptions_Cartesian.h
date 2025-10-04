@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,9 @@
 #include "Grid/Cartesian.h"
 #include "IO/VTKOptions.h"
 
-namespace dare::io {
+namespace dare {
 
-namespace details::Cartesian {
+namespace details {
 
 /*!
  * @brief arguments for the programmable filter
@@ -53,7 +53,7 @@ struct PFArgs {
  * @brief function to set up the vtkFilter
  * @param arg pointer to the arguments
  */
-void inline execute(void* arg) {
+void inline cartesian_vtk_execute(void* arg) {
     PFArgs* args = reinterpret_cast<PFArgs*>(arg);
     int extent[6] = {0};
     for (std::size_t n{0}; n < 6; n++)
@@ -73,9 +73,9 @@ void inline execute(void* arg) {
  * vtk orders z-y-x
  */
 template <std::size_t Dim>
-class Mapper {
+class CartesianVTKMapper {
 public:
-    using CartesianGrid = Grid::Cartesian<Dim>;
+    using CartesianGrid = dare::Cartesian<Dim>;
     using Representation = typename CartesianGrid::Representation;
     using LO = typename CartesianGrid::LocalOrdinalType;
     using Index = typename Representation::Index;
@@ -84,10 +84,10 @@ public:
      * @brief constructor
      * @param representation representation of the Cartesian grid
      */
-    explicit Mapper(const Representation* representation)
+    explicit CartesianVTKMapper(const Representation* representation)
         : grep(representation), hsum(1, 1, 1) {
         Index res = grep->GetLocalResolution();
-        dare::utils::Vector<3, vtkOrdinal> res_3d(1, 1, 1);
+        dare::Vector<3, vtkOrdinal> res_3d(1, 1, 1);
         for (std::size_t d{0}; d < Dim; d++) {
             res_3d[d] = res[d];
         }
@@ -102,7 +102,7 @@ public:
      */
     [[nodiscard]] vtkOrdinal operator()(LO local_ordinal) const {
         Index ind = grep->MapOrdinalToIndexLocal(local_ordinal);
-        dare::utils::Vector<3, vtkOrdinal> ind_3d;
+        dare::Vector<3, vtkOrdinal> ind_3d;
         for (std::size_t d{0}; d < Dim; d++) {
             ind_3d[d] = ind[d];
         }
@@ -112,24 +112,24 @@ public:
 
 private:
     const Representation* grep;               //!< representation of the grid
-    dare::utils::Vector<3, vtkOrdinal> hsum;  //!< hierarchical sum for mapping
+    dare::Vector<3, vtkOrdinal> hsum;  //!< hierarchical sum for mapping
 };
 
-}  // end namespace details::Cartesian
+}  // end namespace details
 
 /*!
  * @brief specialization for the Cartesian grid type
  * @tparam Dim dimension of the Cartesian grid
  */
 template <std::size_t Dim>
-struct VTKOptions<Grid::Cartesian<Dim>> {
-    using CartesianGrid = Grid::Cartesian<Dim>;
+struct VTKOptions<Cartesian<Dim>> {
+    using CartesianGrid = dare::Cartesian<Dim>;
     using Representation = typename CartesianGrid::Representation;
     using GridType = vtkStructuredGrid;
     using LO = typename CartesianGrid::LocalOrdinalType;
     using SC = typename CartesianGrid::ScalarType;
     using vtkOrdinal = vtkIdType;
-    using Mapper = typename details::Cartesian::Mapper<Dim>;
+    using Mapper = typename details::CartesianVTKMapper<Dim>;
     using Writer = typename VTKWriterMapper<GridType>::type;
 
     /*!
@@ -144,7 +144,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
     static bool AllocateGrid(const Representation& grep, GridType* vtkgrid) {
         using Index = typename Representation::Index;
         Index res = grep.GetLocalResolution();
-        dare::utils::Vector<3, vtkOrdinal> res_3d(1, 1, 1);
+        dare::Vector<3, vtkOrdinal> res_3d(1, 1, 1);
         for (std::size_t d{0}; d < Dim; d++) {
             res_3d[d] = res[d] + 1;  // +1 for the number of points, required by VTK
         }
@@ -155,8 +155,8 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         auto dn = grep.GetDistances();
         auto offset = grep.GetOffsetSize();
         offset -= static_cast<SC>(grep.GetNumberGhostCells()) * dn;
-        dare::utils::Vector<3, double> offset_3d(0., 0., 0.), dn_3d(0., 0., 0.);
-        dare::utils::Vector<3, int> offset_cells(0, 0, 0);
+        dare::Vector<3, double> offset_3d(0., 0., 0.), dn_3d(0., 0., 0.);
+        dare::Vector<3, int> offset_cells(0, 0, 0);
         for (std::size_t d{0}; d < Dim; d++) {
             dn_3d[d] = dn[d];
             offset_3d[d] = offset[d];
@@ -216,12 +216,12 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
      * Here, the halo cells are explicitly removed from the displayed extents int the root file.
      * This does not mean, that they don't exist in the separate pieces!
      */
-    static std::unique_ptr<details::Cartesian::PFArgs> AddDataToWriter(const Representation& grep,
-                                dare::mpi::ExecutionManager* exec_man,
+    static std::unique_ptr<details::PFArgs> AddDataToWriter(const Representation& grep,
+                                dare::ExecutionManager* exec_man,
                                 vtkStructuredGrid* data,
                                 Writer* writer) {
         using G = CartesianGrid;
-        auto args = std::make_unique<details::Cartesian::PFArgs>(GetPExtentLocal(grep));
+        auto args = std::make_unique<details::PFArgs>(GetPExtentLocal(grep));
         VTKExtent extent_plocal = GetPExtentLocal(grep);
         // for improved output we remove the halo cell layer from
         // the extent in the parallel file
@@ -241,7 +241,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         }
         extent_plocal += halo_correction;
 
-        args->pf->SetExecuteMethod(details::Cartesian::execute, args.get());
+        args->pf->SetExecuteMethod(details::cartesian_vtk_execute, args.get());
         args->pf->SetInputData(data);
         writer->SetInputConnection(args->pf->GetOutputPort());
         writer->SetNumberOfPieces(exec_man->GetNumberProcesses());
@@ -259,7 +259,7 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
     static VTKExtent GetPExtentGlobal(const Representation& grep) {
         using Index = typename Representation::IndexGlobal;
         Index res = grep.GetGlobalResolution();
-        dare::utils::Vector<3, int> res_3d(0, 0, 0);
+        dare::Vector<3, int> res_3d(0, 0, 0);
         // VTK always expects 3D data, so we need accomodate that
         for (std::size_t d{0}; d < Dim; d++) {
             res_3d[d] = static_cast<int>(res[d]);
@@ -291,8 +291,8 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
         using Index = typename Representation::Index;
 
         Index res = grep.GetLocalResolution();
-        dare::utils::Vector<3, int> res_3d(0, 0, 0);
-        dare::utils::Vector<3, int> offset_cells(0, 0, 0);
+        dare::Vector<3, int> res_3d(0, 0, 0);
+        dare::Vector<3, int> offset_cells(0, 0, 0);
         // VTK always expects 3D data, so we need accomodate that
         for (std::size_t d{0}; d < Dim; d++) {
             res_3d[d] = static_cast<int>(res[d]);
@@ -320,6 +320,6 @@ struct VTKOptions<Grid::Cartesian<Dim>> {
     }
 };
 
-}  // end namespace dare::io
+}  // end namespace dare
 
 #endif  // GRID_CARTESIAN_VTKOPTIONS_CARTESIAN_H_

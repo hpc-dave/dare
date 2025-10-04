@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,5 +30,6 @@
 #include "Cartesian/Operators_Cartesian.h"
 #include "Cartesian/Stencils_Cartesian.h"
 #include "Cartesian/VTKOptions_Cartesian.h"
+#include "Cartesian/Interpolation_Cartesian.h"
 
 #endif  // GRID_CARTESIAN_H_

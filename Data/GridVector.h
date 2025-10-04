@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,14 @@
 #ifndef DATA_GRIDVECTOR_H_
 #define DATA_GRIDVECTOR_H_
 
+#include <concepts>
 #include <string>
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>
 #include "Utilities/Vector.h"
 #include "Utilities/Errors.h"
 
-namespace dare::Data {
+namespace dare {
 
 /*!
  * @brief general data storage object
@@ -44,11 +45,11 @@ class GridVector {
 public:
     static const std::size_t NUM_COMPONENTS{N};
     using GridType = Grid;
-    using GridRepresentation = typename Grid::Representation;
-    using LO = typename Grid::LocalOrdinalType;
-    using GO = typename Grid::GlobalOrdinalType;
-    using Index = typename Grid::Index;
-    using IndexGlobal = typename Grid::IndexGlobal;
+    using GridRepresentation = typename GridType::Representation;
+    using LO = typename GridType::LocalOrdinalType;
+    using GO = typename GridType::GlobalOrdinalType;
+    using Index = typename GridType::Index;
+    using IndexGlobal = typename GridType::IndexGlobal;
     using DataType = T;
     using DualViewType = Kokkos::DualView<T*>;
     using DeviceViewType = typename DualViewType::t_dev;
@@ -60,6 +61,16 @@ public:
      * @brief default constructor
      */
     GridVector();
+
+    /*!
+     * @brief copy constructor
+     */
+    GridVector(const GridVector& other);
+
+    /*!
+     * @brief copy assignment constructor
+     */
+    GridVector<Grid, T, N>& operator=(const GridVector& other);
 
     /*!
      * @brief initialization constructor
@@ -140,16 +151,134 @@ public:
     T At(const Index& ind, std::size_t c) const;
 
     /*!
+     * @brief an overload for the At-method
+     * @tparam ...Args input parameter types
+     * @param ...args input parameters
+     * @return reference to internal value
+     * 
+     * This operator will forward all the arguments to the At-method
+     */
+    template <typename... Args>
+    T& operator()(Args&&... args);
+
+    /*!
+     * @brief a const overload for the At-method
+     * @tparam ...Args input parameter types
+     * @param ...args input parameters
+     * @return reference to internal value
+     *
+     * This operator will forward all the arguments to the At-method
+     */
+    template <typename... Args>
+    T operator()(Args&&... args) const;
+
+    /*!
+     * @brief += operator
+     * @param other field to be added to
+     */
+    GridVector<Grid, T, N>& operator+=(const GridVector<Grid, T, N>& other);
+
+    /*!
+     * @brief += operator
+     * @param value value to be added to
+     */
+    GridVector<Grid, T, N>& operator+=(const T& value);
+
+    /*!
+     * @brief addition operator
+     * @param other field to be added to
+     */
+    GridVector<Grid, T, N> operator+(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief addition operator
+     * @param value value to be added to the field
+     */
+    GridVector<Grid, T, N> operator+(const T& value) const;
+
+    /*!
+     * @brief -= operator
+     * @param other field to be subtracted from
+     */
+    GridVector<Grid, T, N>& operator-=(const GridVector<Grid, T, N>& other);
+
+    /*!
+     * @brief -= operator
+     * @param value value to be subtracted from the field
+     */
+    GridVector<Grid, T, N>& operator-=(const T& other);
+
+    /*!
+     * @brief subtraction operator
+     * @param other field to be subtracted from
+     */
+    GridVector<Grid, T, N> operator-(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief subtraction operator
+     * @param value value to be subtracted from the field
+     */
+    GridVector<Grid, T, N> operator-(const T& value) const;
+
+    /*!
+     * @brief *= operator
+     * @param other field to be mulitplied with
+     */
+    GridVector<Grid, T, N>& operator*=(const GridVector<Grid, T, N>& other);
+
+    /*!
+     * @brief *= operator
+     * @param value value to be mulitplied with the field
+     */
+    GridVector<Grid, T, N>& operator*=(const T& value);
+
+    /*!
+     * @brief multiplication operator
+     * @param other field to be multiplied with
+     */
+    GridVector<Grid, T, N> operator*(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief multiplication operator
+     * @param value value to be multiplied with the field
+     */
+    GridVector<Grid, T, N> operator*(const T& value) const;
+
+    /*!
+     * @brief /= operator
+     * @param other field to be divided by
+     */
+    GridVector<Grid, T, N>& operator/=(const GridVector<Grid, T, N>& other);
+
+    /*!
+     * @brief /= operator
+     * @param value value to divided the field by
+     */
+    GridVector<Grid, T, N>& operator/=(const T& value);
+
+    /*!
+     * @brief division operator
+     * @param other field to be divided by
+     */
+    GridVector<Grid, T, N> operator/(const GridVector<Grid, T, N>& other) const;
+
+    /*!
+     * @brief division operator
+     * @param value value to divide the field by
+     */
+    GridVector<Grid, T, N> operator/(const T& other) const;
+
+    /*!
      * @brief returns vector with all components
      * @param n local ordinal
      */
-    dare::utils::Vector<N, T> GetValues(const LO n) const;
+    dare::Vector<N, T> GetValues(const LO n) const;
 
     /*!
      * @brief returns vector with all components
      * @param ind index
      */
-    dare::utils::Vector<N, T> GetValues(const Index& ind) const;
+    dare::Vector<N, T> GetValues(const Index& ind) const;
 
 
     /*!
@@ -250,7 +379,7 @@ private:
     DualViewType data;               //!< array with data
 };
 
-}  // namespace dare::Data
+}  // namespace dare
 
 namespace dare {
 
@@ -269,11 +398,11 @@ struct is_gridvector : std::false_type {
  * This is the SFINAE option for true
  */
 template <typename Grid, typename SC, std::size_t N>
-struct is_gridvector<Data::GridVector<Grid, SC, N>> : std::true_type {
+struct is_gridvector<GridVector<Grid, SC, N>> : std::true_type {
 };
 
 template <typename Grid, typename SC, std::size_t N>
-struct is_gridvector<const Data::GridVector<Grid, SC, N>> : std::true_type {
+struct is_gridvector<const GridVector<Grid, SC, N>> : std::true_type {
 };
 
 template <typename T>

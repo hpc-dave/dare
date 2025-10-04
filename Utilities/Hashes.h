@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,9 @@
 #ifndef UTILITIES_HASHES_H_
 #define UTILITIES_HASHES_H_
 #include <cstddef>
-namespace dare::utils {
+namespace dare {
 
-/*\struct _FNVparam
+/*! \struct _FNVparam
  * \brief Helpers for hashing with the Fowler-Noll-Vu (FNV) hash function
  *
  * Background of the FNV-hash function:
@@ -36,14 +36,13 @@ namespace dare::utils {
  *     hash = hash * FNV-prime
  *     hash = hash XOR byte_of_data
  *  end for
- *
  */
 template <int bytes>
 struct _FNVparam {
 };
 
-/*
- * specialization for 32 bit FNV parameters
+/*! \struct _FNVparam<4>
+ * @brief specialization for 32 bit FNV parameters
  */
 template <>
 struct _FNVparam<4> {
@@ -51,14 +50,14 @@ struct _FNVparam<4> {
     static const std::size_t offset{0x811c9dc5};
 };
 
-/*
- * specialization for 64 bit FNV parameters
+/*! \struct _FNVparam<8>
+ * @brief specialization for 64 bit FNV parameters
  */
 template <>
 struct _FNVparam<8> {
     static const std::size_t prime{0x00000100000001B3};
     static const std::size_t offset{0xcbf29ce484222325};
 };
-}  // namespace dare::utils
+}  // namespace dare
 
 #endif  // UTILITIES_HASHES_H_

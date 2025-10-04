@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,27 +27,7 @@
 int main(int argc, char* argv[]) {
     dare::ScopeGuard scope_guard(&argc, &argv);
     {
-        if (scope_guard.AmIRoot()) {
-            std::cout << "Hello, nice that you are here!" << std::endl
-                      << std::endl;
-            std::cout << "  _,-'`''-~`) \n"
-                      << "(`~_,=========\\ \n"
-                      << " |---,___.-.__,\\ \n"
-                      << " |        o     \\ ___  _,,,,_     _.--.\n"
-                      << "  \\      `^`    /`_.-'~      `~-;`     \\ \n"
-                      << "   \\_      _  .'                 `,     |\n"
-                      << "    |`-                           \\'__/\n"
-                      << "   /                      ,_       \\  `'-.\n"
-                      << "  /    .-''~~--.            `'-,   ;_    /\n"
-                      << " |              \\               \\  | `''`\n"
-                      << " \\__.--'`'-.   /_               |'\n"
-                      << "             `'`  `~~~---..,     |\n"
-                      << " jgs                         \\ _.-'`-.\n"
-                      << "                             \\       \\ \n"
-                      << "                              '.     /\n"
-                      << "                                `'~'`\n";
-            // copyright by Joan G. Stark, taken from https://www.asciiart.eu/animals/bears
-        }
+        scope_guard.PrintWelcomeScreen();
     }
     return 0;
 }

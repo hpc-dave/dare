@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,25 @@
  * SOFTWARE.
  */
 
-#include "VTKPXMLStructuredGridWriter.h"
 #include <vtkInformation.h>
 #include <vtkMPIController.h>
 #include <vtkProgrammableFilter.h>
 #include <vtkXMLPStructuredGridWriter.h>
 
-namespace dare::io {
+#include <iomanip>
+#include <list>
+#include <map>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <vector>
+
+#include "VTKPXMLStructuredGridWriter.h"
+
+namespace dare {
 
 template<typename Grid>
-VTKWriter<Grid>::VTKWriter(mpi::ExecutionManager* ex_man, double _time, int _step)
+VTKWriter<Grid>::VTKWriter(ExecutionManager* ex_man, double _time, int _step)
     : exec_man(ex_man), time(_time), step(_step) {
 }
 
@@ -66,7 +75,7 @@ bool VTKWriter<Grid>::Write(const std::string& base_path,
         vtkNew<GridType> vtkDataSet;
         bool success = Options::AllocateGrid(*grep, vtkDataSet);
         if (!success) {
-            exec_man->Print(dare::mpi::Verbosity::Low)
+            dare::Print(dare::Verbosity::Low)
                 << "Error during grid allocation, cannot write " << grep->GetName() << " to file!" << std::endl;
             continue;
         }
@@ -207,4 +216,4 @@ void VTKWriter<Grid>::PopulateVTKArray(std::tuple<const Data&...> data,
     LoopThroughData<0>(SetData, data);
 }
 
-}  // end namespace dare::io
+}  // end namespace dare

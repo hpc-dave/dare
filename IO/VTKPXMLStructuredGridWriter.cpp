@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,13 @@
 #include <fstream>
 #include <iomanip>
 #include <type_traits>
+#include <string>
 
-namespace dare::io {
+namespace dare {
 
 vtkStandardNewMacro(VTKPXMLStructuredGridWriter);
 
-void VTKPXMLStructuredGridWriter::SetPPieceExtent(const VTKExtent& local_extent, dare::mpi::ExecutionManager* exman) {
+void VTKPXMLStructuredGridWriter::SetPPieceExtent(const VTKExtent& local_extent, dare::ExecutionManager* exman) {
     extent_array.resize(exman->GetNumberProcesses() * 6);
     if ((exman->Allgather(local_extent.data(), 6, extent_array.data(), 6) != MPI_SUCCESS) && exman->AmIRoot())
         ERROR << "A not further specified problem occured during communication!" << ERROR_CLOSE;
@@ -52,4 +53,4 @@ void VTKPXMLStructuredGridWriter::WritePPieceAttributes(int index) {
     this->WriteStringAttribute("Extent", extent_s.c_str());
 }
 
-}  // namespace dare::io
+}  // namespace dare

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,65 +24,67 @@
 
 #include <gtest/gtest.h>
 
-#include "test_DistributionFunctions.h"
+#include <vector>
+
 #include "Grid/Cartesian.h"
+#include "test_DistributionFunctions.h"
 
 TEST_P(ConsistencyTest, MPIDimscreateOneDim) {
-    dare::mpi::ExecutionManager exman;
+    dare::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();
     }
     int num_proc = GetParam();
     const std::size_t Dim{1};
-    using Grid = dare::Grid::Cartesian<Dim>;
+    using Grid = dare::Cartesian<Dim>;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc*5);
     std::vector<VecLO> vec_res_local;
     std::vector<VecGO> vec_offsets;
-    dare::Grid::details::CartesianDistribution_MPI_Dims_create(num_proc,
+    dare::details::CartesianDistribution_MPI_Dims_create(num_proc,
                                                       resolution_global,
                                                       &vec_res_local, &vec_offsets);
 
-    dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
+    dare::test::details::TestSumCells(resolution_global, vec_res_local);
 }
 
 TEST_P(ConsistencyTest, MPIDimscreateTwoDim) {
-    dare::mpi::ExecutionManager exman;
+    dare::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();
     }
     int num_proc = GetParam();
     const std::size_t Dim{2};
-    using Grid = dare::Grid::Cartesian<Dim>;
+    using Grid = dare::Cartesian<Dim>;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc * 5, num_proc * 5);
     std::vector<VecLO> vec_res_local;
     std::vector<VecGO> vec_offsets;
-    dare::Grid::details::CartesianDistribution_MPI_Dims_create(num_proc,
+    dare::details::CartesianDistribution_MPI_Dims_create(num_proc,
                                                                resolution_global,
                                                                &vec_res_local, &vec_offsets);
 
-    dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
+    dare::test::details::TestSumCells(resolution_global, vec_res_local);
 }
 
 TEST_P(ConsistencyTest, MPIDimscreateThreeDim) {
-    dare::mpi::ExecutionManager exman;
+    dare::ExecutionManager exman;
     if (!exman.AmIRoot()) {
         SUCCEED();
     }
     int num_proc = GetParam();
     const std::size_t Dim{3};
-    using Grid = dare::Grid::Cartesian<Dim>;
+    using Grid = dare::Cartesian<Dim>;
     using VecLO = typename Grid::VecLO;
     using VecGO = typename Grid::VecGO;
     VecGO resolution_global(num_proc * 5, num_proc * 5, num_proc * 5);
     std::vector<VecLO> vec_res_local;
     std::vector<VecGO> vec_offsets;
-    dare::Grid::details::CartesianDistribution_MPI_Dims_create(num_proc,
+    dare::details::CartesianDistribution_MPI_Dims_create(num_proc,
                                                                resolution_global,
                                                                &vec_res_local, &vec_offsets);
 
-    dare::Grid::test::details::TestSumCells(resolution_global, vec_res_local);
+    dare::test::details::TestSumCells(resolution_global, vec_res_local);
 }

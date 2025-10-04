@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.13)
 
 project(DaRe
-    VERSION 0.3.1
+    VERSION 0.4.0
     DESCRIPTION "Dave's repository"
     LANGUAGES C CXX
 )
+
+# setting it here generates the compile_commands.json at first invokation
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(DEBUG
     "Enables debugging statements for the repository"
@@ -13,6 +16,11 @@ option(DEBUG
 
 option(USE_GTEST
     "Enables debugging statements for the repository"
+    OFF
+)
+
+option(ENABLE_COVERAGE
+    "Enables code coverage for the repository"
     OFF
 )
 
@@ -27,24 +35,25 @@ if(USE_GTEST)
 endif()
 
 # exports compile_command.json with relevant parths
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 set(CMAKE_FIND_PACKAGE_SORT_ORDER NATURAL)
 set(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
 
 # set the properties of the target (might be moved to another file)
-set_target_properties(exec
-           PROPERTIES CXX_STANDARD 17
-           CXX_STANDARD_REQUIRED TRUE
-)
 
 set_target_properties(dare
-           PROPERTIES CXX_STANDARD 17
+           PROPERTIES CXX_STANDARD 20
            VERSION 0.1
+)
+
+set_target_properties(exec
+           PROPERTIES CXX_STANDARD 20
+           CXX_STANDARD_REQUIRED TRUE
 )
 
 if(USE_GTEST)
     set_target_properties(unit_test
-           PROPERTIES CXX_STANDARD 17
+           PROPERTIES CXX_STANDARD 20
 )
 endif()
 
@@ -91,10 +100,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             )
         endif()
         if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-            target_compile_options(dare PRIVATE -Wno-maybe-uninitialized)
-            target_compile_options(exec PRIVATE -Wno-maybe-uninitialized)
-            if(USE_GTEST)
-                target_compile_options(unit_test PRIVATE -Wno-maybe-uninitialized)
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                target_compile_options(dare PRIVATE -Wno-maybe-uninitialized)
+                target_compile_options(exec PRIVATE -Wno-maybe-uninitialized)
+                if(USE_GTEST)
+                    target_compile_options(unit_test PRIVATE -Wno-maybe-uninitialized)
+                endif()
             endif()
         endif()
     endif()
@@ -195,6 +206,7 @@ if(USE_GTEST)
     endif()
 endif()
 
+add_subdirectory(Algorithm                                            )
 add_subdirectory(AnalyticalSolutions                                  )
 add_subdirectory(Data                                                 )
 add_subdirectory(Equations                                            )
@@ -220,6 +232,67 @@ else()
     target_compile_definitions(exec
         PUBLIC -DDARE_NDEBUG
     )
+    if($(USE_GTEST))
+        target_compile_definitions(unit_test
+            PUBLIC -DDARE_NDEBUG
+        )
+    endif()
+endif()
+
+
+if(${ENABLE_COVERAGE})
+    # This function will configure the compiler flags for a target that will track the code coverage during program
+    # execution.
+    #
+    # INPUT
+    #   tgt: the target for which code coverage should be enabled
+    #
+    function(set_enable_coverage tgt)
+
+        set(is_coverage_enabled OFF)
+        # Verify if debug-mode is enabled. Code coverage tracking will show unexpected results if the code has been
+        # optimized.
+        set(is_debug OFF)
+        if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
+            string(TOUPPER ${CMAKE_BUILD_TYPE} upper_build_type)
+            if (upper_build_type STREQUAL "DEBUG")
+                set(is_debug ON)
+            endif()
+        endif()
+
+        if (NOT is_debug)
+            message(WARNING "[${tgt}]: Coverage can only be tracked for code with no optimizations enabled (Debug mode).")
+        else()
+            # Configure code coverage with gcov
+            # Gcov is included by default with GNU GCC and Clang
+            if(NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+                message(WARNING "[${tgt}]: Coverage has not been implemented for the current compiler (${CMAKE_CXX_COMPILER_ID}).")
+            else()
+                set(is_coverage_enabled ON)
+
+                target_compile_options(${tgt}
+                    PUBLIC --coverage -O0
+                )
+
+                target_link_options(${tgt}
+                    PUBLIC --coverage -O0
+                )
+            endif()
+        endif()
+
+        if (is_coverage_enabled)
+            message(STATUS "[${tgt}]: Set flag to track code coverage.")
+        else()
+            message(STATUS "[${tgt}]: Did not set flag to track code coverage.")
+        endif()
+
+    endfunction()
+
+    set_enable_coverage(dare)
+    set_enable_coverage(exec)
+    if(${USE_GTEST})
+        set_enable_coverage(unit_test)
+    endif()
 endif()
 
 # add target sources
@@ -233,17 +306,6 @@ target_include_directories(dare PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${PACKAGE_VERSION_DIR}>"
 )
-target_include_directories(exec PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-)
-
-if(USE_GTEST)
-    target_include_directories(unit_test PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-    )
-endif()
 
 # link libraries
 target_link_libraries(dare
@@ -256,40 +318,17 @@ target_link_libraries(dare
     PUBLIC Boost::system
     PUBLIC ${VTK_LIBRARIES}
     PUBLIC Trilinos::all_selected_libs
-    # PUBLIC trilinos
-)
-target_link_libraries(exec
-    PUBLIC OpenMP::OpenMP_CXX
-    PUBLIC MPI::MPI_CXX
-    PUBLIC Boost::boost
-    PUBLIC Boost::filesystem
-    PUBLIC Boost::regex
-    PUBLIC Boost::serialization
-    PUBLIC Boost::system
-    PUBLIC ${VTK_LIBRARIES}
-    PUBLIC Trilinos::all_selected_libs
-    # PUBLIC trilinos
-)
-if(USE_GTEST)
-# target_link_libraries(dare
-#     PUBLIC GTest::GTest
-# )
-# target_link_libraries(exec
-#     PUBLIC GTest::GTest
-# )
-target_link_libraries(unit_test
-    PUBLIC OpenMP::OpenMP_CXX
-    PUBLIC MPI::MPI_CXX
-    PUBLIC Boost::boost
-    PUBLIC Boost::filesystem
-    PUBLIC Boost::regex
-    PUBLIC Boost::serialization
-    PUBLIC Boost::system
-    PUBLIC Trilinos::all_selected_libs
-    PUBLIC GTest::GTest
-    PUBLIC ${VTK_LIBRARIES}
 )
 
+target_link_libraries(exec
+    PRIVATE dare
+)
+
+if(USE_GTEST)
+target_link_libraries(unit_test
+    PRIVATE dare
+    PUBLIC GTest::GTest
+)
 endif()
 
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,14 @@
  * SOFTWARE.
  */
 
-namespace dare::Grid {
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+namespace dare {
 
 template <std::size_t Dim>
 CartesianRepresentation<Dim>::CartesianRepresentation()
@@ -111,7 +118,7 @@ CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
     hierarchic_sum_loc[Dim - 1] = 1;
     hierarchic_sum_glob[Dim - 1] = 1;
 
-    this->dare::utils::InitializationTracker::Initialize();
+    this->dare::InitializationTracker::Initialize();
 
     // Prepare halo-buffers
     std::vector<GO> required_halo_IDs;
@@ -224,6 +231,11 @@ CartesianRepresentation<Dim>::CartesianRepresentation(const GridType* grid,
     };
     halo_buffer.Initialize(grid->GetExecutionManager(), required_halo_IDs, map_periodic,
                            is_internal_global, is_internal_local, map_global_to_local);
+}
+
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsStaggered() const {
+    return options.AllAbsSum() > 0;
 }
 
 template <std::size_t Dim>
@@ -553,14 +565,46 @@ CartesianRepresentation<Dim>::GetCell(typename CartesianRepresentation<Dim>::Vec
 }
 
 template <std::size_t Dim>
+typename CartesianRepresentation<Dim>::IndexGlobal
+CartesianRepresentation<Dim>::GetCellGlobal(typename CartesianRepresentation<Dim>::VecSC point) const {
+    IndexGlobal ind;
+
+    // computation of the cell indices as floating point values
+    Index staggered = GetOptions();
+    for (std::size_t d{0}; d < Dim; d++) {
+        point[d] += staggered[d] * (this->GetDistances()[d] * 0.5);
+    }
+    point /= this->GetDistances();
+    point += static_cast<SC>(grid->GetNumGhost());
+
+    for (std::size_t d{0}; d < Dim; d++) {
+        ind[d] = static_cast<GO>(point[d]);
+    }
+
+    return ind;
+}
+
+template <std::size_t Dim>
 bool CartesianRepresentation<Dim>::IsLocal(GO id_glob) const {
     IndexGlobal ind_glob = MapOrdinalToIndexGlobal(id_glob);
     return IsLocal(ind_glob);
 }
 
 template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsLocal(VecSC point) const {
+    IndexGlobal ind_glob = GetCellGlobal(point);
+    return IsLocal(ind_glob);
+}
+
+template <std::size_t Dim>
 bool CartesianRepresentation<Dim>::IsLocalInternal(GO id_glob) const {
     IndexGlobal ind_glob = MapOrdinalToIndexGlobalInternal(id_glob);
+    return IsLocalInternal(ind_glob);
+}
+
+template <std::size_t Dim>
+bool CartesianRepresentation<Dim>::IsLocalInternal(VecSC point) const {
+    IndexGlobal ind_glob = GetCellGlobal(point);
     return IsLocalInternal(ind_glob);
 }
 
@@ -687,16 +731,22 @@ void CartesianRepresentation<Dim>::PrintDistribution(std::string fname) const {
 template <std::size_t Dim>
 void CartesianRepresentation<Dim>::TestIfInitialized(std::string func) const {
 #ifndef DARE_NDEBUG
-    if (!dare::utils::InitializationTracker::IsInitialized()) {
+    if (!dare::InitializationTracker::IsInitialized()) {
         grid->GetExecutionManager()->Terminate(func, "Cannot continue without initialization");
     }
 #endif
 }
 
 template <std::size_t Dim>
-mpi::HaloBuffer<typename CartesianRepresentation<Dim>::SC>&
+HaloBuffer<typename CartesianRepresentation<Dim>::SC>&
 CartesianRepresentation<Dim>::GetHaloBuffer() {
     return halo_buffer;
+}
+
+template <std::size_t Dim>
+dare::ExecutionManager*
+CartesianRepresentation<Dim>::GetExecutionManager() const {
+    return grid->GetExecutionManager();
 }
 
 template <std::size_t Dim>
@@ -733,4 +783,4 @@ CartesianRepresentation<Dim>::GetPeriodicity() const {
     return grid->GetPeriodicity();
 }
 
-}  // namespace dare::Grid
+}  // namespace dare

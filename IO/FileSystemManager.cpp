@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,10 @@
  */
 
 #include "FileSystemManager.h"
-namespace dare::io {
+#include <iostream>
+#include <string>
+
+namespace dare {
 
 namespace details {
 
@@ -79,7 +82,7 @@ void FileSystemManager_helper::CheckWithUser(bool check) {
 
 }  // end namespace details
 
-FileSystemManager::FileSystemManager(dare::mpi::ExecutionManager* ex,
+FileSystemManager::FileSystemManager(dare::ExecutionManager* ex,
                                      const Path& base_path,
                                      bool clear_contents,
                                      bool overwrite_files,
@@ -93,10 +96,10 @@ FileSystemManager::FileSystemManager(dare::mpi::ExecutionManager* ex,
 }
 FileSystemManager::~FileSystemManager() {
 }
-FileSystemManager::FileSystemManager(FileSystemManager& other)  // NOLINT
+FileSystemManager::FileSystemManager(const FileSystemManager& other)  // NOLINT
     : settings(other.settings), ex_man(other.ex_man) {
 }
-FileSystemManager& FileSystemManager::operator=(FileSystemManager& other) {  // NOLINT
+FileSystemManager& FileSystemManager::operator=(const FileSystemManager& other) {  // NOLINT
     if (&other == this)
         return *this;
     settings = other.settings;
@@ -185,4 +188,4 @@ bool FileSystemManager::CreateCommonDirectory(const std::string& str_path) const
     Path path(str_path);
     return CreateCommonDirectory(path);
 }
-}  // end namespace dare::io
+}  // end namespace dare

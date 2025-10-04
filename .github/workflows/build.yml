@@ -5,42 +5,41 @@ on:
     branches:
       - main
       - dev
+      - dev_flow
   pull_request:
     branches:
       - main
       - dev
 
 jobs:
-  build_release:
+  build:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.3
+        image: davevader/dare_test:3.4
+
+    strategy:
+        matrix:
+            build: [Debug, Release]
+            compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang, cxx: clang++, trilinos: trilinos_clang}]
+        fail-fast: false
 
     steps:
-    - uses: actions/checkout@v4
 
-    - name: Configure CMake Release
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
       run: |
-          mkdir build_release -p && cd build_release
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=OFF -DDEBUG=OFF
+          rm -rf build
+          mkdir build && cd build
+          cmake .. -GNinja \
+                   -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_BUILD_TYPE=${{matrix.build}} \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
           
-    - name: Build Release
+    - name: Build
       run: |
-          cd build_release
-          ninja -j 4
-
-  build_debug:
-    runs-on: self-hosted
-    container:
-      image: davevader/dare_test:1.3
-
-    steps:
-    - name: Configure CMake Debug
-      run: |
-          mkdir build_debug -p && cd build_debug
-          cmake .. -DCMAKE_BUILD_TYPE=Debug -GNinja -DUSE_GTEST=OFF -DDEBUG=ON
-          
-    - name: Build Debug
-      run: |
-          cd build_debug
+          cd build
           ninja -j 4

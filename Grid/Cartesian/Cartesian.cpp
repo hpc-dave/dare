@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,12 @@
  * SOFTWARE.
  */
 
+#include <list>
+#include <string>
+
 #include "CartesianMesh.h"
 
-namespace dare::Grid::details::Cartesian {
+namespace dare::details::Cartesian {
 std::list<std::string> AllocationManager::reg;
 bool AllocationManager::RegisterGrid(const std::string& gname) {
     // test if grid with same name was already allocated and register this one
@@ -51,4 +54,4 @@ bool AllocationManager::DeregisterGrid(const std::string& gname) {
     return true;
 }
 
-}  // end namespace dare::Grid::details::Cartesian
+}  // end namespace dare::details::Cartesian

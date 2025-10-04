@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
  */
 
 #include <gtest/gtest.h>
+#include <vector>
+#include <utility>
 #include "../Trilinos.h"
 #include "../TrilinosSolver.h"
 #include "test_TrilinosTestGrid.h"
@@ -32,19 +34,19 @@
  */
 class TrilinosTest : public testing::Test {
 public:
-    using GridType = dare::Matrix::test::TrilinosTestGrid;
+    using GridType = dare::test::TrilinosTestGrid;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
     using GridRepresentation = typename GridType::Representation;
-    static const std::size_t N = dare::Matrix::test::N;
-    using FieldType = dare::Data::GridVector<GridType, SC, N>;
-    using GOViewType = typename dare::Matrix::Trilinos<SC>::GOViewType;
-    using LOViewType = typename dare::Matrix::Trilinos<SC>::LOViewType;
-    using SViewType = typename dare::Matrix::Trilinos<SC>::SViewType;
+    static const std::size_t N = dare::test::N;
+    using FieldType = dare::GridVector<GridType, SC, N>;
+    using GOViewType = typename dare::Trilinos<SC>::GOViewType;
+    using LOViewType = typename dare::Trilinos<SC>::LOViewType;
+    using SViewType = typename dare::Trilinos<SC>::SViewType;
     GridType grid;
     FieldType field;
-    dare::mpi::ExecutionManager exec_man;
+    dare::ExecutionManager exec_man;
 
     void SetUp() {
         grid.Initialize(&exec_man);
@@ -53,7 +55,7 @@ public:
 };
 
 TEST_F(TrilinosTest, Initialize) {
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Trilinos<SC> trilinos(&exec_man);
     EXPECT_TRUE(trilinos.IsInitialized());
 }
 
@@ -92,7 +94,7 @@ TEST_F(TrilinosTest, Build) {
         }
     };
 
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+    dare::Trilinos<SC> trilinos(&exec_man);
     trilinos.Build(g_rep, field, functor, false);
 
     LO num_rows = grid.local_size * N;
@@ -318,8 +320,8 @@ TEST_F(TrilinosTest, Build) {
 }
 
 // TEST_F(TrilinosTest, SolverBiCGStab2) {
-//     auto package = dare::Matrix::TrilinosSolver<SC>::SolverPackage::BumbleBee;
-//     // using dare::Matrix::TrilinosSolver<SC>::PreCondPackage;
+//     auto package = dare::TrilinosSolver<SC>::SolverPackage::BumbleBee;
+//     // using dare::TrilinosSolver<SC>::PreCondPackage;
 //     GridRepresentation g_rep{grid.GetRepresentation()};
 
 //     for (LO node = 0; node < grid.local_size; node++) {
@@ -359,10 +361,10 @@ TEST_F(TrilinosTest, Build) {
 //         }
 //     };
 
-//     dare::Matrix::Trilinos<SC> trilinos(&exec_man);
+//     dare::Trilinos<SC> trilinos(&exec_man);
 //     trilinos.Build(g_rep, field, functor, false);
 
-//     dare::Matrix::TrilinosSolver<SC> solver;
+//     dare::TrilinosSolver<SC> solver;
 
 //     Teuchos::RCP<Teuchos::ParameterList> param = Teuchos::rcp(new Teuchos::ParameterList());
 //     param->set("Convergence Tolerance", 1e-13);

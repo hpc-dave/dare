@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,20 @@
 
 #include "Grid/Cartesian/Stencils_Cartesian.h"
 
+/*!
+ * @brief Fixture for testing Stencils on the Cartesian grid
+ * @tparam Dim dimension of the grid
+ */
 template <std::size_t Dim>
 class IntegrationTestCartesianStencils : public testing::Test {
 public:
     static const std::size_t N{3};
-    using GridType = dare::Grid::Cartesian<Dim>;
+    using GridType = dare::Cartesian<Dim>;
     using SC = double;
-    using CenterMatrixStencil = dare::Data::CenterMatrixStencil<GridType, SC, N>;
-    using CenterValueStencil = dare::Data::CenterValueStencil<GridType, SC, N>;
-    using FaceMatrixStencil = dare::Data::FaceMatrixStencil<GridType, SC, N>;
-    using FaceValueStencil = dare::Data::FaceValueStencil<GridType, SC, N>;
+    using CenterMatrixStencil = dare::CenterMatrixStencil<GridType, SC, N>;
+    using CenterValueStencil = dare::CenterValueStencil<GridType, SC, N>;
+    using FaceMatrixStencil = dare::FaceMatrixStencil<GridType, SC, N>;
+    using FaceValueStencil = dare::FaceValueStencil<GridType, SC, N>;
 
     void SetUp() {
     }
@@ -71,7 +75,7 @@ TEST_F(IntegrationTestCartesianStencils1D, CenterMatrixBasicOperations) {
         EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) * 2.);
         EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) * 2.);
         EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) * 2.);
-        EXPECT_EQ(stencil_compare.GetRHS()[n], (c_rhs + n) * 2.);
+        EXPECT_EQ(stencil_compare.GetRhs()[n], (c_rhs + n) * 2.);
     }
     Reset();
 
@@ -81,7 +85,7 @@ TEST_F(IntegrationTestCartesianStencils1D, CenterMatrixBasicOperations) {
         EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) / 2.);
         EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) / 2.);
         EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) / 2.);
-        EXPECT_EQ(stencil_compare.GetRHS()[n], (c_rhs + n) / 2.);
+        EXPECT_EQ(stencil_compare.GetRhs()[n], (c_rhs + n) / 2.);
     }
     Reset();
 
@@ -106,7 +110,7 @@ TEST_F(IntegrationTestCartesianStencils1D, CenterMatrixBasicOperations) {
         EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) + (op_center + n));
         EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) + (op_west + n));
         EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) + (op_east + n));
-        EXPECT_EQ(stencil_compare.GetRHS()[n], (c_rhs + n) + (op_rhs + n));
+        EXPECT_EQ(stencil_compare.GetRhs()[n], (c_rhs + n) + (op_rhs + n));
     }
     Reset();
 
@@ -116,7 +120,7 @@ TEST_F(IntegrationTestCartesianStencils1D, CenterMatrixBasicOperations) {
         EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) - (op_center + n));
         EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) - (op_west + n));
         EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) - (op_east + n));
-        EXPECT_EQ(stencil_compare.GetRHS()[n], (c_rhs + n) - (op_rhs + n));
+        EXPECT_EQ(stencil_compare.GetRhs()[n], (c_rhs + n) - (op_rhs + n));
     }
     Reset();
 
@@ -126,7 +130,7 @@ TEST_F(IntegrationTestCartesianStencils1D, CenterMatrixBasicOperations) {
         EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) * (op_center + n));
         EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) * (op_west + n));
         EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) * (op_east + n));
-        EXPECT_EQ(stencil_compare.GetRHS()[n], (c_rhs + n) + (op_rhs + n));
+        EXPECT_EQ(stencil_compare.GetRhs()[n], (c_rhs + n) + (op_rhs + n));
     }
     Reset();
 
@@ -136,7 +140,7 @@ TEST_F(IntegrationTestCartesianStencils1D, CenterMatrixBasicOperations) {
         EXPECT_EQ(stencil_compare.GetValue(Positions::CENTER, n), (c_center + n) / (op_center + n));
         EXPECT_EQ(stencil_compare.GetValue(Positions::WEST, n), (c_west + n) / (op_west + n));
         EXPECT_EQ(stencil_compare.GetValue(Positions::EAST, n), (c_east + n) / (op_east + n));
-        EXPECT_EQ(stencil_compare.GetRHS()[n], (c_rhs + n) + (op_rhs + n));
+        EXPECT_EQ(stencil_compare.GetRhs()[n], (c_rhs + n) + (op_rhs + n));
     }
     Reset();
 
@@ -146,7 +150,7 @@ TEST_F(IntegrationTestCartesianStencils1D, CenterMatrixBasicOperations) {
         EXPECT_EQ(stencil.GetValue(Positions::CENTER, n), 1.);
         EXPECT_EQ(stencil.GetValue(Positions::WEST, n), 1.);
         EXPECT_EQ(stencil.GetValue(Positions::EAST, n), 1.);
-        EXPECT_EQ(stencil.GetRHS()[n], (c_rhs + n));
+        EXPECT_EQ(stencil.GetRhs()[n], (c_rhs + n));
     }
     Reset();
 }

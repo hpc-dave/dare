@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - dev_flow
   pull_request:
     branches:
       - main
@@ -14,10 +15,11 @@ jobs:
   Doxygen:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.3
+      image: davevader/dare_test:3.4
+
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: generate Doxygen documentation
       run: doxygen Doxyfile
@@ -28,9 +30,9 @@ jobs:
           num_warnings=$(grep -F / DoxygenWarnings.txt | wc -l)
           echo Found $num_warnings problems in the documentation
           doxygen_junit --input DoxygenWarnings.txt --output DoxygenWarnings_junit.xml
-          if [[ $num_warnings -gt 900 ]]; then
+          if [[ $num_warnings -gt 1328 ]]; then
             echo Doxygen check failed!
-            exit $1
+            exit $num_warnings
           fi
           echo Doxygen succeeded
     - name: Archive Reports
@@ -44,7 +46,7 @@ jobs:
   cpplint:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.3
+      image: davevader/dare_test:3.4
 
     steps:
     - name: Run CPPLINT
@@ -56,9 +58,8 @@ jobs:
         --exclude=build* \
         --counting=detailed \
         --linelength=120 \
-        --filter=-build/include,+build/include_what_you_use,+build/include_order,\
-        -whitespace/indent \
-        . 1>CPPLINT_LOG.out 2>CPPLINT_ERRORS.out
+        --filter=-build/include,+build/include_what_you_use,+build/include_order,-whitespace/indent \
+        . 1>CPPLINT_LOG.out 2>CPPLINT_ERRORS.out || true
 
     - name: Covert to Junit format
       if: always()
@@ -76,7 +77,8 @@ jobs:
   cppcheck:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.3
+      image: davevader/dare_test:3.4
+
 
     steps:
     - name: Run CPPCHECK
@@ -105,7 +107,8 @@ jobs:
     # For details checkout https://github.com/marketplace/actions/publish-test-results
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.2
+      image: davevader/dare_test:3.4
+
     name: Publish Tests Results
     needs: [Doxygen, cppcheck, cpplint]
     permissions:

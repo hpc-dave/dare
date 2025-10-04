@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,16 +25,21 @@
 #ifndef GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_
 #define GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_
 
+#include <concepts>
 #include <limits>
 
-#include "Math/Interpolation.h"
+#include "Grid/Cartesian/CartesianMesh.h"
+// #include "Grid/Cartesian/Stencils_Cartesian.h"
 #include "Math/Divisors.h"
-#include "Grid/Cartesian.h"
+#include "Math/Interpolation.h"
 #include "Utilities/Errors.h"
+#include "Utilities/PropertyInformation.h"
+#include "Data/DefaultTypes.h"
+#include "Data/GridVector.h"
 
-namespace dare::math {
+namespace dare {
 
-namespace details::Cartesian {
+namespace details {
 
 /*!
  * @brief provides some consistency between the following functions
@@ -46,13 +51,13 @@ namespace details::Cartesian {
  */
 template <std::size_t Dim, std::size_t DimProj>
 struct THelper {
-    static const std::size_t NUM_VALUES{math::Pow<2, DimProj>()};
-    using GridType = dare::Grid::Cartesian<Dim>;
+    static const std::size_t NUM_VALUES{dare::Pow<2, DimProj>()};
+    using GridType = dare::Cartesian<Dim>;
     using Index = typename GridType::Index;
-    using IndexList = dare::utils::Vector<NUM_VALUES, Index>;
+    using IndexList = dare::Vector<NUM_VALUES, Index>;
     using Options = typename GridType::Options;
     template <typename SC, std::size_t N>
-    using GridVector = dare::Data::GridVector<GridType, SC, N>;
+    using GridVector = dare::GridVector<GridType, SC, N>;
 };
 
 /*!
@@ -100,9 +105,9 @@ struct THelper {
  */
 template <std::size_t Dim, std::size_t DimProj>
 [[nodiscard]] typename THelper<Dim, DimProj>::IndexList
-GetInterpolationIndices(const dare::utils::Vector<Dim, dare::defaults::LocalOrdinalType>& ind,
+GetInterpolationIndices(const dare::Vector<Dim, dare::defaults::LocalOrdinalType>& ind,
                         const typename THelper<Dim, DimProj>::Options& off_rel,
-                        const typename dare::utils::Vector<DimProj, std::size_t>& dim_aff) {
+                        const typename dare::Vector<DimProj, std::size_t>& dim_aff) {
     using IndexList = typename THelper<Dim, DimProj>::IndexList;
     static const std::size_t NUM_V{THelper<Dim, DimProj>::NUM_VALUES};
     const std::size_t TWO{2};   // To avoid narrowing conversion to int further down
@@ -111,7 +116,7 @@ GetInterpolationIndices(const dare::utils::Vector<Dim, dare::defaults::LocalOrdi
     if constexpr (DimProj != 0) {
         for (std::size_t n_aff{0}; n_aff < DimProj; n_aff++) {
             std::size_t dim_aff_v{dim_aff[n_aff]};
-            std::size_t n_step{math::Pow(TWO, n_aff)};
+            std::size_t n_step{dare::Pow(TWO, n_aff)};
             std::size_t n_range{n_step * TWO};
             for (std::size_t n_v{0}; n_v < NUM_V; n_v += n_range)
                 for (std::size_t pos{n_v}; pos < (n_v + n_step); pos++)
@@ -138,10 +143,10 @@ GetInterpolationIndices(const dare::utils::Vector<Dim, dare::defaults::LocalOrdi
  */
 template <std::size_t Dim, typename SC, std::size_t N, std::size_t DimProj>
 [[nodiscard]] SC InterpolateCartesianLinear(
-    const dare::utils::Vector<Dim, dare::defaults::LocalOrdinalType>& ind,
-    const dare::Data::GridVector<Grid::Cartesian<Dim>, SC, N>& field,
+    const dare::Vector<Dim, dare::defaults::LocalOrdinalType>& ind,
+    const dare::GridVector<dare::Cartesian<Dim>, SC, N>& field,
     const typename THelper<Dim, DimProj>::Options& off_rel,
-    const typename dare::utils::Vector<DimProj, std::size_t>& dim_aff,
+    const typename dare::Vector<DimProj, std::size_t>& dim_aff,
     std::size_t n) {
     using IndexList = typename THelper<Dim, DimProj>::IndexList;
     const std::size_t NUM_VALUES{THelper<Dim, DimProj>::NUM_VALUES};
@@ -152,7 +157,7 @@ template <std::size_t Dim, typename SC, std::size_t N, std::size_t DimProj>
         value += field.At(indices[n_ind], n);
     }
     if constexpr (NUM_VALUES > 1) {
-        value = math::Divide<NUM_VALUES>(value);
+        value = dare::Divide<NUM_VALUES>(value);
     }
     return value;
 }
@@ -172,21 +177,21 @@ template <std::size_t Dim, typename SC, std::size_t N, std::size_t DimProj>
  * @return vector of length N with interpolated scalar values
  */
 template <std::size_t Dim, typename SC, std::size_t N, std::size_t DimProj>
-[[nodiscard]] dare::utils::Vector<N, SC>
+[[nodiscard]] dare::Vector<N, SC>
 InterpolateCartesianLinear(
-    const dare::utils::Vector<Dim, dare::defaults::LocalOrdinalType>& ind,
-    const dare::Data::GridVector<Grid::Cartesian<Dim>, SC, N>& field,
+    const dare::Vector<Dim, dare::defaults::LocalOrdinalType>& ind,
+    const dare::GridVector<dare::Cartesian<Dim>, SC, N>& field,
     const typename THelper<Dim, DimProj>::Options& off_rel,
-    const typename dare::utils::Vector<DimProj, std::size_t>& dim_aff) {
+    const typename dare::Vector<DimProj, std::size_t>& dim_aff) {
     using IndexList = typename THelper<Dim, DimProj>::IndexList;
     const std::size_t NUM_VALUES{THelper<Dim, DimProj>::NUM_VALUES};
 
     IndexList indices{GetInterpolationIndices(ind, off_rel, dim_aff)};
-    dare::utils::Vector<N, SC> values;
+    dare::Vector<N, SC> values;
     for (std::size_t n_ind{0}; n_ind < NUM_VALUES; n_ind++) {
         values += field.GetValues(indices[n_ind]);
     }
-    values *= Divisor<SC, NUM_VALUES>();
+    values *= dare::Divisor<SC, NUM_VALUES>();
     return values;
 }
 
@@ -201,11 +206,11 @@ InterpolateCartesianLinear(
  * @param off_rel relative offset will be set
  */
 template <std::size_t Dim, typename LO>
-void GetRelativeOffset(typename utils::Vector<Dim, LO> opt_source,
-                       typename Grid::Cartesian<Dim>::Options opt_target,
-                       typename Grid::Cartesian<Dim>::NeighborID face,
-                       typename Grid::Cartesian<Dim>::Index* ind,
-                       typename Grid::Cartesian<Dim>::Options* off_rel) {
+void GetRelativeOffset(typename dare::Vector<Dim, LO> opt_source,
+                       typename dare::Cartesian<Dim>::Options opt_target,
+                       typename dare::Cartesian<Dim>::NeighborID face,
+                       typename dare::Cartesian<Dim>::Index* ind,
+                       typename dare::Cartesian<Dim>::Options* off_rel) {
     opt_source[ToFace(face) / 2] += ToNormal(face);  // accounting for the position of the face
 
     (*off_rel) = opt_source - opt_target;  // relative offset of the fields
@@ -219,15 +224,15 @@ void GetRelativeOffset(typename utils::Vector<Dim, LO> opt_source,
 }
 
 template <std::size_t Dim, typename SC>
-dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWeights(
-    const typename dare::Grid::Cartesian<Dim>::Representation& grid,
-    const dare::utils::Vector<Dim, SC>& poi,
-    const dare::utils::Vector<Dim, SC>& point_center,
-    const dare::utils::Vector<Dim, SC>& point_far,
-    const dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, typename dare::Grid::Cartesian<Dim>::Index>& indices) {
-    const std::size_t NUM_VALUES{details::Cartesian::THelper<Dim, Dim>::NUM_VALUES};
-    using GridType = dare::Grid::Cartesian<Dim>;
-    using WList = dare::utils::Vector<NUM_VALUES, SC>;
+dare::Vector<details::THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWeights(
+    const typename dare::Cartesian<Dim>::Representation& grid,
+    const dare::Vector<Dim, SC>& poi,
+    const dare::Vector<Dim, SC>& point_center,
+    const dare::Vector<Dim, SC>& point_far,
+    const dare::Vector<details::THelper<Dim, Dim>::NUM_VALUES, typename dare::Cartesian<Dim>::Index>& indices) {
+    const std::size_t NUM_VALUES{details::THelper<Dim, Dim>::NUM_VALUES};
+    using GridType = dare::Cartesian<Dim>;
+    using WList = dare::Vector<NUM_VALUES, SC>;
     using Index = typename GridType::Index;
 
 #ifndef DARE_NDEBUG
@@ -249,8 +254,8 @@ dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWei
     // define some relevant values
     WList weights;
     weights.SetAllValues(1);
-    dare::utils::Vector<Dim, SC> delta_close{std::abs(point_center - poi)};
-    dare::utils::Vector<Dim, SC> delta_far{std::abs(point_far - poi)};
+    dare::Vector<Dim, SC> delta_close{std::abs(point_center - poi)};
+    dare::Vector<Dim, SC> delta_far{std::abs(point_far - poi)};
     const Index& ind{indices[NUM_VALUES - 1]};
 
     // assign weights to each corner, depending on their position
@@ -271,7 +276,7 @@ dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWei
     return weights;
 }
 
-}  // end namespace details::Cartesian
+}  // end namespace details
 
 /*!
  * @brief interpolates one component to the face of the target from the source field
@@ -289,64 +294,64 @@ dare::utils::Vector<THelper<Dim, Dim>::NUM_VALUES, SC> GetLinearInterpolationWei
  * @code{.cpp}
  * // assuming that GridRepresentation g_rep of our target and a field are defined
  * Index ind{3, 4, 5};  // Cartesian Index in 3D
- * dare::Grid::CartesianNeighbor face = dare::Grid::CartesianNeighbor::WEST;
+ * dare::CartesianNeighbor face = dare::CartesianNeighbor::WEST;
  *
  * // Get the value of component 0 at the west face
  * SC value = InterpolateToFace(g_rep, ind, face, field, 0);
  * @endcode
  */
 template <std::size_t Dim, typename SC, std::size_t N>
-[[nodiscard]] SC InterpolateToFace(const typename Grid::Cartesian<Dim>::Representation& target,
-                                   const typename Grid::Cartesian<Dim>::Index& ind_target,
-                                   const typename Grid::Cartesian<Dim>::NeighborID face,
-                                   const typename Data::GridVector<Grid::Cartesian<Dim>, SC, N>& field,
+[[nodiscard]] SC InterpolateToFace(const typename Cartesian<Dim>::Representation& target,
+                                   const typename Cartesian<Dim>::Index& ind_target,
+                                   const typename Cartesian<Dim>::NeighborID face,
+                                   const dare::GridVector<dare::Cartesian<Dim>, SC, N>& field,
                                    std::size_t n) {
-    using Options = typename dare::Grid::Cartesian<Dim>::Options;
+    using Options = typename dare::Cartesian<Dim>::Options;
 
     Options stagg_source{field.GetGridRepresentation().GetOptions()};     // staggered position of source field
     Options stagg_target{target.GetOptions()};                            // staggered position of target
 
     Options off_rel;
-    typename Grid::Cartesian<Dim>::Index ind_corr{ind_target};
+    typename dare::Cartesian<Dim>::Index ind_corr{ind_target};
 
-    details::Cartesian::GetRelativeOffset(stagg_source, stagg_target, face, &ind_corr, &off_rel);
+    details::GetRelativeOffset(stagg_source, stagg_target, face, &ind_corr, &off_rel);
 
     std::size_t n_dim_aff{0};
     for (auto e : off_rel)
         n_dim_aff += (e != 0);
     switch (n_dim_aff) {
     case 0: {
-        dare::utils::Vector<0, std::size_t> dim_aff;
-        return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
+        dare::Vector<0, std::size_t> dim_aff;
+        return details::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
     } break;
     case 1: {
-        dare::utils::Vector<1, std::size_t> dim_aff;
+        dare::Vector<1, std::size_t> dim_aff;
         for (std::size_t i{0}; i < Dim; i++) {
             if (off_rel[i] != 0) {
                 dim_aff[0] = i;
             }
         }
-        return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
+        return details::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
     } break;
     case 2: {
-        dare::utils::Vector<2, std::size_t> dim_aff;
+        dare::Vector<2, std::size_t> dim_aff;
         std::size_t count{0};
         for (std::size_t i{0}; i < Dim; i++) {
             if (off_rel[i] != 0) {
                 dim_aff[count++] = i;
             }
         }
-        return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
+        return details::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
     } break;
     case 3: {
-        dare::utils::Vector<3, std::size_t> dim_aff;
+        dare::Vector<3, std::size_t> dim_aff;
         std::size_t count{0};
         for (std::size_t i{0}; i < Dim; i++) {
             if (off_rel[i] != 0) {
                 dim_aff[count++] = i;
             }
         }
-        return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
+        return details::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff, n);
     } break;
     }
     ERROR << "Interpolation not implemented for cases higher than 3D" << ERROR_CLOSE;
@@ -369,97 +374,221 @@ template <std::size_t Dim, typename SC, std::size_t N>
  * @code{.cpp}
  * // assuming that GridRepresentation g_rep of our target and a field are defined
  * Index ind{3, 4, 5};  // Cartesian Index in 3D
- * dare::Grid::CartesianNeighbor face = dare::Grid::CartesianNeighbor::WEST;
+ * dare::CartesianNeighbor face = dare::CartesianNeighbor::WEST;
  *
  * // Get the value of all component at the west face
- * dare::utils::Vector<Dim, SC> value = InterpolateToFace(g_rep, ind, face, field);
+ * dare::Vector<Dim, SC> value = InterpolateToFace(g_rep, ind, face, field);
  * @endcode
  */
 template <std::size_t Dim, typename SC, std::size_t N>
-dare::utils::Vector<N, SC> InterpolateToFace(const typename Grid::Cartesian<Dim>::Representation& target,
-                                   const typename Grid::Cartesian<Dim>::Index& ind_target,
-                                   const typename Grid::Cartesian<Dim>::NeighborID face,
-                                   const typename Data::GridVector<Grid::Cartesian<Dim>, SC, N>& field) {
-    using Options = typename dare::Grid::Cartesian<Dim>::Options;
+dare::Vector<N, SC> InterpolateToFace(const typename Cartesian<Dim>::Representation& target,
+                                   const typename Cartesian<Dim>::Index& ind_target,
+                                   const typename Cartesian<Dim>::NeighborID face,
+                                   const dare::GridVector<Cartesian<Dim>, SC, N>& field) {
+    using Options = typename dare::Cartesian<Dim>::Options;
 
     Options stagg_source{field.GetGridRepresentation().GetOptions()};     // staggered position of source field
     Options stagg_target{target.GetOptions()};                            // staggered position of target
 
     Options off_rel;
-    typename Grid::Cartesian<Dim>::Index ind_corr{ind_target};
-
-    details::Cartesian::GetRelativeOffset(stagg_source, stagg_target, face, &ind_corr, &off_rel);
+    typename Cartesian<Dim>::Index ind_corr{ind_target};
+    details::GetRelativeOffset(stagg_source, stagg_target, face, &ind_corr, &off_rel);
 
     std::size_t n_dim_aff{0};
     for (auto e : off_rel)
         n_dim_aff += (e != 0);
     switch (n_dim_aff) {
     case 0: {
-        dare::utils::Vector<0, std::size_t> dim_aff;
-        return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
+        dare::Vector<0, std::size_t> dim_aff;
+        return details::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
     } break;
     case 1: {
-        dare::utils::Vector<1, std::size_t> dim_aff;
+        dare::Vector<1, std::size_t> dim_aff;
         for (std::size_t i{0}; i < Dim; i++) {
             if (off_rel[i] != 0) {
                 dim_aff[0] = i;
             }
         }
-        return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
+        return details::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
     } break;
     case 2: {
-        dare::utils::Vector<2, std::size_t> dim_aff;
+        dare::Vector<2, std::size_t> dim_aff;
         std::size_t count{0};
         for (std::size_t i{0}; i < Dim; i++) {
             if (off_rel[i] != 0) {
                 dim_aff[count++] = i;
             }
         }
-        return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
+        return details::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
     } break;
     case 3: {
-        dare::utils::Vector<3, std::size_t> dim_aff;
+        dare::Vector<3, std::size_t> dim_aff;
         std::size_t count{0};
         for (std::size_t i{0}; i < Dim; i++) {
             if (off_rel[i] != 0) {
                 dim_aff[count++] = i;
             }
         }
-        return details::Cartesian::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
+        return details::InterpolateCartesianLinear(ind_corr, field, off_rel, dim_aff);
     } break;
     }
     ERROR << "Interpolation not implemented for cases higher than 3D" << ERROR_CLOSE;
-    return dare::utils::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
+    return dare::Vector<N, SC>(std::numeric_limits<SC>::signaling_NaN());
 }
 
+/*!
+ * @brief interpolates one component to the center of the target from the source field
+ * @tparam SC type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @param target grid of the target
+ * @param ind_target triplet of the target cell
+ * @param field reference to the field, from which the value is interpolated
+ * @return interpolated value the face
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a face (or center) of a cell of a Cartesian grid. The grids may also be the same.
+ * An example for its application:
+ * @code{.cpp}
+ * // assuming that GridRepresentation g_rep of our target and a field are defined
+ * Index ind{3, 4, 5};  // Cartesian Index in 3D
+ * dare::CartesianNeighbor face = dare::CartesianNeighbor::WEST;
+ *
+ * // Get the value of component 0 at the west face
+ * SC value = InterpolateToCenter(g_rep, ind, field, 0);
+ * @endcode
+ */
 template <std::size_t Dim, typename SC, std::size_t N>
-SC InterpolateToPoint(const typename dare::utils::Vector<Dim, SC>& point,
-                      const Data::GridVector<dare::Grid::Cartesian<Dim>, SC, N>& field,
+[[nodiscard]] SC InterpolateToCenter(const typename Cartesian<Dim>::Representation& target,
+                                     const typename Cartesian<Dim>::Index& ind_target,
+                                     const dare::GridVector<Cartesian<Dim>, SC, N>& field,
+                                     std::size_t n) {
+    using Options = typename dare::Cartesian<Dim>::Options;
+
+    Options stagg_source{field.GetGridRepresentation().GetOptions()};  // staggered position of source field
+    Options stagg_target{target.GetOptions()};                         // staggered position of target
+
+    Options off_rel{stagg_source - stagg_target};
+    typename Cartesian<Dim>::Index ind_corr{ind_target + off_rel};
+
+#ifndef DARE_NDEBUG
+    bool invalid{false};
+    for (auto e : off_rel)
+        invalid |= std::abs(e) > 1;
+    if (invalid) {
+        ERROR << "The offset is too large for computation, expect interpolation error" << ERROR_CLOSE;
+    }
+    std::size_t n_dim_aff{0};
+    for (auto e : off_rel)
+        n_dim_aff += (e != 0);
+    if (n_dim_aff > 1)
+        ERROR << "Warning!!! This function interpolates between only two points, cannot be the result you expect!"
+              << ERROR_CLOSE;
+#endif
+    SC v_a = field.At(ind_target, n);
+    SC v_b = field.At(ind_corr, n);
+    SC v_result = 0.5 * (v_a + v_b);
+
+    return v_result;
+}
+
+/*!
+ * @brief interpolates all components to the center of the target from the source field
+ * @tparam SC type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @param target grid of the target
+ * @param ind_target triplet of the target cell
+ * @param field reference to the field, from which the value is interpolated
+ * @return interpolated values the face
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a face (or center) of a cell of a Cartesian grid. The grids may also be the same.
+ * An example for its application:
+ * @code{.cpp}
+ * // assuming that GridRepresentation g_rep of our target and a field are defined
+ * Index ind{3, 4, 5};  // Cartesian Index in 3D
+ * dare::CartesianNeighbor face = dare::CartesianNeighbor::WEST;
+ *
+ * // Get the value of the components at the center
+ * auto value = InterpolateToCenter(g_rep, ind, field);
+ * @endcode
+ */
+template <std::size_t Dim, typename SC, std::size_t N>
+[[nodiscard]] dare::Vector<N, SC>
+InterpolateToCenter(const typename Cartesian<Dim>::Representation& target,
+                    const typename Cartesian<Dim>::Index& ind_target,
+                    const dare::GridVector<Cartesian<Dim>, SC, N>& field) {
+    using Options = typename dare::Cartesian<Dim>::Options;
+
+    Options stagg_source{field.GetGridRepresentation().GetOptions()};  // staggered position of source field
+    Options stagg_target{target.GetOptions()};                         // staggered position of target
+
+    Options off_rel{stagg_source - stagg_target};
+    typename Cartesian<Dim>::Index ind_corr{ind_target + off_rel};
+
+#ifndef DARE_NDEBUG
+    bool invalid{false};
+    for (auto e : off_rel)
+        invalid |= std::abs(e) > 1;
+    if (invalid) {
+        ERROR << "The offset is too large for computation, expect interpolation error" << ERROR_CLOSE;
+    }
+    std::size_t n_dim_aff{0};
+    for (auto e : off_rel)
+        n_dim_aff += (e != 0);
+    if (n_dim_aff > 1)
+        ERROR << "Warning!!! This function interpolates between two points, cannot be the result you expect!"
+              << ERROR_CLOSE;
+#endif
+    dare::Vector<N, SC> v_a, v_b;
+    for (std::size_t n{0}; n < N; n++) {
+        v_a[n] = field.At(ind_target, n);
+    }
+    for (std::size_t n{0}; n < N; n++) {
+        v_b[n] = field.At(ind_corr, n);
+    }
+    return 0.5 * (v_a + v_b);
+}
+
+/*!
+ * @brief interpolates a component linearly to the center of the target from the source field
+ * @tparam SC type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @param point point to which it should be interpolated
+ * @param field reference to the field, from which the value is interpolated
+ * @param n component id
+ * @return interpolated values the point
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ */
+template <std::size_t Dim, typename SC, std::size_t N>
+SC InterpolateToPoint(const typename dare::Vector<Dim, SC>& point,
+                      const dare::GridVector<dare::Cartesian<Dim>, SC, N>& field,
                       std::size_t n) {
-    const std::size_t NUM_VALUES{details::Cartesian::THelper<Dim, Dim>::NUM_VALUES};
-    using GridType = dare::Grid::Cartesian<Dim>;
+    const std::size_t NUM_VALUES{details::THelper<Dim, Dim>::NUM_VALUES};
+    using GridType = dare::Cartesian<Dim>;
     using Index = typename GridType::Index;
     using LO = typename GridType::LocalOrdinalType;
-    using Point = dare::utils::Vector<Dim, SC>;
-    using VecList = dare::utils::Vector<NUM_VALUES, Index>;
-    using WList = dare::utils::Vector<NUM_VALUES, SC>;
+    using Point = dare::Vector<Dim, SC>;
+    using VecList = dare::Vector<NUM_VALUES, Index>;
+    using WList = dare::Vector<NUM_VALUES, SC>;
 
     Index ind = field.GetGridRepresentation().GetCell(point);
     Point point_center = field.GetGridRepresentation().GetCoordinatesCenter(ind);
-    dare::utils::Vector<Dim, LO> off_rel;
+    dare::Vector<Dim, LO> off_rel;
     Point point_rel{point - point_center};
     for (std::size_t d{0}; d < Dim; d++) {
         off_rel[d] = static_cast<LO>(point_rel[d] >= 0) - (point_rel[d] < 0);
     }
-    dare::utils::Vector<Dim, std::size_t> dim_aff;
+    dare::Vector<Dim, std::size_t> dim_aff;
     for (std::size_t d{0}; d < Dim; d++)
         dim_aff[d] = d;
 
-    VecList vlist = details::Cartesian::GetInterpolationIndices(
+    VecList vlist = details::GetInterpolationIndices(
         ind, off_rel, dim_aff);
 
     Point point_far = field.GetGridRepresentation().GetCoordinatesCenter(vlist[0]);
-    WList weights = details::Cartesian::GetLinearInterpolationWeights(field.GetGridRepresentation(),
+    WList weights = details::GetLinearInterpolationWeights(field.GetGridRepresentation(),
                                                                       point,
                                                                       point_center,
                                                                       point_far,
@@ -468,33 +597,44 @@ SC InterpolateToPoint(const typename dare::utils::Vector<Dim, SC>& point,
     return Interpolate(field, vlist, weights, n);
 }
 
+/*!
+ * @brief interpolates all components linearly to the center of the target from the source field
+ * @tparam SC type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @param point point to which it should be interpolated
+ * @param field reference to the field, from which the value is interpolated
+ * @return interpolated values the point
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ */
 template <std::size_t Dim, typename SC, std::size_t N>
-dare::utils::Vector<N, SC> InterpolateToPoint(const typename dare::utils::Vector<Dim, SC>& point,
-                                              const Data::GridVector<dare::Grid::Cartesian<Dim>, SC, N>& field) {
-    const std::size_t NUM_VALUES{details::Cartesian::THelper<Dim, Dim>::NUM_VALUES};
-    using GridType = dare::Grid::Cartesian<Dim>;
+dare::Vector<N, SC> InterpolateToPoint(const typename dare::Vector<Dim, SC>& point,
+                                       const dare::GridVector<dare::Cartesian<Dim>, SC, N>& field) {
+    const std::size_t NUM_VALUES{details::THelper<Dim, Dim>::NUM_VALUES};
+    using GridType = dare::Cartesian<Dim>;
     using Index = typename GridType::Index;
     using LO = typename GridType::LocalOrdinalType;
-    using Point = dare::utils::Vector<Dim, SC>;
-    using VecList = dare::utils::Vector<NUM_VALUES, Index>;
-    using WList = dare::utils::Vector<NUM_VALUES, SC>;
+    using Point = dare::Vector<Dim, SC>;
+    using VecList = dare::Vector<NUM_VALUES, Index>;
+    using WList = dare::Vector<NUM_VALUES, SC>;
 
     Index ind = field.GetGridRepresentation().GetCell(point);
     Point point_center = field.GetGridRepresentation().GetCoordinatesCenter(ind);
-    dare::utils::Vector<Dim, LO> off_rel;
+    dare::Vector<Dim, LO> off_rel;
     Point point_rel{point - point_center};
     for (std::size_t d{0}; d < Dim; d++) {
         off_rel[d] = static_cast<LO>(point_rel[d] >= 0) - (point_rel[d] < 0);
     }
-    dare::utils::Vector<Dim, std::size_t> dim_aff;
+    dare::Vector<Dim, std::size_t> dim_aff;
     for (std::size_t d{0}; d < Dim; d++)
         dim_aff[d] = d;
 
-    VecList vlist = details::Cartesian::GetInterpolationIndices(
+    VecList vlist = details::GetInterpolationIndices(
         ind, off_rel, dim_aff);
 
     Point point_far = field.GetGridRepresentation().GetCoordinatesCenter(vlist[0]);
-    WList weights = details::Cartesian::GetLinearInterpolationWeights(field.GetGridRepresentation(),
+    WList weights = details::GetLinearInterpolationWeights(field.GetGridRepresentation(),
                                                                       point,
                                                                       point_center,
                                                                       point_far,
@@ -502,6 +642,160 @@ dare::utils::Vector<N, SC> InterpolateToPoint(const typename dare::utils::Vector
 
     return Interpolate(field, vlist, weights);
 }
-}  // end namespace dare::math
+
+/*!
+ * @brief interpolates all components linearly to the faces of the target from the source field
+ * @tparam SC type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param field reference to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a face stencil with interpolated values
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ * The distance parameter allows to get values at the 'far' faces, e.g. distance = 1 refers to the west face
+ * of the neighboring cell of ind_target
+ */
+template <std::size_t Dim, typename T, std::size_t N, typename LO>
+[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, N>
+InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
+                         dare::Vector<Dim, LO> ind_target,
+                         const dare::GridVector<dare::Cartesian<Dim>, T, N>& field,
+                         typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
+    const auto STENCIL_SIZE = dare::Cartesian<Dim>::STENCIL_SIZE;
+    dare::FaceValueStencil<dare::Cartesian<Dim>, T, N> s;
+    for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
+        typename dare::Cartesian<Dim>::Index ind(ind_target);
+        // This little black magic here is actually quite simple
+        // We need to map the face id to plus or minus the distance
+        // id(WEST) = 1 --> (id-1)/2 = 0/2 => 0; (id+1) % 2 => 0; -(id % 2) => -1
+        // id(EAST) = 2 --> (id-1)/2 = 1/2 => 0 (integer division!); (id+1) % 2 => 1; -(id % 2) => 0
+        // To be sure for the future, we test here the compliance with this method at compile time
+        static_assert(static_cast<char>(dare::CartesianNeighbor::WEST) == 1, "The west neighbor needs to be 1!");
+        static_assert(static_cast<char>(dare::CartesianNeighbor::EAST) == 2, "The east neighbor needs to be 2!");
+        ind[(face_id - 1) / 2] += (((face_id + 1) % 2) - (face_id % 2)) * distance;
+        for (std::size_t n{0}; n < N; n++) {
+            const auto face = dare::ToCartesianNeighbor(face_id);
+            s.SetValue(face, n, dare::InterpolateToFace(grid_target, ind, face, field, n));
+        }
+    }
+    return s;
+}
+
+/*!
+ * @brief provides a face stencil filled with a single value
+ * @tparam T type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param value reference to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a face stencil with interpolated values
+ * \note This is a convenience overload for constant values, providing a face stencil
+ * filled only with a single value
+ */
+template <std::size_t Dim, typename T, typename LO>
+    requires std::is_arithmetic_v<T>
+[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, T, 1>
+InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
+                         dare::Vector<Dim, LO> ind_target,
+                         T value,
+                         LO distance = 0) {
+    dare::FaceValueStencil<dare::Cartesian<Dim>, T, 1> s;
+    s.SetAll(value);
+    return s;
+}
+
+/*!
+ * @brief provides a default value stencil for a None value
+ * @tparam Dim dimension of the grid
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param v the None value
+ * @param distance an indicator if a remote stencil is required
+ * @return a face stencil with interpolated values
+ */
+template <std::size_t Dim, typename LO>
+[[nodiscard]] dare::FaceValueStencil<dare::Cartesian<Dim>, dare::defaults::ScalarType, 1>
+InterpolateToFaceStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
+                         dare::Vector<Dim, LO> ind_target,
+                         dare::None v,
+                         typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
+    dare::FaceValueStencil<dare::Cartesian<Dim>, dare::defaults::ScalarType, 1> s;
+    s.SetAll(1.);
+    return s;
+}
+
+/*!
+ * @brief interpolates all components linearly to the center of the target from the source field
+ * @tparam T type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param field reference to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a center stencil with interpolated values
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ * The distance parameter allows to get values at the 'far' faces, e.g. distance = 1 refers to the west face
+ * of the neighboring cell of ind_target
+ */
+template <std::size_t Dim, typename T, std::size_t N, typename LO>
+[[nodiscard]] dare::CenterValueStencil<dare::Cartesian<Dim>, T, N>
+InterpolateToCenterStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
+                           dare::Vector<Dim, LO> ind_target,
+                           const dare::GridVector<dare::Cartesian<Dim>, T, N>& field,
+                           typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
+    const auto STENCIL_SIZE = dare::Cartesian<Dim>::STENCIL_SIZE;
+    dare::CenterValueStencil<dare::Cartesian<Dim>, T, N> s;
+    s.SetValues(CartesianNeighbor::CENTER, dare::InterpolateToCenter(grid_target, ind_target, field));
+    for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
+        typename dare::Cartesian<Dim>::Index ind(ind_target);
+        // This little black magic here is actually quite simple
+        // We need to map the face id to plus or minus the distance
+        // id(WEST) = 1 --> (id-1)/2 = 0/2 => 0; (id+1) % 2 => 0; -(id % 2) => -1
+        // id(EAST) = 2 --> (id-1)/2 = 1/2 => 0 (integer division!); (id+1) % 2 => 1; -(id % 2) => 0
+        // To be sure for the future, we test here the compliance with this method at compile time
+        static_assert(static_cast<char>(dare::CartesianNeighbor::WEST) == 1, "The west neighbor needs to be 1!");
+        static_assert(static_cast<char>(dare::CartesianNeighbor::EAST) == 2, "The east neighbor needs to be 2!");
+        ind[(face_id - 1) / 2] += (((face_id + 1) % 2) - (face_id % 2)) * (distance + 1);
+        const auto face = dare::ToCartesianNeighbor(face_id);
+        s.SetValues(face, dare::InterpolateToCenter(grid_target, ind, field));
+    }
+    return s;
+}
+
+/*!
+ * @brief interpolates all components linearly to the center of the target from the source field
+ * @tparam T type of scalar to interpolate
+ * @tparam Dim dimension of the grid
+ * @tparam N number of components
+ * @tparam LO local ordinal type
+ * @param grid_target representation of the target grid
+ * @param ind_target the target node of the grid in the form of indices
+ * @param field pointer to the field, from which the value is interpolated
+ * @param distance an indicator if a remote stencil is required
+ * @return a center stencil with interpolated values
+ * This is an optimized interpolation function, in the case that a value is required at
+ * a certain point of a cell of a Cartesian grid. The grids may also be the same.
+ * The distance parameter allows to get values at the 'far' faces, e.g. distance = 1 refers to the west face
+ * of the neighboring cell of ind_target
+ */
+template <std::size_t Dim, typename T, std::size_t N, typename LO>
+[[nodiscard]] dare::CenterValueStencil<dare::Cartesian<Dim>, T, N>
+InterpolateToCenterStencil(const typename dare::Cartesian<Dim>::Representation& grid_target,
+                           dare::Vector<Dim, LO> ind_target,
+                           const dare::GridVector<dare::Cartesian<Dim>, T, N>* field,
+                           typename dare::Cartesian<Dim>::LocalOrdinalType distance = 0) {
+    return InterpolateToCenterStencil(grid_target, ind_target, *field, distance);
+}
+
+}  // end namespace dare
 
 #endif  // GRID_CARTESIAN_INTERPOLATION_CARTESIAN_H_

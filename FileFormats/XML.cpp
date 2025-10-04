@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@
 #include "XML.h"
 
 #include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 
 namespace dare::ff {
 
@@ -135,8 +138,8 @@ XML& XML::AddXMLObject(const XML& other) {
     return *this;
 }
 
-void XML::WriteToFile(const std::string& file_name, std::ios::openmode mode) {
-    std::ofstream ofs(file_name, std::ios::out);
+void XML::WriteToFile(const std::string& file_name, stds::openmode mode) {
+    std::ofstream ofs(file_name, stds::out);
     if (!ofs) {
         std::cerr << "Couldn't open file " << file_name << " aborting writing" << std::endl;
     }

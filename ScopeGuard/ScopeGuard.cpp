@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+#include <string>
+#include <iostream>
 #include "ScopeGuard.h"
 
 #include <vtkMPIController.h>
 #include <vtkNew.h>
+
+#include "IO/TerminalOutput.h"
 
 namespace dare {
 ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_argc), argv(_argv) {
@@ -50,6 +55,8 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
     is_root = my_rank == 0;
+
+    dare::detail::PrintSingleton::SetRootForPrint(is_root);
 
     if (HasArgument("-T", &option)) {
         int specified_threads = omp_get_max_threads();
@@ -90,8 +97,8 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
 
     tpetra_scope = Teuchos::rcp(new Tpetra::ScopeGuard(_argc, _argv));
 
-    if (AmIRoot() && !suppress_output)
-        std::cout << "\nRunning with " << num_proc << " procs and "
+    if (!suppress_output)
+        Print(dare::Verbosity::Low) << "\nRunning with " << num_proc << " procs and "
                   << omp_get_max_threads() << " thread" << (omp_get_max_threads() > 1 ? "s" : "") << "\n"
                   << std::endl;
 
@@ -103,7 +110,7 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
             proc = std::stoi(option);
         } catch (std::exception& ex) {
             if (AmIRoot())
-                std::cout << "Cannot interpret argument of -D/--debug, wrong format! Found value: " << option;
+                std::cerr << "Cannot interpret argument of -D/--debug, wrong format! Found value: " << option;
             skip_by_error = true;
         }
         if (!skip_by_error && (proc == my_rank)) {
@@ -131,7 +138,9 @@ ScopeGuard::ScopeGuard(int* _argc, char*** _argv, bool suppress_output) : argc(_
             if (AmIRoot())
                 std::cerr << "Provided root process id exceeds number of process IDs!" << std::endl;
         }
+        dare::detail::PrintSingleton::SetRootForPrint(is_root);
     }
+
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -179,15 +188,38 @@ void ScopeGuard::Terminate(std::string message, int error_code) const {
 }
 
 void ScopeGuard::PrintHelp() {
-    std::cout << "--------------------------------------------------------------------------------\n";
-    std::cout << "------- DaRe command line arguments --------------------------------------------\n";
-    std::cout << "--------------------------------------------------------------------------------\n";
-    std::cout << "\n";
-    std::cout << "    -T <n>                           Sets number of OpenMP threads to <n>\n";
-    std::cout << "    -D    or --debug <rank>          The process of <rank> will be caught in an infinite loop,\n"
-              << "                                     which can be escaped from with a debugger.\n";
-    std::cout << "    -H    or --help                  Displays this message\n";
-    std::cout << "    -R    or --root <rank>           Sets root rank to <rank>\n";
-    std::cout << std::endl;
+    Print(Verbosity::Low) << "--------------------------------------------------------------------------------\n";
+    Print(Verbosity::Low) << "------- DaRe command line arguments --------------------------------------------\n";
+    Print(Verbosity::Low) << "--------------------------------------------------------------------------------\n";
+    Print(Verbosity::Low) << "\n";
+    Print(Verbosity::Low) << "    -T <n>                           Sets number of OpenMP threads to <n>\n";
+    Print(Verbosity::Low) << "    -D    or --debug <rank>          The process of <rank> will be caught in an infinite loop,\n"  // NOLINT
+                          << "                                     which can be escaped from with a debugger.\n";
+    Print(Verbosity::Low) << "    -H    or --help                  Displays this message\n";
+    Print(Verbosity::Low) << "    -R    or --root <rank>           Sets root rank to <rank>\n";
+    Print(Verbosity::Low) << std::endl;
 }
+
+void ScopeGuard::PrintWelcomeScreen() const {
+    dare::Print(dare::Verbosity::Low) << "Hello, nice that you are here!" << std::endl
+        << std::endl
+        << "  _,-'`''-~`) \n"
+        << "(`~_,=========\\ \n"
+        << " |---,___.-.__,\\ \n"
+        << " |        o     \\ ___  _,,,,_     _.--.\n"
+        << "  \\      `^`    /`_.-'~      `~-;`     \\ \n"
+        << "   \\_      _  .'                 `,     |\n"
+        << "    |`-                           \\'__/\n"
+        << "   /                      ,_       \\  `'-.\n"
+        << "  /    .-''~~--.            `'-,   ;_    /\n"
+        << " |              \\               \\  | `''`\n"
+        << " \\__.--'`'-.   /_               |'\n"
+        << "             `'`  `~~~---..,     |\n"
+        << " jgs                         \\ _.-'`-.\n"
+        << "                             \\       \\ \n"
+        << "                              '.     /\n"
+        << "                                `'~'`\n";
+        // copyright by Joan G. Stark, taken from https://www.asciiart.eu/animals/bears
+}
+
 }  // end namespace dare

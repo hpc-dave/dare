@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,14 @@
  * SOFTWARE.
  */
 
-#ifndef MPI_OBLACKHOLESTREAM_H_
-#define MPI_OBLACKHOLESTREAM_H_
+#ifndef IO_BLACKHOLEOSTREAM_H_
+#define IO_BLACKHOLEOSTREAM_H_
 
 #include <iostream>
 #include <string>
 #include <utility>
 
-namespace dare::mpi {
+namespace dare {
 
 /*!
  * \brief A convenient way to swallow output
@@ -64,6 +64,6 @@ public:
     }
 };
 
-}  // namespace dare::mpi
+}  // namespace dare
 
-#endif  // MPI_OBLACKHOLESTREAM_H_
+#endif  // IO_BLACKHOLEOSTREAM_H_

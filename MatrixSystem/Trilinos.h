@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@
 #include "Utilities/InitializationTracker.h"
 #include "MatrixBlock.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * @brief holds matrices, vectors and preconditioners for solving a LES
@@ -49,7 +49,7 @@ namespace dare::Matrix {
  * @tparam GO global ordinal type
  */
 template <typename SC>
-class Trilinos : public dare::utils::InitializationTracker {
+class Trilinos : public dare::InitializationTracker {
 public:
     using ScalarType = SC;
     using LocalOrdinalType = dare::defaults::LocalOrdinalType;
@@ -78,7 +78,7 @@ public:
      * @brief initializing constructor
      * @param exman pointer to execution manager
      */
-    explicit Trilinos(dare::mpi::ExecutionManager* exman);
+    explicit Trilinos(dare::ExecutionManager* exman);
 
     /*!
      * @brief default destructor
@@ -89,7 +89,7 @@ public:
      * @brief Initializes the object
      * @param exman reference to execution manager
      */
-    void Initialize(dare::mpi::ExecutionManager* exman);
+    void Initialize(dare::ExecutionManager* exman);
 
     /*!
      * @brief constructs matrix system according to functor
@@ -106,7 +106,7 @@ public:
      */
     template<typename Grid, std::size_t N, typename Lambda>
     void Build(const typename Grid::Representation& grid,
-               const dare::Data::GridVector<Grid, SC, N>& field,
+               const dare::GridVector<Grid, SC, N>& field,
                Lambda functor,
                bool rebuild);
 
@@ -121,7 +121,7 @@ public:
      */
     template <typename Grid, std::size_t N, typename Lambda>
     void SetB(const typename Grid::Representation& grid,
-              const dare::Data::GridVector<Grid, SC, N>& field,
+              const dare::GridVector<Grid, SC, N>& field,
               Lambda functor);
 
     /*!
@@ -195,7 +195,14 @@ public:
      * @param gvec grid vector
      */
     template <typename Grid, std::size_t N>
-    void CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const;
+    void CopyTo(dare::GridVector<Grid, SC, N>* gvec) const;
+
+    /*!
+     * @brief adds the data from the solution vector to the provided gridvector
+     * @param gvec grid vector
+     */
+    template <typename Grid, std::size_t N>
+    void AddTo(dare::GridVector<Grid, SC, N>* gvec) const;
 
     /*!
      * @brief prints the local row of the stored matrix to the terminal
@@ -254,7 +261,7 @@ private:
      */
     template <typename Grid, std::size_t N, typename Lambda>
     void BuildNew(const typename Grid::Representation& grid,
-                  const dare::Data::GridVector<Grid, SC, N>& field,
+                  const dare::GridVector<Grid, SC, N>& field,
                   Lambda functor);
 
     /*!
@@ -270,7 +277,7 @@ private:
      */
     template <typename Grid, std::size_t N, typename Lambda>
     void BuildReplace(const typename Grid::Representation& grid,
-                      const dare::Data::GridVector<Grid, SC, N>& field,
+                      const dare::GridVector<Grid, SC, N>& field,
                       Lambda functor);
 
     /*!
@@ -285,7 +292,7 @@ private:
      */
     template <typename Grid, std::size_t N, typename Lambda>
     void BuildUpdate(const typename Grid::Representation& grid,
-                     const dare::Data::GridVector<Grid, SC, N>& field,
+                     const dare::GridVector<Grid, SC, N>& field,
                      Lambda functor);
 
     /*!
@@ -302,7 +309,7 @@ private:
     template <typename Grid, std::size_t N>
     void AllocateMap(const typename Grid::Representation& grid);
 
-    dare::mpi::ExecutionManager* exec_man;  //!< pointer to execution manager
+    dare::ExecutionManager* exec_man;  //!< pointer to execution manager
     Teuchos::RCP<const Communicator> comm;  //!< mpi communicator for Trilinos
     Teuchos::RCP<const MapType> map;        //!< map of row distribution
     Teuchos::RCP<MatrixType> A;             //!< Matrix
@@ -313,7 +320,7 @@ private:
     std::vector<LO> l_stencil;              //!< cells with local stencil
 };
 
-}  // namespace dare::Matrix
+}  // namespace dare
 
 #include "Trilinos.inl"
 

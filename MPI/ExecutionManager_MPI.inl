@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,16 @@
 
 #ifndef MPI_EXECUTIONMANAGER_MPI_INL_
 #define MPI_EXECUTIONMANAGER_MPI_INL_
-namespace dare::mpi {
+
+#include <mpi.h>
+#include <omp.h>
+
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+namespace dare {
 
 template <typename T>
 void ExecutionManager::Exchange(const T* data, int count_send, T* recv,
@@ -95,25 +104,25 @@ void ExecutionManager::Allsum(const T* data, T* recv, int count) {
 template <typename T>
 T ExecutionManager::Allmax(const T data) {
     T buf{static_cast<T>(0)};
-    MPI_Allmax(&data, &buf, 1);
+    Allmax(&data, &buf, 1);
     return buf;
 }
 
 template <typename T>
 void ExecutionManager::Allmax(const T* data, T* recv, int count) {
-    MPI_Allreduce(data, recv, count, GetMPIType<T>(), MPI_MAX);
+    Allreduce(data, recv, count, MPI_MAX);
 }
 
 template <typename T>
 T ExecutionManager::Allmin(T data) {
     T buf{static_cast<T>(0)};
-    MPI_Allmmin(&data, &buf, 1);
+    Allmin(&data, &buf, 1);
     return buf;
 }
 
 template <typename T>
 void ExecutionManager::Allmin(const T* data, T* recv, int count) {
-    MPI_Allreduce(data, recv, count, GetMPIType<T>(), MPI_MIN);
+    Allreduce(data, recv, count, GetMPIType<T>(), MPI_MIN);
 }
 
 inline bool ExecutionManager::AllLogicAnd(const bool data) {
@@ -169,6 +178,6 @@ int ExecutionManager::Irecv(T* buffer, int count, int sender, int tag, MPI_Reque
 int ExecutionManager::Probe(int source, int tag, MPI_Status* status) {
     return MPI_Probe(source, tag, communicator, status);
 }
-}  // namespace dare::mpi
+}  // namespace dare
 
 #endif  // MPI_EXECUTIONMANAGER_MPI_INL_

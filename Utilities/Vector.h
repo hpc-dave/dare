@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,17 +26,20 @@
 #define UTILITIES_VECTOR_H_
 
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
 #include <utility>
+#include <array>
+#include <string>
 
 #include "Hashes.h"
 #include "Vector_traits.h"
 #include "Errors.h"
 
-namespace dare::utils {
+namespace dare {
 
 template <typename T, typename... Ts>
 using AllConvertible = std::enable_if_t<std::conjunction_v<std::is_convertible<T, Ts>...>>;
@@ -54,401 +57,17 @@ using AllConvertible = std::enable_if_t<std::conjunction_v<std::is_convertible<T
 template <std::size_t N, typename T = double>
 class Vector : public VectorDecorator<N, N, T>{
 public:
-    typedef T InternalType;
-    typedef std::random_access_iterator_tag iterator_tag;
-    typedef std::ptrdiff_t iterator_diff_type;
-#ifndef NDEBUG
-    typedef VectorBase<N, T> BaseType;      //!< this type is mainly used for simplified debugging with gdb
-#endif
-
-    /*! \struct Iterator
-     * \brief random access forward iterator
-     */
-    struct Iterator {
-        using iterator_category = iterator_tag;
-        using difference_type = iterator_diff_type;
-        using value_type = T;
-        using pointer = T*;
-        using reference = T&;
-
-        /*!
-         * \brief constructor
-         * @param _ptr Pointer to data
-         */
-        explicit Iterator(pointer _ptr) : ptr(_ptr) {}
-        reference operator*() const {
-            return *ptr;
-        }
-
-        /*!
-         * \brief arrow access operator
-         */
-        pointer operator->() {
-            return ptr;
-        }
-
-        /*!
-         * \brief prefix increment operator
-         */
-        Iterator& operator++() {
-            ptr++;
-            return *this;
-        }
-
-        /*!
-         * \brief postfix increment operator
-         */
-        Iterator operator++(int) {
-            Iterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        /*!
-         * \brief prefix decrement operator
-         */
-        Iterator& operator--() {
-            ptr--;
-            return *this;
-        }
-
-        /*!
-         * \brief postfix increment operator
-         */
-        Iterator operator--(int) {
-            Iterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        /*!
-         * \brief equal comparison operator
-         */
-        bool operator==(const Iterator& a) const {
-            return ptr == a.ptr;
-        }
-
-        /*!
-         * \brief non-equal comparison operator
-         */
-        bool operator!=(const Iterator& a) const {
-            return ptr != a.ptr;
-        }
-
-        bool operator<=(const Iterator& a) const {
-            return ptr <= a.ptr;
-        }
-
-        bool operator>=(const Iterator& a) const {
-            return ptr >= a.ptr;
-        }
-
-        bool operator<(const Iterator& a) const {
-            return ptr < a.ptr;
-        }
-
-        bool operator>(const Iterator& a) const {
-            return ptr > a.ptr;
-        }
-
-        /*!
-         * \brief random increment operator
-         */
-        Iterator operator+(int n) const {
-            return Iterator(ptr + n);
-        }
-
-        /*!
-         * \brief random decrement operator
-         */
-        Iterator operator-(int n) const {
-            return Iterator(ptr - n);
-        }
-
-        /*!
-         * \brief distance operator
-         */
-        int operator-(const Iterator& other) {
-            return ptr - other.ptr;
-        }
-
-        /*!
-         * \brief relative access operator
-         */
-        reference operator[](int n) {
-            return *(ptr + n);
-        }
-
-    private:
-        pointer ptr;  // pointer to data
-    };
-
-    /*! \struct Iterator
-     * \brief random access constant forward iterator
-     */
-    struct ConstIterator {
-        using iterator_category = iterator_tag;
-        using difference_type = iterator_diff_type;
-        using value_type = T;
-        using pointer = const T*;
-        using reference = const T&;
-        explicit ConstIterator(pointer _ptr) : ptr(_ptr) {}
-        reference operator*() const {
-            return *ptr;
-        }
-        pointer operator->() {
-            return ptr;
-        }
-        // Prefix increment
-        ConstIterator& operator++() {
-            ptr++;
-            return *this;
-        }
-
-        // Postfix increment
-        ConstIterator operator++(int) {
-            Iterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        // Prefix decrement
-        ConstIterator& operator--() {
-            ptr--;
-            return *this;
-        }
-
-        // Postfix decrement
-        ConstIterator operator--(int) {
-            ConstIterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        bool operator==(const ConstIterator& a) {
-            return ptr == a.ptr;
-        }
-
-        bool operator!=(const ConstIterator& a) {
-            return ptr != a.ptr;
-        }
-
-        bool operator<=(const ConstIterator& a) {
-            return ptr <= a.ptr;
-        }
-
-        bool operator>=(const ConstIterator& a) const {
-            return ptr >= a.ptr;
-        }
-
-        bool operator<(const ConstIterator& a) const {
-            return ptr < a.ptr;
-        }
-
-        bool operator>(const ConstIterator& a) const {
-            return ptr > a.ptr;
-        }
-
-        ConstIterator operator+(int n) const {
-            return ConstIterator(ptr + n);
-        }
-
-        ConstIterator operator-(int n) const {
-            return ConstIterator(ptr - n);
-        }
-
-        int operator-(const ConstIterator& other) {
-            return ptr - other.ptr;
-        }
-
-        reference operator[](int n) {
-            return *(ptr + n);
-        }
-
-    private:
-        pointer ptr;  // pointer to data
-    };
-
-    /*!
-     * \brief reverse iterator
-     */
-    struct ReverseIterator {
-        using iterator_category = iterator_tag;
-        using difference_type = iterator_diff_type;
-        using value_type = T;
-        using pointer = T*;
-        using reference = T&;
-        explicit ReverseIterator(pointer _ptr) : ptr(_ptr) {}
-        /*!
-         * @brief dereferencing operator
-         */
-        reference operator*() const {
-            return *ptr;
-        }
-        /*!
-         * @brief dereferencing operator
-         */
-        pointer operator->() {
-            return ptr;
-        }
-        // Prefix increment
-        ReverseIterator& operator++() {
-            ptr--;
-            return *this;
-        }
-
-        // Postfix increment
-        ReverseIterator operator++(int) {
-            ReverseIterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        // Prefix decrement
-        ReverseIterator& operator--() {
-            ptr++;
-            return *this;
-        }
-
-        // Postfix decrement
-        ReverseIterator operator--(int) {
-            ReverseIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        bool operator==(const ReverseIterator& a) {
-            return ptr == a.ptr;
-        }
-
-        bool operator!=(const ReverseIterator& a) {
-            return ptr != a.ptr;
-        }
-
-        bool operator<=(const ReverseIterator& a) {
-            return ptr >= a.ptr;
-        }
-
-        bool operator>=(const ReverseIterator& a) const {
-            return ptr <= a.ptr;
-        }
-
-        bool operator<(const ReverseIterator& a) const {
-            return ptr > a.ptr;
-        }
-
-        bool operator>(const ReverseIterator& a) const {
-            return ptr < a.ptr;
-        }
-
-        ReverseIterator operator+(int n) const {
-            return ReverseIterator(ptr - n);
-        }
-
-        ReverseIterator operator-(int n) const {
-            return ReverseIterator(ptr + n);
-        }
-
-        int operator-(const ReverseIterator& other) {
-            return other.ptr - ptr;
-        }
-
-        reference operator[](int n) {
-            return *(ptr - n);
-        }
-
-    private:
-        pointer ptr;  // pointer to data
-    };
-
-    /*!
-     * \brief constant reverse iterator
-     */
-    struct ConstReverseIterator {
-        using iterator_category = iterator_tag;
-        using difference_type = iterator_diff_type;
-        using value_type = T;
-        using pointer = const T*;
-        using reference = const T&;
-        explicit ConstReverseIterator(pointer _ptr) : ptr(_ptr) {}
-        reference operator*() const {
-            return *ptr;
-        }
-        pointer operator->() {
-            return ptr;
-        }
-        // Prefix increment
-        ConstReverseIterator& operator++() {
-            ptr--;
-            return *this;
-        }
-
-        // Postfix increment
-        ConstReverseIterator operator++(int) {
-            ConstReverseIterator tmp = *this;
-            --(*this);
-            return tmp;
-        }
-
-        // Prefix decrement
-        ConstReverseIterator& operator--() {
-            ptr++;
-            return *this;
-        }
-
-        // Postfix decrement
-        ConstReverseIterator operator--(int) {
-            ConstReverseIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        bool operator==(const ConstReverseIterator& a) {
-            return ptr == a.ptr;
-        }
-
-        bool operator!=(const ConstReverseIterator& a) {
-            return ptr != a.ptr;
-        }
-
-        bool operator<=(const ConstReverseIterator& a) {
-            return ptr >= a.ptr;
-        }
-
-        bool operator>=(const ConstReverseIterator& a) const {
-            return ptr <= a.ptr;
-        }
-
-        bool operator<(const ConstReverseIterator& a) const {
-            return ptr > a.ptr;
-        }
-
-        bool operator>(const ConstReverseIterator& a) const {
-            return ptr < a.ptr;
-        }
-
-        ConstReverseIterator operator+(int n) const {
-            return ConstReverseIterator(ptr - n);
-        }
-
-        ConstReverseIterator operator-(int n) const {
-            return ConstReverseIterator(ptr + n);
-        }
-
-        int operator-(const ConstReverseIterator& other) {
-            return other.ptr - ptr;
-        }
-
-        reference operator[](int n) {
-            return *(ptr - n);
-        }
-
-    private:
-        pointer ptr;  // pointer to data
-    };
+    using InternalType = T;
+    using ContainerType = typename VectorBase<N, T>::ContainerType;
+    using difference_type = typename ContainerType::difference_type;
+    using iterator = typename ContainerType::iterator;
+    using const_iterator = typename ContainerType::const_iterator;
+    using reverse_iterator = typename ContainerType::reverse_iterator;
+    using const_reverse_iterator = typename ContainerType::const_reverse_iterator;
 
     /*!
      * \brief constructor
+     * @param args variable number of initialization arguments
      * Takes a variable amount of input values for construction. Those values
      * have to be the same type as the specified template type T and a maximum
      * of N values can be provided, missing values will be given the value 0
@@ -461,33 +80,27 @@ public:
     explicit Vector(const Ts&... args);
 
     /*!
-     * \brief copy constructor
+     * copy constructor
      * @param other object to copy from
      */
     template <typename A,
               typename = std::enable_if_t<std::is_convertible_v<A, T>> >
     Vector(const Vector<N, A>& other);
 
-    // /*!
-    //  * @brief swap operation
-    //  * @param v1 first vector
-    //  * @param v2 second vector
-    //  */
-    // template <std::size_t Ns, typename Ts>
-    // friend void std::swap(Vector<Ns, Ts>& v1, Vector<Ns, Ts>& v2);
-
     /*!
-     * \brief provides direct access to the data
+     * returns direct access to raw data
+     * @return Value type pointer
      */
     T* data();
 
     /*!
-     * \brief provides direct access to the data
+     * provides direct access to the data
      */
     const T* data() const;
 
     /*!
-     * \brief assignment constructor
+     * assignment constructor
+     *
      * @param other object to copy from
      */
     template <typename A,
@@ -495,197 +108,208 @@ public:
     Vector<N, T>& operator=(const Vector<N, A>& other);
 
     /*!
-     * \brief access operator
+     * access operator
+     *
      * @param n position to access
      * \note without NDEBUG, a bounds check will be conducted
      */
     T& operator[](std::size_t n);
 
     /*!
-     * \brief access operator
+     *  access operator
+     *
      * @param n position to access
      * \note without NDEBUG, a bounds check will be conducted
      */
     const T& operator[](std::size_t n) const;
 
     /*!
-     * \brief addition of other vector
+     * addition of other vector
+     *
      * @param other addition partner
      */
     Vector<N, T> operator+(const Vector<N, T>& other) const;
 
     /*!
-     * \brief addition of a single value to all internal values
+     * addition of a single value to all internal values
+     *
      * @param other addition partner
      */
     Vector<N, T> operator+(const T& val) const;
 
     /*!
-     * \brief addition of another vector to the current instance
+     * addition of another vector to the current instance
+     *
      * @param other addition partner
      */
     void operator+=(const Vector<N, T>& other);
 
     /*!
-     * \brief addition of a single value to all internal values
+     * addition of a single value to all internal values
+     *
      * @param other addition partner
      */
     void operator+=(const T& val);
 
     /*!
-     * \brief subtraction of other vector
+     * subtraction of other vector
      * @param other addition partner
      */
     Vector<N, T> operator-(const Vector<N, T>& other) const;
 
     /*!
-     * \brief subtraction of single value from all components
+     * subtraction of single value from all components
      * @param val value to subtract
      */
     Vector<N, T> operator-(const T& val) const;
 
     /*!
-     * \brief -= operator
+     * provides negative of the values
+     */
+    Vector<N, T> operator-() const;
+
+    /*!
+     * -= operator
      * @param other other vector
      */
     void operator-=(const Vector<N, T>& other);
 
     /*!
-     * \brief subtraction of single value from all components
+     * subtraction of single value from all components
      * @param val value to subtract
      */
     void operator-=(const T& val);
 
     /*!
-     * \brief multiplication
+     * multiplication
      * @param other vector to mulitply with
      */
     Vector<N, T> operator*(const Vector<N, T>& other) const;
 
     /*!
-     * \brief elementwise multiplication
+     * elementwise multiplication
      * @param val value to multiply with
      */
     Vector<N, T> operator*(const T& val) const;
 
     /*!
-     * \brief multiplication
+     * multiplication
      * @param other vector for multiplication
      */
     void operator*=(const Vector<N, T>& other);
 
     /*!
-     * \brief elementwise multiplication
+     * elementwise multiplication
      * @param val value to multiply with
      */
     void operator*=(const T& val);
 
     /*!
-     * \brief division
+     * division
      * @param other vector to divide with
      */
     Vector<N, T> operator/(const Vector<N, T>& other) const;
 
     /*!
-     * \brief elementwise division
+     * elementwise division
      * @param val value to divide with
      */
     Vector<N, T> operator/(const T& val) const;
 
     /*!
-     * \brief division
+     * division
      * @param other vector to divide with
      */
     void operator/=(const Vector<N, T>& other);
 
     /*!
-     * \brief division
+     * division
      * @param val value to divide with
      */
     void operator/=(const T& val);
 
     /*!
-     * \brief comparison operator
+     * comparison operator
      * @param other vector to compare with
      */
     bool operator==(const Vector<N, T>& other) const;
 
     /*!
-     * \brief non-equal operator
+     * non-equal operator
      * @param other vector to compare with
      */
     bool operator!=(const Vector<N, T>& other) const;
 
     /*!
-     * \brief returns number of elements
+     * returns number of elements
      */
     constexpr std::size_t size() const;
 
     /*!
-     * \brief returns length of the vector
+     * returns length of the vector
      * \note only sensible for floating point data, but also enabled for other types
      */
     T length() const;
 
     /*!
-     * \brief return forward iterator to first object
+     * return forward iterator to first object
      */
-    Iterator begin();
+    iterator begin();
 
     /*!
-     * \brief returns constant forward iterator
+     * returns constant forward iterator
      */
-    ConstIterator begin() const;
+    const_iterator begin() const;
 
     /*!
-     * \brief returns constant forward iterator
+     * returns constant forward iterator
      */
-    ConstIterator cbegin() const;
+    const_iterator cbegin() const;
 
     /*!
-     * \brief return reverse iterator to first object
+     * return reverse iterator to first object
      */
-    ReverseIterator rbegin();
+    reverse_iterator rbegin();
 
     /*!
-     * \brief returns constant reverse iterator
+     * returns constant reverse iterator
      */
-    ConstReverseIterator rbegin() const;
+    const_reverse_iterator rbegin() const;
 
     /*!
-     * \brief returns constant reverse iterator
+     * returns constant reverse iterator
      */
-    ConstReverseIterator crbegin() const;
+    const_reverse_iterator crbegin() const;
 
     /*!
-     * \brief returns iterator to end of data
+     * returns iterator to end of data
      */
-    Iterator end();
+    iterator end();
 
     /*!
-     * \brief constant iterator to end of data
+     * constant iterator to end of data
      */
-    ConstIterator end() const;
+    const_iterator end() const;
 
     /*!
-     * \brief constant iterator to end of data
+     * constant iterator to end of data
      */
-    ConstIterator cend() const;
+    const_iterator cend() const;
 
     /*!
-     * \brief returns iterator to end of data
+     * returns iterator to end of data
      */
-    ReverseIterator rend();
+    reverse_iterator rend();
 
     /*!
-     * \brief constant iterator to end of data
+     * constant iterator to end of data
      */
-    ConstReverseIterator rend() const;
+    const_reverse_iterator rend() const;
 
     /*!
-     * \brief constant iterator to end of data
+     * constant iterator to end of data
      */
-    ConstReverseIterator crend() const;
+    const_reverse_iterator crend() const;
 
     /*!
      * \tparam I value to access in the data set
@@ -702,7 +326,7 @@ public:
     void SetValues(const A& arg, const Ts&... args);
 
     /*!
-     * \brief sets all values to default values
+     * sets all values to default values
      * \tparam I value to start with setting the default values
      */
     template <std::size_t I>
@@ -716,13 +340,13 @@ public:
     void SetAllValues(const A& val);
 
     /*!
-     * \brief computes dot product with another vector
+     * computes dot product with another vector
      * @param other vector to compute the dot product with
      */
     T dot(const Vector<N, T>& other) const;
 
     /*!
-     * \brief computes cross product
+     * computes cross product
      * @param other vector to compute the cross product with
      * \note only enabled for 3D vectors, for higher dimensions a more general algorithm is required
      */
@@ -730,7 +354,7 @@ public:
     typename std::enable_if<(Ns == 3), Vector<N, T>>::type cross(const Vector<N, T>& other) const;
 
     /*!
-     * \brief outputs the vector
+     * outputs the vector
      */
     template <typename OS>
     friend OS& operator<<(OS& os, const Vector<N, T>& v) {
@@ -741,8 +365,19 @@ public:
         return os;
     }
 
+    /*!
+     * @brief provides pretty printing as a string value
+     * 
+     * \note mostly required for clang
+     */
+    std::string ToString() const {
+        std::ostringstream os;
+        os << *this;
+        return os.str();
+    }
+
     /*
-     * \brief calculates hash for hash-maps
+     * calculates hash for hash-maps
      */
     std::size_t GetHash() const;
 
@@ -758,7 +393,7 @@ public:
 
 private:
     /*!
-     * \brief iterates over the internal values and executes arbitrary manipulation
+     * iterates over the internal values and executes arbitrary manipulation
      * @param lambda operation to execute per data entry
      * @param op join operation for reduction
      */
@@ -766,46 +401,13 @@ private:
     auto IterateValues(Expr lambda, Op op);
 
     /*!
-     * \brief iterates over the internal values and executes arbitrary manipulation
+     * iterates over the internal values and executes arbitrary manipulation
      * @param lambda operation to execute per data entry
      * @param op join operation for reduction
      */
     template <std::size_t I = 0, typename Expr, typename Op>
     auto IterateValues(Expr lambda, Op op) const;
 };
-
-}  // namespace dare::utils
-
-namespace std {
-/*
- * \brief specialization of the hash-function for Vector
- */
-template <std::size_t N, typename T>
-class hash<dare::utils::Vector<N, T>> {
-public:
-    /*
-     * \brief returns the hash for a Vector
-     */
-    [[nodiscard]] std::size_t operator()(const dare::utils::Vector<N, T>& v) const {
-        return v.GetHash();
-    }
-};
-
-/*!
- * \brief specialization for dare::utils::Vector: computes the absolute value
- * @tparam N number of elements in vector
- * @tparam T type of variable
- * @param v input vector
- * @return vector with all values absolute
- */
-template<std::size_t N, typename T>
-[[nodiscard]] dare::utils::Vector<N, T> abs(dare::utils::Vector<N, T> v) {
-    for (auto& e : v)
-        e = std::abs(e);
-    return v;
-}
-
-}  // namespace std
 
 /*!
  * @brief multiplication operator for convenience
@@ -816,7 +418,7 @@ template<std::size_t N, typename T>
  * @return vector
  */
 template <std::size_t N, typename T>
-dare::utils::Vector<N, T> operator*(const T& v1, const dare::utils::Vector<N, T>& v2) {
+dare::Vector<N, T> operator*(const T& v1, const dare::Vector<N, T>& v2) {
     return v2 * v1;
 }
 
@@ -829,9 +431,47 @@ dare::utils::Vector<N, T> operator*(const T& v1, const dare::utils::Vector<N, T>
  * @return vector
  */
 template <std::size_t N, typename T>
-dare::utils::Vector<N, T> operator/(const T& v1, const dare::utils::Vector<N, T>& v2) {
-    return v2 / v1;
+dare::Vector<N, T> operator/(const T& v1, const dare::Vector<N, T>& v2) {
+    dare::Vector<N, T> v;
+    v.SetAllValues(v1);
+    for (std::size_t n{0}; n < N; n++) {
+        v[n] /= v2[n];
+    }
+    return v;
 }
+
+}  // namespace dare
+
+namespace std {
+/*
+ * \brief specialization of the hash-function for Vector
+ */
+template <std::size_t N, typename T>
+class hash<dare::Vector<N, T>> {
+public:
+    /*
+     * \brief returns the hash for a Vector
+     */
+    [[nodiscard]] std::size_t operator()(const dare::Vector<N, T>& v) const {
+        return v.GetHash();
+    }
+};
+
+/*!
+ * \brief specialization for dare::Vector: computes the absolute value
+ * @tparam N number of elements in vector
+ * @tparam T type of variable
+ * @param v input vector
+ * @return vector with all values absolute
+ */
+template<std::size_t N, typename T>
+[[nodiscard]] dare::Vector<N, T> abs(dare::Vector<N, T> v) {
+    for (auto& e : v)
+        e = std::abs(e);
+    return v;
+}
+
+}  // namespace std
 
 #include "Vector.inl"
 #endif  // UTILITIES_VECTOR_H_

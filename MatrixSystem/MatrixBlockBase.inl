@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,15 +22,19 @@
  * SOFTWARE.
  */
 
-namespace dare::Matrix {
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+namespace dare {
 template <typename O, typename SC, std::size_t N>
 MatrixBlockBase<O, SC, N>::MatrixBlockBase()
-    : MatrixBlockBase<O, SC, N>(0, dare::utils::Vector<N, std::size_t>()) {
+    : MatrixBlockBase<O, SC, N>(0, dare::Vector<N, std::size_t>()) {
 }
 
 template <typename O, typename SC, std::size_t N>
-MatrixBlockBase<O, SC, N>::MatrixBlockBase(const O& _node, const dare::utils::Vector<N, std::size_t>& size_hint)
-    : node(_node) {
+MatrixBlockBase<O, SC, N>::MatrixBlockBase(const O& _node, const dare::Vector<N, std::size_t>& size_hint)
+    : rhs(0.), node(_node) {
     ProvideSizeHint(size_hint);
 }
 
@@ -63,13 +67,13 @@ template <typename O, typename SC, std::size_t N>
 MatrixBlockBase<O, SC, N>::~MatrixBlockBase() {}
 
 template <typename O, typename SC, std::size_t N>
-void MatrixBlockBase<O, SC, N>::Initialize(O _node, const dare::utils::Vector<N, std::size_t>& size_hint) {
+void MatrixBlockBase<O, SC, N>::Initialize(O _node, const dare::Vector<N, std::size_t>& size_hint) {
     node = _node;
     ProvideSizeHint(size_hint);
 }
 
 template <typename O, typename SC, std::size_t N>
-void MatrixBlockBase<O, SC, N>::ProvideSizeHint(const dare::utils::Vector<N, std::size_t>& size_hint) {
+void MatrixBlockBase<O, SC, N>::ProvideSizeHint(const dare::Vector<N, std::size_t>& size_hint) {
     for (std::size_t n{0}; n < N; n++) {
         ordinals[n].resize(size_hint[n]);
         coefficients[n].resize(size_hint[n]);
@@ -109,6 +113,16 @@ O MatrixBlockBase<O, SC, N>::GetNode() const {
 template <typename O, typename SC, std::size_t N>
 O MatrixBlockBase<O, SC, N>::GetRow(std::size_t n) const {
     return node * N + n;
+}
+
+template <typename O, typename SC, std::size_t N>
+typename MatrixBlockBase<O, SC, N>::ScalarArrayN& MatrixBlockBase<O, SC, N>::GetRhs() {
+    return rhs;
+}
+
+template <typename O, typename SC, std::size_t N>
+const typename MatrixBlockBase<O, SC, N>::ScalarArrayN& MatrixBlockBase<O, SC, N>::GetRhs() const {
+    return rhs;
 }
 
 template <typename O, typename SC, std::size_t N>
@@ -365,4 +379,4 @@ void MatrixBlockBase<O, SC, N>::RemoveCoefficientsByOrdinals(std::size_t n,
 //     std::swap(obj1.node, obj2.node);
 // }
 
-}  // namespace dare::Matrix
+}  // namespace dare

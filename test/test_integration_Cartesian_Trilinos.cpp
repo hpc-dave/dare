@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,9 @@
 
 #include <gtest/gtest.h>
 
+#include <string>
+#include <memory>
+
 #include "Grid/Cartesian.h"
 #include "Data/DefaultTypes.h"
 #include "MatrixSystem/Trilinos.h"
@@ -33,15 +36,15 @@
 namespace dare::test {
 
 template <std::size_t Dim, typename GO>
-dare::utils::Vector<Dim, GO> GetResolutionIntegrationTestCartesianTrilinos() {
-    dare::utils::Vector<Dim, GO> res;
+dare::Vector<Dim, GO> GetResolutionIntegrationTestCartesianTrilinos() {
+    dare::Vector<Dim, GO> res;
     for (std::size_t n{0}; n < Dim; n++)
         res[n] = 20 + n;
     return res;
 }
 template <std::size_t Dim, typename SC>
-dare::utils::Vector<Dim, SC> GetSizeIntegrationTestCartesianTrilinos() {
-    dare::utils::Vector<Dim, SC> size;
+dare::Vector<Dim, SC> GetSizeIntegrationTestCartesianTrilinos() {
+    dare::Vector<Dim, SC> size;
     for (std::size_t n{0}; n < Dim; n++)
         size[n] = 1. + n;
     return size;
@@ -49,18 +52,22 @@ dare::utils::Vector<Dim, SC> GetSizeIntegrationTestCartesianTrilinos() {
 
 }  // namespace dare::test
 
+/*!
+ * @brief Fixture for testing Trilinos with the Cartesian grid
+ * @tparam Dimension dimension of the Cartesian grid
+ */
 template <std::size_t Dimension>
 class IntegrationCartesianTrilinos
-    : public testing::TestWithParam<typename dare::Grid::Cartesian<Dimension>::Options> {
+    : public testing::TestWithParam<typename dare::Cartesian<Dimension>::Options> {
 public:
     static const std::size_t N{3};
-    using GridType = dare::Grid::Cartesian<Dimension>;
+    using GridType = dare::Cartesian<Dimension>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using Index = typename GridType::Index;
     using IndexGlobal = typename GridType::IndexGlobal;
     using SC = double;
-    using GridVector = dare::Data::GridVector<GridType, SC, N>;
+    using GridVector = dare::GridVector<GridType, SC, N>;
 
     void SetUp() {
         const LO num_ghost{2};
@@ -72,7 +79,7 @@ public:
     }
 
     std::unique_ptr<GridType> grid;
-    dare::mpi::ExecutionManager exec_man;
+    dare::ExecutionManager exec_man;
 };
 
 using IntegrationCartesianTrilinos1D = IntegrationCartesianTrilinos<1>;
@@ -80,16 +87,16 @@ using IntegrationCartesianTrilinos2D = IntegrationCartesianTrilinos<2>;
 using IntegrationCartesianTrilinos3D = IntegrationCartesianTrilinos<3>;
 
 TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -110,19 +117,19 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             mblock->GetRhs(n) = 0.;
-            mblock->template Get<CN::CENTER>(n) = 2.;
+            mblock->template Get<CN::CENTER>(n, n) = 2.;
             if (!is_west_edge) {
-                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_west;
                 mblock->SetInitialGuess(n, value_west);
             }
 
             if (!is_east_edge) {
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_east;
                 mblock->SetInitialGuess(n, value_east);
             }
@@ -153,16 +160,16 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveScalar) {
 }
 
 TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(1);  // staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -183,17 +190,17 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             if (is_west_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_west;
                 mblock->SetInitialGuess(n, value_west);
             } else if (is_east_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_east;
                 mblock->SetInitialGuess(n, value_east);
             } else {
-                mblock->template Get<CN::CENTER>(n) = 2.;
-                mblock->template Get<CN::WEST>(n) = -1.;
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::CENTER>(n, n) = 2.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
                 mblock->GetRhs(n) = 0.;
             }
         }
@@ -222,16 +229,16 @@ TEST_F(IntegrationCartesianTrilinos1D, SolveStaggered) {
 }
 
 TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -256,38 +263,38 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             mblock->GetRhs(n) = 0.;
-            mblock->template Get<CN::CENTER>(n) = 4.;
+            mblock->template Get<CN::CENTER>(n, n) = 4.;
 
             // Dirichlet condition
             if (!is_west_edge) {
-                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_west;
                 mblock->SetInitialGuess(n, value_west);
             }
 
             // Dirichlet condition
             if (!is_east_edge) {
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_east;
                 mblock->SetInitialGuess(n, value_east);
             }
 
             // Neumann condition
             if (!is_south_edge) {
-                mblock->template Get<CN::SOUTH>(n) = -1.;
+                mblock->template Get<CN::SOUTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_north_edge) {
-                mblock->template Get<CN::NORTH>(n) = -1.;
+                mblock->template Get<CN::NORTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
         }
         mblock->Finalize();
@@ -315,16 +322,16 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarX) {
 }
 
 TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_south{0.};
     const double value_north{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -349,38 +356,38 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             mblock->GetRhs(n) = 0.;
-            mblock->template Get<CN::CENTER>(n) = 4.;
+            mblock->template Get<CN::CENTER>(n, n) = 4.;
 
             // Dirichlet condition
             if (!is_south_edge) {
-                mblock->template Get<CN::SOUTH>(n) = -1.;
+                mblock->template Get<CN::SOUTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_south;
                 mblock->SetInitialGuess(n, value_south);
             }
 
             // Dirichlet condition
             if (!is_north_edge) {
-                mblock->template Get<CN::NORTH>(n) = -1.;
+                mblock->template Get<CN::NORTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_north;
                 mblock->SetInitialGuess(n, value_north);
             }
 
             // Neumann condition
             if (!is_west_edge) {
-                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_east_edge) {
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
         }
         mblock->Finalize();
@@ -408,16 +415,16 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveScalarY) {
 }
 
 TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(1, 0);  // staggered in X direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -442,30 +449,30 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             if (is_west_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_west;
                 mblock->SetInitialGuess(n, value_west);
             } else if (is_east_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_east;
                 mblock->SetInitialGuess(n, value_east);
             } else {
                 if (is_south_edge) {
-                    mblock->template Get<CN::CENTER>(n) = 3.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 3.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 } else if (is_north_edge) {
-                    mblock->template Get<CN::CENTER>(n) = 3.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 3.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
                 } else {
-                    mblock->template Get<CN::CENTER>(n) = 4.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 4.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 }
                 mblock->GetRhs(n) = 0.;
             }
@@ -495,16 +502,16 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredX) {
 }
 
 TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0, 1);  // staggered in Y direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_south{0.};
     const double value_north{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -529,30 +536,30 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             if (is_south_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_south;
                 mblock->SetInitialGuess(n, value_south);
             } else if (is_north_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_north;
                 mblock->SetInitialGuess(n, value_north);
             } else {
                 if (is_west_edge) {
-                    mblock->template Get<CN::CENTER>(n) = 3.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 3.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 } else if (is_east_edge) {
-                    mblock->template Get<CN::CENTER>(n) = 3.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 3.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 } else {
-                    mblock->template Get<CN::CENTER>(n) = 4.;
-                    mblock->template Get<CN::WEST>(n) = -1.;
-                    mblock->template Get<CN::EAST>(n) = -1.;
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::CENTER>(n, n) = 4.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
                 }
                 mblock->GetRhs(n) = 0.;
             }
@@ -582,16 +589,16 @@ TEST_F(IntegrationCartesianTrilinos2D, SolveStaggeredY) {
 }
 
 TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(0, 0);  // not staggered
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_west{0.};
     const double value_east{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -620,52 +627,52 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             mblock->GetRhs(n) = 0.;
-            mblock->template Get<CN::CENTER>(n) = 6.;
+            mblock->template Get<CN::CENTER>(n, n) = 6.;
 
             // Dirichlet condition
             if (!is_west_edge) {
-                mblock->template Get<CN::WEST>(n) = -1.;
+                mblock->template Get<CN::WEST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_west;
                 mblock->SetInitialGuess(n, value_west);
             }
 
             // Dirichlet condition
             if (!is_east_edge) {
-                mblock->template Get<CN::EAST>(n) = -1.;
+                mblock->template Get<CN::EAST>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) += 1.;
+                mblock->template Get<CN::CENTER>(n, n) += 1.;
                 mblock->GetRhs(n) = 2. * value_east;
                 mblock->SetInitialGuess(n, value_east);
             }
 
             // Neumann condition
             if (!is_south_edge) {
-                mblock->template Get<CN::SOUTH>(n) = -1.;
+                mblock->template Get<CN::SOUTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_north_edge) {
-                mblock->template Get<CN::NORTH>(n) = -1.;
+                mblock->template Get<CN::NORTH>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_bottom_edge) {
-                mblock->template Get<CN::BOTTOM>(n) = -1.;
+                mblock->template Get<CN::BOTTOM>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
 
             // Neumann condition
             if (!is_top_edge) {
-                mblock->template Get<CN::TOP>(n) = -1.;
+                mblock->template Get<CN::TOP>(n, n) = -1.;
             } else {
-                mblock->template Get<CN::CENTER>(n) -= 1.;
+                mblock->template Get<CN::CENTER>(n, n) -= 1.;
             }
         }
         mblock->Finalize();
@@ -695,16 +702,16 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveScalarX) {
 
 // We only test the configuration in z-direction to save some time in the unit testing
 TEST_F(IntegrationCartesianTrilinos3D, SolveStaggeredZ) {
-    using CN = dare::Matrix::CartesianNeighbor;
+    using CN = dare::CartesianNeighbor;
     GridType::Options opt(1, 0);  // staggered in X direction
     auto g_rep = grid->GetRepresentation(opt);
     GridVector data("test", g_rep);
-    dare::Matrix::Trilinos<SC> trilinos(&exec_man);
-    dare::Matrix::TrilinosSolver<SC> solver;
+    dare::Trilinos<SC> trilinos(&exec_man);
+    dare::TrilinosSolver<SC> solver;
     const double value_bottom{0.};
     const double value_top{1.};
 
-    const dare::Matrix::SolverPackage solver_pack = dare::Matrix::SolverPackage::BumbleBee;
+    const dare::SolverPackage solver_pack = dare::SolverPackage::BumbleBee;
     const std::string solver_type = "BICGSTAB2";
 
     Teuchos::RCP<Teuchos::ParameterList> param_solver = Teuchos::rcp(new Teuchos::ParameterList());
@@ -733,37 +740,37 @@ TEST_F(IntegrationCartesianTrilinos3D, SolveStaggeredZ) {
         for (std::size_t n{0}; n < mblock->GetNumComponents(); n++) {
             mblock->Resize(n, stencil_size);
             if (is_bottom_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_bottom;
                 mblock->SetInitialGuess(n, value_bottom);
             } else if (is_top_edge) {
-                mblock->template Get<CN::CENTER>(n) = 1.;
+                mblock->template Get<CN::CENTER>(n, n) = 1.;
                 mblock->GetRhs(n) = value_top;
                 mblock->SetInitialGuess(n, value_top);
             } else {
-                mblock->template Get<CN::CENTER>(n) = 6.;
+                mblock->template Get<CN::CENTER>(n, n) = 6.;
                 if (is_west_edge)
-                    mblock->template Get<CN::CENTER>(n) -= 1.;
+                    mblock->template Get<CN::CENTER>(n, n) -= 1.;
                 else
-                    mblock->template Get<CN::WEST>(n) = -1.;
+                    mblock->template Get<CN::WEST>(n, n) = -1.;
 
                 if (is_east_edge)
-                    mblock->template Get<CN::CENTER>(n) -= 1.;
+                    mblock->template Get<CN::CENTER>(n, n) -= 1.;
                 else
-                    mblock->template Get<CN::EAST>(n) = -1.;
+                    mblock->template Get<CN::EAST>(n, n) = -1.;
 
                 if (is_south_edge)
-                    mblock->template Get<CN::CENTER>(n) -= 1.;
+                    mblock->template Get<CN::CENTER>(n, n) -= 1.;
                 else
-                    mblock->template Get<CN::SOUTH>(n) = -1.;
+                    mblock->template Get<CN::SOUTH>(n, n) = -1.;
 
                 if (is_north_edge)
-                    mblock->template Get<CN::CENTER>(n) -= 1.;
+                    mblock->template Get<CN::CENTER>(n, n) -= 1.;
                 else
-                    mblock->template Get<CN::NORTH>(n) = -1.;
+                    mblock->template Get<CN::NORTH>(n, n) = -1.;
 
-                mblock->template Get<CN::BOTTOM>(n) = -1.;
-                mblock->template Get<CN::TOP>(n) = -1.;
+                mblock->template Get<CN::BOTTOM>(n, n) = -1.;
+                mblock->template Get<CN::TOP>(n, n) = -1.;
                 mblock->GetRhs(n) = 0.;
             }
         }

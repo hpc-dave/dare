@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "Utilities/Vector.h"
 #include "Grid/Cartesian.h"
 
-namespace dare::Data {
+namespace dare {
 
 /*!
  * @brief stores stencil based on cell centers
@@ -39,16 +39,16 @@ namespace dare::Data {
  * @tparam SC type of scalar
  */
 template <std::size_t Dim, typename SC, std::size_t N>
-class CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
+class CenterMatrixStencil<dare::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
+    using GridType = dare::Cartesian<Dim>;                            //!< type of grid
     using ScalarType = SC;                                                  //!< scalar type
     static const std::size_t NUM_ENTRIES{GridType::STENCIL_SIZE};           //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion
-    using ComponentArray = dare::utils::Vector<NUM_ENTRIES, SC>;            //!< stencil of each component
-    using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
-    using RHSType = dare::utils::Vector<NUM_COMPONENTS, SC>;                //!< storage of explicit rhs values
+    using ComponentArray = dare::Vector<NUM_ENTRIES, SC>;            //!< stencil of each component
+    using DataArray = dare::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
+    using RHSType = dare::Vector<NUM_COMPONENTS, SC>;                //!< storage of explicit rhs values
 
     /*!
      * @brief default constructor
@@ -170,6 +170,13 @@ public:
     void SetValue(Positions pos, std::size_t n, SC v);
 
     /*!
+     * @brief sets a multiple components at specific face of the stencil
+     * @param pos position of the value (e.g. CENTER)
+     * @param v value
+     */
+    void SetValues(Positions pos, const dare::Vector<N, SC>& v);
+
+    /*!
      * @brief sets value at the rhs
      * @param n component ID
      * @param v value to set
@@ -200,7 +207,7 @@ public:
      * @brief returns values of all components
      * @param pos position of value (e.g. CENTER)
      */
-    dare::utils::Vector<N, SC> GetValues(Positions pos) const;
+    dare::Vector<N, SC> GetValues(Positions pos) const;
 
     /*!
      * @brief returns raw data array
@@ -216,24 +223,24 @@ public:
     /*!
      * @brief getter for right hand side
      */
-    RHSType& GetRHS();
+    RHSType& GetRhs();
 
     /*!
      * @brief const getter for right hand side
      */
-    const RHSType& GetRHS() const;
+    const RHSType& GetRhs() const;
 
     /*!
      * @brief getter for right hand side
      * @param n component ID
      */
-    SC& GetRHS(std::size_t n);
+    SC& GetRhs(std::size_t n);
 
     /*!
      * @brief const getter for right hand side
      * @param n component ID
      */
-    SC GetRHS(std::size_t n) const;
+    SC GetRhs(std::size_t n) const;
 
     CenterMatrixStencil<GridType, SC, 1> GetSlice(std::size_t n) const;
 
@@ -258,10 +265,10 @@ private:
  * @tparam N number of components
  */
 template <std::size_t Dim, typename SC, std::size_t N>
-class CenterValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-    : public CenterMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
+class CenterValueStencil<dare::Cartesian<Dim>, SC, N>
+    : public CenterMatrixStencil<dare::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;                 //!< grid type
+    using GridType = dare::Cartesian<Dim>;                 //!< grid type
     using ScalarType = SC;                                       //!< scalar type
     using MatrixStencil = CenterMatrixStencil<GridType, SC, N>;  //!< matrix stencil type
     /*!
@@ -302,16 +309,16 @@ public:
  * and one for the center. Therefore a more complex data structure is used here!
  */
 template <std::size_t Dim, typename SC, std::size_t N>
-class FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N> {
+class FaceMatrixStencil<dare::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
+    using GridType = dare::Cartesian<Dim>;                            //!< type of grid
     using ScalarType = SC;                                                  //!< scalar type
     static const std::size_t NUM_FACES{GridType::NUM_FACES};                //!< faces in stencil
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion
-    using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;              //!< stencil of each component
-    using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
-    using RHSType = dare::Data::FaceValueStencil<GridType, SC, N>;          //!< array for explicit rhs values
+    using ComponentArray = dare::Vector<NUM_FACES, SC>;              //!< stencil of each component
+    using DataArray = dare::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
+    using RHSType = dare::FaceValueStencil<GridType, SC, N>;          //!< array for explicit rhs values
 
     /*!
      * @brief default constructor
@@ -444,14 +451,14 @@ public:
      * @param pos position of the value (e.g. CENTER)
      * @param v vector with values
      */
-    void SetValueNeighbor(Positions pos, const dare::utils::Vector<N, SC>& v);
+    void SetValueNeighbor(Positions pos, const dare::Vector<N, SC>& v);
 
     /*!
      * @brief Sets specific value for center coefficient
      * @param pos neighbor this contribution is associated with
      * @param v vector with values
      */
-    void SetValueCenter(Positions pos, const dare::utils::Vector<N, SC>& v);
+    void SetValueCenter(Positions pos, const dare::Vector<N, SC>& v);
 
     /*!
      * @brief Sets specific value pair
@@ -459,20 +466,26 @@ public:
      * @param v vector with values
      */
     void SetValues(Positions pos,
-                   const dare::utils::Vector<N, SC>& v_nb,
-                   const dare::utils::Vector<N, SC>& v_center);
+                   const dare::Vector<N, SC>& v_nb,
+                   const dare::Vector<N, SC>& v_center);
 
     /*!
      * @brief sets value at the rhs
      * @param v vector with values
      */
-    void SetRHS(Positions pos, const dare::utils::Vector<N, SC>& v);
+    void SetRHS(Positions pos, const dare::Vector<N, SC>& v);
 
     /*!
      * @brief sets the whole stencil to a certain value
      * @param v value
      */
     void SetAll(SC v);
+
+    /*!
+     * @brief sets the whole stencil to a certain value per component
+     * @param v value
+     */
+    void SetAll(const dare::Vector<N, SC>& v);
 
     /*!
      * @brief returns reference to value of face
@@ -507,14 +520,14 @@ public:
      * @param pos position of value
      * @param n component ID
      */
-    SC& GetRHS(Positions pos, std::size_t n);
+    SC& GetRhs(Positions pos, std::size_t n);
 
     /*!
      * @brief constant getter for contributions at face
      * @param pos position of value
      * @param n component ID
      */
-    SC GetRHS(Positions pos, std::size_t n) const;
+    SC GetRhs(Positions pos, std::size_t n) const;
 
     /*!
      * @brief returns raw data array
@@ -532,12 +545,12 @@ public:
     /*!
      * @brief getter for right hand side
      */
-    RHSType& GetRHS();
+    RHSType& GetRhs();
 
     /*!
      * @brief const getter for right hand side
      */
-    const RHSType& GetRHS() const;
+    const RHSType& GetRhs() const;
 
     FaceMatrixStencil<GridType, SC, 1> GetSlice(std::size_t n) const;
 
@@ -564,15 +577,15 @@ private:
  * @tparam N number of components
  */
 template <std::size_t Dim, typename SC, std::size_t N>
-class FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N> {
+class FaceValueStencil<dare::Cartesian<Dim>, SC, N> {
 public:
-    using GridType = dare::Grid::Cartesian<Dim>;                            //!< type of grid
+    using GridType = dare::Cartesian<Dim>;                            //!< type of grid
     using ScalarType = SC;                                                  //!< scalar type
     static const std::size_t NUM_FACES{GridType::NUM_FACES};                //!< stencil size
     static const std::size_t NUM_COMPONENTS{N};                             //!< number of components in stencil
     using Positions = typename GridType::NeighborID;                        //!< convenient position definion
-    using ComponentArray = dare::utils::Vector<NUM_FACES, SC>;              //!< stencil of each component
-    using DataArray = dare::utils::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
+    using ComponentArray = dare::Vector<NUM_FACES, SC>;              //!< stencil of each component
+    using DataArray = dare::Vector<NUM_COMPONENTS, ComponentArray>;  //!< data storage for all entries
 
     /*!
      * @brief default constructor
@@ -596,6 +609,20 @@ public:
      */
     FaceValueStencil<GridType, SC, N>&
     operator=(const FaceValueStencil<GridType, SC, N>& other);
+
+    /*!
+     * @brief getter for face values
+     * @param face position of value (e.g. CENTER)
+     * @param n component ID
+     */
+    SC& operator()(Positions face, std::size_t n);
+
+    /*!
+     * @brief const getter for face values
+     * @param face position of value (e.g. CENTER)
+     * @param n component ID
+     */
+    SC operator()(Positions face, std::size_t n) const;
 
     /*!
      * @brief multiplication assignment operator for scalar
@@ -632,6 +659,18 @@ public:
      * @param other stencil to add from
      */
     FaceValueStencil<GridType, SC, N> operator+(const FaceValueStencil<GridType, SC, N>& other) const;
+
+    /*!
+     * @brief addition operator for scalar value
+     * @param value value to add to the stencil
+     */
+    FaceValueStencil<GridType, SC, N>& operator+=(SC value);
+
+    /*!
+     * @brief addition operator for scalar value
+     * @param value value to add to the stencil
+     */
+    FaceValueStencil<GridType, SC, N> operator+(SC value) const;
 
     /*!
      * @brief subtraction assignment of other stencil
@@ -688,13 +727,19 @@ public:
      * @param pos position of the value (e.g. CENTER)
      * @param v value
      */
-    void SetValues(Positions pos, const dare::utils::Vector<N, SC>& v);
+    void SetValues(Positions pos, const dare::Vector<N, SC>& v);
 
     /*!
      * @brief sets the whole stencil to a certain value
      * @param v value
      */
     void SetAll(SC v);
+
+    /*!
+     * @brief sets the whole stencil to a certain value
+     * @param v value
+     */
+    void SetAll(const dare::Vector<N, SC>& v);
 
     /*!
      * @brief returns reference to value
@@ -731,7 +776,34 @@ private:
     DataArray coefficients;  //!< raw data array with stencil data
 };
 
-}  // end namespace dare::Data
+// free functions to create coupled operators
+template <std::size_t Dim, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& operator*=(
+    FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& s_m,              // NOLINT
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& s_f) {
+    const auto STENCIL_SIZE = dare::Cartesian<Dim>::STENCIL_SIZE;
+    for (char face_id{1}; face_id < static_cast<char>(STENCIL_SIZE); face_id++) {
+        const auto face = dare::ToCartesianNeighbor(face_id);
+        for (std::size_t n{0}; n < N; n++) {
+            SC v = s_f.GetValue(face, n);
+            s_m.GetValueNeighbor(face, n) *= v;
+            s_m.GetValueCenter(face, n) *= v;
+        }
+    }
+    return s_m;
+}
+
+template <std::size_t Dim, typename SC, std::size_t N>
+FaceMatrixStencil<dare::Cartesian<Dim>, SC, N> operator*(
+    const FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>& s_m,
+    const FaceValueStencil<dare::Cartesian<Dim>, SC, N>& s_f) {
+    FaceMatrixStencil<dare::Cartesian<Dim>, SC, N> s(s_m);
+    s *= s_f;
+    return s;
+}
+
+
+}  // end namespace dare
 
 #include "Stencils_Cartesian.inl"
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,14 @@
  * SOFTWARE.
  */
 
-namespace dare::mpi {
+#include <mpi.h>
+
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+namespace dare {
 
 template<typename SC>
 SingleHaloBuffer<SC>::SingleHaloBuffer(ExecutionManager* execution_manager,
@@ -87,7 +94,7 @@ void SingleHaloBuffer<SC>::FinalizeInitialization(const std::vector<LO>& list_ID
     list_local_IDs_send = list_IDs_send;
     list_local_IDs_recv = list_IDs_recv;
 
-    this->utils::InitializationTracker::Initialize();
+    this->InitializationTracker::Initialize();
 }
 
 template<typename SC>
@@ -130,4 +137,4 @@ template<typename SC>
 int SingleHaloBuffer<SC>::GetPartnerRank() const {
     return rank_partner_proc;
 }
-}  // namespace dare::mpi
+}  // namespace dare

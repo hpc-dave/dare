@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,12 @@
  * SOFTWARE.
  */
 
-namespace dare::Matrix {
+#include <string>
+#include <map>
+#include <vector>
+#include <iostream>
+
+namespace dare {
 
 template <class ST, class MV, class OP>
 BiCGStab2<ST, MV, OP>::BiCGStab2(const Teuchos::RCP<Teuchos::ParameterList>& params)
@@ -581,4 +586,4 @@ bool BiCGStab2<ST, MV, OP>::Solve(const OP& A, MV& x, const MV& B) {  // NOLINT
     return convergence_check <= tol;
 }
 
-}  // end namespace dare::Matrix
+}  // end namespace dare

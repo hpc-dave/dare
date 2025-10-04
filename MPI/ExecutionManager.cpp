@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,16 @@
  * SOFTWARE.
  */
 
+#include <string>
+#include <iostream>
+#include <vector>
+
 #include "ExecutionManager.h"
 
-namespace dare::mpi {
+namespace dare {
 
-ExecutionManager::ExecutionManager(MPI_Comm _communicator, Verbosity _output_level)
-    : communicator(_communicator), rank_root(0), output_level(_output_level) {
+ExecutionManager::ExecutionManager(MPI_Comm _communicator)
+    : communicator(_communicator), rank_root(0) {
     MPI_Comm_rank(communicator, &rank);
     MPI_Comm_size(communicator, &num_proc);
 
@@ -37,24 +41,6 @@ ExecutionManager::ExecutionManager(MPI_Comm _communicator, Verbosity _output_lev
 }
 
 ExecutionManager::~ExecutionManager() {}
-
-std::ostream& ExecutionManager::operator()(Verbosity level) {
-    return Print(level);
-}
-
-std::ostream& ExecutionManager::Print(Verbosity level) {
-    if (level > output_level || !is_root)
-        return black_hole_osteam;
-    else
-        return std::cout;
-}
-
-std::ostream& ExecutionManager::PrintAll(Verbosity level) {
-    if (level > output_level)
-        return black_hole_osteam;
-    else
-        return std::cout;
-}
 
 int ExecutionManager::GetNumberThreadsLocal() {
     return omp_get_num_threads();
@@ -98,4 +84,4 @@ int ExecutionManager::Waitall(std::vector<MPI_Request>& requests, MPI_Status* st
 int ExecutionManager::Waitall(int count, MPI_Request* requests, MPI_Status* status) {
     return MPI_Waitall(count, requests, status);
 }
-}  // namespace dare::mpi
+}  // namespace dare

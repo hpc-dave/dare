@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #include "Utilities/Vector.h"
 #include "Utilities/Errors.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * @brief basic data structure for matrix blocks
@@ -55,7 +55,8 @@ public:
     using ScalarType = SC;
     using OrdinalArray = std::vector<OrdinalType>;
     using ScalarArray = std::vector<ScalarType>;
-    using ScalarArrayN = dare::utils::Vector<N, SC>;
+    using ScalarArrayN = dare::Vector<N, SC>;
+    static const std::size_t NUM_COMPONENTS{N};
 
     /*!
      * @brief default constructor
@@ -67,7 +68,7 @@ public:
      * @param node grid cell ID
      * @param size_hint number of elements which will be allocated
      */
-    MatrixBlockBase(const O& node, const dare::utils::Vector<N, std::size_t>& size_hint);
+    MatrixBlockBase(const O& node, const dare::Vector<N, std::size_t>& size_hint);
 
     /*!
      * @brief copy constructor
@@ -80,7 +81,6 @@ public:
      * @param other instance to copy from
      */
     MatrixBlockBase<O, SC, N>& operator=(const MatrixBlockBase<O, SC, N>& other);
-
 
     /*!
      * @brief destructor
@@ -102,13 +102,13 @@ public:
      * @param field field with values to copy from
      * @param node grid cell ID
      */
-    void Initialize(O node, const dare::utils::Vector<N, std::size_t>& size_hint);
+    void Initialize(O node, const dare::Vector<N, std::size_t>& size_hint);
 
     /*!
      * @brief Allocates memory according to size hint
      * @param hint size hint for each row
      */
-    void ProvideSizeHint(const dare::utils::Vector<N, std::size_t>& hint);
+    void ProvideSizeHint(const dare::Vector<N, std::size_t>& hint);
 
     /*!
      * @brief resizes a certain row
@@ -139,6 +139,18 @@ public:
      * @param n ID of component
      */
     O GetRow(std::size_t n) const;
+
+    /*!
+     * @brief provides rhs
+     * @param n ID of component
+     */
+    ScalarArrayN& GetRhs();
+
+    /*!
+     * @brief provides rhs
+     * @param n ID of component
+     */
+    const ScalarArrayN& GetRhs() const;
 
     /*!
      * @brief provides rhs value of component n
@@ -336,7 +348,7 @@ private:
     OrdinalType node;               //!< node associated with this matrix block
 };
 
-}  // namespace dare::Matrix
+}  // namespace dare
 
 #include "MatrixBlockBase.inl"
 #endif  // MATRIXSYSTEM_MATRIXBLOCKBASE_H_

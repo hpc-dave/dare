@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-namespace dare::mpi {
+namespace dare {
 
 bool ExecutionManager::AmIRoot() const {
     return is_root;
@@ -40,10 +40,6 @@ int ExecutionManager::GetNumberProcesses() const {
     return num_proc;
 }
 
-void ExecutionManager::SetVerbosity(Verbosity level) {
-    output_level = level;
-}
-
 MPI_Comm ExecutionManager::GetCommunicator() const {
     return communicator;
 }
@@ -52,4 +48,4 @@ int ExecutionManager::GetRankRoot() const {
     return rank_root;
 }
 
-}  // namespace dare::mpi
+}  // namespace dare

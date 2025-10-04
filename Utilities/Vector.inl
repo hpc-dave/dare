@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,18 @@
  * SOFTWARE.
  */
 
+#include <algorithm>
+#include <array>
 #include <cmath>
-namespace dare::utils {
+#include <cstddef>
+#include <iostream>
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <type_traits>
+#include <utility>
+
+namespace dare {
 
 template <std::size_t N, typename T>
 template <typename... Ts,
@@ -58,12 +68,12 @@ Vector<N, T>& Vector<N, T>::operator=(const Vector<N, A>& other) {
 
 template <std::size_t N, typename T>
 T* Vector<N, T>::data() {
-    return this->_data;
+    return this->_data.data();
 }
 
 template <std::size_t N, typename T>
 const T* Vector<N, T>::data() const {
-    return this->_data;
+    return this->_data.data();
 }
 
 template <std::size_t N, typename T>
@@ -134,6 +144,11 @@ Vector<N, T> Vector<N, T>::operator-(const T& val) const {
         vec[i] -= val;
     }
     return vec;
+}
+
+template <std::size_t N, typename T>
+Vector<N, T> Vector<N, T>::operator-() const {
+    return *this * static_cast<T>(-1);
 }
 
 template <std::size_t N, typename T>
@@ -246,63 +261,63 @@ T Vector<N, T>::length() const {
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::Iterator Vector<N, T>::begin() {
-    return Iterator(&this->_data[0]);
+typename Vector<N, T>::iterator Vector<N, T>::begin() {
+    return this->_data.begin();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ConstIterator Vector<N, T>::begin() const {
+typename Vector<N, T>::const_iterator Vector<N, T>::begin() const {
     return cbegin();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ConstIterator Vector<N, T>::cbegin() const {
-    return ConstIterator(&this->_data[0]);
+typename Vector<N, T>::const_iterator Vector<N, T>::cbegin() const {
+    return this->_data.cbegin();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ReverseIterator Vector<N, T>::rbegin() {
-    return ReverseIterator(&this->_data[N - 1]);
+typename Vector<N, T>::reverse_iterator Vector<N, T>::rbegin() {
+    return this->_data.rbegin();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ConstReverseIterator Vector<N, T>::rbegin() const {
-    return cbegin();
+typename Vector<N, T>::const_reverse_iterator Vector<N, T>::rbegin() const {
+    return this->_data.rbegin();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ConstReverseIterator Vector<N, T>::crbegin() const {
-    return ConstReverseIterator(&this->_data[N - 1]);
+typename Vector<N, T>::const_reverse_iterator Vector<N, T>::crbegin() const {
+    return this->_data.crbegin();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::Iterator Vector<N, T>::end() {
-    return Iterator(&this->_data[N]);
+typename Vector<N, T>::iterator Vector<N, T>::end() {
+    return this->_data.end();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ConstIterator Vector<N, T>::end() const {
-    return cend();
+typename Vector<N, T>::const_iterator Vector<N, T>::end() const {
+    return this->_data.end();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ConstIterator Vector<N, T>::cend() const {
-    return ConstIterator(&this->_data[N]);
+typename Vector<N, T>::const_iterator Vector<N, T>::cend() const {
+    return this->_data.cend();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ReverseIterator Vector<N, T>::rend() {
-    return ReverseIterator(&this->_data[0])--;
+typename Vector<N, T>::reverse_iterator Vector<N, T>::rend() {
+    return this->_data.rend();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ConstReverseIterator Vector<N, T>::rend() const {
-    return cend();
+typename Vector<N, T>::const_reverse_iterator Vector<N, T>::rend() const {
+    return this->_data.rend();
 }
 
 template <std::size_t N, typename T>
-typename Vector<N, T>::ConstReverseIterator Vector<N, T>::crend() const {
-    return ConstReverseIterator((&this->_data[0])--);
+typename Vector<N, T>::const_reverse_iterator Vector<N, T>::crend() const {
+    return this->_data.crend();
 }
 
 template <std::size_t N, typename T>
@@ -345,11 +360,11 @@ std::size_t Vector<N, T>::GetHash() const {
     // https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
     // or in the doxygen documentation of _FNVparam
 
-    size_t result{_FNVparam<sizeof(std::size_t)>::offset};      // FNV offset
-    const size_t prime{_FNVparam<sizeof(std::size_t)>::prime};  // FNV prime
-    const char* ptr{reinterpret_cast<const char*>(this->_data)};      // ptr to the beginning of the data
+    size_t result{_FNVparam<sizeof(std::size_t)>::offset};             // FNV offset
+    const size_t prime{_FNVparam<sizeof(std::size_t)>::prime};         // FNV prime
+    const char* ptr{reinterpret_cast<const char*>(this->data())};      // ptr to the beginning of the data
     for (size_t count{0}; count < (sizeof(T) * N); ++count)
-        result = (result * prime) ^ (*(ptr + count));  // (hash * FNV-prime) XOR (byte_of_data)
+        result = (result * prime) ^ (*(ptr + count));                  // (hash * FNV-prime) XOR (byte_of_data)
 
     return result;
 }
@@ -405,9 +420,9 @@ auto Vector<N, T>::IterateValues(Expr lambda, Op op) const {
     }
 }
 
-}  // namespace dare::utils
+}  // namespace dare
 
 // template <std::size_t N, typename T>
-// void std::swap(dare::utils::Vector<N, T>& v1, dare::utils::Vector<N, T>& v2) {
+// void std::swap(dare::Vector<N, T>& v1, dare::Vector<N, T>& v2) {
 //     std::swap(v1._data, v2._data);
 // }

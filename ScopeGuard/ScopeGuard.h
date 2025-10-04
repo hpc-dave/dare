@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,7 +87,7 @@ public:
      * In code:
      * int main(int argc, char** argv){
      *
-     * FoxBerry::ScopeGuard scope(argc, argv);
+     * dare::ScopeGuard scope(argc, argv);
      * {
      *   if(scope.HasArgument("-T")){
      *    // will execute, since "-T" exists in the list or arguments
@@ -115,6 +115,11 @@ public:
      * \brief terminates the execution and returns an error code
      */
     void Terminate(std::string message, int error_code = 1) const;
+
+    /*!
+     * @brief Prints a welcome message to the screen
+     */
+    void PrintWelcomeScreen() const;
 
 private:
     /*!

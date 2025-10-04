@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  */
 
 #include "FileSystemOperations.h"
-namespace dare::io {
+namespace dare {
 namespace details {
 
 bool Exists(const Path& path) {
@@ -74,4 +74,4 @@ bool CreateDirectoryRecursive(const Path& path) {
 }
 }  // end namespace details
 
-}  // end namespace dare::io
+}  // end namespace dare

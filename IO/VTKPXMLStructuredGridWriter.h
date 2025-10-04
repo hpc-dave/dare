@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 #include "Utilities/Vector.h"
 #include "VTKTypes.h"
 
-namespace dare::io {
+namespace dare {
 
 /*!
  * \brief custom writer for the parallel output of the structured grid
@@ -56,7 +56,7 @@ public:
      * @param exman execution manager
      * \note to developers: invoces communication!
      */
-    void SetPPieceExtent(const VTKExtent& local_extent, dare::mpi::ExecutionManager* exman);
+    void SetPPieceExtent(const VTKExtent& local_extent, dare::ExecutionManager* exman);
 
     /*!
      * @brief override of the WritePPieceAttributes function
@@ -68,6 +68,6 @@ private:
     std::vector<vtkOrdinal> extent_array;   //!< list of the extents of each piece
 };
 
-}  // end namespace dare::io
+}  // end namespace dare
 
 #endif  // IO_VTKPXMLSTRUCTUREDGRIDWRITER_H_

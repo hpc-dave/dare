@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,48 +22,49 @@
  * SOFTWARE.
  */
 
-namespace dare::Matrix {
+namespace dare {
 template <std::size_t Dim, typename SC, typename FluxLimiter>
-TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::TVD(
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::TVD(
     const GridRepresentation& grid,
     LO ordinal_internal,
-    dare::utils::Vector<Dim, const dare::Data::GridVector<GridType, SC, 1>*> v)
-    : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))) {
+    dare::Vector<Dim, const dare::GridVector<GridType, SC, 1>*> v)
+    : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))), grep(&grid) {
     for (std::size_t id{0}; id < (Dim * 2); id++) {
-        const Grid::CartesianNeighbor cnb = Grid::ToCartesianNeighbor(id + 1);
-        const SC value = math::InterpolateToFace(grid, ind, cnb, *v[id / 2]);
+        const CartesianNeighbor cnb = ToCartesianNeighbor(id + 1);
+        const SC value = InterpolateToFace(grid, ind, cnb, *v[id / 2], 0);
         velocity.SetValue(cnb, 0, value);
         upwind[id] = value >= static_cast<SC>(0.);
     }
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
-TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::TVD(const GridRepresentation& grid,
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::TVD(const GridRepresentation& grid,
                                                       LO ordinal_internal,
-                                                      const dare::utils::Vector<Dim, SC>& v)
-    : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))) {
+                                                      const dare::Vector<Dim, SC>& v)
+    : ind(grid.MapOrdinalToIndexLocal(grid.MapInternalToLocal(ordinal_internal))), grep(&grid) {
     for (std::size_t dim{0}; dim < Dim; dim++) {
-        const Grid::CartesianNeighbor cnb_low = Grid::ToCartesianNeighbor(dim * 2 + 1);
-        const Grid::CartesianNeighbor cnb_up = Grid::ToCartesianNeighbor(dim * 2 + 2);
+        const CartesianNeighbor face_low = ToCartesianNeighbor(dim * 2 + 1);
+        const CartesianNeighbor face_up = ToCartesianNeighbor(dim * 2 + 2);
         const SC value = v[dim];
-        velocity.SetValue(cnb_low, 0, value);
-        velocity.SetValue(cnb_up, 0, value);
+        velocity.SetValue(face_low, 0, value);
+        velocity.SetValue(face_up, 0, value);
         upwind[dim * 2] = upwind[dim * 2 + 1] = (value >= static_cast<SC>(0.));
     }
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
-TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::~TVD() {
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::~TVD() {
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
 template <std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
-    const dare::Data::CenterValueStencil<GridType, SC, N>& s_close,
-    const dare::Data::CenterValueStencil<GridType, SC, N>& s_far) const {
-    dare::Data::FaceValueStencil<GridType, SC, N> face_values;
-    dare::utils::Vector<N, SC> phi_UU, phi_U, phi_D, r_f, flux_lim;
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    const dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>& s) const {
+    const dare::CenterValueStencil<GridType, SC, N>& s_close = s.first;
+    const dare::CenterValueStencil<GridType, SC, N>& s_far = s.second;
+    dare::FaceValueStencil<GridType, SC, N> face_values;
+    dare::Vector<N, SC> phi_UU, phi_U, phi_D, r_f, flux_lim;
     Index ind_UU, ind_U, ind_D;
     for (std::size_t d{0}; d < Dim; d++) {
         /*
@@ -74,16 +75,16 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
          * 4) Determine face values
          */
         // 1) determine directions
-        SC vel_pos{upwind[d * 2]};
-        SC vel_neg{!upwind[d * 2]};
-        const Grid::CartesianNeighbor center = Grid::CartesianNeighbor::CENTER;
-        Grid::CartesianNeighbor cnb_low = Grid::ToCartesianNeighbor(d * 2 + 1);
-        Grid::CartesianNeighbor cnb_up = Grid::ToCartesianNeighbor(d * 2 + 1);
+        SC vel_pos{static_cast<SC>(upwind[d * 2])};
+        SC vel_neg{static_cast<SC>(!upwind[d * 2])};
+        const CartesianNeighbor center = CartesianNeighbor::CENTER;
+        CartesianNeighbor face_low = ToCartesianNeighbor(d * 2 + 1);
+        CartesianNeighbor face_up = ToCartesianNeighbor(d * 2 + 2);
 
         // 2) Get values from stencil
-        phi_UU = vel_pos * s_far.GetValues(cnb_low) + vel_neg * s_close.GetValues(cnb_up);
-        phi_U = vel_pos * s_close.GetValues(cnb_low) + vel_neg * s_close.GetValues(center);
-        phi_D = vel_pos * s_close.GetValues(center) + vel_neg * s_close.GetValues(cnb_low);
+        phi_UU = vel_pos * s_far.GetValues(face_low) + vel_neg * s_close.GetValues(face_up);
+        phi_U = vel_pos * s_close.GetValues(face_low) + vel_neg * s_close.GetValues(center);
+        phi_D = vel_pos * s_close.GetValues(center) + vel_neg * s_close.GetValues(face_low);
 
         // 3) Compute face gradient and flux-limiter
         r_f = (phi_U - phi_UU) / (phi_D - phi_U);
@@ -91,19 +92,19 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
 
         // 4) Determine face values
         auto phi_face = phi_U + 0.5 * flux_lim * (phi_D - phi_U);
-        face_values.SetValues(Grid::ToCartesianNeighbor(d * 2 + 1), phi_face);
+        face_values.SetValues(ToCartesianNeighbor(d * 2 + 1), phi_face);
 
         /*
          * The same is happening at the upper face, just one cell further
          */
         // 1) determine directions
-        vel_pos = upwind[d * 2 + 1];
-        vel_neg = !upwind[d * 2 + 1];
+        vel_pos = static_cast<SC>(upwind[d * 2 + 1]);
+        vel_neg = static_cast<SC>(!upwind[d * 2 + 1]);
 
         // 2) Get values from stencil
-        phi_UU = vel_pos * s_close.GetValues(cnb_low) + vel_neg * s_far.GetValues(cnb_up);
-        phi_U = vel_pos * s_close.GetValues(center) + vel_neg * s_close.GetValues(cnb_up);
-        phi_D = vel_pos * s_close.GetValues(cnb_up) + vel_neg * s_close.GetValues(center);
+        phi_UU = vel_pos * s_close.GetValues(face_low) + vel_neg * s_far.GetValues(face_up);
+        phi_U = vel_pos * s_close.GetValues(center) + vel_neg * s_close.GetValues(face_up);
+        phi_D = vel_pos * s_close.GetValues(face_up) + vel_neg * s_close.GetValues(center);
 
         // 3) Compute face gradient and flux-limiter
         r_f = (phi_U - phi_UU) / (phi_D - phi_U);
@@ -111,7 +112,7 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
 
         // 4) Determine face values
         phi_face = phi_U + 0.5 * flux_lim * (phi_D - phi_U);
-        face_values.SetValues(Grid::ToCartesianNeighbor(d * 2 + 2), phi_face);
+        face_values.SetValues(ToCartesianNeighbor(d * 2 + 2), phi_face);
     }
 
     return face_values;
@@ -119,151 +120,178 @@ TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
 template <std::size_t N>
-dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, N>
-TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
-    const dare::Data::GridVector<GridType, SC, N>& field) const {
-    dare::Data::FaceValueStencil<GridType, SC, N> face_values;
-    dare::utils::Vector<N, SC> phi_UU, phi_U, phi_D, r_f, flux_lim;
-    Index ind_UU, ind_U, ind_D;
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    const dare::GridVector<GridType, SC, N>& field) const {
+    const bool ignore_last{true};
+    return Interpolate(ComputeExtendedValueStencil(!ignore_last, field, field));
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+template <std::size_t N>
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    const dare::GridVector<GridType, SC, N>* field) const {
+    return Interpolate(*field);
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+template<std::size_t N>
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N>
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    const dare::Vector<N, SC>& values) const {
+    dare::FaceValueStencil<dare::Cartesian<Dim>, SC, N> f;
+    f.SetValues(values);
+    return f;
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, 1>
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    SC value) const {
+    dare::FaceValueStencil<dare::Cartesian<Dim>, SC, 1> f;
+    f.SetAll(value);
+    return f;
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+dare::FaceValueStencil<dare::Cartesian<Dim>, SC, 1>
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Interpolate(
+    dare::None value) const {
+    return Interpolate(1.);
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+template <std::size_t N>
+dare::FaceMatrixStencil<dare::Cartesian<Dim>, SC, N>
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::operator*(
+    const dare::GridVector<GridType, SC, N>& field) const {
+    return Apply(field);
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+const dare::FaceValueStencil<dare::Cartesian<Dim>, SC, 1>&
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::GetVelocityStencil() const {
+    return velocity;
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+const typename dare::Cartesian<Dim>::Index&
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::GetIndex() const {
+    return ind;
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+template <typename... Args>
+auto TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::operator()(const Args&... args) const {
+    return Apply(args...);
+}
+
+template <std::size_t Dim, typename SC, typename FluxLimiter>
+template <typename... Args>
+auto TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::Apply(const Args&... args) const {
+    auto tuple_val = std::forward_as_tuple(args...);
+    using LastType = std::remove_cvref_t<decltype(std::get<sizeof...(args) - 1>(tuple_val))>;
+    static const std::size_t N = dare::detail::free_tvd_cartesian_extract_num_components<LastType>::GetValue();
+    const bool ignore_last{true};
+    dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>
+        phi_reduced = ComputeExtendedValueStencil(ignore_last,
+                                        dare::convert_to_ref(std::get<sizeof...(args) - 1>(tuple_val)), args...);
+    dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>
+        phi_target = ComputeExtendedValueStencil(!ignore_last,
+                                        dare::convert_to_ref(std::get<sizeof...(args) - 1>(tuple_val)),
+                                        dare::convert_to_ref(std::get<sizeof...(args) - 1>(tuple_val)));
+    dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>>
+        phi;
+    phi.first = phi_reduced.first * phi_target.first;
+    phi.second = phi_reduced.second * phi_target.second;
+
+    // for readability, compiler will optimize out (hopefully :) )
+    const dare::CenterValueStencil<GridType, SC, N>& phi_close = phi.first;
+    const dare::CenterValueStencil<GridType, SC, N>& phi_far = phi.second;
+    const dare::CenterValueStencil<GridType, SC, N>& phir_close = phi_reduced.first;
+
+    dare::FaceMatrixStencil<GridType, SC, N> s;
+    dare::Vector<N, SC> ONES, phi_UU, phi_U, phi_D, r_f, flux_lim;
+    ONES.SetAllValues(static_cast<SC>(1.));     // a little helper for setting the upwind scheme later
+
+    const CartesianNeighbor center = CartesianNeighbor::CENTER;
     for (std::size_t d{0}; d < Dim; d++) {
         /*
          * at lower face
-         * 1) Get indices depending on upwind
-         * 2) Query field values
+         * 1) Determine upwind direction
+         * 2) Get Values from stencils
          * 3) Compute face gradient and insert into flux limiter
          * 4) Determine face values
          */
-        // 1) get indices
-        ind_UU = ind_U = ind_D = ind;
-        LO vel_pos{upwind[d * 2]};
-        LO vel_neg{!upwind[d * 2]};
-        // LO upwind_dir{!upwind[d * 2] - upwind[2 * d]};
-        ind_UU[d] += vel_neg - 2 * vel_pos;
-        ind_U[d] -= vel_pos;
-        ind_D[d] -= vel_neg;
+        // 1) determine directions
+        SC vel_pos{static_cast<SC>(upwind[d * 2])};
+        SC vel_neg{static_cast<SC>(!upwind[d * 2])};
+        // CartesianNeighbor face = ToCartesianNeighbor(d * 2 + 1);
+        CartesianNeighbor face_low = ToCartesianNeighbor(d * 2 + 1);
+        CartesianNeighbor face_up = ToCartesianNeighbor(d * 2 + 2);
 
-        // 2) Query field values
-        phi_UU = field.GetValues(ind_UU);
-        phi_U = field.GetValues(ind_U);
-        phi_D = field.GetValues(ind_D);
-
-        // 3) Compute face gradient and flux-limiter
-        r_f = (phi_U - phi_UU) / (phi_D - phi_U);
-        flux_lim = FluxLimiter::GetValue(r_f);
-
-        // 4) Determine face values
-        auto phi_face = phi_U + 0.5 * flux_lim * (phi_D - phi_U);
-        face_values.SetValues(Grid::ToCartesianNeighbor(d * 2 + 1), phi_face);
-
-        /*
-         * The same is happening at the upper face, just one cell further
-         */
-        // 1) reset indices
-        ind_UU = ind_U = ind_D = ind;
-        vel_pos = upwind[d * 2 + 1];
-        vel_neg = !upwind[d * 2 + 1];
-        ind_UU[d] += 2 * vel_neg - vel_pos;
-        ind_U[d] += vel_neg;
-        ind_D[d] += vel_pos;
-
-        // 2) Query field values
-        phi_UU = field.GetValues(ind_UU);
-        phi_U = field.GetValues(ind_U);
-        phi_D = field.GetValues(ind_D);
+        // 2) Get values from stencil
+        phi_UU = vel_pos * phi_far.GetValues(face_low) + vel_neg * phi_close.GetValues(face_up);
+        phi_U = vel_pos * phi_close.GetValues(face_low) + vel_neg * phi_close.GetValues(center);
+        phi_D = vel_pos * phi_close.GetValues(center) + vel_neg * phi_close.GetValues(face_low);
+        SC vel{velocity.GetValue(face_low, 0)};
 
         // 3) Compute face gradient and flux-limiter
         r_f = (phi_U - phi_UU) / (phi_D - phi_U);
         flux_lim = FluxLimiter::GetValue(r_f);
 
-        // 4) Determine face values
-        phi_face = phi_U + 0.5 * flux_lim * (phi_D - phi_U);
-        face_values.SetValues(Grid::ToCartesianNeighbor(d * 2 + 2), phi_face);
-    }
-    return face_values;
-}
+        // 4) Set upwind scheme
+        s.SetValueNeighbor(face_low, vel_pos * vel * phir_close.GetValues(face_low));
+        s.SetValueCenter(face_low, vel_neg * vel * phir_close.GetValues(center));
 
-template <std::size_t Dim, typename SC, typename FluxLimiter>
-template <std::size_t N>
-dare::Data::FaceMatrixStencil<dare::Grid::Cartesian<Dim>, SC, N>
-TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::operator*(
-    const dare::Data::GridVector<GridType, SC, N>& field) const {
-    dare::Data::FaceMatrixStencil<GridType, SC, N> s;
-    dare::utils::Vector<N, SC> ONES;
-    ONES.SetAllValues(static_cast<SC>(1.));
-    dare::utils::Vector<N, SC> phi_UU, phi_U, phi_D, r_f, flux_lim;
-    Index ind_UU, ind_U, ind_D;
-    for (std::size_t d{0}; d < Dim; d++) {
-        /*
-         * at lower face
-         * 1) Get indices depending on upwind
-         * 2) Query field values
-         * 3) Compute face gradient and insert into flux limiter
-         * 4) Set face values and deferred correction
-         */
-        // 1) get indices
-        ind_UU = ind_U = ind_D = ind;
-        LO vel_pos{upwind[d * 2]};
-        LO vel_neg{!upwind[d * 2]};
-        Grid::CartesianNeighbor face = Grid::ToCartesianNeighbor(d * 2 + 1);
-        ind_UU[d] += vel_neg - 2 * vel_pos;
-        ind_U[d] -= vel_pos;
-        ind_D[d] -= vel_neg;
-
-        // 2) Query field values
-        phi_UU = field.GetValues(ind_UU);
-        phi_U = field.GetValues(ind_U);
-        phi_D = field.GetValues(ind_D);
-        SC vel{velocity.GetValue(face, 0)};
-
-        // 3) Compute face gradient and flux-limiter
-        r_f = (phi_U - phi_UU) / (phi_D - phi_U);
-        flux_lim = FluxLimiter::GetValue(r_f);
-
-        // 4) Set face values
-        s.SetValueNeighbor(face, vel_pos * vel * ONES);
-        s.SetValueCenter(face, vel_neg * vel * ONES);
-
-        // deferred correction, note the negative sign to account for rhs
+        // 5) add deferred correction, note the negative sign to account for rhs
         auto phi_explicit = -0.5 * flux_lim * (phi_D - phi_U) * vel;
-        s.SetRHS(face, phi_explicit);
+        s.SetRHS(face_low, phi_explicit);
 
         /*
          * The same is happening at the upper face, just one cell further
          */
-        // 1) reset indices
-        ind_UU = ind_U = ind_D = ind;
-        vel_pos = upwind[d * 2 + 1];
-        vel_neg = !upwind[d * 2 + 1];
-        ind_UU[d] += 2 * vel_neg - vel_pos;
-        ind_U[d] += vel_neg;
-        ind_D[d] += vel_pos;
-        face = Grid::ToCartesianNeighbor(d * 2 + 2);
+        // 1) determine directions
+        vel_pos = static_cast<SC>(upwind[d * 2 + 1]);
+        vel_neg = static_cast<SC>(!upwind[d * 2 + 1]);
 
-        // 2) Query field values
-        phi_UU = field.GetValues(ind_UU);
-        phi_U = field.GetValues(ind_U);
-        phi_D = field.GetValues(ind_D);
-        vel = velocity.GetValue(face, 0);
+        // 2) Get values from stencil
+        phi_UU = vel_pos * phi_close.GetValues(face_low) + vel_neg * phi_far.GetValues(face_up);
+        phi_U = vel_pos * phi_close.GetValues(center) + vel_neg * phi_close.GetValues(face_up);
+        phi_D = vel_pos * phi_close.GetValues(face_up) + vel_neg * phi_close.GetValues(center);
+        vel = velocity.GetValue(face_up, 0);
 
         // 3) Compute face gradient and flux-limiter
         r_f = (phi_U - phi_UU) / (phi_D - phi_U);
         flux_lim = FluxLimiter::GetValue(r_f);
 
-        // 4) Set face values
-        s.SetValueNeighbor(face, vel_neg * vel * ONES);
-        s.SetValueCenter(face, vel_pos * vel * ONES);
+        // 4) Set Upwind scheme
+        s.SetValueNeighbor(face_up, vel_neg * vel * phir_close.GetValues(face_up));
+        s.SetValueCenter(face_up, vel_pos * vel * phir_close.GetValues(center));
 
         // deferred correction, note the negative sign to account for rhs
         phi_explicit = -0.5 * flux_lim * (phi_D - phi_U) * vel;
-        s.SetRHS(face, phi_explicit);
+        s.SetRHS(face_up, phi_explicit);
     }
     return s;
 }
 
 template <std::size_t Dim, typename SC, typename FluxLimiter>
-const dare::Data::FaceValueStencil<dare::Grid::Cartesian<Dim>, SC, 1>&
-TVD<dare::Grid::Cartesian<Dim>, SC, FluxLimiter>::GetVelocities() const {
-    return velocity;
+template <std::size_t N, typename... Args>
+dare::ExtendedStencil<dare::CenterValueStencil<dare::Cartesian<Dim>, SC, N>>
+TVD<dare::Cartesian<Dim>, SC, FluxLimiter>::ComputeExtendedValueStencil(
+    bool ignore_last,
+    const dare::GridVector<GridType, SC, N>& f,
+    const Args&... values) const {
+    const std::size_t NUM_VALUES = sizeof...(values);
+    static_assert(NUM_VALUES > 0, "No values were provided!");
+
+    dare::ExtendedStencil<dare::CenterValueStencil<GridType, SC, N>> s;
+    s.first.SetAll(1.);
+    s.second.SetAll(1.);
+    detail::free_tvd_cartesian_get_extended_stencil(*grep, ind, ignore_last, &s, values...);
+    return s;
 }
 
-}  // end namespace dare::Matrix
+}  // end namespace dare

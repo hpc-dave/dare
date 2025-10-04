@@ -1,0 +1,318 @@
+name: Verification
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - dev_flow
+  pull_request:
+    branches:
+      - main
+      - dev
+    
+jobs:
+
+  VerificationAdvection1D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.4
+
+    strategy:
+      matrix:
+# right now there seems to be an issue with clang (and maybe vtk?) that slows down the execution massively in parallel execution
+# I cannot reproduce it locally, maybe we can fix that later
+#        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/advection_periodic1D.cpp main.cpp
+          rm -rf build_adv1D
+          mkdir build_adv1D && cd build_adv1D
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja \
+                   -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
+
+    - name: Build Test
+      run: |
+          cd build_adv1D
+          ninja -j 4
+
+    - name: Run Test
+      timeout-minutes: 2
+      run: |
+          cd build_adv1D
+          mpirun -n 1 exec -t 1
+
+  VerificationDiffusion1D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.4
+
+    strategy:
+      matrix:
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang, cxx: clang++, trilinos: trilinos_clang}]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/counter_diffusion1D.cpp main.cpp
+          rm -rf build_diff1D
+          mkdir build_diff1D && cd build_diff1D
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
+
+    - name: Build Test
+      run: |
+          cd build_diff1D
+          ninja -j 4
+
+    - name: Run Test
+      timeout-minutes: 2
+      run: |
+          cd build_diff1D
+          mpirun -n 1 exec -t 1
+
+  VerificationAdvection2D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.4
+
+    strategy:
+      matrix:
+# right now there seems to be an issue with clang (and maybe vtk?) that slows down the execution massively in parallel execution
+# I cannot reproduce it locally, maybe we can fix that later
+#        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
+        procs: [1, 2, 3, 4]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/advection_periodic2D.cpp main.cpp
+          rm -rf build_adv2D
+          mkdir build_adv2D && cd build_adv2D
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja \
+                   -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
+
+    - name: Build Test
+      run: |
+          cd build_adv2D
+          ninja -j 4
+
+    - name: Run Test
+      timeout-minutes: 2
+      run: |
+          cd build_adv2D
+          mpirun -n ${{matrix.procs}} exec -t 1
+
+  VerificationDiffusion2D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.4
+
+    strategy:
+      matrix:
+# right now there seems to be an issue with clang (and maybe vtk?) that slows down the execution massively in parallel execution
+# I cannot reproduce it locally, maybe we can fix that later
+#        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
+        procs: [1, 2, 3, 4]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/counter_diffusion2D.cpp main.cpp
+          rm -rf build_diff2D
+          mkdir build_diff2D && cd build_diff2D
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja \
+                   -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
+
+    - name: Build Test
+      run: |
+          cd build_diff2D
+          ninja -j 4
+
+    - name: Run Test
+      timeout-minutes: 2
+      run: |
+          cd build_diff2D
+          mpirun -n ${{matrix.procs}} exec -t 1
+
+  VerificationAdvection2D_clang:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.4
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/advection_periodic2D.cpp main.cpp
+          rm -rf build_adv2D
+          mkdir build_adv2D && cd build_adv2D
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja \
+                   -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_C_COMPILER=clang \
+                   -DCMAKE_CXX_COMPILER=clang++ \
+                   -DCMAKE_PREFIX_PATH=/usr/local/trilinos_clang
+
+    - name: Build Test
+      run: |
+          cd build_adv2D
+          ninja -j 4
+
+    - name: Run Test
+      timeout-minutes: 2
+      run: |
+          cd build_adv2D
+          echo "This test is only executed with one processor, because the issue in parallel is locally not reproducible"
+          mpirun -n 1 exec -t 1
+
+  VerificationDiffusion2D_clang:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.4
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/counter_diffusion2D.cpp main.cpp
+          rm -rf build_diff2D
+          mkdir build_diff2D && cd build_diff2D
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja \
+                   -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_C_COMPILER=clang \
+                   -DCMAKE_CXX_COMPILER=clang++ \
+                   -DCMAKE_PREFIX_PATH=/usr/local/trilinos_clang
+
+    - name: Build Test
+      run: |
+          cd build_diff2D
+          ninja -j 4
+
+    - name: Run Test
+      timeout-minutes: 2
+      run: |
+          cd build_diff2D
+          echo "This test is only executed with one processor, because the issue in parallel is locally not reproducible"
+          mpirun -n 1 exec -t 1
+
+  LidDrivenCavity2D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.4
+
+    strategy:
+      matrix:
+# right now there seems to be an issue with clang (and maybe vtk?) that slows down the execution massively in parallel execution
+# I cannot reproduce it locally, maybe we can fix that later
+#        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
+        # procs: [1, 2, 3, 4]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/lid_driven_cavity2D.cpp main.cpp
+          rm -rf build_ldc2D
+          mkdir build_ldc2D && cd build_ldc2D
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja \
+                   -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
+    - name: Build Test
+      run: |
+          cd build_ldc2D
+          ninja -j 4
+
+    - name: Run Test
+      timeout-minutes: 20
+      run: |
+          cd build_ldc2D
+          echo "This test is only executed with one processor, because the issue in parallel is locally not reproducible"
+          mpirun -n 1 exec -t 1
+
+  Duct2D:
+    runs-on: self-hosted
+    container:
+      image: davevader/dare_test:3.4
+
+    strategy:
+      matrix:
+# right now there seems to be an issue with clang (and maybe vtk?) that slows down the execution massively in parallel execution
+# I cannot reproduce it locally, maybe we can fix that later
+#        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang-18, cxx: clang++-18, trilinos: trilinos_clang}]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}]
+        procs: [1, 2, 3, 4]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Configure CMake
+      run: |
+          cp test/Verification/flow_duct2D.cpp main.cpp
+          rm -rf build_duct
+          mkdir build_duct && cd build_duct
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja \
+                   -DUSE_GTEST=OFF \
+                   -DDEBUG=OFF \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
+    - name: Build Test
+      run: |
+          cd build_duct
+          ninja -j 4
+
+    - name: Run Test
+      timeout-minutes: 30
+      run: |
+          cd build_duct
+          mpirun -n ${{matrix.procs}} exec -t 1

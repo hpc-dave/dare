@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 #include "Grid/Cartesian/MatrixBlock_Cartesian.h"
 #include "Equations/Operators.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * @brief divergence operator
@@ -52,19 +52,19 @@ namespace dare::Matrix {
  * \f]
  */
 template <std::size_t Dim, typename TimeDiscretization>
-class Divergence<dare::Grid::Cartesian<Dim>, TimeDiscretization> {
+class Divergence<dare::Cartesian<Dim>, TimeDiscretization> {
 public:
     static const std::size_t NUM_TIMESTEPS = TimeDiscretization::NUM_TIMESTEPS;
     static const std::size_t NUM_TFIELDS{NUM_TIMESTEPS + 1};
-    using GridType = dare::Grid::Cartesian<Dim>;                   // convenient alias
+    using GridType = dare::Cartesian<Dim>;                   // convenient alias
     using LO = typename GridType::LocalOrdinalType;                // convenient alias
     using Index = typename GridType::Index;                        // convenient alias
     using GridRepresentation = typename GridType::Representation;  // convenient alias
     using Positions = typename GridType::NeighborID;               // convenient alias
     template <typename SC, std::size_t N>
-    using TFaceMatrixStencil = dare::utils::Vector<NUM_TFIELDS, dare::Data::FaceMatrixStencil<GridType, SC, N>>;
+    using TFaceMatrixStencil = dare::Vector<NUM_TFIELDS, dare::FaceMatrixStencil<GridType, SC, N>>;
     template <typename SC, std::size_t N>
-    using TFaceValueStencil = dare::utils::Vector<NUM_TFIELDS, dare::Data::FaceValueStencil<GridType, SC, N>>;
+    using TFaceValueStencil = dare::Vector<NUM_TFIELDS, dare::FaceValueStencil<GridType, SC, N>>;
 
     /*!
      * @brief constructor
@@ -87,8 +87,8 @@ private:
      * @return FaceValueStencil with interpolated data
      */
     template<typename SC, std::size_t N>
-    dare::Data::FaceValueStencil<GridType, SC, N>
-    PopulateFaceValueFromField(const dare::Data::GridVector<GridType, SC, N>& f) const;
+    dare::FaceValueStencil<GridType, SC, N>
+    PopulateFaceValueFromField(const dare::GridVector<GridType, SC, N>& f) const;
 
     /*!
      * @brief central differencing interpolation of a face value stencil with values from the specified field
@@ -99,7 +99,7 @@ private:
      */
     template <typename SC, std::size_t N>
     TFaceValueStencil<SC, N>
-    PopulateFaceValueFromField(const dare::Data::Field<GridType, SC, N>& f) const;
+    PopulateFaceValueFromField(const dare::Field<GridType, SC, N>& f) const;
 
     /*!
      * @brief multiplies with scalar value
@@ -119,7 +119,7 @@ private:
      * @param s FaceMatrixStencils
      */
     template <typename SC, std::size_t N>
-    void Multiply(const dare::Data::FaceValueStencil<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const;
+    void Multiply(const dare::FaceValueStencil<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const;
 
     /*!
      * @brief conservative multiplication with temporal information
@@ -139,7 +139,7 @@ private:
      * @param s FaceMatrixStencils
      */
     template <typename SC, std::size_t N>
-    void Multiply(const dare::Data::GridVector<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const;
+    void Multiply(const dare::GridVector<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const;
 
     /*!
      * @brief conservative multiplication with temporal information
@@ -149,7 +149,7 @@ private:
      * @param s FaceMatrixStencils
      */
     template <typename SC, std::size_t N>
-    void Multiply(const dare::Data::Field<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const;
+    void Multiply(const dare::Field<GridType, SC, N>& f, TFaceMatrixStencil<SC, N>* s) const;
 
     /*!
      * @brief loop through all arguments in parameter pack
@@ -164,27 +164,27 @@ private:
     void MultiplyAll(Stencil* f, const Arg& arg, const Args&... args);
 
     template <typename SC, std::size_t N>
-    dare::Data::CenterMatrixStencil<GridType, SC, N>
+    dare::CenterMatrixStencil<GridType, SC, N>
     ApplyDivergence(const TFaceMatrixStencil<SC, N>& s) const;
 
     template <typename SC, std::size_t N>
-    dare::utils::Vector<N, SC>
-    ApplyDivergence(const dare::Data::FaceValueStencil<GridType, SC, N>& s) const;
+    dare::Vector<N, SC>
+    ApplyDivergence(const dare::FaceValueStencil<GridType, SC, N>& s) const;
 
     template<typename SC, std::size_t N>
-    dare::Data::FaceMatrixStencil<GridType, SC, N>
-    GetFaceMatrixStencil(const dare::Data::Field<GridType, SC, N>& field) const;
+    dare::FaceMatrixStencil<GridType, SC, N>
+    GetFaceMatrixStencil(const dare::Field<GridType, SC, N>& field) const;
 
     template <typename SC, std::size_t N>
-    dare::Data::FaceMatrixStencil<GridType, SC, N>
-    GetFaceMatrixStencil(const dare::Data::FaceMatrixStencil<GridType, SC, N>& s) const;
+    dare::FaceMatrixStencil<GridType, SC, N>
+    GetFaceMatrixStencil(const dare::FaceMatrixStencil<GridType, SC, N>& s) const;
 
     typename GridType::VecSC A;  //!< face area for each dimension
     Index ind;                   //!< triplet of indices
     const typename GridType::Representation* grep;
 };
 
-}  // end namespace dare::Matrix
+}  // end namespace dare
 
 #include "Divergence_Cartesian.inl"
 

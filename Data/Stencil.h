@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,9 @@
 #define DATA_STENCIL_H_
 
 #include <string>
+#include <utility>
 
-namespace dare::Data {
+namespace dare {
 
 /*!
  * @brief dummy class for SFINAE
@@ -37,7 +38,7 @@ template <typename Grid, typename SC, std::size_t N>
 class CenterMatrixStencil {
     /*!
      * @brief dummy operator for compilation
-     * @param v 
+     * @param v value 
      */
     CenterMatrixStencil operator*(SC v) const {
         return *this;
@@ -68,13 +69,28 @@ template <typename Grid, typename SC, std::size_t N>
 class FaceValueStencil {
 };
 
+template<typename Stencil>
+using ExtendedStencil = std::pair<Stencil, Stencil>;
+
 // operators for improved use
+
+/*!
+ * @brief addition operator with scalars
+ * @tparam Grid
+ * @param v value
+ * @param s stencil
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+CenterMatrixStencil<Grid, SC, N> operator+(SC v, const CenterMatrixStencil<Grid, SC, N>& s) {
+    return s + v;
+}
 
 /*!
  * @brief multiplication operator with doubles
  * @tparam Grid 
- * @param v 
- * @param s 
+ * @param v value 
+ * @param s stencil 
  * @return 
  */
 template <typename Grid, typename SC, std::size_t N>
@@ -83,10 +99,22 @@ CenterMatrixStencil<Grid, SC, N> operator*(SC v, const CenterMatrixStencil<Grid,
 }
 
 /*!
+ * @brief addition operator with Scalar
+ * @tparam Grid
+ * @param v value
+ * @param s stencil
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+CenterValueStencil<Grid, SC, N> operator+(SC v, const CenterValueStencil<Grid, SC, N>& s) {
+    return s + v;
+}
+
+/*!
  * @brief multiplication operator with doubles
  * @tparam Grid
- * @param v
- * @param s
+ * @param v value
+ * @param s stencil
  * @return
  */
 template <typename Grid, typename SC, std::size_t N>
@@ -97,8 +125,8 @@ CenterValueStencil<Grid, SC, N> operator*(SC v, const CenterValueStencil<Grid, S
 /*!
  * @brief multiplication operator with doubles
  * @tparam Grid
- * @param v
- * @param s
+ * @param v value
+ * @param s stencil
  * @return
  */
 template <typename Grid, typename SC, std::size_t N>
@@ -107,10 +135,22 @@ FaceMatrixStencil<Grid, SC, N> operator*(SC v, const FaceMatrixStencil<Grid, SC,
 }
 
 /*!
+ * @brief addition operator with doubles
+ * @tparam Grid
+ * @param v value
+ * @param s stencil
+ * @return
+ */
+template <typename Grid, typename SC, std::size_t N>
+FaceValueStencil<Grid, SC, N> operator+(SC v, const FaceValueStencil<Grid, SC, N>& s) {
+    return s + v;
+}
+
+/*!
  * @brief multiplication operator with doubles
  * @tparam Grid
- * @param v
- * @param s
+ * @param v value
+ * @param s stencil
  * @return
  */
 template <typename Grid, typename SC, std::size_t N>
@@ -118,7 +158,7 @@ FaceValueStencil<Grid, SC, N> operator*(SC v, const FaceValueStencil<Grid, SC, N
     return s * v;
 }
 
-}  // namespace dare::Data
+}  // namespace dare
 
 
 namespace dare {
@@ -127,7 +167,7 @@ template<typename T>
 struct is_face_matrix_stencil_helper : std::false_type {
 };
 template <typename GridType, typename SC, std::size_t N>
-struct is_face_matrix_stencil_helper<Data::FaceMatrixStencil<GridType, SC, N>> : std::true_type {
+struct is_face_matrix_stencil_helper<FaceMatrixStencil<GridType, SC, N>> : std::true_type {
 };
 template <typename T>
 struct is_face_matrix_stencil : is_face_matrix_stencil_helper<std::remove_cv_t<T>> {
@@ -139,7 +179,7 @@ template <typename T>
 struct is_center_matrix_stencil_helper : std::false_type {
 };
 template <typename GridType, typename SC, std::size_t N>
-struct is_center_matrix_stencil_helper<Data::CenterMatrixStencil<GridType, SC, N>> : std::true_type {
+struct is_center_matrix_stencil_helper<CenterMatrixStencil<GridType, SC, N>> : std::true_type {
 };
 template <typename T>
 struct is_center_matrix_stencil : is_center_matrix_stencil_helper<std::remove_cv_t<T>> {
@@ -151,7 +191,7 @@ template <typename T>
 struct is_face_value_stencil_helper : std::false_type {
 };
 template <typename GridType, typename SC, std::size_t N>
-struct is_face_value_stencil_helper<Data::FaceValueStencil<GridType, SC, N>> : std::true_type {
+struct is_face_value_stencil_helper<FaceValueStencil<GridType, SC, N>> : std::true_type {
 };
 template <typename T>
 struct is_face_value_stencil : is_face_value_stencil_helper<std::remove_cv_t<T>> {
@@ -163,7 +203,7 @@ template <typename T>
 struct is_center_value_stencil_helper : std::false_type {
 };
 template <typename GridType, typename SC, std::size_t N>
-struct is_center_value_stencil_helper<Data::CenterValueStencil<GridType, SC, N>> : std::true_type {
+struct is_center_value_stencil_helper<CenterValueStencil<GridType, SC, N>> : std::true_type {
 };
 template <typename T>
 struct is_center_value_stencil : is_center_value_stencil_helper<std::remove_cv_t<T>> {

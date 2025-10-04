@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 #include <mpi.h>
+#include <string>
+#include <iostream>
 
 #include <boost/algorithm/string/predicate.hpp>
 

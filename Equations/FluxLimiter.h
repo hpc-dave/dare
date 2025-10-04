@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 #include "Utilities/Vector.h"
 
-namespace dare::Matrix {
+namespace dare {
 
 /*!
  * \brief central differencing limiter for TVD schemes
@@ -46,8 +46,8 @@ struct CDS {
      * @param r face-gradient
      */
     template <std::size_t N, typename SC>
-    static dare::utils::Vector<N, SC> GetValue(const dare::utils::Vector<N, SC>& r) {
-        dare::utils::Vector<N, SC> ret;
+    static dare::Vector<N, SC> GetValue(const dare::Vector<N, SC>& r) {
+        dare::Vector<N, SC> ret;
         for (std::size_t n{0}; n < N; n++)
             ret[n] = GetValue(r[n]);
         return ret;
@@ -78,8 +78,8 @@ struct UPWIND {
      * @param r face-gradient
      */
     template<std::size_t N, typename SC>
-    static dare::utils::Vector<N, SC> GetValue(const dare::utils::Vector<N, SC>& r) {
-        dare::utils::Vector<N, SC> ret;
+    static dare::Vector<N, SC> GetValue(const dare::Vector<N, SC>& r) {
+        dare::Vector<N, SC> ret;
         for (std::size_t n{0}; n < N; n++)
             ret[n] = GetValue(r[n]);
         return ret;
@@ -110,8 +110,8 @@ struct VANALBADA {
      * @param r face-gradient
      */
     template <std::size_t N, typename SC>
-    static dare::utils::Vector<N, SC> GetValue(const dare::utils::Vector<N, SC>& r) {
-        dare::utils::Vector<N, SC> ret;
+    static dare::Vector<N, SC> GetValue(const dare::Vector<N, SC>& r) {
+        dare::Vector<N, SC> ret;
         for (std::size_t n{0}; n < N; n++)
             ret[n] = GetValue(r[n]);
         return ret;
@@ -150,8 +150,8 @@ struct MINMOD {
      * @param r face-gradient
      */
     template <std::size_t N, typename SC>
-    static dare::utils::Vector<N, SC> GetValue(const dare::utils::Vector<N, SC>& r) {
-        dare::utils::Vector<N, SC> ret;
+    static dare::Vector<N, SC> GetValue(const dare::Vector<N, SC>& r) {
+        dare::Vector<N, SC> ret;
         for (std::size_t n{0}; n < N; n++)
             ret[n] = GetValue(r[n]);
         return ret;
@@ -171,6 +171,6 @@ struct MINMOD {
         return std::max(ZERO, std::min(r, ONE));
     }
 };
-}  // namespace dare::Matrix
+}  // namespace dare
 
 #endif  // EQUATIONS_FLUXLIMITER_H_

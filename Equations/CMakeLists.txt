@@ -1,6 +1,8 @@
 set(DaRe_HEADER_FILES
     "DDT.h"
     "DDT.inl"
+    "GenericEquation.h"
+    "GenericEquation.inl"
     "Operators.h"
     "FluxLimiter.h"
     "TimeDiscretizationSchemes.h"
@@ -10,14 +12,7 @@ target_sources(dare
     PRIVATE ${DaRe_HEADER_FILES}
 )
 
-target_sources(exec
-    PRIVATE ${DaRe_HEADER_FILES}
-)
-
 if(USE_GTEST)
-    target_sources(unit_test
-        PRIVATE ${DaRe_HEADER_FILES}
-    )
     add_subdirectory(test)
 endif()
 

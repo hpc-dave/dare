@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +25,29 @@
 #ifndef DATA_FIELD_H_
 #define DATA_FIELD_H_
 
-#include <vector>
-#include <string>
+#include <concepts>
+#include <iostream>
 #include <limits>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 #include "GridVector.h"
 #include "MPI/HaloBuffer.h"
 #include "Utilities/Errors.h"
+#include "Utilities/PropertyInformation.h"
+#include "Utilities/CompileTimeFunctions.h"
 
-namespace dare::Data {
+namespace dare {
+
+namespace detail {
+/*!
+ * \brief a tagging class for easier concept handling
+ */
+struct FieldTag {
+};
+
+}  // namespace detail
 
 /*!
  * @brief manages field related data and stores time steps
@@ -45,12 +59,12 @@ namespace dare::Data {
  * timesteps at levels 1, 2, ...
  */
 template <typename Grid, typename SC, std::size_t N>
-class Field {
+class Field : detail::FieldTag {
 public:
     using GridType = Grid;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
     using IndexType = typename GridType::Index;
-    using GridRepresentation = typename Grid::Representation;
+    using GridRepresentation = typename GridType::Representation;
     using ScalarType = SC;
     using VectorType = GridVector<Grid, SC, N>;
 
@@ -100,7 +114,7 @@ public:
     /*!
      * @brief getter for execution manager
      */
-    dare::mpi::ExecutionManager* GetExecutionManager();
+    dare::ExecutionManager* GetExecutionManager();
 
     /*!
      * @brief initializes cascade of copy steps
@@ -137,9 +151,16 @@ private:
     std::vector<VectorType> data;   //!< data of the field
 };
 
-}  // end namespace dare::Data
+}  // end namespace dare
 
 namespace dare {
+
+/*!
+ * \brief concept to determine a Field
+ */
+template <typename T>
+concept FieldType = std::is_base_of_v<detail::FieldTag, std::remove_cv_t<T>>;
+
 
 /*!
  * @brief type trait to determine if type is a Field
@@ -147,7 +168,7 @@ namespace dare {
  * This is the SFINAE option for false
  */
 template <typename T>
-struct is_field : std::false_type{
+struct is_field : std::false_type {
 };
 
 /*!
@@ -155,12 +176,8 @@ struct is_field : std::false_type{
  * @tparam T type to test
  * This is the SFINAE option for true
  */
-template<typename Grid, typename SC, std::size_t N>
-struct is_field<Data::Field<Grid, SC, N>> : std::true_type{
-};
-
-template <typename Grid, typename SC, std::size_t N>
-struct is_field<const Data::Field<Grid, SC, N>> : std::true_type {
+template<FieldType T>
+struct is_field<T> : std::true_type{
 };
 
 template <typename T>

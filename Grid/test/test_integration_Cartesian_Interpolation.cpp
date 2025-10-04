@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 #include <gtest/gtest.h>
 
 #include <random>
+#include <memory>
+#include <limits>
 
 #include "Data/DefaultTypes.h"
 #include "Grid/Cartesian/Interpolation_Cartesian.h"
@@ -32,15 +34,15 @@
 namespace dare::test {
 
 template <std::size_t Dim>
-dare::utils::Vector<Dim, defaults::GlobalOrdinalType> GetResolutionTestCartesianInterpolation() {
-    dare::utils::Vector < Dim, defaults::GlobalOrdinalType> res;
+dare::Vector<Dim, defaults::GlobalOrdinalType> GetResolutionTestCartesianInterpolation() {
+    dare::Vector < Dim, defaults::GlobalOrdinalType> res;
     for (std::size_t n{0}; n < Dim; n++)
         res[n] = 10 + n;
     return res;
 }
 template <std::size_t Dim>
-dare::utils::Vector<Dim, defaults::ScalarType> GetSizeTestCartesianInterpolation() {
-    dare::utils::Vector<Dim, defaults::ScalarType> size;
+dare::Vector<Dim, defaults::ScalarType> GetSizeTestCartesianInterpolation() {
+    dare::Vector<Dim, defaults::ScalarType> size;
     for (std::size_t n{0}; n < Dim; n++)
         size[n] = 1. + n;
     return size;
@@ -48,16 +50,19 @@ dare::utils::Vector<Dim, defaults::ScalarType> GetSizeTestCartesianInterpolation
 
 }  // namespace dare::test
 
+/*!
+ * @brief Fixture for testing the interpolation functions with the Cartesian Grid
+ */
 class IntegrationTestCartesianInterpolation : public testing::Test {
 public:
     static const std::size_t Dim{3};
     static const std::size_t N{Dim};
-    using GridType = dare::Grid::Cartesian<Dim>;
+    using GridType = dare::Cartesian<Dim>;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = typename GridType::ScalarType;
     using Index = typename GridType::Index;
-    using Field = dare::Data::GridVector<GridType, SC, N>;
+    using Field = dare::GridVector<GridType, SC, N>;
     using Options = typename GridType::Options;
 
     void SetUp() {
@@ -69,7 +74,7 @@ public:
     }
 
     std::unique_ptr<GridType> grid;        //!< the grid
-    dare::mpi::ExecutionManager exec_man;  //!< the execution manager
+    dare::ExecutionManager exec_man;  //!< the execution manager
 };
 
 TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices0DimTest) {
@@ -77,16 +82,16 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices0DimTest) {
     Options off_rel{0, 0, 0};
 
     // vectors with affected dimensions
-    dare::utils::Vector<0, std::size_t> dim_aff;
+    dare::Vector<0, std::size_t> dim_aff;
 
     // for testing indices
-    dare::utils::Vector<1, bool> found_ind;
+    dare::Vector<1, bool> found_ind;
 
     // zero affected dimension (value at center)
-    auto vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
-                                                                         off_rel,
-                                                                         dim_aff);
-    static_assert(std::is_same_v< decltype(vlist), dare::utils::Vector<1, Index> >);
+    auto vlist = dare::details::GetInterpolationIndices(ind,
+                                                        off_rel,
+                                                        dim_aff);
+    static_assert(std::is_same_v< decltype(vlist), dare::Vector<1, Index> >);
     for (std::size_t n{0}; n < Dim; n++)
         EXPECT_EQ(vlist[0][n], ind[n]);
 }
@@ -96,20 +101,20 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
     Options off_rel{0, 0, 0};
 
     // vectors with affected dimensions
-    dare::utils::Vector<1, std::size_t> dim_aff;
+    dare::Vector<1, std::size_t> dim_aff;
 
     // for testing indices
-    dare::utils::Vector<2, bool> found_ind;
+    dare::Vector<2, bool> found_ind;
 
     // WEST
     off_rel.SetAllValues(0);
     off_rel[0] = -1;
     dim_aff[0] = 0;
-    auto vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    auto vlist = dare::details::GetInterpolationIndices(ind,
                                                                          off_rel,
                                                                          dim_aff);
-    static_assert(std::is_same_v<decltype(vlist), dare::utils::Vector<2, Index> >);
-    dare::utils::Vector<2, Index> vlist_ex;  // expected values
+    static_assert(std::is_same_v<decltype(vlist), dare::Vector<2, Index> >);
+    dare::Vector<2, Index> vlist_ex;  // expected values
     vlist_ex.SetAllValues(ind);
     vlist_ex[0].i() -= 1;
     found_ind.SetAllValues(false);
@@ -118,14 +123,14 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // EAST
     off_rel.SetAllValues(0);
     off_rel[0] = 1;
     dim_aff[0] = 0;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
     vlist_ex.SetAllValues(ind);
@@ -136,14 +141,14 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // SOUTH
     off_rel.SetAllValues(0);
     off_rel[1] = -1;
     dim_aff[0] = 1;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
     vlist_ex.SetAllValues(ind);
@@ -154,14 +159,14 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // NORTH
     off_rel.SetAllValues(0);
     off_rel[1] = 1;
     dim_aff[0] = 1;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
     vlist_ex.SetAllValues(ind);
@@ -172,14 +177,14 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // BOTTOM
     off_rel.SetAllValues(0);
     off_rel[2] = -1;
     dim_aff[0] = 2;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
     vlist_ex.SetAllValues(ind);
@@ -190,14 +195,14 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // TOP
     off_rel.SetAllValues(0);
     off_rel[2] = 1;
     dim_aff[0] = 2;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
     vlist_ex.SetAllValues(ind);
@@ -208,7 +213,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices1DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 2; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 }
 
@@ -217,10 +222,10 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     Options off_rel{0, 0, 0};
 
     // vectors with affected dimensions
-    dare::utils::Vector<2, std::size_t> dim_aff;
+    dare::Vector<2, std::size_t> dim_aff;
 
     // for testing indices
-    dare::utils::Vector<4, bool> found_ind;
+    dare::Vector<4, bool> found_ind;
 
     // SOUTH-WEST
     off_rel.SetAllValues(0);
@@ -228,11 +233,11 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     off_rel[1] = -1;
     dim_aff[0] = 0;
     dim_aff[1] = 1;
-    auto vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    auto vlist = dare::details::GetInterpolationIndices(ind,
                                                                          off_rel,
                                                                          dim_aff);
-    static_assert(std::is_same_v<decltype(vlist), dare::utils::Vector<4, Index> >);
-    dare::utils::Vector<4, Index> vlist_ex;  // expected values
+    static_assert(std::is_same_v<decltype(vlist), dare::Vector<4, Index> >);
+    dare::Vector<4, Index> vlist_ex;  // expected values
     vlist_ex.SetAllValues(ind);
     vlist_ex[0].i() -= 1;
     vlist_ex[1].i() -= 1;
@@ -244,7 +249,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // NORTH-WEST
@@ -253,7 +258,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     off_rel[1] = 1;
     dim_aff[0] = 0;
     dim_aff[1] = 1;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
 
@@ -268,7 +273,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // NORTH-EAST
@@ -277,7 +282,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     off_rel[1] = 1;
     dim_aff[0] = 1;  // just some wild mixing
     dim_aff[1] = 0;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
 
@@ -292,7 +297,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // SOUTH-EAST
@@ -301,7 +306,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     off_rel[1] = -1;
     dim_aff[0] = 1;  // just some wild mixing
     dim_aff[1] = 0;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
 
@@ -316,7 +321,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // BOTTOM-WEST
@@ -325,7 +330,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     off_rel[2] = -1;
     dim_aff[0] = 0;
     dim_aff[1] = 2;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
 
@@ -340,7 +345,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // TOP-EAST
@@ -349,7 +354,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     off_rel[2] = 1;
     dim_aff[0] = 0;
     dim_aff[1] = 2;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
 
@@ -364,7 +369,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // BOTTOM-SOUTH
@@ -373,7 +378,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     off_rel[2] = -1;
     dim_aff[0] = 1;
     dim_aff[1] = 2;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
 
@@ -388,7 +393,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // TOP-NORTH
@@ -397,7 +402,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
     off_rel[2] = 1;
     dim_aff[0] = 1;
     dim_aff[1] = 2;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
 
@@ -412,7 +417,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices2DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 4; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 }
 
@@ -421,10 +426,10 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
     Options off_rel{0, 0, 0};
 
     // vectors with affected dimensions
-    dare::utils::Vector<3, std::size_t> dim_aff;
+    dare::Vector<3, std::size_t> dim_aff;
 
     // for testing indices
-    dare::utils::Vector<8, bool> found_ind;
+    dare::Vector<8, bool> found_ind;
 
     // BOTTOM-SOUTH-WEST
     off_rel.SetAllValues(0);
@@ -434,11 +439,11 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
     dim_aff[0] = 0;
     dim_aff[1] = 1;
     dim_aff[2] = 2;
-    auto vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    auto vlist = dare::details::GetInterpolationIndices(ind,
                                                                          off_rel,
                                                                          dim_aff);
-    static_assert(std::is_same_v<decltype(vlist), dare::utils::Vector<8, Index> >);
-    dare::utils::Vector<8, Index> vlist_ex;  // expected values
+    static_assert(std::is_same_v<decltype(vlist), dare::Vector<8, Index> >);
+    dare::Vector<8, Index> vlist_ex;  // expected values
     vlist_ex.SetAllValues(ind);
     vlist_ex[0].i() -= 1;
     vlist_ex[1].i() -= 1;
@@ -459,7 +464,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 8; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // TOP-NORTH-EAST
@@ -470,7 +475,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
     dim_aff[0] = 0;
     dim_aff[1] = 1;
     dim_aff[2] = 2;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
     vlist_ex.SetAllValues(ind);
@@ -493,7 +498,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 8; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 
     // BOTTOM-NORTH-EAST
@@ -504,7 +509,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
     dim_aff[0] = 0;
     dim_aff[1] = 1;
     dim_aff[2] = 2;
-    vlist = dare::math::details::Cartesian::GetInterpolationIndices(ind,
+    vlist = dare::details::GetInterpolationIndices(ind,
                                                                     off_rel,
                                                                     dim_aff);
     vlist_ex.SetAllValues(ind);
@@ -527,7 +532,7 @@ TEST_F(IntegrationTestCartesianInterpolation, GetInterpolationIndices3DimTest) {
             found_ind[n] |= (v == vlist_ex[n]);
     }
     for (std::size_t n{0}; n < 8; n++) {
-        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n];
+        EXPECT_TRUE(found_ind[n]) << "Did not find the expected Index: " << vlist_ex[n].ToString();
     }
 }
 
@@ -535,11 +540,11 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     Options off_rel{0, 0, 0};
     Options opt{0, 0, 0};           // not staggered, in this test it's either way irrelevant
     const double tol_eps{1e2};
-    dare::utils::Vector<1, std::size_t> dim_aff{0};
+    dare::Vector<1, std::size_t> dim_aff{0};
     auto grep = grid->GetRepresentation(opt);
     Field field("grid", grep);
     Index ind(2, 3, 4);
-    dare::utils::Vector<Dim, SC> grad;
+    dare::Vector<Dim, SC> grad;
     grad[0] = 1.;
     grad[1] = 1.5;
     grad[2] = -0.3;
@@ -562,7 +567,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = -1;
     dim_aff[0] = n_comp;
 
-    SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
+    SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     SC v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
     EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
@@ -572,7 +577,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = 1;
     dim_aff[0] = n_comp;
 
-    v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
+    v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
     EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
@@ -583,7 +588,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = -1;
     dim_aff[0] = n_comp;
 
-    v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
+    v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
     EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
@@ -594,7 +599,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = 1;
     dim_aff[0] = n_comp;
 
-    v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
+    v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
     EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
@@ -605,7 +610,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = -1;
     dim_aff[0] = n_comp;
 
-    v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
+    v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
     EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
@@ -616,7 +621,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = 1;
     dim_aff[0] = n_comp;
 
-    v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
+    v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n_comp);
     v_ex = (ind[n_comp] * grad[n_comp] + (ind[n_comp] + off_rel[n_comp]) * grad[n_comp]) * 0.5;
     EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
 
@@ -628,9 +633,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = -1;
     dim_aff[n_comp] = 0;
 
-    dare::utils::Vector<N, SC> v_m
-        = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    dare::utils::Vector<N, SC> v_m_ex;
+    dare::Vector<N, SC> v_m
+        = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    dare::Vector<N, SC> v_m_ex;
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
@@ -645,7 +650,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = 1;
     dim_aff[0] = n_comp;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
     }
@@ -660,7 +665,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = -1;
     dim_aff[0] = n_comp;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
 
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
@@ -675,7 +680,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = 1;
     dim_aff[0] = n_comp;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
 
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
@@ -690,7 +695,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = -1;
     dim_aff[0] = n_comp;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
 
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
@@ -705,7 +710,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
     off_rel[n_comp] = 1;
     dim_aff[0] = n_comp;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
 
     for (std::size_t n{0}; n < N; n++) {
         v_m_ex[n] = (ind[n] * grad[n] + (ind[n] + off_rel[n]) * grad[n]) * 0.5;
@@ -717,7 +722,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation1DimLinearTest) {
 TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
     Options off_rel{0, 0, 0};
     Options opt{0, 0, 0};  // not staggered, in this test it's either way irrelevant
-    dare::utils::Vector<2, std::size_t> dim_aff{0};
+    dare::Vector<2, std::size_t> dim_aff{0};
     auto grep = grid->GetRepresentation(opt);
     Field field("grid", grep);
     Index ind(2, 3, 4);
@@ -747,10 +752,10 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
     dim_aff[0] = dir_1;
     dim_aff[1] = dir_2;
 
-    auto v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    static_assert(std::is_same_v<decltype(v_m), dare::utils::Vector<N, SC>>);
+    auto v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    static_assert(std::is_same_v<decltype(v_m), dare::Vector<N, SC>>);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -774,9 +779,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
     dim_aff[0] = dir_1;
     dim_aff[1] = dir_2;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -800,9 +805,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
     dim_aff[0] = dir_1;
     dim_aff[1] = dir_2;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -826,9 +831,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
     dim_aff[0] = dir_1;
     dim_aff[1] = dir_2;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -852,9 +857,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
     dim_aff[0] = dir_1;
     dim_aff[1] = dir_2;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -878,9 +883,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
     dim_aff[0] = dir_1;
     dim_aff[1] = dir_2;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -898,7 +903,7 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation2DimLinearTest) {
 TEST_F(IntegrationTestCartesianInterpolation, Interpolation3DimLinearTest) {
     Options off_rel{0, 0, 0};
     Options opt{0, 0, 0};  // not staggered, in this test it's either way irrelevant
-    dare::utils::Vector<3, std::size_t> dim_aff{0, 0, 0};
+    dare::Vector<3, std::size_t> dim_aff{0, 0, 0};
     auto grep = grid->GetRepresentation(opt);
     Field field("grid", grep);
     Index ind(2, 3, 4);
@@ -931,10 +936,10 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation3DimLinearTest) {
     dim_aff[1] = dir_3;
     dim_aff[2] = dir_1;
 
-    auto v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
-    static_assert(std::is_same_v<decltype(v_m), dare::utils::Vector<N, SC>>);
+    auto v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    static_assert(std::is_same_v<decltype(v_m), dare::Vector<N, SC>>);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -970,9 +975,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation3DimLinearTest) {
     dim_aff[1] = dir_3;
     dim_aff[2] = dir_1;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -1008,9 +1013,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation3DimLinearTest) {
     dim_aff[1] = dir_3;
     dim_aff[2] = dir_1;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -1046,9 +1051,9 @@ TEST_F(IntegrationTestCartesianInterpolation, Interpolation3DimLinearTest) {
     dim_aff[1] = dir_3;
     dim_aff[2] = dir_1;
 
-    v_m = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
+    v_m = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::details::Cartesian::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
+        SC v = dare::details::InterpolateCartesianLinear(ind, field, off_rel, dim_aff, n);
         Index ind_l{ind};
         SC v_ex = field.At(ind_l, n);
         ind_l[dir_1] += off_rel[dir_1];
@@ -1080,7 +1085,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     Options opt_source_staggerXYZ{1, 1, 1};
     Options opt_target{0, 0, 0};
 
-    using Representation = typename dare::Grid::Cartesian<Dim>::Representation;
+    using Representation = typename dare::Cartesian<Dim>::Representation;
     Representation grep_source_scalar = grid->GetRepresentation(opt_source_scalar);
     Representation grep_source_staggerX = grid->GetRepresentation(opt_source_staggerX);
     Representation grep_source_staggerY = grid->GetRepresentation(opt_source_staggerY);
@@ -1113,10 +1118,10 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
         field_xyz[n] = GetRandValue();
 
     // WEST (Scalar -> Scalar)
-    dare::utils::Vector<N, SC> v_m =
-        dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_scalar);
+    dare::Vector<N, SC> v_m =
+        dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_scalar);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_scalar, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_scalar, n);
         Index ind_l{ind};
         ind_l.i() -= 1;
         SC v_ex = 0.5 * (field_scalar.At(ind, n) + field_scalar.At(ind_l, n));
@@ -1125,9 +1130,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // WEST (Xstaggered -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_x);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_x);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_x, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_x, n);
         Index ind_l{ind};
         SC v_ex = field_x.At(ind_l, n);
         EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
@@ -1135,9 +1140,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // WEST (Ystaggered -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_y);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_y);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_y, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_y, n);
         Index ind_l{ind};
         SC v_ex = field_y.At(ind_l, n);
         ind_l.i() -= 1;
@@ -1152,9 +1157,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // WEST (Zstaggered -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_z);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_z);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_z, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_z, n);
         Index ind_l{ind};
         SC v_ex = field_z.At(ind_l, n);
         ind_l.i() -= 1;
@@ -1169,9 +1174,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // WEST (XYZstaggered -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_xyz);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_xyz);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_xyz, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_xyz, n);
         Index ind_l{ind};
         SC v_ex = field_xyz.At(ind_l, n);
         ind_l.j() += 1;
@@ -1186,9 +1191,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // TOP (Scalar -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_scalar);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_scalar);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_scalar, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_scalar, n);
         Index ind_l{ind};
         ind_l.k() += 1;
         SC v_ex = 0.5 * (field_scalar.At(ind, n) + field_scalar.At(ind_l, n));
@@ -1197,9 +1202,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // TOP (Xstaggered -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_x);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_x);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_x, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_x, n);
         Index ind_l{ind};
         SC v_ex = field_x.At(ind_l, n);
         ind_l.i() += 1;
@@ -1214,9 +1219,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // TOP (Ystaggered -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_y);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_y);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_y, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_y, n);
         Index ind_l{ind};
         SC v_ex = field_y.At(ind_l, n);
         ind_l.j() += 1;
@@ -1231,9 +1236,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // TOP (Zstaggered -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_z);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_z);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_z, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_z, n);
         Index ind_l{ind};
         ind_l.k() += 1;
         SC v_ex = field_z.At(ind_l, n);
@@ -1242,9 +1247,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 
     // TOP (XYZstaggered -> Scalar)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_xyz);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_xyz);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_xyz, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_xyz, n);
         Index ind_l{ind};
         ind_l.k() += 1;
         SC v_ex = field_xyz.At(ind_l, n);
@@ -1260,6 +1265,85 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarFaceTest) {
     }
 }
 
+TEST_F(IntegrationTestCartesianInterpolation, InterpolateToScalarCenterTest) {
+    Options opt_source_scalar{0, 0, 0};
+    Options opt_source_staggerX{1, 0, 0};
+    Options opt_source_staggerY{0, 1, 0};
+    Options opt_source_staggerZ{0, 0, 1};
+    Options opt_target{0, 0, 0};
+
+    using Representation = typename dare::Cartesian<Dim>::Representation;
+    Representation grep_source_scalar = grid->GetRepresentation(opt_source_scalar);
+    Representation grep_source_staggerX = grid->GetRepresentation(opt_source_staggerX);
+    Representation grep_source_staggerY = grid->GetRepresentation(opt_source_staggerY);
+    Representation grep_source_staggerZ = grid->GetRepresentation(opt_source_staggerZ);
+    Representation grep_target = grid->GetRepresentation(opt_target);
+
+    Field field_scalar("scalar_field", grep_source_scalar);
+    Field field_x("x_field", grep_source_staggerX);
+    Field field_y("y_field", grep_source_staggerY);
+    Field field_z("z_field", grep_source_staggerZ);
+
+    Index ind(2, 3, 4);
+    const double tol_eps{1e3};
+
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * distribution(generator); };
+
+    for (std::size_t n{0}; n < field_scalar.GetSize(); n++)
+        field_scalar[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_x.GetSize(); n++)
+        field_x[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_y.GetSize(); n++)
+        field_y[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_z.GetSize(); n++)
+        field_z[n] = GetRandValue();
+
+    // (Scalar -> Scalar)
+    dare::Vector<N, SC> v_m =
+        dare::InterpolateToCenter(grep_target, ind, field_scalar);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::InterpolateToCenter(grep_target, ind, field_scalar, n);
+        SC v_ex = field_scalar.At(ind, n);
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Xstaggered -> Scalar
+    v_m = dare::InterpolateToCenter(grep_target, ind, field_x);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::InterpolateToCenter(grep_target, ind, field_x, n);
+        Index ind_l{ind};
+        ind_l.i() += 1;
+        SC v_ex = 0.5 * (field_x.At(ind_l, n) + field_x.At(ind, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Ystaggered -> Scalar
+    v_m = dare::InterpolateToCenter(grep_target, ind, field_y);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::InterpolateToCenter(grep_target, ind, field_y, n);
+        Index ind_l{ind};
+        ind_l.j() += 1;
+        SC v_ex = 0.5 * (field_y.At(ind_l, n) + field_y.At(ind, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Zstaggered -> Scalar
+    v_m = dare::InterpolateToCenter(grep_target, ind, field_z);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::InterpolateToCenter(grep_target, ind, field_z, n);
+        Index ind_l{ind};
+        ind_l.k() += 1;
+        SC v_ex = 0.5 * (field_z.At(ind_l, n) + field_z.At(ind, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+}
+
 TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     Options opt_source_scalar{0, 0, 0};
     Options opt_source_staggerX{1, 0, 0};
@@ -1268,7 +1352,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     Options opt_source_staggerXYZ{1, 1, 1};
     Options opt_target{1, 0, 0};
 
-    using Representation = typename dare::Grid::Cartesian<Dim>::Representation;
+    using Representation = typename dare::Cartesian<Dim>::Representation;
     Representation grep_source_scalar = grid->GetRepresentation(opt_source_scalar);
     Representation grep_source_staggerX = grid->GetRepresentation(opt_source_staggerX);
     Representation grep_source_staggerY = grid->GetRepresentation(opt_source_staggerY);
@@ -1301,10 +1385,10 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
         field_xyz[n] = GetRandValue();
 
     // WEST (Scalar -> XStagger)
-    dare::utils::Vector<N, SC> v_m =
-        dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_scalar);
+    dare::Vector<N, SC> v_m =
+        dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_scalar);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_scalar, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_scalar, n);
         Index ind_l{ind};
         ind_l.i() -= 1;
         SC v_ex = field_scalar.At(ind_l, n);
@@ -1313,9 +1397,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 
     // WEST (Xstaggered -> XStaggered)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_x);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_x);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_x, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_x, n);
         Index ind_l{ind};
         ind_l.i() -= 1;
         SC v_ex = 0.5 * (field_x.At(ind_l, n) + field_x.At(ind, n));
@@ -1324,9 +1408,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 
     // WEST (Ystaggered -> XStaggered)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_y);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_y);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_y, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_y, n);
         Index ind_l{ind};
         ind_l.i() -= 1;
         SC v_ex = field_y.At(ind_l, n);
@@ -1338,9 +1422,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 
     // WEST (Zstaggered -> XStaggered)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_z);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_z);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_z, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_z, n);
         Index ind_l{ind};
         ind_l.i() -= 1;
         SC v_ex = field_z.At(ind_l, n);
@@ -1352,9 +1436,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 
     // WEST (XYZstaggered -> XStaggered)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_xyz);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_xyz);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_xyz, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::WEST, field_xyz, n);
         Index ind_l{ind};
         SC v_ex = field_xyz.At(ind_l, n);
         ind_l.j() += 1;
@@ -1378,9 +1462,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 
     // TOP (Scalar -> XStagger)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_scalar);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_scalar);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_scalar, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_scalar, n);
         Index ind_l{ind};
         SC v_ex = field_scalar.At(ind_l, n);
         ind_l.i() -= 1;
@@ -1395,9 +1479,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 
     // TOP (Xstaggered -> XStagger)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_x);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_x);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_x, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_x, n);
         Index ind_l{ind};
         SC v_ex = field_x.At(ind_l, n);
         ind_l.k() += 1;
@@ -1408,9 +1492,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 
     // TOP (Ystaggered -> XStaggered)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_y);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_y);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_y, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_y, n);
         Index ind_l{ind};
         SC v_ex = field_y.At(ind_l, n);
         ind_l.j() += 1;
@@ -1434,9 +1518,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 
     // TOP (Zstaggered -> XStagger)
-    v_m = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_z);
+    v_m = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_z);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_z, n);
+        SC v = dare::InterpolateToFace(grep_target, ind, GridType::NeighborID::TOP, field_z, n);
         Index ind_l{ind};
         ind_l.k() += 1;
         SC v_ex = field_z.At(ind_l, n);
@@ -1448,10 +1532,104 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredFaceTest) {
     }
 }
 
+TEST_F(IntegrationTestCartesianInterpolation, InterpolateToXStaggeredCenterTest) {
+    Options opt_source_scalar{0, 0, 0};
+    Options opt_source_staggerX{1, 0, 0};
+    Options opt_target{1, 0, 0};
+
+    using Representation = typename dare::Cartesian<Dim>::Representation;
+    Representation grep_source_scalar = grid->GetRepresentation(opt_source_scalar);
+    Representation grep_source_staggerX = grid->GetRepresentation(opt_source_staggerX);
+    Representation grep_target = grid->GetRepresentation(opt_target);
+
+    Field field_scalar("scalar_field", grep_source_scalar);
+    Field field_x("x_field", grep_source_staggerX);
+
+    Index ind(2, 3, 4);
+    const double tol_eps{1e2};
+
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * distribution(generator); };
+
+    for (std::size_t n{0}; n < field_scalar.GetSize(); n++)
+        field_scalar[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_x.GetSize(); n++)
+        field_x[n] = GetRandValue();
+
+    // Scalar -> XStagger
+    dare::Vector<N, SC> v_m =
+        dare::InterpolateToCenter(grep_target, ind, field_scalar);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::InterpolateToCenter(grep_target, ind, field_scalar, n);
+        Index ind_l{ind};
+        ind_l.i() -= 1;
+        SC v_ex = 0.5 * (field_scalar.At(ind, n) + field_scalar.At(ind_l, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Xstaggered -> XStaggered
+    v_m = dare::InterpolateToCenter(grep_target, ind, field_x);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::InterpolateToCenter(grep_target, ind, field_x, n);
+        SC v_ex = field_x.At(ind, n);
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+}
+
+TEST_F(IntegrationTestCartesianInterpolation, InterpolateToYStaggeredCenterTest) {
+    Options opt_source_scalar{0, 0, 0};
+    Options opt_source_staggerY{0, 1, 0};
+    Options opt_target{0, 1, 0};
+
+    using Representation = typename dare::Cartesian<Dim>::Representation;
+    Representation grep_source_scalar = grid->GetRepresentation(opt_source_scalar);
+    Representation grep_source_staggerY = grid->GetRepresentation(opt_source_staggerY);
+    Representation grep_target = grid->GetRepresentation(opt_target);
+
+    Field field_scalar("scalar_field", grep_source_scalar);
+    Field field_y("y_field", grep_source_staggerY);
+
+    Index ind(2, 3, 4);
+    const double tol_eps{1e2};
+
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(-10000, 10000);
+    auto GetRandValue = [&]() { return 1e-4 * distribution(generator); };
+
+    for (std::size_t n{0}; n < field_scalar.GetSize(); n++)
+        field_scalar[n] = GetRandValue();
+    for (std::size_t n{0}; n < field_y.GetSize(); n++)
+        field_y[n] = GetRandValue();
+
+    // Scalar -> YStagger
+    dare::Vector<N, SC> v_m =
+        dare::InterpolateToCenter(grep_target, ind, field_scalar);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::InterpolateToCenter(grep_target, ind, field_scalar, n);
+        Index ind_l{ind};
+        ind_l.j() -= 1;
+        SC v_ex = 0.5 * (field_scalar.At(ind, n) + field_scalar.At(ind_l, n));
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+
+    // Ystaggered -> YStaggered
+    v_m = dare::InterpolateToCenter(grep_target, ind, field_y);
+    for (std::size_t n{0}; n < N; n++) {
+        SC v = dare::InterpolateToCenter(grep_target, ind, field_y, n);
+        SC v_ex = field_y.At(ind, n);
+        EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+        EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
+    }
+}
+
 TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
     Options opt{0, 0, 0};
 
-    using Representation = typename dare::Grid::Cartesian<Dim>::Representation;
+    using Representation = typename dare::Cartesian<Dim>::Representation;
     Representation grep = grid->GetRepresentation(opt);
 
     Field field("field", grep);
@@ -1471,19 +1649,19 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
 
     // CENTER
     point = grep.GetCoordinatesCenter(ind);
-    dare::utils::Vector<N, SC> v_m = dare::math::InterpolateToPoint(point, field);
+    dare::Vector<N, SC> v_m = dare::InterpolateToPoint(point, field);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToPoint(point, field, n);
+        SC v = dare::InterpolateToPoint(point, field, n);
         SC v_ex = field.At(ind, n);
         EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
         EXPECT_NEAR(v_m[n], v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
     }
 
     // WEST
-    point = grep.GetCoordinatesFace(ind, dare::Grid::CartesianNeighbor::WEST);
-    v_m = dare::math::InterpolateToPoint(point, field);
+    point = grep.GetCoordinatesFace(ind, dare::CartesianNeighbor::WEST);
+    v_m = dare::InterpolateToPoint(point, field);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToPoint(point, field, n);
+        SC v = dare::InterpolateToPoint(point, field, n);
         SC v_ex = field.At(ind, n);
         Index ind_l{ind};
         ind_l.i() -= 1;
@@ -1494,10 +1672,10 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
     }
 
     // EAST
-    point = grep.GetCoordinatesFace(ind, dare::Grid::CartesianNeighbor::EAST);
-    v_m = dare::math::InterpolateToPoint(point, field);
+    point = grep.GetCoordinatesFace(ind, dare::CartesianNeighbor::EAST);
+    v_m = dare::InterpolateToPoint(point, field);
     for (std::size_t n{0}; n < N; n++) {
-        SC v = dare::math::InterpolateToPoint(point, field, n);
+        SC v = dare::InterpolateToPoint(point, field, n);
         SC v_ex = field.At(ind, n);
         Index ind_l{ind};
         ind_l.i() += 1;
@@ -1513,21 +1691,21 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
     point = grep.GetCoordinatesCenter(ind);
     Index ind_far{ind};
     ind_far[test_dim_1D] += 1;
-    dare::utils::Vector<Dim, SC> delta = grep.GetDistances() / static_cast<SC>(n_steps);
+    dare::Vector<Dim, SC> delta = grep.GetDistances() / static_cast<SC>(n_steps);
     delta /= grep.GetDistances();
     for (std::size_t d{0}; d < Dim; d++)
         if (ind_far[d] == ind[d])
             delta[d] = 0.;
 
-    dare::utils::Vector<8, dare::utils::Vector<Dim, SC>> values;
+    dare::Vector<8, dare::Vector<Dim, SC>> values;
     values[0] = field.GetValues(ind);
     values[1] = field.GetValues(ind_far);
 
     for (std::size_t step{0}; step < n_steps; step++) {
-        dare::utils::Vector<Dim, SC> poi = point + delta * grep.GetDistances() * static_cast<SC>(step);
-        v_m = dare::math::InterpolateToPoint(poi, field);
+        dare::Vector<Dim, SC> poi = point + delta * grep.GetDistances() * static_cast<SC>(step);
+        v_m = dare::InterpolateToPoint(poi, field);
         for (std::size_t n{0}; n < N; n++) {
-            SC v = dare::math::InterpolateToPoint(poi, field, n);
+            SC v = dare::InterpolateToPoint(poi, field, n);
             SC v_ex = values[0][n] * (1. - delta[test_dim_1D] * step);
             v_ex += values[1][n] * delta[test_dim_1D]*step;
             EXPECT_NEAR(v, v_ex, tol_eps * std::numeric_limits<SC>::epsilon() * std::abs(v_ex));
@@ -1541,7 +1719,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
     ind_far = ind;
     ind_far[test_dim_2D[0]] -= 1;
     ind_far[test_dim_2D[1]] += 1;
-    dare::utils::Vector<Dim, SC> point_far = grep.GetCoordinatesCenter(ind_far);
+    dare::Vector<Dim, SC> point_far = grep.GetCoordinatesCenter(ind_far);
     delta = point_far - point;
     delta /= static_cast<SC>(n_steps);
 
@@ -1555,7 +1733,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
     values[3] = field.GetValues(ind_far);
 
     {
-        dare::utils::Vector<Dim, SC> poi = point;
+        dare::Vector<Dim, SC> poi = point;
         for (std::size_t step{1}; step < n_steps; step++) {
             poi[test_dim_2D[0]] += delta[test_dim_2D[0]];
             SC w[4];  // weights
@@ -1571,9 +1749,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
             for (std::size_t d{0}; d < 4; d++)
                 w[d] = std::abs(w[d]);
 
-            v_m = dare::math::InterpolateToPoint(poi, field);
+            v_m = dare::InterpolateToPoint(poi, field);
             for (std::size_t n{0}; n < N; n++) {
-                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v = dare::InterpolateToPoint(poi, field, n);
                 SC v_ex = values[0][n] * w[0];
                 for (std::size_t d{1}; d < 4; d++)
                     v_ex += values[d][n] * w[d];
@@ -1592,9 +1770,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
             for (std::size_t d{0}; d < 4; d++)
                 w[d] = std::abs(w[d]);
 
-            v_m = dare::math::InterpolateToPoint(poi, field);
+            v_m = dare::InterpolateToPoint(poi, field);
             for (std::size_t n{0}; n < N; n++) {
-                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v = dare::InterpolateToPoint(poi, field, n);
                 SC v_ex = values[0][n] * w[0];
                 for (std::size_t d{1}; d < 4; d++)
                     v_ex += values[d][n] * w[d];
@@ -1634,7 +1812,7 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
     values[7] = field.GetValues(ind_far);
 
     {
-        dare::utils::Vector<Dim, SC> poi = point;
+        dare::Vector<Dim, SC> poi = point;
         for (std::size_t step{1}; step < n_steps; step++) {
             poi[0] += delta[0];
             SC w[8];  // weights
@@ -1662,9 +1840,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
             for (std::size_t d{0}; d < 8; d++)
                 w[d] = std::abs(w[d]);
 
-            v_m = dare::math::InterpolateToPoint(poi, field);
+            v_m = dare::InterpolateToPoint(poi, field);
             for (std::size_t n{0}; n < N; n++) {
-                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v = dare::InterpolateToPoint(poi, field, n);
                 SC v_ex = values[0][n] * w[0];
                 for (std::size_t d{1}; d < 8; d++)
                     v_ex += values[d][n] * w[d];
@@ -1696,9 +1874,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
             for (std::size_t d{0}; d < 8; d++)
                 w[d] = std::abs(w[d]);
 
-            v_m = dare::math::InterpolateToPoint(poi, field);
+            v_m = dare::InterpolateToPoint(poi, field);
             for (std::size_t n{0}; n < N; n++) {
-                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v = dare::InterpolateToPoint(poi, field, n);
                 SC v_ex = values[0][n] * w[0];
                 for (std::size_t d{1}; d < 8; d++)
                     v_ex += values[d][n] * w[d];
@@ -1730,9 +1908,9 @@ TEST_F(IntegrationTestCartesianInterpolation, InterpolateToPointTest) {
             for (std::size_t d{0}; d < 8; d++)
                 w[d] = std::abs(w[d]);
 
-            v_m = dare::math::InterpolateToPoint(poi, field);
+            v_m = dare::InterpolateToPoint(poi, field);
             for (std::size_t n{0}; n < N; n++) {
-                SC v = dare::math::InterpolateToPoint(poi, field, n);
+                SC v = dare::InterpolateToPoint(poi, field, n);
                 SC v_ex = values[0][n] * w[0];
                 for (std::size_t d{1}; d < 8; d++)
                     v_ex += values[d][n] * w[d];

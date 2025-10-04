@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,10 @@
 #include <vtkType.h>
 #include "Utilities/Vector.h"
 
-namespace dare::io {
+namespace dare {
 
 using vtkOrdinal = vtkIdType;
-using VTKExtent = dare::utils::Vector<6, vtkOrdinal>;
+using VTKExtent = dare::Vector<6, vtkOrdinal>;
 
 }
 

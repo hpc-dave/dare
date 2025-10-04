@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,9 @@
 
 #include <cstddef>
 #include <type_traits>
+#include <array>
 
-namespace dare::utils {
+namespace dare {
 
 /*! \struct VectorDefaultInitializer
  * @tparam T type of the variable
@@ -63,12 +64,15 @@ struct VectorDefaultInitializer<T, std::enable_if_t<std::is_arithmetic_v<T>>> {
 template <std::size_t N, typename T>
 class VectorBase {
 public:
+    using ContainerType = std::array<T, N>;
+
     /*!
      * @brief default constructor
      */
     VectorBase() {}
+
 protected:
-    T _data[N];
+    ContainerType _data;
 };
 
 /*! \class VectorDecorator
@@ -102,7 +106,7 @@ public:
     VectorDecorator() : VectorDecorator<N - 1, Dim, T>() {}
 };
 
-/*! \class VectorDecorator
+/*! \class VectorDecorator<0
  * \brief specialization for integer types and N == 0
  * @tparam Dim number of elements in the data set
  * @tparam T type of integer
@@ -113,7 +117,7 @@ public:
     VectorDecorator() : VectorBase<Dim, T>() {}
 };
 
-/*! \class VectorDecorator
+/*! \class VectorDecorator<1>
  * \brief specialization for integer types and N == 1
  * @tparam Dim number of elements in the data set
  * @tparam T type of integer
@@ -134,7 +138,7 @@ public:
     T i() const { return this->_data[0]; }
 };
 
-/*! \class VectorDecorator
+/*! \class VectorDecorator<2>
  * \brief specialization for integer types and N == 2
  * @tparam Dim number of elements in the data set
  * @tparam T type of integer
@@ -257,6 +261,6 @@ public:
     T z() const { return this->_data[2]; }
 };
 
-}  // namespace dare::utils
+}  // namespace dare
 
 #endif  // UTILITIES_VECTOR_TRAITS_H_

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,14 +29,14 @@
 #include "Utilities/Vector.h"
 #include "MPI/ExecutionManager.h"
 
-namespace dare::Matrix::test {
+namespace dare::test {
 class TrilinosTestGrid {
 public:
     using GlobalOrdinalType = dare::defaults::GlobalOrdinalType;
     using LocalOrdinalType = dare::defaults::LocalOrdinalType;
     using ScalarType = dare::defaults::ScalarType;
-    using Index = dare::utils::Vector<1, LocalOrdinalType>;
-    using IndexGlobal = dare::utils::Vector<1, GlobalOrdinalType>;
+    using Index = dare::Vector<1, LocalOrdinalType>;
+    using IndexGlobal = dare::Vector<1, GlobalOrdinalType>;
     class TestRepresentation {
     public:
         using GlobalOrdinalType = TrilinosTestGrid::GlobalOrdinalType;
@@ -44,7 +44,7 @@ public:
 
         TestRepresentation() : TestRepresentation(nullptr) {}
 
-        explicit TestRepresentation(dare::Matrix::test::TrilinosTestGrid* _grid) {
+        explicit TestRepresentation(dare::test::TrilinosTestGrid* _grid) {
             grid = _grid;
             if (grid) {
                 offset = _grid->offset;
@@ -88,7 +88,7 @@ public:
             // return size_global;
         }
 
-        dare::Matrix::test::TrilinosTestGrid* grid;
+        dare::test::TrilinosTestGrid* grid;
         GlobalOrdinalType size_global{0};
         LocalOrdinalType local_size{0};
         GlobalOrdinalType offset{0};
@@ -97,7 +97,7 @@ public:
 
     Representation GetRepresentation() { return Representation(this); }
 
-    void Initialize(dare::mpi::ExecutionManager* _exman) {
+    void Initialize(dare::ExecutionManager* _exman) {
         exman = _exman;
         size_global = 21 + exman->GetNumberProcesses() * 2;
         local_size = size_global / exman->GetNumberProcesses();
@@ -110,11 +110,11 @@ public:
     GlobalOrdinalType size_global{0};
     LocalOrdinalType local_size{0};
     GlobalOrdinalType offset{0};
-    dare::mpi::ExecutionManager* exman;
+    dare::ExecutionManager* exman;
 };
 
 static const std::size_t N{4};
 
-}  // end namespace dare::Matrix::test
+}  // end namespace dare::test
 
 #endif  // MATRIXSYSTEM_TEST_TEST_TRILINOSTESTGRID_H_

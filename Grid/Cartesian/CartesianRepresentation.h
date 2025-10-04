@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,17 +33,13 @@
 
 #include "MPI/HaloBuffer.h"
 #include "Utilities/InitializationTracker.h"
-namespace dare::Grid {
+#include "CartesianMeshUtils.h"
 
-// forward declaration for the grid
+namespace dare {
+
+// forward declaration of the Grid
 template <std::size_t Dim>
 class Cartesian;
-
-// forward declarations for CartesianNeighbor
-enum class CartesianNeighbor : char;
-char ToNum(CartesianNeighbor pos);
-char ToFace(CartesianNeighbor face);
-char ToNormal(CartesianNeighbor nb);
 
 /*!
  * @brief Representation of Cartesian grid
@@ -53,7 +49,7 @@ char ToNormal(CartesianNeighbor nb);
  * @tparam Dim dimension of grid
  */
 template <std::size_t Dim>
-class CartesianRepresentation : public dare::utils::InitializationTracker {
+class CartesianRepresentation : public dare::InitializationTracker {
 public:
     using GridType = Cartesian<Dim>;
     using LocalOrdinalType = typename GridType::LocalOrdinalType;
@@ -93,6 +89,20 @@ public:
      */
     CartesianRepresentation<Dim>&
     operator=(const CartesianRepresentation<Dim>& other) = default;
+
+    [[nodiscard]] constexpr CartesianRangeType<GridType::STENCIL_SIZE> GetPositions(LO = 0) const {
+        return grid->GetPositions();
+    }
+
+    [[nodiscard]] constexpr CartesianRangeType<GridType::NUM_FACES> GetFaces(LO = 0) const {
+        return grid->GetFaces();
+    }
+
+    /*!
+     * @brief query if grid is staggered
+     * @return true, if staggered
+     */
+    [[nodiscard]] bool IsStaggered() const;
 
     /*!
      * @brief provides spatial position of the specified cell
@@ -206,10 +216,22 @@ public:
     bool IsLocal(const IndexGlobal& ind_glob) const;
 
     /*!
+     * @brief tests, if the point belongs to the local subgrid, including halo cells
+     * @param point coordinates of the point
+     */
+    bool IsLocal(VecSC point) const;
+
+    /*!
      * @brief tests, if the ordinal belongs to internal subgrid
      * @param id_glob global internal ordinal
      */
     bool IsLocalInternal(GO id_glob) const;
+
+    /*!
+     * @brief tests, if the point belongs to the local internal subgrid
+     * @param point coordinates of the point
+     */
+    bool IsLocalInternal(VecSC point) const;
 
     /*!
      * @brief tests, if index belongs to internal subgrid
@@ -221,8 +243,8 @@ public:
     bool IsInternal(const IndexGlobal& ind_glob) const;
     bool IsInternal(LO n) const;
 
-    Index MapOrdinalToIndexLocal(const LO n_loc) const;
-    Index MapOrdinalToIndexLocalInternal(const LO n_loc) const;
+    Index MapOrdinalToIndexLocal(LO n_loc) const;
+    Index MapOrdinalToIndexLocalInternal(LO n_loc) const;
     IndexGlobal MapOrdinalToIndexGlobal(GO n_loc) const;
     IndexGlobal MapOrdinalToIndexGlobalInternal(GO n_loc) const;
 
@@ -235,6 +257,12 @@ public:
      * Make sure that the point is on the grid!
      */
     Index GetCell(VecSC point) const;
+
+    /*!
+     * @brief returns global Index of cell containing the point
+     * @param point point in space
+     */
+    IndexGlobal GetCellGlobal(VecSC point) const;
 
     /*!
      * @brief provides resolution of local grid
@@ -269,7 +297,12 @@ public:
     /*!
      * @brief Provides Halobuffer for exchange of data across processes
      */
-    mpi::HaloBuffer<SC>& GetHaloBuffer();
+    HaloBuffer<SC>& GetHaloBuffer();
+
+    /*!
+     * @brief returns pointer to the underlying execution manager
+     */
+    dare::ExecutionManager* GetExecutionManager() const;
 
     /*!
      * @brief provides name of the grid including options
@@ -324,10 +357,10 @@ private:
     VecLO hierarchic_sum_loc;            //!< precomputed values to account for ordering
     VecLO hierarchic_sum_loc_internal;   //!< same as above, just for the internal cells
 
-    mpi::HaloBuffer<SC> halo_buffer;  //!< maps with Halo Buffers
+    HaloBuffer<SC> halo_buffer;  //!< maps with Halo Buffers
 };
 
-}  // namespace dare::Grid
+}  // namespace dare
 
 #include "CartesianRepresentation.inl"
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,20 @@
  * SOFTWARE.
  */
 
-namespace dare::Matrix {
+#include <vector>
+#include <iostream>
+#include <utility>
+
+namespace dare {
 template <typename SC>
 Trilinos<SC>::Trilinos()
     : exec_man(nullptr), g_stencil(0), l_stencil(0) {
 }
 
 template <typename SC>
-Trilinos<SC>::Trilinos(dare::mpi::ExecutionManager* exman)
+Trilinos<SC>::Trilinos(dare::ExecutionManager* exman)
     : exec_man(exman), g_stencil(0), l_stencil(0) {
-    dare::utils::InitializationTracker::Initialize();
+    dare::InitializationTracker::Initialize();
     comm = Teuchos::rcp(new Teuchos::MpiComm<int>(exec_man->GetCommunicator()));
 }
 
@@ -39,8 +43,8 @@ template <typename SC>
 Trilinos<SC>::~Trilinos() {}
 
 template <typename SC>
-void Trilinos<SC>::Initialize(dare::mpi::ExecutionManager* exman) {
-    dare::utils::InitializationTracker::Initialize();
+void Trilinos<SC>::Initialize(dare::ExecutionManager* exman) {
+    dare::InitializationTracker::Initialize();
     exec_man = exman;
     comm = Teuchos::rcp(new Teuchos::MpiComm<int>(exec_man->GetCommunicator()));
 }
@@ -48,9 +52,9 @@ void Trilinos<SC>::Initialize(dare::mpi::ExecutionManager* exman) {
 template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
 void Trilinos<SC>::Build(const typename Grid::Representation& grid,
-                                 const dare::Data::GridVector<Grid, SC, N>& field,
-                                 Lambda functor,
-                                 bool rebuild) {
+                         const dare::GridVector<Grid, SC, N>& field,
+                         Lambda functor,
+                         bool rebuild) {
     if (A.is_null() || B.is_null() || x.is_null())
         BuildNew(grid, field, functor);
     else if (rebuild)
@@ -62,17 +66,18 @@ void Trilinos<SC>::Build(const typename Grid::Representation& grid,
 template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
 void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
-                                const dare::Data::GridVector<Grid, SC, N>& field,
-                                Lambda functor) {
+                        const dare::GridVector<Grid, SC, N>& field,
+                        Lambda functor) {
     const std::size_t num_cells = grid.GetNumberLocalCellsInternal();
     Teuchos::Ptr<VecType> ptr_B = B.ptr();
+    Teuchos::Ptr<VecType> ptr_x = x.ptr();
     Teuchos::Ptr<MatrixType> ptr_A = A.ptr();
 #pragma omp parallel for
-    for (LO node = 0; node < num_cells; node++) {
+    for (std::size_t node = 0; node < num_cells; node++) {
         if (node < l_stencil.size()) {
             LO local_internal = l_stencil[node];
-            MatrixBlock<Grid, LO, SC, N> matrix_block(grid, local_internal);
-            dare::utils::Vector<N, std::size_t> size_hint;
+            MatrixBlock<Grid, LO, SC, N> matrix_block(&grid, local_internal);
+            dare::Vector<N, std::size_t> size_hint;
             for (std::size_t n{0}; n < N; n++)
                 size_hint[n] = ptr_A->getNumEntriesInLocalRow(matrix_block.GetRow(n));
             matrix_block.ProvideSizeHint(size_hint);
@@ -83,15 +88,17 @@ void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
             // call functor
             functor(&matrix_block);
             for (std::size_t n{0}; n < N; n++) {
-                ptr_B->replaceLocalValue(matrix_block.GetLocalRow(n),
+                ptr_B->replaceLocalValue(matrix_block.GetRow(n),
                                          matrix_block.GetRhs(n));
+                ptr_x->replaceLocalValue(matrix_block.GetRow(n),
+                                         matrix_block.GetInitialGuess(n));
             }
         } else {
             // initialize matrix block
             const LO local_internal = g_stencil[node - l_stencil.size()];
             const GO global_internal = grid.MapLocalToGlobalInternal(local_internal);
-            MatrixBlock<Grid, GO, SC, N> matrix_block(grid, global_internal);
-            dare::utils::Vector<N, std::size_t> size_hint;
+            MatrixBlock<Grid, GO, SC, N> matrix_block(&grid, global_internal);
+            dare::Vector<N, std::size_t> size_hint;
             for (std::size_t n{0}; n < N; n++)
                 size_hint[n] = ptr_A->getNumEntriesInGlobalRow(matrix_block.GetRow(n));
             matrix_block.ProvideSizeHint(size_hint);
@@ -101,8 +108,10 @@ void Trilinos<SC>::SetB(const typename Grid::Representation& grid,
             // call functor
             functor(&matrix_block);
             for (std::size_t n{0}; n < N; n++) {
-                ptr_B->replaceGlobalValue(matrix_block.GetLocalRow(n),
+                ptr_B->replaceGlobalValue(matrix_block.GetRow(n),
                                           matrix_block.GetRhs(n));
+                ptr_x->replaceGlobalValue(matrix_block.GetRow(n),
+                                          matrix_block.GetInitialGuess(n));
             }
         }
     }
@@ -165,7 +174,7 @@ void Trilinos<SC>::SetInitialGuess(const SC value) {
 
 template <typename SC>
 template<typename Grid, std::size_t N>
-void Trilinos<SC>::CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const {
+void Trilinos<SC>::CopyTo(dare::GridVector<Grid, SC, N>* gvec) const {
     auto grid = gvec->GetGridRepresentation();
     const LO num_cells{grid.GetNumberLocalCellsInternal()};
     for (LO node = 0; node < num_cells; node++) {
@@ -173,6 +182,19 @@ void Trilinos<SC>::CopyTo(dare::Data::GridVector<Grid, SC, N>* gvec) const {
         LO offset = node * N;
         for (std::size_t n{0}; n < N; n++)
             gvec->At(node_loc, n) = x->getData()[offset + n];
+    }
+}
+
+template <typename SC>
+template <typename Grid, std::size_t N>
+void Trilinos<SC>::AddTo(dare::GridVector<Grid, SC, N>* gvec) const {
+    auto grid = gvec->GetGridRepresentation();
+    const LO num_cells{grid.GetNumberLocalCellsInternal()};
+    for (LO node = 0; node < num_cells; node++) {
+        LO node_loc = grid.MapInternalToLocal(node);
+        LO offset = node * N;
+        for (std::size_t n{0}; n < N; n++)
+            gvec->At(node_loc, n) += x->getData()[offset + n];
     }
 }
 
@@ -281,13 +303,12 @@ void Trilinos<SC>::PrintX() const {
     }
 }
 
-
 template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
 void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
-                                    const dare::Data::GridVector<Grid, SC, N>& field,
-                                    Lambda functor) {
-    using MatrixBlockType = dare::Matrix::MatrixBlock<Grid, GO, SC, N>;
+                            const dare::GridVector<Grid, SC, N>& field,
+                            Lambda functor) {
+    using MatrixBlockType = dare::MatrixBlock<Grid, GO, SC, N>;
 
     AllocateMap<Grid, N>(grid);
 
@@ -387,8 +408,8 @@ void Trilinos<SC>::BuildNew(const typename Grid::Representation& grid,
 template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
 void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
-                                        const dare::Data::GridVector<Grid, SC, N>& field,
-                                        Lambda functor) {
+                                const dare::GridVector<Grid, SC, N>& field,
+                                Lambda functor) {
     Teuchos::Ptr<MatrixType> ptr_A = A.ptr();
     Teuchos::Ptr<VecType> ptr_x = x.ptr();
     Teuchos::Ptr<VecType> ptr_B = B.ptr();
@@ -404,7 +425,7 @@ void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
             const LO local_internal = l_stencil[node];
             const LO local_full = grid.MapInternalToLocal(local_internal);
             MatrixBlock<Grid, LO, SC, N> matrix_block(&grid, local_full);
-            dare::utils::Vector<N, std::size_t> size_hint;
+            dare::Vector<N, std::size_t> size_hint;
             for (std::size_t n{0}; n < N; n++)
                 size_hint[n] = A->getNumEntriesInLocalRow(matrix_block.GetRow(n));
             matrix_block.ProvideSizeHint(size_hint);
@@ -430,7 +451,7 @@ void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
             const LO local_full = grid.MapInternalToLocal(local_internal);
             const GO global_internal = grid.MapLocalToGlobalInternal(local_internal);
             MatrixBlock<Grid, GO, SC, N> matrix_block(&grid, global_internal);
-            dare::utils::Vector<N, std::size_t> size_hint;
+            dare::Vector<N, std::size_t> size_hint;
             for (std::size_t n{0}; n < N; n++)
                 size_hint[n] = ptr_A->getNumEntriesInGlobalRow(matrix_block.GetRow(n));
             matrix_block.ProvideSizeHint(size_hint);
@@ -459,8 +480,8 @@ void Trilinos<SC>::BuildReplace(const typename Grid::Representation& grid,
 template <typename SC>
 template <typename Grid, std::size_t N, typename Lambda>
 void Trilinos<SC>::BuildUpdate(const typename Grid::Representation& grid,
-                                       const dare::Data::GridVector<Grid, SC, N>& field,
-                                       Lambda functor) {
+                               const dare::GridVector<Grid, SC, N>& field,
+                               Lambda functor) {
     BuildNew(grid, field, functor);
 }
 
@@ -469,7 +490,7 @@ template <typename Grid, std::size_t N>
 void Trilinos<SC>::AllocateMap(const typename Grid::Representation& grid) {
     using Teuchos::rcp;
 
-    if (!dare::utils::InitializationTracker::IsInitialized()) {
+    if (!dare::InitializationTracker::IsInitialized()) {
         int rank{-1};
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         if (rank == 0)
@@ -503,4 +524,4 @@ void Trilinos<SC>::AllocateMap(const typename Grid::Representation& grid) {
     map = rcp(new MapType(num_global_elements, elements_on_proc.d_view, index_base, comm));
 }
 
-}  // namespace dare::Matrix
+}  // namespace dare

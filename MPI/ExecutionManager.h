@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,23 +34,9 @@
 #include <vector>
 
 #include "MPITypeConverter.h"
-#include "OBlackHoleStream.h"
 #include "Utilities/Errors.h"
 
-namespace dare::mpi {
-
-/*! \class Verbosity
- * \brief identifiers for verbosity
- * Defines various level of output, which can be
- * set via the ExecutionManager.
- * \note None is meant for swallowing all output!
- */
-enum class Verbosity : uint8_t {
-    None,    //!< All output is swallowed
-    Low,     //!< minimum production output
-    Medium,  //!< a bit more information for rough debugging
-    High     //!< huge amount of ouput, only for detailed debuggin
-};
+namespace dare {
 
 /*! \class ExecutionManager
  * \brief takes care of different ways of execution (parallel, multithreaded, accelerated)
@@ -60,45 +46,14 @@ public:
     /*!
      * \brief constructor
      * @param communicator MPI communicator
-     * @param output_level controls the output levels
      * \note to developers: Initiates communication, therefore not threadsafe and costly
      */
-    explicit ExecutionManager(MPI_Comm communicator = MPI_COMM_WORLD, Verbosity output_level = Verbosity::Low);
+    explicit ExecutionManager(MPI_Comm communicator = MPI_COMM_WORLD);
 
     /*!
      * \brief default desctructor
      */
     ~ExecutionManager();
-
-    /*!
-     * \brief allows printing with output control
-     * @param level level below which the output will be swallowed
-     * Messages provided via this function will only be printed
-     * by the root processor and if the \p level is lower than
-     * the internally specified output verbosity
-     * \note not threadsafe, as all output to terminal
-     */
-    std::ostream& operator()(Verbosity level);
-
-    /*!
-     * \brief allows printing with output control
-     * @param level level below which the output will be swallowed
-     * Messages provided via this function will only be printed
-     * by the root processor and if the \p level is lower than
-     * the internally specified output verbosity
-     * \note not threadsafe, as all output to terminal
-     */
-    std::ostream& Print(Verbosity level);
-
-    /*!
-     * \brief prints output of all processes
-     * @param level level below which the output will be swallowed
-     * Messages provided via this function will only be printed
-     * if the \p level is lower than the internally specified output verbosity,
-     * but it will print for each processor
-     * \note not threadsafe, as all output to terminal
-     */
-    std::ostream& PrintAll(Verbosity level);
 
     /*!
      * \brief returns number of processes within communicator
@@ -123,12 +78,6 @@ public:
      * \note threadsafe, if not accessed via Teuchos::RCP or similar constructs
      */
     inline bool IsSerial() const;
-
-    /*!
-     * \brief sets the output verbosity level
-     * @param level verbosity level
-     */
-    inline void SetVerbosity(Verbosity level);
 
     /*!
      * \brief returns the number of threads on local machine
@@ -480,13 +429,9 @@ private:
     int rank_root;          //!< rank of root processor
     int rank;               //!< rank of process within communicator
     int num_proc;           //!< number of processes within communicator
-
-    Verbosity output_level;  //!< all output at levels above is swallowed
-
-    BlackHoleOStream black_hole_osteam;  //!< can swallow output if required
 };
 
-}  // namespace dare::mpi
+}  // namespace dare
 
 #include "ExecutionManager.inl"
 #include "ExecutionManager_MPI.inl"

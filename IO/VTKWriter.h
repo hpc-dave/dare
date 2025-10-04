@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,9 @@
 #include "MPI/ExecutionManager.h"
 #include "VTKOptions.h"
 #include "Utilities/Vector.h"
+#include "IO/TerminalOutput.h"
 
-namespace dare::io {
+namespace dare {
 
 namespace details {
 
@@ -56,7 +57,7 @@ namespace details {
  * Note, that VTK stores the data per process and requires one file to coordinate those.
  * This if the filename for the coordinated one!
  */
-[[nodiscard]] std::string VTKGetParallelOutputFileName(dare::mpi::ExecutionManager* exman,
+[[nodiscard]] std::string VTKGetParallelOutputFileName(dare::ExecutionManager* exman,
                                                        const std::string& parallel_data_path,
                                                        const std::string& grid_name,
                                                        int step,
@@ -89,7 +90,7 @@ public:
      * @param time current simulation time (ignored if <0)
      * @param step time/simulation step
      */
-    explicit VTKWriter(mpi::ExecutionManager* ex_man,
+    explicit VTKWriter(ExecutionManager* ex_man,
                        double time,
                        int step);
 
@@ -156,12 +157,12 @@ private:
      */
     void AddTimeStamp(GridType* data_set);
 
-    mpi::ExecutionManager* exec_man;    //!< reference to execution manager
+    ExecutionManager* exec_man;    //!< reference to execution manager
     double time;                        //!< timestamp
     int step;                           //!< time/simulation step
 };
 
-}  // end namespace dare::io
+}  // end namespace dare
 
 #include "VTKWriter.inl"
 

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,11 @@
 
 #include "VTKWriter.h"
 
-namespace dare::io::details {
+#include <string>
 
-std::string VTKGetParallelOutputFileName(dare::mpi::ExecutionManager* exman,
+namespace dare::details {
+
+std::string VTKGetParallelOutputFileName(dare::ExecutionManager* exman,
                                  const std::string& output_path,
                                  const std::string& grid_name,
                                  int step,
@@ -38,12 +40,12 @@ std::string VTKGetParallelOutputFileName(dare::mpi::ExecutionManager* exman,
     os << grid_name
        << '_' << std::to_string(step)
        << "." << ext;
-    exman->Print(dare::mpi::Verbosity::Medium) << "Writing to file "
-                                               << output_path << grid_name
-                                               << '_' << std::to_string(step)
-                                               << "." << ext
-                                               << std::endl;
+    dare::Print(dare::Verbosity::Medium) << "Writing to file "
+                                         << output_path << grid_name
+                                         << '_' << std::to_string(step)
+                                         << "." << ext
+                                         << std::endl;
     return os.str();
 }
 
-}  // end namespace dare::io::details
+}  // end namespace dare::details

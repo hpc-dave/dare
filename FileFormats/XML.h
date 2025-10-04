@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,7 @@ public:
     XML& operator<<(const XML& other);
     XML& AddXMLObject(const XML& other);
 
-    void WriteToFile(const std::string& file_name, std::ios::openmode mode = std::ios::out);
+    void WriteToFile(const std::string& file_name, stds::openmode mode = stds::out);
 
 private:
     std::vector<XMLNode> nodes;

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,9 @@
 
 #include <gtest/gtest.h>
 
-#include "../MatrixBlock.h"
+#include "MatrixSystem/MatrixBlock.h"
 
-namespace dare::Matrix::test {
+namespace dare::test {
 class Grid {
 public:
     using GlobalOrdinalType = int64_t;
@@ -54,14 +54,14 @@ public:
     Representation GetRepresentation() { return Representation(); }
 };
 
-}  // end namespace dare::Matrix::test
+}  // end namespace dare::test
 
 /*!
  * @brief fixture for matrix block testing
  */
 class MatrixBlockTest : public testing::Test {
 public:
-    using GridType = dare::Matrix::test::Grid;
+    using GridType = dare::test::Grid;
     using LO = typename GridType::LocalOrdinalType;
     using GO = typename GridType::GlobalOrdinalType;
     using SC = double;
@@ -74,12 +74,12 @@ public:
 TEST_F(MatrixBlockTest, Initialization) {
     GridRepresentation g_rep = grid.GetRepresentation();
     LO node = 11;
-    dare::utils::Vector<N, std::size_t> size_hint;
+    dare::Vector<N, std::size_t> size_hint;
     for (auto& e : size_hint)
         e = 3;
-    dare::Matrix::MatrixBlock<GridType, LO, SC, N> mblock(&g_rep, node, size_hint);
-    dare::Matrix::MatrixBlock<GridType, LO, SC, N> mblock_copy_construct(mblock);
-    dare::Matrix::MatrixBlock<GridType, LO, SC, N> mblock_copy_assign;
+    dare::MatrixBlock<GridType, LO, SC, N> mblock(&g_rep, node, size_hint);
+    dare::MatrixBlock<GridType, LO, SC, N> mblock_copy_construct(mblock);
+    dare::MatrixBlock<GridType, LO, SC, N> mblock_copy_assign;
     mblock_copy_assign = mblock;
 
     EXPECT_FALSE(mblock.IsGlobal());
@@ -93,12 +93,12 @@ TEST_F(MatrixBlockTest, IsStencilLocalTest) {
     GridRepresentation g_rep = grid.GetRepresentation();
     LO node_local = 11;
     GO node_global = node_local + g_rep.offset;
-    dare::utils::Vector<N, std::size_t> size_hint;
+    dare::Vector<N, std::size_t> size_hint;
     for (auto& e : size_hint)
         e = 3;
 
-    dare::Matrix::MatrixBlock<GridType, GO, SC, N> mblock_is_local(&g_rep, node_local, size_hint);
-    dare::Matrix::MatrixBlock<GridType, GO, SC, N> mblock_is_not_local(&g_rep, node_global, size_hint);
+    dare::MatrixBlock<GridType, GO, SC, N> mblock_is_local(&g_rep, node_local, size_hint);
+    dare::MatrixBlock<GridType, GO, SC, N> mblock_is_not_local(&g_rep, node_global, size_hint);
     for (std::size_t n{0}; n < N; n++) {
         for (std::size_t i{0}; i < size_hint[n]; i++) {
             mblock_is_local.SetCoefficient(n, node_global * N + n + i, 1.);
@@ -113,11 +113,11 @@ TEST_F(MatrixBlockTest, Convert) {
     GridRepresentation g_rep = grid.GetRepresentation();
     LO node_local = 11;
     GO node_global = node_local + g_rep.offset;
-    dare::utils::Vector<N, std::size_t> size_hint;
+    dare::Vector<N, std::size_t> size_hint;
     for (auto& e : size_hint)
         e = 3;
-    dare::Matrix::MatrixBlock<GridType, LO, SC, N> mblock_local(&g_rep, node_local, size_hint);
-    dare::Matrix::MatrixBlock<GridType, GO, SC, N> mblock_global(&g_rep, node_global, size_hint);
+    dare::MatrixBlock<GridType, LO, SC, N> mblock_local(&g_rep, node_local, size_hint);
+    dare::MatrixBlock<GridType, GO, SC, N> mblock_global(&g_rep, node_global, size_hint);
 
     for (std::size_t n{0}; n < N; n++) {
         for (std::size_t i{0}; i < size_hint[n]; i++) {
@@ -126,9 +126,9 @@ TEST_F(MatrixBlockTest, Convert) {
         }
     }
 
-    dare::Matrix::MatrixBlock<GridType, LO, SC, N> mblock_loc_conv = dare::Matrix::Convert<LO>(mblock_global);
-    dare::Matrix::MatrixBlock<GridType, GO, SC, N> mblock_glob_conv = dare::Matrix::Convert<GO>(mblock_local);
-    dare::Matrix::MatrixBlock<GridType, LO, SC, N> mblock_no_conv = dare::Matrix::Convert<LO>(mblock_local);
+    dare::MatrixBlock<GridType, LO, SC, N> mblock_loc_conv = dare::Convert<LO>(mblock_global);
+    dare::MatrixBlock<GridType, GO, SC, N> mblock_glob_conv = dare::Convert<GO>(mblock_local);
+    dare::MatrixBlock<GridType, LO, SC, N> mblock_no_conv = dare::Convert<LO>(mblock_local);
     EXPECT_EQ(mblock_loc_conv.GetNode(), node_local);
     EXPECT_EQ(mblock_glob_conv.GetNode(), node_global);
     EXPECT_EQ(mblock_no_conv.GetNode(), node_local);

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #ifndef MATH_POW_H_
 #define MATH_POW_H_
 
-namespace dare::math {
+namespace dare {
 
 /*!
  * \brief computes the value of an integer base and integer exponent at compile time
@@ -82,6 +82,6 @@ template <typename TBase, typename TExp, typename TEnable = std::enable_if_t<std
     }
     return res;
 }
-}  // end namespace dare::math
+}  // end namespace dare
 
 #endif  // MATH_POW_H_

@@ -1,0 +1,80 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2025 David Rieder
+
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#ifndef ALGORITHM_NAVIERSTOKES_PM_CONTINUITY_H_
+#define ALGORITHM_NAVIERSTOKES_PM_CONTINUITY_H_
+
+#include <functional>
+#include <set>
+#include <string>
+#include <utility>
+
+#include "Data/Field.h"
+#include "MPI/ExecutionManager.h"
+#include "Equations/GenericEquation.h"
+
+namespace dare {
+
+template<typename Grid, typename BoundaryStrategy, typename CustomMember>
+class PMContinuity : public dare::GenericEquation<Grid, BoundaryStrategy, CustomMember> {
+public:
+    using BaseType = dare::GenericEquation<Grid, BoundaryStrategy, CustomMember>;
+    using GridRepresentation = typename BaseType::GridRepresentation;
+    using FieldType = typename BaseType::FieldType;
+    // using BoundaryStrategyType = typename BaseType::BoundaryStrategy;
+
+    using SelfType = PMContinuity<Grid, BoundaryStrategy, CustomMember>;
+
+    template<typename BC>
+    PMContinuity(const std::string& name,
+                 GridRepresentation grid,
+                 std::size_t num_tsteps,
+                 BC bc_strat);
+
+    explicit PMContinuity(const SelfType&) = delete;
+    SelfType& operator=(const SelfType&) = delete;
+
+    FieldType* GetPressure();
+    const FieldType& GetPressure() const;
+
+    FieldType* GetDefect();
+    const FieldType& GetDefect() const;
+
+    FieldType* GetdP();
+    const FieldType& GetdP() const;
+
+    void UpdatedPBoundaries();
+
+    void UpdatePressureBoundaries();
+
+private:
+    FieldType defect;
+    FieldType dP;
+};
+
+}  // namespace dare
+
+#include "PM_Continuity.inl"
+
+#endif  // ALGORITHM_NAVIERSTOKES_PM_CONTINUITY_H_

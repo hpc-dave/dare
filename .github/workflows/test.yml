@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - dev_flow
   pull_request:
     branches:
       - main
@@ -15,18 +16,28 @@ jobs:
   GoogleTest:
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.3
+      image: davevader/dare_test:3.4
 
     strategy:
       matrix:
         procs: [1, 2, 3, 4]
+        compiler: [{cc: gcc, cxx: g++, trilinos: trilinos_gcc}, {cc: clang, cxx: clang++, trilinos: trilinos_clang}]
+      fail-fast: false
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Configure CMake Test
       run: |
+          rm -rf build_test
           mkdir build_test && cd build_test
-          cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_GTEST=ON -DDEBUG=ON
+          cmake .. -DCMAKE_BUILD_TYPE=Release \
+                   -GNinja \
+                   -DUSE_GTEST=ON \
+                   -DDEBUG=ON \
+                   -DCMAKE_C_COMPILER=${{matrix.compiler.cc}} \
+                   -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}} \
+                   -DCMAKE_PREFIX_PATH=/usr/local/${{matrix.compiler.trilinos}}
 
     - name: Build Test
       run: |
@@ -36,7 +47,7 @@ jobs:
     - name: Run Test
       run: |
           cd build_test
-          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_P${{matrix.procs}}.xml" -T 1
+          mpirun -n ${{matrix.procs}} ./unit_test --gtest_output="xml:${pwd}Report_${{matrix.compiler.cc}}_P${{matrix.procs}}.xml" -t 1
 
     - name: Move reports
       if: always()
@@ -48,14 +59,14 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test_reports_${{matrix.procs}}
+        name: test_reports_${{matrix.procs}}_${{matrix.compiler.cc}}
         path: ./*.xml
 
   publish-test-results:
     # For details checkout https://github.com/marketplace/actions/publish-test-results
     runs-on: self-hosted
     container:
-      image: davevader/dare_test:1.3
+      image: davevader/dare_test:3.4
     name: Publish Tests Results
     needs: GoogleTest
     permissions:
@@ -78,7 +89,11 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: |
-            artifacts/test_reports_1/*.xml
-            artifacts/test_reports_2/*.xml
-            artifacts/test_reports_3/*.xml
-            artifacts/test_reports_4/*.xml
+            artifacts/test_reports_1_gcc/*.xml
+            artifacts/test_reports_2_gcc/*.xml
+            artifacts/test_reports_1_clang-18/*.xml
+            artifacts/test_reports_2_clang-18/*.xml
+            artifacts/test_reports_3_gcc/*.xml
+            artifacts/test_reports_4_gcc/*.xml
+            artifacts/test_reports_3_clang-18/*.xml
+            artifacts/test_reports_4_clang-18/*.xml

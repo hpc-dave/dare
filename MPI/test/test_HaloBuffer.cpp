@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 David Rieder
+ * Copyright (c) 2025 David Rieder
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 #include <float.h>
 #include <unordered_map>
+#include <vector>
 
 #include "MPI/ExecutionManager.h"
 #include "MPI/HaloBuffer.h"
@@ -32,11 +33,11 @@
 
 TEST(HaloBufferTest, Exchange) {
     using SC = double;
-    using LO = typename dare::mpi::HaloBuffer<SC>::LO;
-    using GO = typename dare::mpi::HaloBuffer<SC>::GO;
+    using LO = typename dare::HaloBuffer<SC>::LO;
+    using GO = typename dare::HaloBuffer<SC>::GO;
 
-    dare::mpi::ExecutionManager exman;
-    dare::mpi::HaloBuffer<SC> buffer;
+    dare::ExecutionManager exman;
+    dare::HaloBuffer<SC> buffer;
     dare::test::TestField field;
     std::size_t cell_per_domain = 2;
     LO num_ghost = 1;
